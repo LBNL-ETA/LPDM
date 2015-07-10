@@ -56,7 +56,7 @@ class GridController(Device):
         "Receives messages when a power change has occured"
         # self.logMessage("Power change received (t = {0}, p = {1}, source = {2})".format(time, new_power, source_device.deviceName()), logging.INFO)
         self._time = time
-        if new_power == 0 and source_device_id == self.getDieselGeneratorID():
+        if new_power == 0 and source_device_id == self.getDieselGeneratorID() and self._load_on_generator > 0:
             # if the diesel generator has changed its power to zero without being instructed then it's out of fuel
             self.shutdownGenerator()
         else:

@@ -46,15 +46,19 @@ class Eud(Device):
 
     def onPowerChange(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
-        return;
+        if target_device_id == self._device_id:
+            if new_power == 0 and self._in_operation:
+                self._time = time
+                self.turnOff()
+                self.tugLogAction(action="operation", is_initial_event=True, value=0, description="off")
+        return
 
     def onPriceChange(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
-        
-        if target_device_id == self._device_id:
-            self._time = time
-            self._price = new_price
-            self.setPowerLevel()
+        self._time = time
+        self._price = new_price
+        self.setPowerLevel()
+
         return
 
     def onTimeChange(self, new_time):
@@ -65,26 +69,38 @@ class Eud(Device):
         self.calculateNextTTIE()
         return
 
+    def forceOn(self, time):
+        if not self._in_operation:
+            self._time = time
+            self.turnOn()
+
+    def forceOff(self, time):
+        if self._in_operation:
+            self._time = time
+            self.turnOff()
+
     def turnOn(self):
         "Turn on the device"
         if not self._in_operation:
             self._in_operation = True
+            print('turn on the fan at {0}'.format(self._time))
             self.setPowerLevel()
 
     def turnOff(self):
         "Turn off the device"
-        self._power_level = 0.0
-        self._in_operation = False
+        if self._in_operation:
+            self._power_level = 0.0
+            self._in_operation = False
 
     def processEvent(self):
         if (self._next_event and self._time == self._ttie):
             print('process event  {0} at {1}'.format(self._next_event["operation"], self._time))
             if self._in_operation and self._next_event["operation"] == 0:
-                self.tugLogAction(action="operation", is_initial_event=True, value=self._next_event["operation"], description="off")
+                self.tugLogAction(action="operation", is_initial_event=True, value=0, description="off")
                 self.turnOff()
                 self.broadcastNewPower(0.0)
             elif not self._in_operation and self._next_event["operation"] == 1:
-                self.tugLogAction(action="operation", is_initial_event=True, value=self._next_event["operation"], description="on")
+                new_power = self.calculateNewPowerLevel()
                 self.setPowerLevel()
 
             self.calculateNextTTIE()
@@ -140,12 +156,13 @@ class Eud(Device):
 
             if self._power_level == 0 and self._in_operation:
                 self.turnOff()
-                self.tugLogAction(action="operation", is_initial_event=True, value=self._next_event["operation"], description="off")
+                self.tugLogAction(action="operation", is_initial_event=True, value=0, description="off")
             elif self._power_level > 0 and not self._in_operation:
                 self.turnOn()
-                self.tugLogAction(action="operation", is_initial_event=True, value=self._next_event["operation"], description="on")
+                self.tugLogAction(action="operation", is_initial_event=True, value=1, description="on")
             else:
-                print("**** adjust power level***")
+                # adjust the power level here
+                pass
             
             self.broadcastNewPower(new_power)
 

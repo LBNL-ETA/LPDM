@@ -64,6 +64,9 @@ class Device(NotificationReceiver, NotificationSender):
         if self._tug_logger:
             self._tug_logger.logAction(self, self._time, action, is_initial_event, value, description)
 
+    def status(self):
+        return None
+
     def setLogger(self):
         # logging.basicConfig(filename='myapp.log', level=logging.DEBUG)
         self._logger = logging.getLogger(self._device_name)

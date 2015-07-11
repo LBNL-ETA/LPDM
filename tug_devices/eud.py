@@ -161,10 +161,13 @@ class Eud(Device):
                 self.turnOn()
                 self.tugLogAction(action="operation", is_initial_event=True, value=1, description="on")
             else:
-                # adjust the power level here
-                pass
+                self.adjustHardwarePower()
             
             self.broadcastNewPower(new_power)
+
+    def adjustHardwarePower(self):
+        "Override this method to tell the hardware to adjust its power output"
+        return None
 
     def calculateNewPowerLevel(self):
         "Set the power level of the eud"

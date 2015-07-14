@@ -2,7 +2,7 @@
     Implementation of a  WEMO based light
 """
 from eud import Eud
-from wemo_light import WemoLight
+from wemo_control.wemo_light import WemoLight
 
 class Light(Eud):
     def __init__(self, config = None):

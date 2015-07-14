@@ -92,7 +92,7 @@ class Device(NotificationReceiver, NotificationSender):
 
         return
 
-    def logMessage(self, message='', debug_level=logging.DEBUG):
+    def logMessage(self, message='', debug_level=logging.INFO):
         "Logs a message using the loggin module, default debug level is set to DEBUG"
         if debug_level == logging.DEBUG:
             self._logger.debug(message)
@@ -120,7 +120,7 @@ class Device(NotificationReceiver, NotificationSender):
     def broadcastNewPrice(self, new_price, target_device_id='all', debug_level=logging.DEBUG):
         "Broadcast a new price if a callback has been setup, otherwise raise an exception."
         if callable(self._broadcastNewPriceCallback):
-            self.logMessage("Broadcast new price (t = {0}, price = {1})".format(self._time, new_price), debug_level)
+            # self.logMessage("Broadcast new price (t = {0}, price = {1})".format(self._time, new_price), debug_level)
             self._broadcastNewPriceCallback(self._device_id, target_device_id, self._time, new_price)
         else:
             raise Exception("broadcastNewPrice has not been set for this device!")
@@ -129,7 +129,7 @@ class Device(NotificationReceiver, NotificationSender):
     def broadcastNewPower(self, new_power, target_device_id='all', debug_level=logging.DEBUG):
         "Broadcast the new power value if a callback has been setup, otherwise raise an exception."
         if callable(self._broadcastNewPowerCallback):
-            self.logMessage("Broadcast new power (t = {0}, power = {1})".format(self._time, new_power), debug_level)
+            # self.logMessage("Broadcast new power (t = {0}, power = {1})".format(self._time, new_power), debug_level)
             self._broadcastNewPowerCallback(self._device_id, target_device_id, self._time, new_power)
         else:
             raise Exception("broadcastNewPower has not been set for this device!")
@@ -138,7 +138,7 @@ class Device(NotificationReceiver, NotificationSender):
     def broadcastNewTTIE(self, new_ttie, target_device_id='all', debug_level=logging.DEBUG):
         "Broadcast the new TTIE if a callback has been setup, otherwise raise an exception."
         if callable(self._broadcastNewTTIECallback):
-            self.logMessage("Broadcast new ttie (t = {0}, ttie = {1})".format(self._time, new_ttie), debug_level)
+            # self.logMessage("Broadcast new ttie (t = {0}, ttie = {1})".format(self._time, new_ttie), debug_level)
             self._broadcastNewTTIECallback(self._device_id, target_device_id, new_ttie)
         else:
             raise Exception("broadcastNewTTIE has not been set for this device!")

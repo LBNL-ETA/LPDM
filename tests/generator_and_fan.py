@@ -1,5 +1,6 @@
 from tug_devices.grid_controller import GridController
 from tug_devices.eud import Eud
+from tug_devices.fan_eud import PWMfan_eud
 from tug_devices.diesel_generator import DieselGenerator
 from messenger import Messenger
 from tug_logger import TugLogger
@@ -46,7 +47,8 @@ def run(output_json=True):
          "schedule": [['0300', 1], ['2300', 0]]  # turn on at 3 AM and off at 11 PM every day
     }
 
-    fan = Eud(fan_config)
+    # fan = Eud(fan_config)
+    fan = PWMfan_eud(fan_config)
     my_messenger.subscribeToPriceChanges(fan)
     my_messenger.subscribeToPowerChanges(fan)
     my_messenger.subscribeToTimeChanges(fan)

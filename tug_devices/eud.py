@@ -44,6 +44,14 @@ class Eud(Device):
             # self.setPowerLevel()
             # self.broadcastNewPower(self._power_level)
 
+    def status(self):
+        return {
+            "type": "eud",
+            "in_operation": self._in_operation,
+            "power_level": self._power_level,
+            "fuel_price": self._price
+        }
+
     def onPowerChange(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
         if target_device_id == self._device_id:

@@ -117,11 +117,13 @@ class DieselGenerator(Device):
 
     def status(self):
         return {
+            "type": "diesel_generator",
             "in_operation": self._in_operation,
             "fuel_price": self._current_fuel_price,
             "power_level": self._power_level,
             "output_capcity": self.currentOutputCapacity(),
-            "generation_rate": self.getCurrentGenerationRate()
+            "generation_rate": self.getCurrentGenerationRate(),
+            "fuel_level": self._fuel_level
         }
 
     def onPowerChange(self, source_device_id, target_device_id, time, new_power):
@@ -422,7 +424,7 @@ class DieselGenerator(Device):
             self.tugLogAction(action="scarcity_multiplier", is_initial_event=False, value=self._scarcity_multiplier, description="")
             self.tugLogAction(action="output_capacity", is_initial_event=False, value=self.currentOutputCapacity(), description="%")
 
-            self.logMessage("Set scarcity multiplier (t = {0}, scarcity mult = {1}".format(self._time, self._scarcity_multiplier))
+            # self.logMessage("Set scarcity multiplier (t = {0}, scarcity mult = {1}".format(self._time, self._scarcity_multiplier))
         return
 
     def currentOutputCapacity(self):

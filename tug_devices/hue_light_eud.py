@@ -1,14 +1,16 @@
 """
-    Implementation of a  WEMO based light
+    Implementation of a hue based light
 """
 from eud import Eud
-from wemo_light import WemoLight
+from hue_control import HueBridge
+from hue_light import HueLight
 
 class Light(Eud):
     def __init__(self, config = None):
         # call the super constructor
         Eud.__init__(self, config)
-        self._hardware_link = WemoLight('Lightbulb 01')
+        self._hardware_link_bridge = HueBridge()
+        self._hardware_link_light  = HueLight(self._hardware_link_bridge, '1')
         print("light init")
 
     def turnOn(self):
@@ -19,7 +21,7 @@ class Light(Eud):
 
         # turn on the physical light
         # need to pass it a value from 1-255
-        self._hardware_link.on(int((255.0 - 1.0)/(100.0 - 0.0) * self._power_level))
+        self._hardware_link_light.on(int((255.0 - 1.0)/(100.0 - 0.0) * self._power_level))
 
     def turnOff(self):
         "Turn on the device - Override the base class method to add the functionality to interact with the light hardware"
@@ -29,4 +31,4 @@ class Light(Eud):
 
             # turn on the physical light
             # need to pass it a value from 1-255
-        self._hardware_link.off()
+        self._hardware_link_light.off()

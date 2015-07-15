@@ -30,3 +30,6 @@ class Light(Eud):
             # turn on the physical light
             # need to pass it a value from 1-255
         self._hardware_link.off()
+
+    def adjustHardwarePower(self):
+        self._hardware_link.on(int((255.0 - 1.0)/(100.0 - 0.0) * self._power_level))

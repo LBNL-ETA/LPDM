@@ -1,5 +1,4 @@
 from tug_devices.grid_controller import GridController
-from tug_devices.eud import Eud
 from tug_devices.light import Light
 from tug_devices.diesel_generator import DieselGenerator
 from messenger import Messenger
@@ -36,36 +35,22 @@ def run(output_json=True):
     my_messenger.subscribeToPowerChanges(gc)
     my_messenger.subscribeToPriceChanges(gc)
 
-    # setup an EUD - light
+    # setup a light
     light_config = {
         "tug_logger": tlog,
-        "uuid": 2,
-        "device_name": "EUD - light",
-        "max_power_use": 100.0,
+        "uuid": 3,
+        "device_name": "EUD - Light",
+        "max_power_use": 15000.0,
         "broadcastNewPower": my_messenger.onPowerChange,
         "broadcastNewTTIE": my_messenger.onNewTTIE,
-        "schedule": [['0800', 1], ['1800', 0]]  # turn on at 8 AM and off at 6 PM every day
+         "schedule": [['0300', 1], ['2300', 0]]  # turn on at 3 AM and off at 11 PM every day
     }
 
     light = Light(light_config)
     my_messenger.subscribeToPriceChanges(light)
+    my_messenger.subscribeToPowerChanges(light)
     my_messenger.subscribeToTimeChanges(light)
     gc.addDevice(light.deviceID(), type(light))
-
-    # setup an EUD - fan
-    # fan_config = {
-    #     "tug_logger": tlog,
-    #     "uuid": 3,
-    #     "device_name": "EUD - fan",
-    #     "max_power_use": 120.0,
-    #     "broadcastNewPower": my_messenger.onPowerChange,
-    #     "broadcastNewTTIE": my_messenger.onNewTTIE
-    # }
-
-    # fan = Eud(fan_config)
-    # my_messenger.subscribeToPriceChanges(fan)
-    # my_messenger.subscribeToTimeChanges(fan)
-    # gc.addDevice(fan.deviceID(), type(fan))
 
     # setupa diesel generator
     diesel_config = {
@@ -75,6 +60,7 @@ def run(output_json=True):
         "uuid": 4,
         "price": 1.0,
         "broadcastNewPrice": my_messenger.onPriceChange,
+        "broadcastNewPower": my_messenger.onPowerChange,
         "broadcastNewTTIE": my_messenger.onNewTTIE,
         "fuel_tank_capacity": 100.0,
         "fuel_level": 100.0,
@@ -99,7 +85,7 @@ def run(output_json=True):
     # tell the diesel generator to broadcast a new price
     # This should trigger call to on price change to the grid controller
     generator.calculateElectricityPrice()
-    max_time = 24 * 60 * 60 * 2
+    max_time = 24 * 60 * 60 * 14
     for time_in_seconds in range(1, max_time):
         my_messenger.changeTime(time_in_seconds)
      

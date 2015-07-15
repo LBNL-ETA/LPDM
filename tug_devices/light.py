@@ -17,9 +17,7 @@ class Light(Eud):
 
         Eud.turnOn(self)
 
-        # turn on the physical light
-        # need to pass it a value from 1-255
-        self._hardware_link.on(int((255.0 - 1.0)/(100.0 - 0.0) * self._power_level))
+        self.turnOnHardware()
 
     def turnOff(self):
         "Turn on the device - Override the base class method to add the functionality to interact with the light hardware"
@@ -27,9 +25,12 @@ class Light(Eud):
         # if self._power_level and self._in_operation:
         Eud.turnOff(self)
 
-            # turn on the physical light
-            # need to pass it a value from 1-255
         self._hardware_link.off()
 
     def adjustHardwarePower(self):
-        self._hardware_link.on(int((255.0 - 1.0)/(100.0 - 0.0) * self._power_level))
+        self.turnOnHardware()
+
+    def turnOnHardware(self):
+        # turn on the physical light
+        # need to pass it a value from 1-255
+        self._hardware_link.on(int((255.0 - 1.0)/(self._max_power_use - 0.0) * self._power_level))

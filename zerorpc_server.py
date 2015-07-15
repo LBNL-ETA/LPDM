@@ -1,6 +1,7 @@
 import zerorpc
 from tug_simulation import TugSimulation
 import json
+import sys
 
 class RpcController(object):
     interrupt = False
@@ -54,7 +55,13 @@ class RpcController(object):
         return 500
 
 s = zerorpc.Server(RpcController())
-s.bind("tcp://0.0.0.0:4242")
+if len(sys.argv) > 1 and sys.argv[1] == '-local':
+    # don't accept connections from outside if -local is passed in as a command line argument
+    s.bind("tcp://0.0.0.0:4242")
+else:
+    # accept connections from all ips
+    s.bind("tcp://*:4242")
+
 s.run()
 
 

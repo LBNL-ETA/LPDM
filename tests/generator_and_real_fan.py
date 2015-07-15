@@ -1,6 +1,6 @@
 from tug_devices.grid_controller import GridController
-from tug_devices.insight_eud import InsightEud
-from tug_devices.light import Light
+from tug_devices.eud import Eud
+from tug_devices.fan_eud import PWMfan_eud
 from tug_devices.diesel_generator import DieselGenerator
 from messenger import Messenger
 from tug_logger import TugLogger
@@ -41,13 +41,16 @@ def run(output_json=True):
         "tug_logger": tlog,
         "uuid": 3,
         "device_name": "EUD - fan",
-        "max_power_use": 120.0,
+        "max_power_use": 15000.0,
         "broadcastNewPower": my_messenger.onPowerChange,
-        "broadcastNewTTIE": my_messenger.onNewTTIE
+        "broadcastNewTTIE": my_messenger.onNewTTIE,
+         "schedule": [['0300', 1], ['2300', 0]]  # turn on at 3 AM and off at 11 PM every day
     }
 
-    fan = InsightEud(fan_config)
+    # fan = Eud(fan_config)
+    fan = PWMfan_eud(fan_config)
     my_messenger.subscribeToPriceChanges(fan)
+    my_messenger.subscribeToPowerChanges(fan)
     my_messenger.subscribeToTimeChanges(fan)
     gc.addDevice(fan.deviceID(), type(fan))
 
@@ -59,6 +62,7 @@ def run(output_json=True):
         "uuid": 4,
         "price": 1.0,
         "broadcastNewPrice": my_messenger.onPriceChange,
+        "broadcastNewPower": my_messenger.onPowerChange,
         "broadcastNewTTIE": my_messenger.onNewTTIE,
         "fuel_tank_capacity": 100.0,
         "fuel_level": 100.0,
@@ -83,14 +87,11 @@ def run(output_json=True):
     # tell the diesel generator to broadcast a new price
     # This should trigger call to on price change to the grid controller
     generator.calculateElectricityPrice()
-    max_time = 24 * 60 * 60 * 2
+    max_time = 24 * 60 * 60 * 14
     for time_in_seconds in range(1, max_time):
-        if time_in_seconds == 60:
-            fan.turnOn()
-            
+        # if time_in_seconds == 60:
+        #     fan.forceOn(time_in_seconds)
         my_messenger.changeTime(time_in_seconds)
-
-    fan.turnOff()
      
     # tlog.dump()
     if output_json:

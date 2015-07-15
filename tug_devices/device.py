@@ -139,7 +139,7 @@ class Device(NotificationReceiver, NotificationSender):
         "Broadcast the new TTIE if a callback has been setup, otherwise raise an exception."
         if callable(self._broadcastNewTTIECallback):
             # self.logMessage("Broadcast new ttie (t = {0}, ttie = {1})".format(self._time, new_ttie), debug_level)
-            self._broadcastNewTTIECallback(self._device_id, target_device_id, new_ttie)
+            self._broadcastNewTTIECallback(self._device_id, target_device_id, new_ttie - self._time)
         else:
             raise Exception("broadcastNewTTIE has not been set for this device!")
         return

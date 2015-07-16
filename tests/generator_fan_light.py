@@ -105,7 +105,7 @@ def run(output_json=True):
     # tell the diesel generator to broadcast a new price
     # This should trigger call to on price change to the grid controller
     generator.calculateElectricityPrice()
-    max_time = 24 * 60 * 60 * 14
+    max_time = 24 * 60 * 60 * 7
     for time_in_seconds in range(1, max_time):
         # if time_in_seconds == 60:
         #     fan.forceOn(time_in_seconds)

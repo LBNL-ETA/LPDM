@@ -1,5 +1,6 @@
 from tug_devices.grid_controller import GridController
 from tug_devices.eud import Eud
+from tug_devices.light import Light
 from tug_devices.fan_eud import PWMfan_eud
 from tug_devices.diesel_generator import DieselGenerator
 from messenger import Messenger
@@ -53,6 +54,23 @@ def run(output_json=True):
     my_messenger.subscribeToPowerChanges(fan)
     my_messenger.subscribeToTimeChanges(fan)
     gc.addDevice(fan.deviceID(), type(fan))
+
+    # setup a light
+    light_config = {
+        "tug_logger": tlog,
+        "uuid": 5,
+        "device_name": "EUD - Light",
+        "max_power_use": 700.0,
+        "broadcastNewPower": my_messenger.onPowerChange,
+        "broadcastNewTTIE": my_messenger.onNewTTIE,
+         "schedule": [['0300', 1], ['2300', 0]]  # turn on at 3 AM and off at 11 PM every day
+    }
+
+    light = Light(light_config)
+    my_messenger.subscribeToPriceChanges(light)
+    my_messenger.subscribeToPowerChanges(light)
+    my_messenger.subscribeToTimeChanges(light)
+    gc.addDevice(light.deviceID(), type(light))
 
     # setupa diesel generator
     diesel_config = {

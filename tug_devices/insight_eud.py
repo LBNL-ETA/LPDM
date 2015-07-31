@@ -3,7 +3,7 @@ Implementation of a WeMo Insight based EUD device
 """
 
 from eud import Eud
-from wemo_switch import WemoInsight
+from wemo_control.wemo_switch import WemoInsight
 
 
 class InsightEud(Eud):

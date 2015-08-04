@@ -3,7 +3,8 @@ Implementation of a WeMo Insight based EUD device
 """
 
 from eud import Eud
-from wemo_control.wemo_switch import WemoInsight
+from tropec_hw_adapters_repo.global_cache_control.global_cache_controls import GlobalCacheBridge
+from tropec_hw_adapters_repo.global_cache_control.dvd_controls import DVDController
 
 
 class InsightEud(Eud):
@@ -12,45 +13,51 @@ class InsightEud(Eud):
         # Call super constructor
         Eud.__init__(self, config)
 
-        # Device name on as supplied by WeMo
-        self._insight_name = config["insight_name"] if type(config) is dict and "insight_name" in config.keys() else "WeMo Insight"
+        # Bridge IP address on Global Cache Device
+        self._bridge_ipaddr = config["bridge_ipaddr"] if type(config) is dict and "bridge_ipaddr" in config.keys() else '***REMOVED***'
 
-        # Server on which WeMo connections are running
-        self._insight_server_url = config["insight_server_url"] if type(config) is dict and "insight_server_url" in config.keys() else "192.168.1.3"
+        # Number of emitter on Global Cache Device
+        self._emitter_num = config["_emitter_num"] if type(config) is dict and "_emitter_num" in config.keys() else 1
 
         # Build hardware link
-        self._insight = WemoInsight(self._insight_name, self._insight_server_url)
+        self._bridge = GlobalCacheBridge(self._bridge_ipaddr)
+
+        # Build Device connection
+        self._dvd_player = DVDController(self._bridge, self._emitter_num)
 
     # Override with device specific functions
     def turnOn(self, time):
         "Turns device attached to insight on"
-        self._insight.on()
         # call super
         Eud.turnOn(self, time)
+        if not self._in_operation:
+            self._dvd_player.power()
 
     # Override for specific device
     def turnOff(self, time):
         "Turns device attached to Insight off"
-        self._insight.off()
         # call super
         Eud.turnOff(self, time)
+        if self._in_operation:
+            self._dvd_player.power()
 
     # Override for specific device measurement of power level
     def calculateNewPowerLevel(self):
         "Sets the power level of the eud based on insight measurement"
-        # Insight knows!
-        return self.current_power()
+        # Fake number representing large usage
+        if self._in_operation:
+            return 20000
+        else:
+            return 0
 
     # Override for specific device measurement and accounting for varying power
     def setPowerLevel(self):
-        "Set the power level of the Insight eud (W). If consumption has changed by more than 5%, broadcast new power level"
+        "Set the power level EUD and broadcast the new power if it has changed"
         new_power = self.calculateNewPowerLevel()
-        # Check for a 5% change, otherwise there is no real change
-        if abs(new_power - self._power_level) / self._power_level * 100 == 5:
+        # Check if power has changed and adjust operation
+        if not self._power_level == new_power:
             self._power_level = new_power
-
-            # Round to 0
-            if abs(self._power_level) == 0:
+            if self._power_level == 0:
                 self._in_operation = False
             elif self._power_level > 0 and not self._in_operation:
                 self._in_operation = True

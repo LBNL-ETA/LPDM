@@ -164,6 +164,9 @@ class Device(NotificationReceiver, NotificationSender):
     def isOn(self):
         return self._in_operation
 
+    def refresh(self):
+        "Override to define operation for a device when a parameter has been reset and the device needs to be refreshed"
+
     def setScenario(self, scenario):
         "Sets a 'scenario' for the device. Given a scenario in JSON format, sets various parameters to specific values"
         for key in scenario.keys():

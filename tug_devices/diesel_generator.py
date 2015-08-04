@@ -123,8 +123,15 @@ class DieselGenerator(Device):
             "power_level": self._power_level,
             "output_capcity": self.currentOutputCapacity(),
             "generation_rate": self.getCurrentGenerationRate(),
-            "fuel_level": self._fuel_level
+            "fuel_level": self._fuel_level            
         }
+
+    def refresh(self):
+        "Refresh the diesel generator: "
+        self.updateFuelLevel()
+        self.calculateElectricityPrice()
+        self.reassesFuel()
+        self.calculateNextTTIE()
 
     def onPowerChange(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured (W)"

@@ -25,6 +25,14 @@ class TugSimulation:
 
         self.device_status = []
         self.device_info = []
+        self.simulations = []
+
+        self.setSimulations()
+
+    def setSimulations(self):
+        self.simulations.append({"id": 1, "name": "Generator and PWM-Fan"})
+        self.simulations.append({"id": 2, "name": "Generator and Wemo Light"})
+        self.simulations.append({"id": 3, "name": "Generator and Wemo Insight"})
 
     def initializeSimulation(self, params=None):
         if params:

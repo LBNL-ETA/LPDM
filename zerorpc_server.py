@@ -22,6 +22,10 @@ class RpcController(object):
         print('sim initialized {0}'.format(RpcController.app_instance_id))
         return {'app_instance_id': RpcController.app_instance_id, 'device_info': device_info}
 
+    def getSimulations(self):
+        print(RpcController.sim.simulations)
+        return RpcController.sim.simulations if RpcController.sim else None
+
     def runSimulation(self, params):
         if RpcController.sim and RpcController.sim.app_instance_id == RpcController.app_instance_id:
             # print('run sim {0}'.format(RpcController.app_instance_id))

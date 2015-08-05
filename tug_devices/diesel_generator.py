@@ -86,7 +86,10 @@ class DieselGenerator(Device):
 
         self._last_fuel_status_time = 0
         self._events = []
-        self._target_refuel_time_secs = self._days_to_refuel * 24 * 60 * 60 if self._days_to_refuel != None else None
+
+        self._target_refuel_time_secs = None
+        self._base_refuel_time_secs = 0
+        self.setTargetRefuelTime()
 
         self._scarcity_multiplier = 1.0
 
@@ -127,11 +130,28 @@ class DieselGenerator(Device):
         }
 
     def refresh(self):
-        "Refresh the diesel generator: "
+        "Refresh the diesel generator."
+        print('refresh the generator')
+        self.removeRefreshEvents()
+        self.setTargetRefuelTime()
+        self.setNextRefuelEvent()
+
         self.updateFuelLevel()
         self.calculateElectricityPrice()
         self.reassesFuel()
         self.calculateNextTTIE()
+        print(self._events)
+
+    def removeRefreshEvents(self):
+        "Remove events that need to be recalculated when the device status is refreshed.  For the diesel generator this is just the refuel event."
+        next_refuels = []
+        for event in self._events:
+            if event['operation'] == 'refuel':
+                print(event)
+                next_refuels.append(event)
+
+        for event in next_refuels:
+            self._events.remove(event)
 
     def onPowerChange(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured (W)"
@@ -378,9 +398,15 @@ class DieselGenerator(Device):
 
         return
 
+    def setTargetRefuelTime(self):
+        "Set the next target refuel time (sec)"
+        self._target_refuel_time_secs = self._base_refuel_time_secs + (self._days_to_refuel * 24 * 60 * 60) if self._days_to_refuel != None else None
+
     def refuel(self):
         "Refuel"
-        self._target_refuel_time_secs = self._time + self._days_to_refuel * 24 * 60 * 60 
+        self._base_refuel_time_secs = self._time
+        self.setTargetRefuelTime()
+
         self._fuel_level = 100.0
         self._scarcity_multiplier = 1.0
         self.tugLogAction(action="refuel", is_initial_event=True, value=None)

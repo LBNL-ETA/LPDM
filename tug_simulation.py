@@ -1,6 +1,7 @@
 from tug_devices.grid_controller import GridController
 from tug_devices.eud import Eud
-# from tug_devices.light import Light
+from tug_devices.light import Light
+from tug_devices.insight_eud import InsightEud
 from tug_devices.diesel_generator import DieselGenerator
 from tug_devices.fan_eud import PWMfan_eud
 from messenger import Messenger
@@ -27,6 +28,9 @@ class TugSimulation:
         self.device_info = []
         self.simulations = []
 
+        print('sim_config')
+        print(self.sim_config)
+
         self.setSimulations()
 
     def setSimulations(self):
@@ -35,8 +39,6 @@ class TugSimulation:
         self.simulations.append({"id": 3, "name": "Generator and Wemo Insight"})
 
     def initializeSimulation(self, params=None):
-        if params:
-            self.sim_config = params
 
         self.logger = TugLogger()
         
@@ -60,13 +62,21 @@ class TugSimulation:
         # Setup EUD's
         self.eud_devices = []
         fan_config = self.defaultEudFan()
+        for key in params['pwm_fan'].keys():
+            fan_config[key] = params['pwm_fan'][key]
+
         fan_config["tug_logger"] = self.logger
         fan_config["uuid"] = 2
         fan_config["broadcastNewPower"] = self.messenger.onPowerChange
         fan_config["broadcastNewTTIE"] = self.messenger.onNewTTIE
 
-        # fan = Eud(fan_config)
-        fan = PWMfan_eud(fan_config)
+        print('fan')
+        print(fan_config)
+        if (fan_config['simulated_fan']):
+            fan = Eud(fan_config)
+        else:
+            fan = PWMfan_eud(fan_config)
+
         self.eud_devices.append(fan)
         self.messenger.subscribeToPriceChanges(fan)
         self.messenger.subscribeToPowerChanges(fan)
@@ -74,8 +84,63 @@ class TugSimulation:
         self.grid_controller.addDevice(fan.deviceID(), type(fan))
         self.device_info.append({'device': 'fan', 'config': self.configToJSON(fan_config)})
 
+        if params['wemo_light']:
+            print("**** wemo light")
+            wemo_config = self.defaultEudFan()
+            for key in params['wemo_light'].keys():
+                wemo_config[key] = params['wemo_light'][key]
+
+            wemo_config["tug_logger"] = self.logger
+            wemo_config["uuid"] = 4
+            wemo_config["broadcastNewPower"] = self.messenger.onPowerChange
+            wemo_config["broadcastNewTTIE"] = self.messenger.onNewTTIE
+
+            print('wemo light')
+            print(wemo_config)
+            wemo_light = Light(wemo_config)
+
+            self.eud_devices.append(wemo_light)
+            self.messenger.subscribeToPriceChanges(wemo_light)
+            self.messenger.subscribeToPowerChanges(wemo_light)
+            self.messenger.subscribeToTimeChanges(wemo_light)
+            self.grid_controller.addDevice(wemo_light.deviceID(), type(wemo_light))
+            self.device_info.append({'device': 'wemo_light', 'config': self.configToJSON(wemo_config)})
+
+        if params['wemo_insight']:
+            print("**** wemo insight")
+            insight_config = self.defaultEudFan()
+            for key in params['wemo_insight'].keys():
+                insight_config[key] = params['wemo_insight'][key]
+
+            insight_config["tug_logger"] = self.logger
+            insight_config["uuid"] = 4
+            insight_config["broadcastNewPower"] = self.messenger.onPowerChange
+            insight_config["broadcastNewTTIE"] = self.messenger.onNewTTIE
+
+            print('wemo insight')
+            print(insight_config)
+            if (fan_config['simulated_fan']):
+                wemo_insight = Eud(wemo_config)
+            else:
+                wemo_insight = InsightEud(insight_config)
+            
+
+            self.eud_devices.append(wemo_insight)
+            self.messenger.subscribeToPriceChanges(wemo_insight)
+            self.messenger.subscribeToPowerChanges(wemo_insight)
+            self.messenger.subscribeToTimeChanges(wemo_insight)
+            self.grid_controller.addDevice(wemo_insight.deviceID(), type(wemo_insight))
+            self.device_info.append({'device': 'wemo_insight', 'config': self.configToJSON(insight_config)})
+
+
         # Setup the Diesel Generator
+        # diesel_config = self.defaultDieselGenerator()
+        print('diesel generator')
+        print(params['diesel_generator'])
         diesel_config = self.defaultDieselGenerator()
+        for key in params['diesel_generator'].keys():
+            diesel_config[key] = params['diesel_generator'][key]
+
         diesel_config["tug_logger"] = self.logger
         diesel_config["uuid"] = 3
         diesel_config["broadcastNewPrice"] = self.messenger.onPriceChange
@@ -158,6 +223,10 @@ class TugSimulation:
         max_time = self.current_time + step
 
         for self.current_time in range(min_time, max_time):
+            # if self.current_time == 60 * 60 * 24 * 3:
+            #     self.diesel_generator._days_to_refuel = 14
+            #     self.diesel_generator.refresh()
+
             self.messenger.changeTime(self.current_time)
 
             # if not self.current_time % self.status_interval:
@@ -192,7 +261,8 @@ class TugSimulation:
     def getDeviceStatus(self):
         current_status = {"time": self.current_time, "devices": []}
         current_status["devices"].append(self.diesel_generator.status())
-        current_status["devices"].append(self.eud_devices[0].status())
+        for device in self.eud_devices:
+            current_status["devices"].append(device.status())
         return current_status
 
     def logDeviceStatus(self):

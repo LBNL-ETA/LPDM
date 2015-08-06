@@ -10,14 +10,18 @@ class RpcController(object):
     app_instance_id = None
 
     def initialize(self, params):
+        print('initialize sim')
+        print(params)
+
         RpcController.config = {
-            "end_time": int(params["run_time_days"]) * 60 * 60 * 24 if params and 'run_time_days' in params.keys() and params['run_time_days'] else 60 * 60 * 24 * 2,
-            "poll_interval": int(params["poll_interval_mins"]) * 60 if params and 'poll_interval_mins' in params.keys() and params['poll_interval_mins'] else 15 * 60
+            "end_time": int(params["run_time_days"]) * 60 * 60 * 24 if params and 'run_time_days' in params.keys() and params['run_time_days'] else 60 * 60 * 24 * 7,
+            "poll_interval": int(params["poll_interval_mins"]) * 60 if params and 'poll_interval_mins' in params.keys() and params['poll_interval_mins'] else 60 * 60
         }
 
         RpcController.sim = None
         RpcController.sim = TugSimulation(RpcController.config)
-        device_info = RpcController.sim.initializeSimulation()
+        device_info = RpcController.sim.initializeSimulation(params['config'])
+
         RpcController.app_instance_id = RpcController.sim.app_instance_id
         print('sim initialized {0}'.format(RpcController.app_instance_id))
         return {'app_instance_id': RpcController.app_instance_id, 'device_info': device_info}
@@ -26,15 +30,30 @@ class RpcController(object):
         print(RpcController.sim.simulations)
         return RpcController.sim.simulations if RpcController.sim else None
 
+    def resetSimulation(self):
+        RpcController.sim = None
+        return True
+
     def runSimulation(self, params):
-        if RpcController.sim and RpcController.sim.app_instance_id == RpcController.app_instance_id:
-            # print('run sim {0}'.format(RpcController.app_instance_id))
+        if not RpcController.sim and params:
+            self.initialize(params)
+
+        if RpcController.sim:
             return RpcController.sim.run(step=int(params['step']))
-            # print(RpcController.sim.deviceStatus())
-            # return json.dumps(RpcController.sim.deviceStatus())
-        else:
-            print('unable to run simulation ({0} != {1}'.format(RpcController.sim.app_instance_id, RpcController.app_instance_id))
-            return null
+
+        # if RpcController.sim and RpcController.sim.app_instance_id == RpcController.app_instance_id:
+        #     # print('run sim {0}'.format(RpcController.app_instance_id))
+        #     print(params);
+        #     if not RpcController.sim and params:
+        #         RpcController.initialize(params)
+
+        #     if RpcController.sim:
+        #         return RpcController.sim.run(step=int(params['step']))
+        #     # print(RpcController.sim.deviceStatus())
+        #     # return json.dumps(RpcController.sim.deviceStatus())
+        # else:
+        #     print('unable to run simulation ({0} != {1}'.format(RpcController.sim.app_instance_id, RpcController.app_instance_id))
+        #     return null
 
     @zerorpc.stream
     def streamSimulation(self):

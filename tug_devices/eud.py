@@ -11,22 +11,24 @@ class Eud(Device):
 
         # max power - set default to 100 watts unless different value provided in configuration
         # operate at max_power_use unless price > 'price_dim'
-        self._max_power_use = config["max_power_use"] if type(config) is dict and "max_power_use" in config.keys() else 100.0
+        self._max_power_use = float(config["max_power_use"]) if type(config) is dict and "max_power_use" in config.keys() else 100.0
 
         # the price (c/kWh) at which to begin dimming down the power
         # when price > 'price_dim', linearly dim down to power level (%) set at 'power_level_low' of power at 'price_off'
-        self._price_dim = config["price_dim"] if type(config) is dict and "price_dim" in config.keys() else 0.3
+        self._price_dim = float(config["price_dim"]) if type(config) is dict and "price_dim" in config.keys() else 0.3
 
         # the price (c/kWh) at which to turn off the power completeley
-        self._price_off = config["price_off"] if type(config) is dict and "price_off" in config.keys() else 0.7
+        self._price_off = float(config["price_off"]) if type(config) is dict and "price_off" in config.keys() else 0.7
 
         # the max operating power level (%)
-        self._power_level_max = config["power_level_max"] if type(config) is dict and "power_level_max" in config.keys() else 100.0
+        self._power_level_max = float(config["power_level_max"]) if type(config) is dict and "power_level_max" in config.keys() else 100.0
 
         # the power level (%) to dim down to when price between price_dim and price_off
-        self._power_level_low = config["power_level_low"] if type(config) is dict and "power_level_low" in config.keys() else 20.0
+        self._power_level_low = float(config["power_level_low"]) if type(config) is dict and "power_level_low" in config.keys() else 20.0
 
         self._daily_schedule = self.parseSchedule(config["schedule"]) if type(config) is dict and "schedule" in config.keys() else None
+        print('schedule')
+        print(self._daily_schedule)
 
         self._power_level = 0.0
 
@@ -47,6 +49,7 @@ class Eud(Device):
     def status(self):
         return {
             "type": "eud",
+            "name": self._device_name,
             "in_operation": self._in_operation,
             "power_level": self._power_level,
             "fuel_price": self._price

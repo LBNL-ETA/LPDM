@@ -84,27 +84,27 @@ class TugSimulation:
         self.grid_controller.addDevice(fan.deviceID(), type(fan))
         self.device_info.append({'device': 'fan', 'config': self.configToJSON(fan_config)})
 
-        if params['wemo_light']:
-            print("**** wemo light")
-            wemo_config = self.defaultEudFan()
-            for key in params['wemo_light'].keys():
-                wemo_config[key] = params['wemo_light'][key]
+        # if params['wemo_light']:
+        #     print("**** wemo light")
+        #     wemo_config = self.defaultEudFan()
+        #     for key in params['wemo_light'].keys():
+        #         wemo_config[key] = params['wemo_light'][key]
 
-            wemo_config["tug_logger"] = self.logger
-            wemo_config["uuid"] = 4
-            wemo_config["broadcastNewPower"] = self.messenger.onPowerChange
-            wemo_config["broadcastNewTTIE"] = self.messenger.onNewTTIE
+        #     wemo_config["tug_logger"] = self.logger
+        #     wemo_config["uuid"] = 4
+        #     wemo_config["broadcastNewPower"] = self.messenger.onPowerChange
+        #     wemo_config["broadcastNewTTIE"] = self.messenger.onNewTTIE
 
-            print('wemo light')
-            print(wemo_config)
-            wemo_light = Light(wemo_config)
+        #     print('wemo light')
+        #     print(wemo_config)
+        #     wemo_light = Light(wemo_config)
 
-            self.eud_devices.append(wemo_light)
-            self.messenger.subscribeToPriceChanges(wemo_light)
-            self.messenger.subscribeToPowerChanges(wemo_light)
-            self.messenger.subscribeToTimeChanges(wemo_light)
-            self.grid_controller.addDevice(wemo_light.deviceID(), type(wemo_light))
-            self.device_info.append({'device': 'wemo_light', 'config': self.configToJSON(wemo_config)})
+        #     self.eud_devices.append(wemo_light)
+        #     self.messenger.subscribeToPriceChanges(wemo_light)
+        #     self.messenger.subscribeToPowerChanges(wemo_light)
+        #     self.messenger.subscribeToTimeChanges(wemo_light)
+        #     self.grid_controller.addDevice(wemo_light.deviceID(), type(wemo_light))
+        #     self.device_info.append({'device': 'wemo_light', 'config': self.configToJSON(wemo_config)})
 
         if params['wemo_insight']:
             print("**** wemo insight")
@@ -120,7 +120,7 @@ class TugSimulation:
             print('wemo insight')
             print(insight_config)
             if (fan_config['simulated_fan']):
-                wemo_insight = Eud(wemo_config)
+                wemo_insight = Eud(insight_config)
             else:
                 wemo_insight = InsightEud(insight_config)
             

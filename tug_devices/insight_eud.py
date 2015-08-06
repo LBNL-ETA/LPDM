@@ -31,6 +31,7 @@ class InsightEud(Eud):
     # Override for specific device
     def turnOff(self):
         "Turns device attached to Insight off"
+        print('*******turn off insight*******')
         self._insight.off()
         # call super
         Eud.turnOff(self)

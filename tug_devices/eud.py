@@ -57,6 +57,7 @@ class Eud(Device):
 
     def onPowerChange(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
+        # print('power change received by {4} - {5} ({0}, {1}, {2}, {3}'.format(source_device_id, target_device_id, time, new_power, self._device_name, self._device_id))
         if target_device_id == self._device_id:
             if new_power == 0 and self._in_operation:
                 self._time = time
@@ -64,13 +65,31 @@ class Eud(Device):
                 self.tugLogAction(action="operation", is_initial_event=True, value=0, description="off")
         return
 
+    def current_schedule_value(self):
+        current_time_of_day_seconds = self.timeOfDaySeconds()
+        res = None
+        for schedule_pt in self._daily_schedule:
+            if schedule_pt["time_of_day_seconds"] <= current_time_of_day_seconds:
+                res = schedule_pt["operation"]
+        if not res:
+            res = self._daily_schedule[-1]["operation"]
+        return res
+       
     def onPriceChange(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
         self._time = time
         self._price = new_price
-        self.setPowerLevel()
-
+        if self.current_schedule_value():
+            self.setPowerLevel()
         return
+
+    # def onPriceChange(self, source_device_id, target_device_id, time, new_price):
+    #     "Receives message when a price change has occured"
+    #     self._time = time
+    #     self._price = new_price
+    #     self.setPowerLevel()
+
+    #     return
 
     def onTimeChange(self, new_time):
         "Receives message when a time change has occured"
@@ -94,28 +113,31 @@ class Eud(Device):
         "Turn on the device"
         if not self._in_operation:
             self._in_operation = True
-            print('turn on the fan at {0}'.format(self._time))
+            print("***** turn on eud {0} at {1} - {2}".format(self._device_name, self._time, self._next_event["operation"]))
             self.setPowerLevel()
 
     def turnOff(self):
         "Turn off the device"
+
         if self._in_operation:
+            print("***** turn off eud {0} at {1} - {2}".format(self._device_name, self._time, self._next_event["operation"]))
             self._power_level = 0.0
             self._in_operation = False
 
     def processEvent(self):
         if (self._next_event and self._time == self._ttie):
-            print('process event  {0} at {1}'.format(self._next_event["operation"], self._time))
+            print('process event  {0} at {1} for {2}'.format(self._next_event["operation"], self._time, self._device_name))
             if self._in_operation and self._next_event["operation"] == 0:
-                self.tugLogAction(action="operation", is_initial_event=True, value=0, description="off")
+                print('turn off the device {0} at {1}'.format(self._device_name, self._time))
                 self.turnOff()
                 self.broadcastNewPower(0.0)
+                print('power broadcasted')
             elif not self._in_operation and self._next_event["operation"] == 1:
-                new_power = self.calculateNewPowerLevel()
+                print('turn on the device {0} at {1}'.format(self._device_name, self._time))
                 self.setPowerLevel()
 
             self.calculateNextTTIE()
-            # print('next ttie at {0}'.format(self._ttie))
+            print('next ttie at {0}'.format(self._ttie))
 
     def calculateNextTTIE(self):
         "Override the base class function"
@@ -137,6 +159,8 @@ class Eud(Device):
                         break
 
             if new_ttie != self._ttie:
+                print("next ttie for {0}".format(self._device_name))
+                print(next_event)
                 self._next_event = next_event
                 self._ttie = new_ttie
                 self.broadcastNewTTIE(new_ttie)
@@ -149,6 +173,7 @@ class Eud(Device):
         if type(schedule) is list:
             parsed_schedule = []
             for (task_time, task_operation) in schedule:
+                task_operation = int(task_operation)
                 if len(task_time) != 4 or task_operation not in (0,1):
                     raise Exception("Invalid schedule definition ({0}, {1})".format(task_time, task_operation))
                 parsed_schedule.append({"time_of_day_seconds": (int(task_time[0:2]) * 60 * 60 + int(task_time[2:]) * 60), "operation": task_operation})

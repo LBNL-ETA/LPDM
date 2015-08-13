@@ -58,7 +58,7 @@ class Laptop(InsightEud):
         return
 
     def isCharging(self):
-        return self._current_soc == 111
+        return self._current_soc > 100
 
     def stateOfCharge(self):
         "Returns the current SOC"
@@ -80,16 +80,7 @@ class Laptop(InsightEud):
         self._time = time
         self._current_soc = self._laptop_link.getSoc()
         if not self._last_update_time or time - self._last_update_time > self._min_soc_refresh_rate:
-            if self._current_soc != 111:
+            if self._current_soc > 100:
                 self._current_soc = self._laptop_link.getSoc()
                 self.tugLogAction(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
             self._last_update_time = time
-
-        # if not self._last_update_time or time - self._last_update_time > self._min_soc_refresh_rate:
-        #     if self._current_soc == 111:
-        #         self._current_soc = ((self._capacity * 1000.0 * self._current_soc) + (self.chargeRate() * (time - self._last_update_time) / 3600.0)) / (self._capacity * 1000.0)
-        #         self.tugLogAction(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
-        #     elif self._is_discharging and load_on_laptop:
-        #         self._current_soc = ((self._capacity * 1000.0 * self._current_soc) - (load_on_laptop * (time - self._last_update_time) / 3600.0)) / (self._capacity * 1000.0)
-        #         self.tugLogAction(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
-        #    self._last_update_time = time

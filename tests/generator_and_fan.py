@@ -87,8 +87,10 @@ def run(output_json=True):
     generator.calculateElectricityPrice()
     max_time = 24 * 60 * 60 * 14
     for time_in_seconds in range(1, max_time):
-        # if time_in_seconds == 60:
-        #     fan.forceOn(time_in_seconds)
+        if time_in_seconds == 60:
+            generator._days_to_refuel = 14
+            generator.refresh()
+            
         my_messenger.changeTime(time_in_seconds)
      
     # tlog.dump()

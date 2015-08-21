@@ -57,6 +57,27 @@ class TugLogger:
             
         return json
 
+    def jsonTime(self, time):
+        json = None
+        for time_log in self.time_logs[::-1]:
+            if time == time_log.time:
+                current_time = {
+                    "time": time_log.time,
+                    "time_string": "Day {0} {1}".format(1 + int(time_log.time / (60 * 60 * 24)), datetime.datetime.utcfromtimestamp(time_log.time).strftime('%H:%M:%S')),
+                    "actions": []
+                }
+                for item in time_log.actions:
+                    current_time["actions"].append({
+                        "device_name": item.device.deviceName(), 
+                        "action": item.action, 
+                        "is_initial_event": item.is_initial_event, 
+                        "values": item.value,
+                        "description": item.description})
+                json = current_time
+                break
+            
+        return json
+
     def jsonByMessageType(self, max_time):
         json = []
         for time_log in self.time_logs:

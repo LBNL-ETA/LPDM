@@ -64,21 +64,21 @@ class DieselGenerator(Device):
         """
         # set the properties specific to a diesel generator
         self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "diesel_generator"
-        self._fuel_tank_capacity = config["fuel_tank_capacity"] if type(config) is dict and "fuel_tank_capacity" in config.keys() else 100.0 # fuel capacity (gallons)
-        self._fuel_level = config["fuel_level"] if type(config) is dict and "fuel_level" in config.keys() else None     # current fuel level (percent)
-        self._fuel_reserve = config["fuel_reserve"] if type(config) is dict and "fuel_reserve" in config.keys() else None   # percent of initial value that is goal for having when refuel schedules (%)
-        self._days_to_refuel = config["days_to_refuel"] if type(config) is dict and "days_to_refuel" in config.keys() else None # how many days until refuel
-        self._kwh_per_gallon = config["kwh_per_gallon"] if type(config) is dict and "kwh_per_gallon" in config.keys() else None # power output of generator (kwh/gallon)
-        self._time_to_reassess_fuel = config["time_to_reassess_fuel"] if type(config) is dict and "time_to_reassess_fuel" in config.keys() else None  # interval for calculating the trajectory of consumption (seconds)
-        self._fuel_price_change_rate = config["fuel_price_change_rate"] if type(config) is dict and "fuel_price_change_rate" in config.keys() else None # ceiling for fuel price change (%)
-        self._capacity = config["capacity"] if type(config) is dict and "capacity" in config.keys() else 2000.0   # Generation capacity (Watts)
-        self._gen_eff_zero = config["gen_eff_zero"] if type(config) is dict and "gen_eff_zero" in config.keys() else 0.0   #generator efficiency (%) at zero output
-        self._gen_eff_100 = config["gen_eff_100"] if type(config) is dict and "gen_eff_100" in config.keys() else 100.0    #generator efficiency (%) at 100% output. Efficiency at some percentage is linear between _gen_eff_zero and _gen_eff_100
-        self._price_reassess_time = config["price_reassess_time"] if type(config) is dict and "price_reassess_time" in config.keys() else None    # interval for reassessing price (seconds)
+        self._fuel_tank_capacity = float(config["fuel_tank_capacity"]) if type(config) is dict and "fuel_tank_capacity" in config.keys() else 100.0 # fuel capacity (gallons)
+        self._fuel_level = float(config["fuel_level"]) if type(config) is dict and "fuel_level" in config.keys() else None     # current fuel level (percent)
+        self._fuel_reserve = float(config["fuel_reserve"]) if type(config) is dict and "fuel_reserve" in config.keys() else None   # percent of initial value that is goal for having when refuel schedules (%)
+        self._days_to_refuel = int(config["days_to_refuel"]) if type(config) is dict and "days_to_refuel" in config.keys() else None # how many days until refuel
+        self._kwh_per_gallon = float(config["kwh_per_gallon"]) if type(config) is dict and "kwh_per_gallon" in config.keys() else None # power output of generator (kwh/gallon)
+        self._time_to_reassess_fuel = int(config["time_to_reassess_fuel"]) if type(config) is dict and "time_to_reassess_fuel" in config.keys() else None  # interval for calculating the trajectory of consumption (seconds)
+        self._fuel_price_change_rate = float(config["fuel_price_change_rate"]) if type(config) is dict and "fuel_price_change_rate" in config.keys() else None # ceiling for fuel price change (%)
+        self._capacity = float(config["capacity"]) if type(config) is dict and "capacity" in config.keys() else 2000.0   # Generation capacity (Watts)
+        self._gen_eff_zero = float(config["gen_eff_zero"]) if type(config) is dict and "gen_eff_zero" in config.keys() else 0.0   #generator efficiency (%) at zero output
+        self._gen_eff_100 = float(config["gen_eff_100"]) if type(config) is dict and "gen_eff_100" in config.keys() else 100.0    #generator efficiency (%) at 100% output. Efficiency at some percentage is linear between _gen_eff_zero and _gen_eff_100
+        self._price_reassess_time = int(config["price_reassess_time"]) if type(config) is dict and "price_reassess_time" in config.keys() else None    # interval for reassessing price (seconds)
         # self._elec_price_change_rate = config["elec_price_change_rate"] if type(config) is dict and "elec_price_change_rate" in config.keys() else None # celing for price change (%)
-        self._fuel_base_cost = config["fuel_base_cost"] if type(config) is dict and "fuel_base_cost" in config.keys() else None # base cost of fuel ($/gallon)
+        self._fuel_base_cost = float(config["fuel_base_cost"]) if type(config) is dict and "fuel_base_cost" in config.keys() else None # base cost of fuel ($/gallon)
 
-        self._current_fuel_price = config["current_fuel_price"] if type(config) is dict and "current_fuel_price" in config.keys() else None # current price of fuel ($/W-sec)
+        self._current_fuel_price = float(config["current_fuel_price"]) if type(config) is dict and "current_fuel_price" in config.keys() else None # current price of fuel ($/W-sec)
 
         self._start_hour_consumption = 0 # time when the last consumption calculation occured
         self._consumption_activity = []    #track the consumption changes for the hour
@@ -349,7 +349,6 @@ class DieselGenerator(Device):
                 self.tugLogAction(action="fuel_level", is_initial_event=False, value=self._fuel_level, description="%")
                 self.tugLogAction(action="generation_rate", is_initial_event=False, value=self.getCurrentGenerationRate(), description="kwh/gallon")
                 self.tugLogAction(action="output_capacity", is_initial_event=False, value=self.currentOutputCapacity(), description="%")
-
                 self.broadcastNewPrice(new_price)
 
         return

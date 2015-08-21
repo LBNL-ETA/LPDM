@@ -30,10 +30,10 @@ class GridController(Device):
         """
         self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "grid_controller"
         self._connected_devices = config["connected_devices"] if type(config) is dict and "connected_devices" in config.keys() else []
-        self._current_fuel_price = config["current_fuel_price"] if type(config) is dict and "current_fuel_price" in config.keys() else None
-        self._capacity = config["capacity"] if type(config) is dict and "capacity" in config.keys() else 3000.0
-        self._diesel_output_threshold = config["diesel_output_threshold"] if type(config) is dict and "diesel_output_threshold" in config.keys() else 70.0
-        self._check_battery_soc_rate = config["check_battery_soc_rate"] if type(config) is dict and "check_battery_soc_rate" in config.keys() else 60 * 5
+        self._current_fuel_price = float(config["current_fuel_price"]) if type(config) is dict and "current_fuel_price" in config.keys() else None
+        self._capacity = float(config["capacity"]) if type(config) is dict and "capacity" in config.keys() else 3000.0
+        self._diesel_output_threshold = float(config["diesel_output_threshold"]) if type(config) is dict and "diesel_output_threshold" in config.keys() else 70.0
+        self._check_battery_soc_rate = int(config["check_battery_soc_rate"]) if type(config) is dict and "check_battery_soc_rate" in config.keys() else 60 * 5
 
         self._battery = Battery(config["batter_config"]) if type(config) is dict and "batter_config" in config.keys() else None
 

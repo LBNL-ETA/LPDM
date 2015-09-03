@@ -64,7 +64,7 @@ class TugSimulation:
 
                 self.device_info.append({'device': 'grid_controller', 'config': self.configToJSON(device_config)})
             elif device_config["device_type"] == "pwm_fan":
-                if (device_config['simulated_fan'].strip() == "1"):
+                if "simulated_fan" in device_config.keys() and device_config['simulated_fan'].strip() == "1":
                     fan = Eud(device_config)
                 else:
                     fan = PWMfan_eud(device_config)
@@ -76,7 +76,7 @@ class TugSimulation:
                 self.grid_controller.addDevice(fan.deviceID(), type(fan))
                 self.device_info.append({'device': 'fan', 'config': self.configToJSON(device_config)})
             elif device_config["device_type"] == "wemo_insight":
-                if (device_config['simulated_device'].strip() == "1"):
+                if "simulated_device" in device_config.keys() and device_config['simulated_device'].strip() == "1":
                     wemo_insight = Eud(device_config)
                 else:
                     wemo_insight = InsightEud(device_config)
@@ -88,7 +88,7 @@ class TugSimulation:
                 self.grid_controller.addDevice(wemo_insight.deviceID(), type(wemo_insight))
                 self.device_info.append({'device': 'wemo_insight', 'config': self.configToJSON(device_config)})
             elif device_config["device_type"] == "wemo_light":
-                if (device_config['simulated_device'].strip() == "1"):
+                if "simulated_device" in device_config.keys() and device_config['simulated_device'].strip() == "1":
                     wemo_light = Eud(device_config)
                 else:
                     wemo_light = InsightEud(device_config)

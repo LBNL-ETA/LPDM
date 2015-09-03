@@ -51,6 +51,9 @@ class Device(NotificationReceiver, NotificationSender):
         "Default string representation of an object, prints out all attributes and values"
         return ", ".join(["{0} = {1}".format(key, getattr(self,key)) for key in self.__dict__.keys() if not callable(getattr(self, key))])
 
+    def uuid(self):
+        return self._uuid;
+        
     def deviceID(self):
         return self._device_id
 

@@ -155,7 +155,7 @@ class TugSimulation:
 
     def signalSimulationStart(self):
         try:
-            req = urllib2.Request('http://localhost:***REMOVED***/api/simulation_start')
+            req = urllib2.Request('http://localhost:9015/api/simulation_start')
             req.add_header('Content-Type', 'application/json')
             response = urllib2.urlopen(req, json.dumps({"client_id": self.client_id, "socket_id": self.socket_id}))
             return True
@@ -167,7 +167,7 @@ class TugSimulation:
         try:
             data["socket_id"] = self.socket_id
             data["client_id"] = self.client_id
-            req = urllib2.Request('http://localhost:***REMOVED***/api/simulation_event')
+            req = urllib2.Request('http://localhost:9015/api/simulation_event')
             req.add_header('Content-Type', 'application/json')
             response = urllib2.urlopen(req, json.dumps(data))
             return True
@@ -177,7 +177,7 @@ class TugSimulation:
 
     def signalSimulationEnd(self):
         try:
-            req = urllib2.Request('http://localhost:***REMOVED***/api/simulation_end')
+            req = urllib2.Request('http://localhost:9015/api/simulation_end')
             req.add_header('Content-Type', 'application/json')
             response = urllib2.urlopen(req, json.dumps({"client_id": self.client_id, "socket_id": self.socket_id}))
             return True

@@ -64,10 +64,10 @@ class TugSimulation:
 
                 self.device_info.append({'device': 'grid_controller', 'config': self.configToJSON(device_config)})
             elif device_config["device_type"] == "pwm_fan":
-                if "simulated_fan" in device_config.keys() and device_config['simulated_fan'].strip() == "1":
-                    fan = Eud(device_config)
-                else:
+                if "is_real_device" in device_config.keys() and device_config['is_real_device'].strip() == "1":
                     fan = PWMfan_eud(device_config)
+                else:
+                    fan = Eud(device_config)
 
                 self.eud_devices.append(fan)
                 self.messenger.subscribeToPriceChanges(fan)
@@ -76,10 +76,10 @@ class TugSimulation:
                 self.grid_controller.addDevice(fan.deviceID(), type(fan))
                 self.device_info.append({'device': 'fan', 'config': self.configToJSON(device_config)})
             elif device_config["device_type"] == "wemo_insight":
-                if "simulated_device" in device_config.keys() and device_config['simulated_device'].strip() == "1":
-                    wemo_insight = Eud(device_config)
-                else:
+                if "is_real_device" in device_config.keys() and device_config['is_real_device'].strip() == "1":
                     wemo_insight = InsightEud(device_config)
+                else:
+                    wemo_insight = Eud(device_config)
 
                 self.eud_devices.append(wemo_insight)
                 self.messenger.subscribeToPriceChanges(wemo_insight)
@@ -88,10 +88,10 @@ class TugSimulation:
                 self.grid_controller.addDevice(wemo_insight.deviceID(), type(wemo_insight))
                 self.device_info.append({'device': 'wemo_insight', 'config': self.configToJSON(device_config)})
             elif device_config["device_type"] == "wemo_light":
-                if "simulated_device" in device_config.keys() and device_config['simulated_device'].strip() == "1":
-                    wemo_light = Eud(device_config)
-                else:
+                if "is_real_device" in device_config.keys() and device_config['is_real_device'].strip() == "1":
                     wemo_light = InsightEud(device_config)
+                else:
+                    wemo_light = Eud(device_config)
 
                 self.eud_devices.append(wemo_light)
                 self.messenger.subscribeToPriceChanges(wemo_light)

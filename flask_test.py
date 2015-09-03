@@ -1,37 +1,35 @@
 from flask import Flask, request, render_template, Response
 from flask.ext.script import Manager 
-import tests.grid_controller
-import tests.generator_and_light
-import tests.generator_and_fan
+from tug_simulation import TugSimulation
 import json
 import re
+import threading
+import time
 
 app = Flask(__name__)
 manager = Manager(app)
 
-# @app.route('/api/tests')
-# def tests():
-#     print(dir())
-#     resp = Response(json.dumps([fname for fname in dir() if re.match('test_', fname)]), status=200, mimetype="application/json")
-#     resp.headers['Access-Control-Allow-Origin'] = '*'
-#     return resp
+def runSimulation(params):
+    print('run simulation')
+    
+    sim = TugSimulation(params)
+    sim.run()
 
-@app.route('/api/test_grid_controller')
-def test_grid_controller():
-    resp = Response(response=json.dumps(tests.grid_controller.run()), status=200, mimetype="application/json")
-    resp.headers['Access-Control-Allow-Origin'] = '*'
-    return resp
+@app.route('/run_simulation', methods=['GET', 'POST'])
+def run_simulation():
+    server_ip = '***REMOVED***'
+    client_id = request.form.get('client_id')
+    socket_id = request.form.get('socket_id')
+    run_time_days = request.form.get('run_time_days')
+    devices = json.loads(request.form.get('devices'))
 
-@app.route('/api/test_generator_and_light')
-def test_generator_and_light():
-    resp = Response(response=json.dumps(tests.generator_and_light.run()), status=200, mimetype="application/json")
-    resp.headers['Access-Control-Allow-Origin'] = '*'
-    return resp
+    if threading.activeCount() < 7:
+        t = threading.Thread(target=runSimulation, args=({"client_id": client_id, "run_time_days": run_time_days, "devices": devices, "socket_id": socket_id},))
+        t.start()
 
-@app.route('/api/test_generator_and_fan')
-def test_generator_and_fan():
-    results_json = tests.generator_and_fan.run(output_json=True)
-    resp = Response(response=json.dumps(results_json), status=200, mimetype="application/json")
+        resp = Response(response=json.dumps({"test": 1}), status=200, mimetype="application/json")
+    else:
+        resp = Response(response="Too many simulations running.", status=500, mimetype="text/html")
     resp.headers['Access-Control-Allow-Origin'] = '*'
     return resp
 

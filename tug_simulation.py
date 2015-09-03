@@ -8,9 +8,10 @@ from messenger import Messenger
 from tug_logger import TugLogger
 import random
 import json
+import urllib2
 
 class TugSimulation:
-    def __init__(self, params=None, zerorpc_client=None):
+    def __init__(self, params=None):
         self.eud_devices = []
         self.grid_controller = None
         self.diesel_generator = None
@@ -30,7 +31,6 @@ class TugSimulation:
         self.device_info = []
         self.simulations = []
 
-        self.zerorpc_client = zerorpc_client
         self.initializeSimulation(params)
 
     def initializeSimulation(self, params):
@@ -38,10 +38,9 @@ class TugSimulation:
         
         self.messenger = Messenger({"device_notifications_through_gc": True})
 
-        uuid = 1
         for device_config in params['devices']:
+            print(device_config)
             device_config["tug_logger"] = self.logger
-            device_config["uuid"] = uuid
             device_config["broadcastNewPrice"] = self.messenger.onPriceChange
             device_config["broadcastNewPower"] = self.messenger.onPowerChange
             device_config["broadcastNewTTIE"] = self.messenger.onNewTTIE
@@ -88,8 +87,18 @@ class TugSimulation:
                 self.messenger.subscribeToTimeChanges(wemo_insight)
                 self.grid_controller.addDevice(wemo_insight.deviceID(), type(wemo_insight))
                 self.device_info.append({'device': 'wemo_insight', 'config': self.configToJSON(device_config)})
+            elif device_config["device_type"] == "wemo_light":
+                if (device_config['simulated_device'].strip() == "1"):
+                    wemo_light = Eud(device_config)
+                else:
+                    wemo_light = InsightEud(device_config)
 
-            uuid += 1
+                self.eud_devices.append(wemo_light)
+                self.messenger.subscribeToPriceChanges(wemo_light)
+                self.messenger.subscribeToPowerChanges(wemo_light)
+                self.messenger.subscribeToTimeChanges(wemo_light)
+                self.grid_controller.addDevice(wemo_light.deviceID(), type(wemo_light))
+                self.device_info.append({'device': 'wemo_light', 'config': self.configToJSON(device_config)})
 
         self.grid_controller.addDevice(self.diesel_generator.deviceID(), type(self.diesel_generator))
 
@@ -145,33 +154,36 @@ class TugSimulation:
     #     }
 
     def signalSimulationStart(self):
-        if self.zerorpc_client:
-            try:
-                self.zerorpc_client.simulationStart({"socket_id": self.socket_id, "client_id": self.client_id})
-                return True
-            except:
-                print('unable to signal client')
-        return False
+        try:
+            req = urllib2.Request('http://localhost:***REMOVED***/api/simulation_start')
+            req.add_header('Content-Type', 'application/json')
+            response = urllib2.urlopen(req, json.dumps({"client_id": self.client_id, "socket_id": self.socket_id}))
+            return True
+        except:
+            print "Unable to connect to client"
+            return False
 
     def signalSimulationEvent(self, data):
-        if self.zerorpc_client:
-            try:
-                data["socket_id"] = self.socket_id
-                data["client_id"] = self.client_id
-                self.zerorpc_client.simulationEvent(data)
-                return True
-            except:
-                print('unable to signal client')
-        return False
+        try:
+            data["socket_id"] = self.socket_id
+            data["client_id"] = self.client_id
+            req = urllib2.Request('http://localhost:***REMOVED***/api/simulation_event')
+            req.add_header('Content-Type', 'application/json')
+            response = urllib2.urlopen(req, json.dumps(data))
+            return True
+        except:
+            print "Unable to connect to client"
+            return False
 
     def signalSimulationEnd(self):
-        if self.zerorpc_client:
-            try:
-                self.zerorpc_client.simulationEnd({"socket_id": self.socket_id, "client_id": self.client_id})
-                return True
-            except:
-                print('unable to signal client')
-        return False
+        try:
+            req = urllib2.Request('http://localhost:***REMOVED***/api/simulation_end')
+            req.add_header('Content-Type', 'application/json')
+            response = urllib2.urlopen(req, json.dumps({"client_id": self.client_id, "socket_id": self.socket_id}))
+            return True
+        except:
+            print "Unable to connect to client"
+            return False
 
     def run(self):
         print('run simulation from {0} to {1}'.format(0, self.end_time))
@@ -179,8 +191,8 @@ class TugSimulation:
             for self.current_time in range(0, self.end_time):
                 self.messenger.changeTime(self.current_time)
                 log = self.logger.jsonTime(self.current_time)
-                if log:
-                    self.signalSimulationEvent(log)
+                if log and not self.signalSimulationEvent(log):
+                    return
             
             self.signalSimulationEnd()
             print('finished simulation')

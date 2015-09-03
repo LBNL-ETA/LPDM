@@ -69,6 +69,7 @@ class TugLogger:
                 for item in time_log.actions:
                     current_time["actions"].append({
                         "device_name": item.device.deviceName(), 
+                        "uuid": item.device.uuid(),
                         "action": item.action, 
                         "is_initial_event": item.is_initial_event, 
                         "values": item.value,

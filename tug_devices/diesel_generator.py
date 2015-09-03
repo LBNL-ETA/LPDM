@@ -184,7 +184,7 @@ class DieselGenerator(Device):
                 self.logPowerChange(time, new_power)
                 self.calculateElectricityPrice(is_initial_event=False)
 
-            elif new_power == 0 and self.isOn():
+            elif new_power <= 0 and self.isOn():
                 # Shutoff power
                 self.turnOff()
                 self._power_level = 0.0

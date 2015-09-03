@@ -74,7 +74,7 @@ class DieselGenerator(Device):
         self._capacity = float(config["capacity"]) if type(config) is dict and "capacity" in config.keys() else 2000.0   # Generation capacity (Watts)
         self._gen_eff_zero = float(config["gen_eff_zero"]) if type(config) is dict and "gen_eff_zero" in config.keys() else 0.0   #generator efficiency (%) at zero output
         self._gen_eff_100 = float(config["gen_eff_100"]) if type(config) is dict and "gen_eff_100" in config.keys() else 100.0    #generator efficiency (%) at 100% output. Efficiency at some percentage is linear between _gen_eff_zero and _gen_eff_100
-        self._price_reassess_time = int(config["price_reassess_time"]) if type(config) is dict and "price_reassess_time" in config.keys() else None    # interval for reassessing price (seconds)
+        self._price_reassess_time = int(config["price_reassess_time"]) if type(config) is dict and "price_reassess_time" in config.keys() else 3600    # interval for reassessing price (seconds)
         # self._elec_price_change_rate = config["elec_price_change_rate"] if type(config) is dict and "elec_price_change_rate" in config.keys() else None # celing for price change (%)
         self._fuel_base_cost = float(config["fuel_base_cost"]) if type(config) is dict and "fuel_base_cost" in config.keys() else None # base cost of fuel ($/gallon)
 
@@ -140,14 +140,12 @@ class DieselGenerator(Device):
         self.calculateElectricityPrice()
         self.reassesFuel()
         self.calculateNextTTIE()
-        print(self._events)
 
     def removeRefreshEvents(self):
         "Remove events that need to be recalculated when the device status is refreshed.  For the diesel generator this is just the refuel event."
         next_refuels = []
         for event in self._events:
             if event['operation'] == 'refuel':
-                print(event)
                 next_refuels.append(event)
 
         for event in next_refuels:
@@ -210,7 +208,7 @@ class DieselGenerator(Device):
 
     def setNextPriceChangeEvent(self):
         "Setup the next event for a price change"
-        self._events.append({"time": self._time + 60, "operation": "price"})
+        self._events.append({"time": self._time + self._price_reassess_time, "operation": "price"})
         return
 
     def setNextReassesFuelChangeEvent(self):

@@ -22,6 +22,8 @@ class TugSimulation:
         self.end_time = int(params["run_time_days"]) * 60 * 60 * 24 if params and 'run_time_days' in params.keys() and params['run_time_days'] else 60 * 60 * 24 * 7
         self.status_interval = None
 
+        self.server_ip = params["server_ip"] if params and 'server_ip' in params.keys() else  "***REMOVED***"
+        self.server_port = params["server_port"] if params and 'server_port' in params.keys() else "***REMOVED***"
         self.client_id = params["client_id"] if params and 'client_id' in params.keys() else None
         self.socket_id = params["socket_id"] if params and 'socket_id' in params.keys() else None
 
@@ -155,7 +157,7 @@ class TugSimulation:
 
     def signalSimulationStart(self):
         try:
-            req = urllib2.Request('http://localhost:9015/api/simulation_start')
+            req = urllib2.Request('http://{0}:{1}/api/simulation_start'.format(self.server_ip, self.server_port))
             req.add_header('Content-Type', 'application/json')
             response = urllib2.urlopen(req, json.dumps({"client_id": self.client_id, "socket_id": self.socket_id}))
             return True
@@ -167,7 +169,7 @@ class TugSimulation:
         try:
             data["socket_id"] = self.socket_id
             data["client_id"] = self.client_id
-            req = urllib2.Request('http://localhost:9015/api/simulation_event')
+            req = urllib2.Request('http://{0}:{1}/api/simulation_event'.format(self.server_ip, self.server_port))
             req.add_header('Content-Type', 'application/json')
             response = urllib2.urlopen(req, json.dumps(data))
             return True
@@ -177,7 +179,7 @@ class TugSimulation:
 
     def signalSimulationEnd(self):
         try:
-            req = urllib2.Request('http://localhost:9015/api/simulation_end')
+            req = urllib2.Request('http://{0}:{1}/api/simulation_end'.format(self.server_ip, self.server_port))
             req.add_header('Content-Type', 'application/json')
             response = urllib2.urlopen(req, json.dumps({"client_id": self.client_id, "socket_id": self.socket_id}))
             return True

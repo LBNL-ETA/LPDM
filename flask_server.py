@@ -17,14 +17,22 @@ def runSimulation(params):
 
 @app.route('/run_simulation', methods=['GET', 'POST'])
 def run_simulation():
-    server_ip = '***REMOVED***'
+    server_ip = request.form.get('server_ip')
+    server_port = request.form.get('server_port')
     client_id = request.form.get('client_id')
     socket_id = request.form.get('socket_id')
     run_time_days = request.form.get('run_time_days')
     devices = json.loads(request.form.get('devices'))
 
     if threading.activeCount() < 7:
-        t = threading.Thread(target=runSimulation, args=({"client_id": client_id, "run_time_days": run_time_days, "devices": devices, "socket_id": socket_id},))
+        t = threading.Thread(target=runSimulation, args=({
+            "server_id": server_ip, 
+            "server_port": server_port, 
+            "client_id": client_id, 
+            "run_time_days": run_time_days, 
+            "devices": devices, 
+            "socket_id": socket_id
+        },))
         t.start()
 
         resp = Response(response=json.dumps({"test": 1}), status=200, mimetype="application/json")

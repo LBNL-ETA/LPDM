@@ -75,7 +75,6 @@ class TugSimulation:
                 self.messenger.subscribeToPriceChanges(fan)
                 self.messenger.subscribeToPowerChanges(fan)
                 self.messenger.subscribeToTimeChanges(fan)
-                self.grid_controller.addDevice(fan.deviceID(), type(fan))
                 self.device_info.append({'device': 'fan', 'config': self.configToJSON(device_config)})
             elif device_config["device_type"] == "wemo_insight":
                 if "is_real_device" in device_config.keys() and device_config['is_real_device'].strip() == "1":
@@ -87,7 +86,6 @@ class TugSimulation:
                 self.messenger.subscribeToPriceChanges(wemo_insight)
                 self.messenger.subscribeToPowerChanges(wemo_insight)
                 self.messenger.subscribeToTimeChanges(wemo_insight)
-                self.grid_controller.addDevice(wemo_insight.deviceID(), type(wemo_insight))
                 self.device_info.append({'device': 'wemo_insight', 'config': self.configToJSON(device_config)})
             elif device_config["device_type"] == "wemo_light":
                 if "is_real_device" in device_config.keys() and device_config['is_real_device'].strip() == "1":
@@ -99,10 +97,11 @@ class TugSimulation:
                 self.messenger.subscribeToPriceChanges(wemo_light)
                 self.messenger.subscribeToPowerChanges(wemo_light)
                 self.messenger.subscribeToTimeChanges(wemo_light)
-                self.grid_controller.addDevice(wemo_light.deviceID(), type(wemo_light))
                 self.device_info.append({'device': 'wemo_light', 'config': self.configToJSON(device_config)})
 
         self.grid_controller.addDevice(self.diesel_generator.deviceID(), type(self.diesel_generator))
+        for eud in self.eud_devices:
+            self.grid_controller.addDevice(eud.deviceID(), type(eud))
 
     def configToJSON(self, config):
         new_dict = {}

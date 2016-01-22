@@ -63,5 +63,5 @@ class InsightEud(Eud):
                 self._in_operation = True
 
             # Broadcast behavior
-            self.tugLogAction(action="set_power_level", is_initial_event=False, value=self._power_level, description='W')
+            self.tugSendMessage(action="set_power_level", is_initial_event=False, value=self._power_level, description='W')
             self.broadcastNewPower(new_power)

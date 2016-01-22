@@ -8,6 +8,7 @@ from connected_control import ConnectedLight
 
 class Light(Eud):
     def __init__(self, config=None):
+        self._device_type = "connected_light"
         # call the super constructor
         Eud.__init__(self, config)
         self._hardware_link_bridge = TCPLights()

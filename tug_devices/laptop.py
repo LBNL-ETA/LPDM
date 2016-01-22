@@ -82,5 +82,5 @@ class Laptop(InsightEud):
         if not self._last_update_time or time - self._last_update_time > self._min_soc_refresh_rate:
             if self._current_soc > 100:
                 self._current_soc = self._laptop_link.getSoc()
-                self.tugLogAction(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
+                self.tugSendMessage(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
             self._last_update_time = time

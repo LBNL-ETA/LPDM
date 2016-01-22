@@ -1,8 +1,10 @@
 """
     Defines the base class for TuG system components.
 """
+import os
 import random
 import logging
+import pprint
 from notification import NotificationReceiver, NotificationSender
 
 class Device(NotificationReceiver, NotificationSender):
@@ -25,6 +27,11 @@ class Device(NotificationReceiver, NotificationSender):
                     broadcastNewTTIE
     """
     def __init__(self, config):
+        self._device_name = "device" if not self._device_name else self._device_name
+        self._device_type = "device" if not "_device_type" in dir(self) or not self._device_type else self._device_type
+        self._simulation_id = int(config["simulation_id"]) if type(config) is dict and "simulation_id" in config.keys() else None
+        self._app_log_manager = config["app_log_manager"] if type(config) is dict and "app_log_manager" in config.keys() else None
+        self._app_logger = config["logger"] if type(config) is dict and "logger" in config.keys() else None
         self._tug_logger = config["tug_logger"] if type(config) is dict and "tug_logger" in config.keys() else None
         self._config_time = config["config_time"] if type(config) is dict and "config_time" in config.keys() else 1
         self._uuid = config["uuid"] if type(config) is dict and "uuid" in config.keys() else None
@@ -35,7 +42,8 @@ class Device(NotificationReceiver, NotificationSender):
         self._in_operation = False
         self._ttie = None
         self._next_event = None
-        self._logger = None
+        # self._logger = None
+        self._device_logger = None
 
         self._device_id = self._buildDeviceID()
 
@@ -47,13 +55,16 @@ class Device(NotificationReceiver, NotificationSender):
 
         self.calculateNextTTIE()
 
+        self.logMessage("initialized device #{} - {}".format(self._uuid, self._device_type))
+        self.logMessage(pprint.pformat(config), app_log_level=None, device_log_level=logging.DEBUG)
+
     def __repr__(self):
         "Default string representation of an object, prints out all attributes and values"
         return ", ".join(["{0} = {1}".format(key, getattr(self,key)) for key in self.__dict__.keys() if not callable(getattr(self, key))])
 
     def uuid(self):
         return self._uuid;
-        
+
     def deviceID(self):
         return self._device_id
 
@@ -62,8 +73,8 @@ class Device(NotificationReceiver, NotificationSender):
 
     def deviceName(self):
         return self._device_name
-        
-    def tugLogAction(self, action, is_initial_event, value, description=""):
+
+    def tugSendMessage(self, action, is_initial_event, value, description=""):
         if self._tug_logger:
             self._tug_logger.logAction(self, self._time, action, is_initial_event, value, description)
 
@@ -71,46 +82,39 @@ class Device(NotificationReceiver, NotificationSender):
         return None
 
     def setLogger(self):
-        # logging.basicConfig(filename='myapp.log', level=logging.DEBUG)
-        self._logger = logging.getLogger(self._device_name)
-        self._logger.setLevel(logging.DEBUG)
+        self._device_logger = logging.getLogger("sim_{}_device_{}".format(self._simulation_id, self._uuid))
+        self._device_logger.setLevel(logging.DEBUG)
+        # coloredlogs.install(level='INFO', logger=logger)
 
-        # create console handler and set level to debug
+        # create file handler which logs even debug messages
+        print self._app_log_manager
+        print self._app_logger
+
+        self._app_logger.debug("app log manager")
+        self._app_logger.debug(self)
+        fh = logging.FileHandler(os.path.join(self._app_log_manager.simulationLogPath(), "device_{}_{}.log".format(self._uuid, self._device_type)), mode='w')
+        fh.setLevel(logging.DEBUG)
+
+        # create console handler with a higher log level
         ch = logging.StreamHandler()
         ch.setLevel(logging.INFO)
 
-        # create formatter
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-        # add formatter to ch
+        # create formatter and add it to the handlers
+        formatter = logging.Formatter('%(asctime)s %(name)-30s %(levelname)-8s %(message)s')
         ch.setFormatter(formatter)
-
-        # add ch to logger
-        self._logger.addHandler(ch)
-
-        fh = logging.FileHandler(self.logFileName(), mode="w")
-        fh.setLevel(logging.DEBUG)
         fh.setFormatter(formatter)
-        self._logger.addHandler(fh)
 
+        # add the handlers to logger
+        self._device_logger.addHandler(ch)
+        self._device_logger.addHandler(fh)
         return
 
-    def logMessage(self, message='', debug_level=logging.INFO):
-        "Logs a message using the loggin module, default debug level is set to DEBUG"
-        if debug_level == logging.DEBUG:
-            self._logger.debug(message)
-        elif debug_level == logging.INFO:
-            self._logger.info(message)
-        elif debug_level == logging.WARNING:
-            self._logger.warning(message)
-        elif debug_level == logging.ERROR:
-            self._logger.error(message)
-        elif debug_level == logging.CRITICAL:
-            self._logger.critical(message)
-
-    def logFileName(self):
-        "Creates a log file name for the device"
-        return 'log_' + '_'.join(self._device_name.split(" ")) + ".txt"
+    def logMessage(self, message='', app_log_level=logging.INFO, device_log_level=logging.DEBUG):
+        "Logs a message using the loggin module, default debug level is set to INFO"
+        if app_log_level is not None:
+            self._app_logger.log(app_log_level, message)
+        if device_log_level is not None:
+            self._device_logger.log(device_log_level, message)
 
     def calculateNextTTIE(self):
         "Calculate the Time Till next Initial Event, this must be overriden for each derived class"
@@ -137,7 +141,7 @@ class Device(NotificationReceiver, NotificationSender):
         else:
             raise Exception("broadcastNewPower has not been set for this device!")
         return
-    
+
     def broadcastNewTTIE(self, new_ttie, target_device_id='all', debug_level=logging.DEBUG):
         "Broadcast the new TTIE if a callback has been setup, otherwise raise an exception."
         if callable(self._broadcastNewTTIECallback):

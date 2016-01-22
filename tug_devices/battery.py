@@ -33,13 +33,14 @@ class Battery(Device):
                     "roundtrip_eff" (float): Fraction of power that is stored and available for withdrawl
                     "battery_on_time" (int): Time (seconds) when the battery was turned on
         """
+        self._device_type = "battery"
         self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "battery"
-        self._capacity = config["capacity"] if type(config) is dict and "capacity" in config.keys() else 5.0
-        self._current_soc = config["current_soc"] if type(config) is dict and "current_soc" in config.keys() else 1.0
-        self._min_soc = config["min_soc"] if type(config) is dict and "min_soc" in config.keys() else 0.2
-        self._max_soc = config["max_soc"] if type(config) is dict and "max_soc" in config.keys() else 0.8
-        self._max_charge_rate = config["max_charge_rate"] if type(config) is dict and "max_charge_rate" in config.keys() else 1000.0
-        self._roundtrip_eff = config["roundtrip_eff"] if type(config) is dict and "roundtrip_eff" in config.keys() else 0.9
+        self._capacity = float(config["capacity"]) if type(config) is dict and "capacity" in config.keys() else 5.0
+        self._current_soc = float(config["current_soc"]) if type(config) is dict and "current_soc" in config.keys() else 1.0
+        self._min_soc = float(config["min_soc"]) if type(config) is dict and "min_soc" in config.keys() else 0.2
+        self._max_soc = float(config["max_soc"]) if type(config) is dict and "max_soc" in config.keys() else 0.8
+        self._max_charge_rate = float(config["max_charge_rate"]) if type(config) is dict and "max_charge_rate" in config.keys() else 1000.0
+        self._roundtrip_eff = float(config["roundtrip_eff"]) if type(config) is dict and "roundtrip_eff" in config.keys() else 0.9
         self._min_soc_refresh_rate = 60
         self._battery_on_time = None
         self._last_update_time = None
@@ -71,7 +72,7 @@ class Battery(Device):
     def chargeRate(self):
         "Charge rate (W)"
         return self._max_charge_rate * self._roundtrip_eff
-        
+
     def startCharging(self, time):
         self._time = time
         if not self._is_charging:
@@ -99,7 +100,7 @@ class Battery(Device):
         "Remove energy (kwh) from the battery when requested, battery must be set to discharge first"
         if self._is_discharging:
             self._current_soc = ((self._capacity * self._current_soc) - amount) / self._capacity
-            self.tugLogAction(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
+            self.tugSendMessage(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
         else:
             raise Exception("Battery must have been set to discharge before removing energy.")
         return
@@ -115,7 +116,7 @@ class Battery(Device):
         if self._is_discharging:
             self._is_discharging = False
             self._last_update_time = time
-            
+
     def isDischarging(self):
         return self._is_discharging
 
@@ -134,10 +135,10 @@ class Battery(Device):
         if not self._last_update_time or time - self._last_update_time > self._min_soc_refresh_rate:
             if self._is_charging:
                 self._current_soc = ((self._capacity * 1000.0 * self._current_soc) + (self.chargeRate() * (time - self._last_update_time) / 3600.0)) / (self._capacity * 1000.0)
-                self.tugLogAction(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
+                self.tugSendMessage(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
             elif self._is_discharging and load_on_battery:
                 self._current_soc = ((self._capacity * 1000.0 * self._current_soc) - (load_on_battery * (time - self._last_update_time) / 3600.0)) / (self._capacity * 1000.0)
-                self.tugLogAction(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
+                self.tugSendMessage(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
 
             self._last_update_time = time
 

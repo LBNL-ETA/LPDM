@@ -5,7 +5,6 @@
 from device import Device
 from battery import Battery
 from diesel_generator import DieselGenerator
-import logging
 
 class GridController(Device):
     """
@@ -28,6 +27,7 @@ class GridController(Device):
                     "check_battery_soc_rate" (int): Rate at which to update the battery state of charge when charging or discharging (seconds)
                     "battery_config" (Dict): Configuration object for the battery attached to the grid controller
         """
+        self._device_type = "grid_controller"
         self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "grid_controller"
         self._connected_devices = config["connected_devices"] if type(config) is dict and "connected_devices" in config.keys() else []
         self._current_fuel_price = float(config["current_fuel_price"]) if type(config) is dict and "current_fuel_price" in config.keys() else None
@@ -35,7 +35,7 @@ class GridController(Device):
         self._diesel_output_threshold = float(config["diesel_output_threshold"]) if type(config) is dict and "diesel_output_threshold" in config.keys() else 70.0
         self._check_battery_soc_rate = int(config["check_battery_soc_rate"]) if type(config) is dict and "check_battery_soc_rate" in config.keys() else 60 * 5
 
-        self._battery = Battery(config["batter_config"]) if type(config) is dict and "batter_config" in config.keys() else None
+        self._battery = Battery(config["battery_config"]) if type(config) is dict and "battery_config" in config.keys() else None
 
         self._pv = None
 
@@ -141,7 +141,7 @@ class GridController(Device):
             self._power_usage_by_device.append({'device_id': source_device_id, 'power': power})
             self._total_load += power
 
-        self.tugLogAction(action="power_change", is_initial_event=False, value=self._total_load, description="W")
+        self.tugSendMessage(action="power_change", is_initial_event=False, value=self._total_load, description="W")
         return
 
     def currentOutputCapacity(self):
@@ -191,6 +191,10 @@ class GridController(Device):
 
         delta_power = self._total_load - self._load_on_battery - self._load_on_generator
 
+        # print "\nset power sources for generator.."
+        # print generator_id
+        # print self._battery
+
         if generator_id and self._battery:
             # a generator and battery are connected to the grid controller
             if self._battery.isDischarging():
@@ -214,12 +218,12 @@ class GridController(Device):
                 # Neither - not charging and not discharging
                 if self.currentOutputCapacity() < 30.0 and self._battery.stateOfCharge() > 0.65:
                     # start to discharge the battery
-                    self.tugLogAction(action="battery_discharge", is_initial_event=False, value=1, description="")
+                    self.tugSendMessage(action="battery_discharge", is_initial_event=False, value=1, description="")
                     self.batteryDischarge()
                     # self.broadcastNewPower(self._load_on_generator, generator_id)
 
             # Add the new load to the battery or the generator
-            if self._battery.isDischarging():    
+            if self._battery.isDischarging():
                 self._load_on_battery += delta_power
                 if self._load_on_battery > self._battery.capacity():
                     self._load_on_generator += (self._load_on_battery - self._battery.capacity())
@@ -230,21 +234,21 @@ class GridController(Device):
             # update the generator
             self.broadcastNewPower(self._load_on_generator, generator_id)
 
-            self.tugLogAction(action="gc_total_load", is_initial_event=False, value=self._total_load, description="W")
-            self.tugLogAction(action="gc_load_on_generator", is_initial_event=False, value=self._load_on_generator, description="W")
-            self.tugLogAction(action="gc_load_on_battery", is_initial_event=False, value=self._load_on_battery, description="W")
-            self.tugLogAction(action="output_capacity", is_initial_event=False, value=self.currentOutputCapacity(), description="%")
-            self.tugLogAction(action="battery_is_charging", is_initial_event=False, value=self._battery.isCharging(), description="")
-            self.tugLogAction(action="battery_is_discharging", is_initial_event=False, value=self._battery.isDischarging(), description="")
-            # self.tugLogAction(action="battery_wants_to_discharge", is_initial_event=False, value=self._battery.stateOfCharge, description="")
-            self.tugLogAction(action="battery_soc", is_initial_event=False, value=self._battery.stateOfCharge(), description="")
+            self.tugSendMessage(action="gc_total_load", is_initial_event=False, value=self._total_load, description="W")
+            self.tugSendMessage(action="gc_load_on_generator", is_initial_event=False, value=self._load_on_generator, description="W")
+            self.tugSendMessage(action="gc_load_on_battery", is_initial_event=False, value=self._load_on_battery, description="W")
+            self.tugSendMessage(action="output_capacity", is_initial_event=False, value=self.currentOutputCapacity(), description="%")
+            self.tugSendMessage(action="battery_is_charging", is_initial_event=False, value=self._battery.isCharging(), description="")
+            self.tugSendMessage(action="battery_is_discharging", is_initial_event=False, value=self._battery.isDischarging(), description="")
+            # self.tugSendMessage(action="battery_wants_to_discharge", is_initial_event=False, value=self._battery.stateOfCharge, description="")
+            self.tugSendMessage(action="battery_soc", is_initial_event=False, value=self._battery.stateOfCharge(), description="")
 
         elif generator_id:
             # only a generator is connected to the grid controller
             self._load_on_generator = self._total_load
             self.broadcastNewPower(self._total_load, generator_id)
-            self.tugLogAction(action="load_on_generator", is_initial_event=False, value=self._load_on_generator, description="kW")
-            self.tugLogAction(action="output_capacity", is_initial_event=False, value=self.currentOutputCapacity(), description="%")
+            self.tugSendMessage(action="load_on_generator", is_initial_event=False, value=self._load_on_generator, description="kW")
+            self.tugSendMessage(action="output_capacity", is_initial_event=False, value=self.currentOutputCapacity(), description="%")
             # print("generator output = {0}".format(generator.currentOutputCapacity()))
         else:
             # no power sources are connected to the grid controller
@@ -275,7 +279,7 @@ class GridController(Device):
         for event in self._events:
             if event["time"] <= self._time:
                 if event["operation"] == "battery_status":
-                    self.tugLogAction(action="event_battery_status", is_initial_event=True, value="", description="")
+                    self.tugSendMessage(action="event_battery_status", is_initial_event=True, value="", description="")
                     self.setPowerSources()
                     remove_items.append(event)
 

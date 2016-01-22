@@ -6,17 +6,26 @@ from tug_devices.diesel_generator import DieselGenerator
 from tug_devices.fan_eud import PWMfan_eud
 from messenger import Messenger
 from tug_logger import TugLogger
+from simulation_logger import SimulationLogger
+import logging
+import os
+import re
 import random
 import json
 import urllib2
 
 class TugSimulation:
     def __init__(self, params=None):
+        # self.logger = logging.getLogger('{}.{}'.format(logger_setup.APP_NAME, __name__))
+        self.simulation_log_manager = SimulationLogger()
+        self.simulation_id = self.simulation_log_manager.log_id
+        self.logger = self.simulation_log_manager.logger
+
         self.eud_devices = []
         self.grid_controller = None
         self.diesel_generator = None
         self.messenger = None
-        self.logger = None
+        self.tug_logger = None
 
         self.current_time = None
         self.end_time = int(params["run_time_days"]) * 60 * 60 * 24 if params and 'run_time_days' in params.keys() and params['run_time_days'] else 60 * 60 * 24 * 7
@@ -36,28 +45,43 @@ class TugSimulation:
         self.initializeSimulation(params)
 
     def initializeSimulation(self, params):
-        self.logger = TugLogger()
-        
+        self.tug_logger = TugLogger()
+
+        self.logger.info('Initialize Simulation {}'.format(self.simulation_id))
+        self.logger.info(params)
         self.messenger = Messenger({"device_notifications_through_gc": True})
 
+        uuid = 1
         for device_config in params['devices']:
-            print(device_config)
-            device_config["tug_logger"] = self.logger
+            device_config["simulation_id"] = self.simulation_id
+            device_config["uuid"] = uuid
+            device_config["app_log_manager"] = self.simulation_log_manager
+            device_config["logger"] = self.logger
+            device_config["tug_logger"] = self.tug_logger
             device_config["broadcastNewPrice"] = self.messenger.onPriceChange
             device_config["broadcastNewPower"] = self.messenger.onPowerChange
             device_config["broadcastNewTTIE"] = self.messenger.onNewTTIE
+
+            self.logger.info("initialize a {}".format(device_config["device_type"]))
+            self.logger.info(device_config["app_log_manager"])
+            self.logger.info(device_config["logger"])
 
             if device_config["device_type"] == "diesel_generator":
                 self.diesel_generator = DieselGenerator(device_config)
                 self.messenger.subscribeToPowerChanges(self.diesel_generator)
                 self.messenger.subscribeToTimeChanges(self.diesel_generator)
-                
+
                 self.device_info.append({'device': 'diesel_generator', 'config': self.configToJSON(device_config)})
             elif device_config["device_type"] == "grid_controller":
-                if 'battery_config' not in device_config.keys():
-                    device_config['battery_config'] = {}
-
-                device_config["battery_config"]["tug_logger"] = self.logger
+                battery = filter(lambda x: x["device_type"] == "battery", params["devices"])
+                if len(battery):
+                    device_config['battery_config'] = battery[0]
+                    uuid += 1
+                    device_config["battery_config"]["tug_logger"] = self.tug_logger
+                    device_config["battery_config"]["uuid"] = uuid
+                    device_config["battery_config"]["app_log_manager"] = self.simulation_log_manager
+                    device_config["battery_config"]["logger"] = self.logger
+                    device_config["battery_config"]["tug_logger"] = self.tug_logger
 
                 self.grid_controller = GridController(device_config)
                 self.messenger.subscribeToTimeChanges(self.grid_controller)
@@ -98,6 +122,7 @@ class TugSimulation:
                 self.messenger.subscribeToPowerChanges(wemo_light)
                 self.messenger.subscribeToTimeChanges(wemo_light)
                 self.device_info.append({'device': 'wemo_light', 'config': self.configToJSON(device_config)})
+            uuid += 1
 
         self.grid_controller.addDevice(self.diesel_generator.deviceID(), type(self.diesel_generator))
         for eud in self.eud_devices:
@@ -161,7 +186,7 @@ class TugSimulation:
             response = urllib2.urlopen(req, json.dumps({"client_id": self.client_id, "socket_id": self.socket_id}))
             return True
         except:
-            print "Unable to connect to client"
+            self.logger.exception("Unable to connect to web client for simulation {}".format(self.simulation_id))
             return False
 
     def signalSimulationEvent(self, data):
@@ -173,7 +198,7 @@ class TugSimulation:
             response = urllib2.urlopen(req, json.dumps(data))
             return True
         except:
-            print "Unable to connect to client"
+            self.logger.exception("Unable to connect to web client for simulation {}".format(self.simulation_id))
             return False
 
     def signalSimulationEnd(self):
@@ -183,21 +208,21 @@ class TugSimulation:
             response = urllib2.urlopen(req, json.dumps({"client_id": self.client_id, "socket_id": self.socket_id}))
             return True
         except:
-            print "Unable to connect to client"
+            self.logger.exception("Unable to connect to web client for simulation {}".format(self.simulation_id))
             return False
 
     def run(self):
-        print('run simulation from {0} to {1}'.format(0, self.end_time))
+        self.logger.info('run simulation from {0} to {1}'.format(0, self.end_time))
         if self.signalSimulationStart():
             for self.current_time in range(0, self.end_time):
                 self.messenger.changeTime(self.current_time)
-                log = self.logger.jsonTime(self.current_time)
+                log = self.tug_logger.jsonTime(self.current_time)
                 if log and not self.signalSimulationEvent(log):
                     return
-            
-            self.signalSimulationEnd()
-            print('finished simulation')
-        else:
-            print('unable to connect to client')
 
-        
+            self.signalSimulationEnd()
+            self.logger.info("Simulation #{} finished".format(self.simulation_id))
+        else:
+            self.logger.exception("Unable to connect to web client for simulation {}".format(self.simulation_id))
+
+

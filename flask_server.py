@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template, Response
-from flask.ext.script import Manager 
+from flask.ext.script import Manager
 from tug_simulation import TugSimulation
 import json
 import re
@@ -7,11 +7,9 @@ import threading
 import time
 
 app = Flask(__name__)
-manager = Manager(app)
+# manager = Manager(app)
 
 def runSimulation(params):
-    print('run simulation')
-    
     sim = TugSimulation(params)
     sim.run()
 
@@ -26,11 +24,11 @@ def run_simulation():
 
     if threading.activeCount() < 7:
         t = threading.Thread(target=runSimulation, args=({
-            "server_id": server_ip, 
-            "server_port": server_port, 
-            "client_id": client_id, 
-            "run_time_days": run_time_days, 
-            "devices": devices, 
+            "server_id": server_ip,
+            "server_port": server_port,
+            "client_id": client_id,
+            "run_time_days": run_time_days,
+            "devices": devices,
             "socket_id": socket_id
         },))
         t.start()
@@ -42,4 +40,5 @@ def run_simulation():
     return resp
 
 if __name__ == '__main__':
-    manager.run()
+    # manager.run(debug=True)
+    app.run(debug=True)

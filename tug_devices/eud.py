@@ -6,6 +6,9 @@ import logging
 
 class Eud(Device):
     def __init__(self, config = None):
+        if not "_device_type" in dir(self) or not self._device_type:
+            self._device_type = "eud"
+
         # set the properties for an end-use device
         self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "EUD"
 
@@ -27,8 +30,6 @@ class Eud(Device):
         self._power_level_low = float(config["power_level_low"]) if type(config) is dict and "power_level_low" in config.keys() else 20.0
 
         self._daily_schedule = self.parseSchedule(config["schedule"]) if type(config) is dict and "schedule" in config.keys() else None
-        print('schedule')
-        print(self._daily_schedule)
 
         self._power_level = 0.0
 
@@ -73,7 +74,7 @@ class Eud(Device):
         if not res:
             res = self._daily_schedule[-1]["operation"]
         return res
-       
+
     def onPriceChange(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
         self._time = time
@@ -112,7 +113,7 @@ class Eud(Device):
         "Turn on the device"
         if not self._in_operation:
             self._in_operation = True
-            self.tugLogAction(action="operation", is_initial_event=True, value=1, description="on")
+            self.tugSendMessage(action="operation", is_initial_event=True, value=1, description="on")
             print("***** turn on eud {0} at {1} - {2}".format(self._device_name, self._time, self._next_event["operation"]))
             self.setPowerLevel()
 
@@ -123,7 +124,7 @@ class Eud(Device):
             print("***** turn off eud {0} at {1} - {2}".format(self._device_name, self._time, self._next_event["operation"]))
             self._power_level = 0.0
             self._in_operation = False
-            self.tugLogAction(action="operation", is_initial_event=True, value=0, description="off")
+            self.tugSendMessage(action="operation", is_initial_event=True, value=0, description="off")
 
     def processEvent(self):
         if (self._next_event and self._time == self._ttie):
@@ -189,16 +190,16 @@ class Eud(Device):
 
         if new_power != self._power_level:
             self._power_level = new_power
-            self.tugLogAction(action="set_power_level", is_initial_event=False, value=self._power_level, description='W')
+            self.tugSendMessage(action="set_power_level", is_initial_event=False, value=self._power_level, description='W')
 
             if self._power_level == 0 and self._in_operation:
                 self.turnOff()
-                
+
             elif self._power_level > 0 and not self._in_operation:
                 self.turnOn()
             else:
                 self.adjustHardwarePower()
-            
+
             self.broadcastNewPower(new_power)
 
     def adjustHardwarePower(self):

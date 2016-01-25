@@ -4,6 +4,7 @@
 import os
 import random
 import logging
+import coloredlogs
 import pprint
 import datetime
 from notification import NotificationReceiver, NotificationSender
@@ -97,9 +98,11 @@ class Device(NotificationReceiver, NotificationSender):
         ch = logging.StreamHandler()
         ch.setLevel(logging.INFO)
 
+        colored_formatter = coloredlogs.ColoredFormatter('%(asctime)s %(name)-10s %(levelname)-8s %(message)s')
         # create formatter and add it to the handlers
         formatter = logging.Formatter('%(asctime)s %(name)-10s %(levelname)-8s %(message)s')
-        ch.setFormatter(formatter)
+        # ch.setFormatter(formatter)
+        ch.setFormatter(colored_formatter)
         fh.setFormatter(formatter)
 
         # add the handlers to logger

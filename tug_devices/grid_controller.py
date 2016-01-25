@@ -201,13 +201,14 @@ class GridController(Device):
         if generator_id and self._battery:
             # a generator and battery are connected to the grid controller
             delta_power = self._total_load - self._load_on_battery - self._load_on_generator
+            previous_load_battery = self._load_on_battery
+
             self.logMessage("set power sources (output_capacity = {}, generator_load = {}, battery_load = {}, battery_soc = {}, total_load = {})".format(
                 output_capacity,
                 self._load_on_generator,
                 self._load_on_battery,
                 self._battery.stateOfCharge(),
                 self._total_load), app_log_level=None)
-            previous_load_battery = self._load_on_battery
 
             if self._battery.isDischarging():
                 # if battery is discharging
@@ -242,23 +243,23 @@ class GridController(Device):
                 if self._load_on_battery > self._battery.capacity():
                     self._load_on_generator += (self._load_on_battery - self._battery.capacity())
                     self._load_on_battery = self._battery.capacity()
-            else:
+            elif delta_power:
                 self.logMessage("Add the new load ({})to the diesel generator".format(delta_power))
                 self._load_on_generator += delta_power
 
             # update the generator
             if previous_load_generator != self._load_on_generator:
-                self.logMessage("Signal diesel generator to turn on")
                 self.broadcastNewPower(self._load_on_generator, generator_id)
 
-            self.tugSendMessage(action="gc_total_load", is_initial_event=False, value=self._total_load, description="W")
-            self.tugSendMessage(action="gc_load_on_generator", is_initial_event=False, value=self._load_on_generator, description="W")
-            self.tugSendMessage(action="gc_load_on_battery", is_initial_event=False, value=self._load_on_battery, description="W")
-            self.tugSendMessage(action="output_capacity", is_initial_event=False, value=self.currentOutputCapacity(), description="%")
-            self.tugSendMessage(action="battery_is_charging", is_initial_event=False, value=self._battery.isCharging(), description="")
-            self.tugSendMessage(action="battery_is_discharging", is_initial_event=False, value=self._battery.isDischarging(), description="")
-            # self.tugSendMessage(action="battery_wants_to_discharge", is_initial_event=False, value=self._battery.stateOfCharge, description="")
-            self.tugSendMessage(action="battery_soc", is_initial_event=False, value=self._battery.stateOfCharge(), description="")
+            if previous_load_generator != self._load_on_generator or previous_load_battery != self._load_on_battery:
+                self.tugSendMessage(action="gc_total_load", is_initial_event=False, value=self._total_load, description="W")
+                self.tugSendMessage(action="gc_load_on_generator", is_initial_event=False, value=self._load_on_generator, description="W")
+                self.tugSendMessage(action="gc_load_on_battery", is_initial_event=False, value=self._load_on_battery, description="W")
+                self.tugSendMessage(action="output_capacity", is_initial_event=False, value=self.currentOutputCapacity(), description="%")
+                self.tugSendMessage(action="battery_is_charging", is_initial_event=False, value=self._battery.isCharging(), description="")
+                self.tugSendMessage(action="battery_is_discharging", is_initial_event=False, value=self._battery.isDischarging(), description="")
+                # self.tugSendMessage(action="battery_wants_to_discharge", is_initial_event=False, value=self._battery.stateOfCharge, description="")
+                self.tugSendMessage(action="battery_soc", is_initial_event=False, value=self._battery.stateOfCharge(), description="")
 
         elif generator_id:
             # only a generator is connected to the grid controller

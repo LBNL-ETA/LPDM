@@ -156,8 +156,8 @@ class DieselGenerator(Device):
     def onPowerChange(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured (W)"
 
-        self.logMessage('power change occured, source = {}, target = {}, time = {}, new_power = {}'.format(source_device_id, target_device_id, time, new_power), app_log_level=None)
         if target_device_id == self._device_id:
+            self.logMessage('power change received, source = {}, target = {}, time = {}, new_power = {}'.format(source_device_id, target_device_id, time, new_power))
             self._time = time
             self.logMessage("received power change, new power = {}, is_on = {}, fuel_level = {}".format(new_power, self.isOn(), self._fuel_level), app_log_level=None)
             if new_power > 0 and not self.isOn() and self._fuel_level > 0:

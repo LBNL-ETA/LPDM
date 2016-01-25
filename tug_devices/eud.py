@@ -58,7 +58,6 @@ class Eud(Device):
 
     def onPowerChange(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
-        # print('power change received by {4} - {5} ({0}, {1}, {2}, {3}'.format(source_device_id, target_device_id, time, new_power, self._device_name, self._device_id))
         if target_device_id == self._device_id:
             if new_power == 0 and self._in_operation:
                 self._time = time
@@ -93,7 +92,6 @@ class Eud(Device):
 
     def onTimeChange(self, new_time):
         "Receives message when a time change has occured"
-        # print("time change {0} - {1}".format(self.deviceName(), new_time))
         self._time = new_time
         self.processEvent()
         self.calculateNextTTIE()
@@ -114,32 +112,27 @@ class Eud(Device):
         if not self._in_operation:
             self._in_operation = True
             self.tugSendMessage(action="operation", is_initial_event=True, value=1, description="on")
-            print("***** turn on eud {0} at {1} - {2}".format(self._device_name, self._time, self._next_event["operation"]))
+            self.logMessage("Turn on eud {}".format(self._device_name))
             self.setPowerLevel()
 
     def turnOff(self):
         "Turn off the device"
 
         if self._in_operation:
-            print("***** turn off eud {0} at {1} - {2}".format(self._device_name, self._time, self._next_event["operation"]))
             self._power_level = 0.0
             self._in_operation = False
             self.tugSendMessage(action="operation", is_initial_event=True, value=0, description="off")
+            self.logMessage("Turn off eud {}".format(self._device_name))
 
     def processEvent(self):
         if (self._next_event and self._time == self._ttie):
-            print('process event  {0} at {1} for {2}'.format(self._next_event["operation"], self._time, self._device_name))
             if self._in_operation and self._next_event["operation"] == 0:
-                print('turn off the device {0} at {1}'.format(self._device_name, self._time))
                 self.turnOff()
                 self.broadcastNewPower(0.0)
-                print('power broadcasted')
             elif not self._in_operation and self._next_event["operation"] == 1:
-                print('turn on the device {0} at {1}'.format(self._device_name, self._time))
                 self.setPowerLevel()
 
             self.calculateNextTTIE()
-            print('next ttie at {0}'.format(self._ttie))
 
     def calculateNextTTIE(self):
         "Override the base class function"
@@ -161,8 +154,6 @@ class Eud(Device):
                         break
 
             if new_ttie != self._ttie:
-                print("next ttie for {0}".format(self._device_name))
-                print(next_event)
                 self._next_event = next_event
                 self._ttie = new_ttie
                 self.broadcastNewTTIE(new_ttie)

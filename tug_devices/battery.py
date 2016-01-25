@@ -76,6 +76,7 @@ class Battery(Device):
     def startCharging(self, time):
         self._time = time
         if not self._is_charging:
+            self.logMessage("Start charging battery (soc = {})".format(self._current_soc))
             self._is_charging = True
             self._last_update_time = time
         return
@@ -83,6 +84,7 @@ class Battery(Device):
     def stopCharging(self, time):
         self._time = time
         if self._is_charging:
+            self.logMessage("Stop charging battery (soc = {})".format(self._current_soc))
             self._is_charging = False
             self._last_update_time = time
         return
@@ -108,23 +110,19 @@ class Battery(Device):
     def startDischarging(self, time):
         self._time = time
         if not self._is_charging and not self._is_discharging:
+            self.logMessage("Start discharging battery (soc = {})".format(self._current_soc))
             self._is_discharging = True
             self._last_update_time = time
 
     def stopDischarging(self, time):
         self._time = time
         if self._is_discharging:
+            self.logMessage("Stop discharging battery (soc = {})".format(self._current_soc))
             self._is_discharging = False
             self._last_update_time = time
 
     def isDischarging(self):
         return self._is_discharging
-
-    # def updateTime(self, time):
-    #     if self._last_update_time != None:
-    #         energy_used_ws = self._capacity * 1000 * 3600 * time
-    #     self._time = time
-    #     return
 
     def stateOfCharge(self):
         "Returns the current SOC"

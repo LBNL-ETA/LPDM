@@ -10,6 +10,7 @@ from simulation_logger import SimulationLogger
 import logging
 import os
 import re
+import pprint
 import random
 import json
 import urllib2
@@ -48,7 +49,7 @@ class TugSimulation:
         self.tug_logger = TugLogger()
 
         self.logger.info('Initialize Simulation {}'.format(self.simulation_id))
-        self.logger.info(params)
+        self.logger.info(pprint.pformat(params))
         self.messenger = Messenger({"device_notifications_through_gc": True})
 
         uuid = 1
@@ -63,8 +64,6 @@ class TugSimulation:
             device_config["broadcastNewTTIE"] = self.messenger.onNewTTIE
 
             self.logger.info("initialize a {}".format(device_config["device_type"]))
-            self.logger.info(device_config["app_log_manager"])
-            self.logger.info(device_config["logger"])
 
             if device_config["device_type"] == "diesel_generator":
                 self.diesel_generator = DieselGenerator(device_config)
@@ -212,7 +211,7 @@ class TugSimulation:
             return False
 
     def run(self):
-        self.logger.info('run simulation from {0} to {1}'.format(0, self.end_time))
+        self.logger.info('run simulation for {} days'.format(self.end_time / 60.0 / 60.0 / 24.0))
         if self.signalSimulationStart():
             for self.current_time in range(0, self.end_time):
                 self.messenger.changeTime(self.current_time)

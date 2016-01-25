@@ -53,7 +53,7 @@ class SimulationLogger:
         ch.setLevel(logging.INFO)
 
         # create formatter and add it to the handlers
-        formatter = logging.Formatter('%(asctime)s %(name)-30s %(levelname)-8s %(message)s')
+        formatter = logging.Formatter('%(asctime)s %(name)-10s %(levelname)-8s %(message)s')
         ch.setFormatter(formatter)
         fh.setFormatter(formatter)
 

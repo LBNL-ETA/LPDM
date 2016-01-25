@@ -2,6 +2,7 @@
     Implementation of the Diesel Generator device.
 """
 from device import Device
+import pprint
 
 class DieselGenerator(Device):
     """
@@ -131,7 +132,7 @@ class DieselGenerator(Device):
 
     def refresh(self):
         "Refresh the diesel generator."
-        print('refresh the generator')
+        self.logMessage("Refresh the diesel generator")
         self.removeRefreshEvents()
         self.setTargetRefuelTime()
         self.setNextRefuelEvent()
@@ -149,19 +150,22 @@ class DieselGenerator(Device):
                 next_refuels.append(event)
 
         for event in next_refuels:
+            self.logMessage("Remove event: {}".format(pprint.pformat(event), app_log_level=None))
             self._events.remove(event)
 
     def onPowerChange(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured (W)"
-        # self.logMessage("Power change received (t = {0}, p = {1})".format(time, new_power), logging.INFO)
 
+        self.logMessage('power change occured, source = {}, target = {}, time = {}, new_power = {}'.format(source_device_id, target_device_id, time, new_power), app_log_level=None)
         if target_device_id == self._device_id:
             self._time = time
+            self.logMessage("received power change, new power = {}, is_on = {}, fuel_level = {}".format(new_power, self.isOn(), self._fuel_level), app_log_level=None)
             if new_power > 0 and not self.isOn() and self._fuel_level > 0:
                 # If the generator is not in operation the turn it on
                 self.turnOn()
                 self._power_level = new_power
                 self.tugSendMessage(action="turn_on", is_initial_event=False, value=self._power_level, description="W")
+                self.logMessage("Turn on generator")
 
                 # calculate the new electricity price
                 self.calculateElectricityPrice(is_initial_event=False)
@@ -177,6 +181,7 @@ class DieselGenerator(Device):
             elif new_power > 0 and self.isOn() and self._fuel_level > 0:
                 # power has changed when already in operation
                 # store the new power value for the hourly usage calculation
+                self.logMessage("change generator power level ({} to {})".format(self._power_level, new_power), app_log_level=None)
                 self._power_level = new_power
                 self.tugSendMessage(action="power_change", is_initial_event=False, value=self._power_level, description="W")
                 self.logPowerChange(time, new_power)
@@ -188,6 +193,7 @@ class DieselGenerator(Device):
                 self._power_level = 0.0
                 self.tugSendMessage(action="turn_off", is_initial_event=False, value=self._power_level, description="W")
                 self.logPowerChange(time, 0.0)
+                self.logMessage("Turn on generator")
         return
 
     def onPriceChange(self, source_device_id, target_device_id, time, new_price):
@@ -230,7 +236,6 @@ class DieselGenerator(Device):
     def processEvents(self):
         "Process any events that need to be processed"
 
-        # print('process events at {0}'.format(self._time))
         remove_items = []
         for event in self._events:
             if event["time"] <= self._time:
@@ -241,19 +246,14 @@ class DieselGenerator(Device):
 
                     self.setNextPriceChangeEvent()
                     remove_items.append(event)
-
                 elif event["operation"] == "hourly_consumption":
                     self.calculateHourlyConsumption(is_initial_event=True)
-
                     self.setNextHourlyConsumptionCalculationEvent()
-
                     remove_items.append(event)
-
                 elif event["operation"] == "reasses_fuel":
                     self.reassesFuel()
                     self.setNextReassesFuelChangeEvent()
                     remove_items.append(event)
-
                 elif event["operation"] == "refuel":
                     self.refuel()
                     self.setNextRefuelEvent()
@@ -286,7 +286,6 @@ class DieselGenerator(Device):
 
         # calculate how much energy has been used since the fuel level was last updated
         for item in self._consumption_activity[::-1]:
-            # print(item)
             if item["time"] < self._last_fuel_status_time:
                 time_diff = (interval_start_time - self._last_fuel_status_time) / 3600.0
                 kwh_used += item["power"] / 1000.0 * time_diff
@@ -305,8 +304,8 @@ class DieselGenerator(Device):
         new_fuel_level = new_gallons / self._fuel_tank_capacity * 100
         if new_fuel_level != self._fuel_level:
             self.tugSendMessage(action="fuel_level", is_initial_event=False, value=self._fuel_level, description="%")
-            # self.logMessage("Fuel level set (t = {0}, fuel_level = {1})".format(self._time, new_fuel_level))
 
+        self.logMessage("fuel level updated ({} to {})".format(self._fuel_level, new_fuel_level), app_log_level=None)
         self._fuel_level = new_fuel_level
 
         if self._fuel_level <= 0:
@@ -317,7 +316,7 @@ class DieselGenerator(Device):
 
     def setDaysToRefuel(self, days_to_refuel):
         "Sets the number of days until refuel"
-        self.logMessage("Set refuel days (t = {0}, days_to_refuel = {1})".format(self._time, days_to_refuel))
+        self.logMessage("Set refuel days =  {}".format(days_to_refuel))
 
     def getCurrentGenerationRate(self):
         "Calculates the current generation rate in kwh/gallon"
@@ -341,6 +340,7 @@ class DieselGenerator(Device):
 
             # print("fuel_level = {0}, gen_rate = {1}, price = {2}, base_cost = {3}, raw_calc = {4}".format(self._fuel_level, self.getCurrentGenerationRate(), new_price, self._fuel_base_cost, self._fuel_base_cost / self.getTotalEnergyAvailable()))
             if new_price != self._current_fuel_price:
+                self.logMessage("calculate new price ({} to {})".format(self._current_fuel_price, new_price), app_log_level=None)
                 self._current_fuel_price = new_price
 
                 self.tugSendMessage(action="new_electricity_price", is_initial_event=is_initial_event, value=self._current_fuel_price, description="$/kWh")
@@ -392,6 +392,8 @@ class DieselGenerator(Device):
 
         self.tugSendMessage(action="consumption_hr", is_initial_event=is_initial_event, value=total_kwh, description="kwh")
         self.tugSendMessage(action="consumption_24hrs", is_initial_event=is_initial_event, value=sum_24hr, description="kwh")
+        self.logMessage("consumption last hour = {}".format(total_kwh), app_log_level=None)
+        self.logMessage("consumption last 24 hrs = {}".format(sum_24hr), app_log_level=None)
 
         return
 
@@ -401,6 +403,7 @@ class DieselGenerator(Device):
 
     def refuel(self):
         "Refuel"
+        self.logMessage("Refuel the diesel generator, from {} to 100.0".format(self._fuel_level))
         self._base_refuel_time_secs = self._time
         self.setTargetRefuelTime()
 

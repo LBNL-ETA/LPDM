@@ -5,6 +5,8 @@
 from device import Device
 from battery import Battery
 from diesel_generator import DieselGenerator
+import logging
+import colors
 import pprint
 
 class GridController(Device):
@@ -52,6 +54,14 @@ class GridController(Device):
 
         # call the super constructor
         Device.__init__(self, config)
+
+    # def logMessage(self, message, app_log_level=logging.INFO, device_log_level=logging.DEBUG):
+        # """Make all grid controller log message purple"""
+        # Device.logMessage(self, colors.colorize(message, colors.Colors.PURPLE), app_log_level, device_log_level)
+
+    def getLogMessageString(self, message):
+        return colors.colorize(Device.getLogMessageString(self, message), colors.Colors.PURPLE)
+
 
     def onPowerChange(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"

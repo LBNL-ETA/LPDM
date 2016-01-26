@@ -2,6 +2,7 @@
     Implementation of a general EUD device
 """
 from device import Device
+import colors
 import logging
 
 class Eud(Device):
@@ -46,6 +47,9 @@ class Eud(Device):
         # if self._price > 0:
             # self.setPowerLevel()
             # self.broadcastNewPower(self._power_level)
+
+    def getLogMessageString(self, message):
+        return colors.colorize(Device.getLogMessageString(self, message), colors.Colors.GREY)
 
     def status(self):
         return {

@@ -2,6 +2,8 @@
     Implementation of the Diesel Generator device.
 """
 from device import Device
+import colors
+import logging
 import pprint
 
 class DieselGenerator(Device):
@@ -118,6 +120,9 @@ class DieselGenerator(Device):
 
         # self._tasks = config["tasks"] if type(config) is dict and "tasks" in config.keys() else None
         # self._setupDeviceTasks()
+
+    def getLogMessageString(self, message):
+        return colors.colorize(Device.getLogMessageString(self, message), colors.Colors.BROWN)
 
     def status(self):
         return {

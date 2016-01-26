@@ -112,12 +112,16 @@ class Device(NotificationReceiver, NotificationSender):
 
     def logMessage(self, message='', app_log_level=logging.INFO, device_log_level=logging.DEBUG):
         "Logs a message using the loggin module, default debug level is set to INFO"
-        time_string = "Day {0} {1} ({2})".format(1 + int(self._time / (60 * 60 * 24)), datetime.datetime.utcfromtimestamp(self._time).strftime('%H:%M:%S'), self._time)
-        message = "time: {}, device: {}, message: {}".format(time_string, self._device_name, message)
+        message = self.getLogMessageString(message)
         if app_log_level is not None:
             self._app_logger.log(app_log_level, message)
         if device_log_level is not None:
             self._device_logger.log(device_log_level, message)
+
+    def getLogMessageString(self, message):
+        time_string = "Day {0} {1} ({2})".format(1 + int(self._time / (60 * 60 * 24)), datetime.datetime.utcfromtimestamp(self._time).strftime('%H:%M:%S'), self._time)
+        return "time: {}, device: {}, message: {}".format(time_string, self._device_name, message)
+
 
     def calculateNextTTIE(self):
         "Calculate the Time Till next Initial Event, this must be overriden for each derived class"

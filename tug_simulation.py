@@ -4,6 +4,7 @@ from tug_devices.light import Light
 from tug_devices.insight_eud import InsightEud
 from tug_devices.diesel_generator import DieselGenerator
 from tug_devices.fan_eud import PWMfan_eud
+from tug_devices.air_conditioner import AirConditioner
 from messenger import Messenger
 from tug_logger import TugLogger
 from simulation_logger import SimulationLogger
@@ -121,6 +122,14 @@ class TugSimulation:
                 self.messenger.subscribeToPowerChanges(wemo_light)
                 self.messenger.subscribeToTimeChanges(wemo_light)
                 self.device_info.append({'device': 'wemo_light', 'config': self.configToJSON(device_config)})
+            elif device_config["device_type"] == "air_conditioner":
+                device = AirConditioner(device_config)
+
+                self.eud_devices.append(device)
+                self.messenger.subscribeToPriceChanges(device)
+                self.messenger.subscribeToPowerChanges(device)
+                self.messenger.subscribeToTimeChanges(device)
+                self.device_info.append({'device': 'air_conditioner', 'config': self.configToJSON(device_config)})
             uuid += 1
 
         self.grid_controller.addDevice(self.diesel_generator.deviceID(), type(self.diesel_generator))

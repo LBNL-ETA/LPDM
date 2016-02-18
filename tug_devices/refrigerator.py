@@ -1,24 +1,21 @@
 """
-    Implementation of an air conditioner
+    Implementation of an refrigerator
 """
 
-from temperature_dependent_device import TemperatureDependentDevice
 from device import Device
 import logging
 import colors
 import pprint
 
-class AirConditioner(TemperatureDependentDevice):
+class Refrigerator(Device):
     """
-        Device implementation of a grid controller.
-
-        Use the battery to try and keep the diesel generator above 70% capacity
+        Device implementation of a Refrigerator
     """
 
     def __init__(self, config):
         """
             Args:
-                config (Dict): Dictionary of configuration values for the air conditioner
+                config (Dict): Dictionary of configuration values for the refrigerator
 
                 keys:
                     "device_type" (string): Type of device
@@ -26,13 +23,14 @@ class AirConditioner(TemperatureDependentDevice):
                     "max_power_use" (float): the maximum power output of the device
                     "current_temperature" (float): the current temperature inside the device
                     "current_set_point (float)": the initial set point
-                    "temperature_max_delta" (float): the maximum amount that the temperature can increase by for every reassessment
+                    "temperature_max_delta" (float): the maximum variation between the setpoint and actual temperature for every reassesment
+                    "temperature_increment" (float): the maximum amount that the temperature can increase by for every reassessment
                     "set_point_low" (float): the low value for the set point
                     "set_point_high" (float): the high value for the set point
                     "setpoint_reassesment_interval" (int): number of seconds between reassesing the set point
         """
-        self._device_type = "air_conditioner"
-        self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "air_conditioner"
+        self._device_type = "refrigerator"
+        self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "refrigerator"
 
         # maximim power output, set to 3500 W if no value given
         self._max_power_use = float(config["max_power_use"]) if type(config) is dict and "max_power_use" in config.keys() else 3500.0
@@ -51,6 +49,7 @@ class AirConditioner(TemperatureDependentDevice):
         self._current_temperature = float(config["current_temperature"]) if type(config) is dict and "current_temperature" in config.keys() else 2.5
         self._current_set_point = float(config["current_set_point"]) if type(config) is dict and "current_set_point" in config.keys() else 2.5
         self._temperature_max_delta = float(config["temperature_max_delta"]) if type(config) is dict and "temperature_max_delta" in config.keys() else 0.5
+        self._temperature_increment = float(config["temperature_increment"]) if type(config) is dict and "temperature_increment" in config.keys() else 0.5
         self._set_point_low = float(config["set_point_low"]) if type(config) is dict and "set_point_low" in config.keys() else 0.5
         self._set_point_high = float(config["set_point_high"]) if type(config) is dict and "set_point_high" in config.keys() else 5.0
         self._setpoint_reassesment_interval = float(config["setpoint_reassesment_interval"]) if type(config) is dict and "setpoint_reassesment_interval" in config.keys() else 60.0 * 10.0
@@ -60,7 +59,7 @@ class AirConditioner(TemperatureDependentDevice):
         self._events = []
 
         # call the super constructor
-        TemperatureDependentDevice.__init__(self, config)
+        Device.__init__(self, config)
 
     def getLogMessageString(self, message):
         return colors.colorize(Device.getLogMessageString(self, message), colors.Colors.BLUE)
@@ -97,11 +96,6 @@ class AirConditioner(TemperatureDependentDevice):
 
     def processEvents(self):
         "Process any events that need to be processed"
-
-        # process the base class events
-        # this would be a temperature change event if it is set to execute
-        TemperatureDependentDevice.processEvents(self)
-
         remove_items = []
         for event in self._events:
             if event["time"] <= self._time:
@@ -112,7 +106,9 @@ class AirConditioner(TemperatureDependentDevice):
                     self.calculateHourlyPrice()
                     remove_items.append(event)
                 elif event["operation"] == "reasses_setpoint":
+                    self.adjustTemperature()
                     self.reassesSetpoint()
+                    self.controlCompressorOperation()
                     remove_items.append(event)
 
         # remove the processed events from the list
@@ -142,9 +138,7 @@ class AirConditioner(TemperatureDependentDevice):
 
     def scheduleNextEvents(self):
         "Schedule upcoming events if necessary"
-        # first call the base class method to handle hourly temperature changes
-        TemperatureDependentDevice.scheduleNextEvents(self)
-        # then set the event for the hourly price calculation
+        # set the event for the hourly price calculation and setpoint reassesment
         self.setHourlyPriceCalculationEvent()
         self.setReassesSetpointEvent()
         return
@@ -187,8 +181,7 @@ class AirConditioner(TemperatureDependentDevice):
     def reassesSetpoint(self):
         """determine the setpoint based on the current price and 24 hr. price history"""
 
-        # check to see if there's 24 hours worth of data
-        self.logMessage("hourly price list {}".format(len(self._hourly_prices)))
+        # check to see if there's 24 hours worth of data, if there isn't exit
         if len(self._hourly_prices) < 24:
             return
 
@@ -199,7 +192,50 @@ class AirConditioner(TemperatureDependentDevice):
                 break
 
         price_percentile = float(i + 1) / 24.0
-        new_setpoint = self._set_point_low + (self._set_point_high - self.set_point_low) * price_percentile
+        new_setpoint = self._set_point_low + (self._set_point_high - self._set_point_low) * price_percentile
+        if new_setpoint != self._current_set_point:
+            self._current_set_point = new_setpoint
+            self.logMessage("calculated new setpoint as {}".format(new_setpoint))
+
+    def adjustTemperature(self):
+        """
+        adjust the temperature of the device
+        temperature increases by 'temperature_increment' if generator is on
+        and decreases by 'temperature_increment' if generator is off
+        """
+
+        if self.isOn():
+            self._current_temperature -= self._temperature_increment
+            self.logMessage("Decrease temperature to {}".format(self._current_temperature))
+        else:
+            self._current_temperature += self._temperature_increment
+            self.logMessage("Increase temperature to {}".format(self._current_temperature))
+
+
+    def controlCompressorOperation(self):
+        """turn the compressor on/off when needed"""
+        # see if the current tempreature is outside of the allowable range
+        delta = self._current_temperature - self._current_set_point
+        if abs(delta) > self._temperature_max_delta:
+            if delta > 0 and not self.isOn():
+                # if the current temperature is above the set point and compressor is off, turn it on
+                self.turnOn()
+                self.broadcastNewPower(self._max_power_use)
+            elif delta < 0 and self.isOn():
+                # if current temperature is below the set point and compressor is on, turn it off
+                self.turnOff()
+                self.broadcastNewPower(0.0)
+
+    def calculateNextTTIE(self):
+        "calculate the next TTIE - look through the pending events for the one that will happen first"
+        ttie = None
+        for event in self._events:
+            if ttie == None or event["time"] < ttie:
+                ttie = event["time"]
+
+        if ttie != None and ttie != self._ttie:
+            self._ttie = ttie
+            self.broadcastNewTTIE(ttie)
 
 
 

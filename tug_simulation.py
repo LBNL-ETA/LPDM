@@ -4,7 +4,7 @@ from tug_devices.light import Light
 from tug_devices.insight_eud import InsightEud
 from tug_devices.diesel_generator import DieselGenerator
 from tug_devices.fan_eud import PWMfan_eud
-from tug_devices.air_conditioner import AirConditioner
+from tug_devices.refrigerator import Refrigerator
 from messenger import Messenger
 from tug_logger import TugLogger
 from simulation_logger import SimulationLogger
@@ -28,6 +28,7 @@ class TugSimulation:
         self.diesel_generator = None
         self.messenger = None
         self.tug_logger = None
+        self.temperature_controller = None
 
         self.current_time = None
         self.end_time = int(params["run_time_days"]) * 60 * 60 * 24 if params and 'run_time_days' in params.keys() and params['run_time_days'] else 60 * 60 * 24 * 7
@@ -83,6 +84,17 @@ class TugSimulation:
                     device_config["battery_config"]["logger"] = self.logger
                     device_config["battery_config"]["tug_logger"] = self.tug_logger
 
+                if "pv" in device_config.keys() and device_config["pv"] == "1":
+                    uuid += 1
+                    device_config["pv_config"] = {}
+                    device_config["pv_config"]["tug_logger"] = self.tug_logger
+                    device_config["pv_config"]["uuid"] = uuid
+                    device_config["pv_config"]["app_log_manager"] = self.simulation_log_manager
+                    device_config["pv_config"]["logger"] = self.logger
+                    device_config["pv_config"]["tug_logger"] = self.tug_logger
+                else:
+                    device_config["pv_config"] = None
+
                 self.grid_controller = GridController(device_config)
                 self.messenger.subscribeToTimeChanges(self.grid_controller)
                 self.messenger.subscribeToPowerChanges(self.grid_controller)
@@ -122,14 +134,18 @@ class TugSimulation:
                 self.messenger.subscribeToPowerChanges(wemo_light)
                 self.messenger.subscribeToTimeChanges(wemo_light)
                 self.device_info.append({'device': 'wemo_light', 'config': self.configToJSON(device_config)})
-            elif device_config["device_type"] == "air_conditioner":
-                device = AirConditioner(device_config)
+            elif device_config["device_type"] == "refrigerator":
+                device = Refrigerator(device_config)
 
                 self.eud_devices.append(device)
                 self.messenger.subscribeToPriceChanges(device)
                 self.messenger.subscribeToPowerChanges(device)
                 self.messenger.subscribeToTimeChanges(device)
-                self.device_info.append({'device': 'air_conditioner', 'config': self.configToJSON(device_config)})
+                self.device_info.append({'device': 'refrigerator', 'config': self.configToJSON(device_config)})
+            # elif device_config["device_type"] == "temperature_controller":
+                # self.temperature_controller = TemperatureController(device_config)
+                # self.messenger.subscribeToTimeChanges(self.temperature_controller)
+                # self.device_info.append({'device': 'temperature_controller', 'config': self.configToJSON(device_config)})
             uuid += 1
 
         self.grid_controller.addDevice(self.diesel_generator.deviceID(), type(self.diesel_generator))

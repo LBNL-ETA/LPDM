@@ -82,6 +82,7 @@ class Eud(Device):
         "Receives message when a price change has occured"
         self._time = time
         self._price = new_price
+        self.logMessage("received new price {}".format(new_price))
         if self.current_schedule_value():
             self.setPowerLevel()
         return

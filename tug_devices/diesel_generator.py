@@ -79,7 +79,7 @@ class DieselGenerator(Device):
         self._gen_eff_100 = float(config["gen_eff_100"]) if type(config) is dict and "gen_eff_100" in config.keys() else 100.0    #generator efficiency (%) at 100% output. Efficiency at some percentage is linear between _gen_eff_zero and _gen_eff_100
         self._price_reassess_time = int(config["price_reassess_time"]) if type(config) is dict and "price_reassess_time" in config.keys() else 3600    # interval for reassessing price (seconds)
         # self._elec_price_change_rate = config["elec_price_change_rate"] if type(config) is dict and "elec_price_change_rate" in config.keys() else None # celing for price change (%)
-        self._fuel_base_cost = float(config["fuel_base_cost"]) if type(config) is dict and "fuel_base_cost" in config.keys() else None # base cost of fuel ($/gallon)
+        self._fuel_base_cost = float(config["fuel_base_cost"]) if type(config) is dict and "fuel_base_cost" in config.keys() else 5.0 # base cost of fuel ($/gallon)
 
         self._current_fuel_price = float(config["current_fuel_price"]) if type(config) is dict and "current_fuel_price" in config.keys() else None # current price of fuel ($/W-sec)
 

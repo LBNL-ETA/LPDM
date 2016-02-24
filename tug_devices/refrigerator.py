@@ -54,12 +54,17 @@ class Refrigerator(Device):
         self._set_point_high = float(config["set_point_high"]) if type(config) is dict and "set_point_high" in config.keys() else 5.0
         self._setpoint_reassesment_interval = float(config["setpoint_reassesment_interval"]) if type(config) is dict and "setpoint_reassesment_interval" in config.keys() else 60.0 * 10.0
 
+        self._temperature_update_interval = 60.0 * 60.0
+        self._current_outdoor_temperature = None
+
         self._set_point_target = self._current_set_point
 
         self._events = []
 
         # call the super constructor
         Device.__init__(self, config)
+
+        self.scheduleNextTemperatureChange()
 
     def getLogMessageString(self, message):
         return colors.colorize(Device.getLogMessageString(self, message), colors.Colors.BLUE)
@@ -237,5 +242,30 @@ class Refrigerator(Device):
             self._ttie = ttie
             self.broadcastNewTTIE(ttie)
 
+    def scheduleNextTemperatureChange(self):
+        """schedule the next temperature update (in one hour)"""
+        # first search for existing events
+        search_events = [event for event in self._events if event["operation"] == "update_temperature"]
+        if not len(search_events):
+            self._events.append({"time": self._time + self._temperature_update_interval, "operation": "update_temperature"})
+
+    def processTemperatureChange(self):
+        """Update the current outdoor temperature"""
+        # get the time of day in seconds
+        time_of_day = self.timeOfDaySeconds()
+        found_temp = None
+        for temp in self._temperature_hourly_profile:
+            if temp["hour_seconds"] >= time_of_day:
+                found_temp = temp
+                break
+
+        if found_temp:
+            self.updateTemperature(temp["value"])
+
+    def updateTemperature(self, new_temperature):
+        "This method needs to be implemented by a device if it needs to act on a change in temperature"
+        self._current_outdoor_temperature = new_temperature
+        self.logMessage("Outdoor temperature changed to {}".format(new_temperature))
+        return
 
 

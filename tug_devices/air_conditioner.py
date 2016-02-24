@@ -2,13 +2,12 @@
     Implementation of an air conditioner
 """
 
-from temperature_dependent_device import TemperatureDependentDevice
 from device import Device
 import logging
 import colors
 import pprint
 
-class AirConditioner(TemperatureDependentDevice):
+class AirConditioner(Device):
     """
         Device implementation of a grid controller.
 
@@ -34,8 +33,8 @@ class AirConditioner(TemperatureDependentDevice):
         self._device_type = "air_conditioner"
         self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "air_conditioner"
 
-        # maximim power output, set to 3500 W if no value given
-        self._max_power_use = float(config["max_power_use"]) if type(config) is dict and "max_power_use" in config.keys() else 3500.0
+        # maximim power output, set to 4000 W if no value given
+        self._max_power_use = float(config["max_power_use"]) if type(config) is dict and "max_power_use" in config.keys() else 4000.0
 
         self._fuel_price = None
 
@@ -54,16 +53,66 @@ class AirConditioner(TemperatureDependentDevice):
         self._set_point_low = float(config["set_point_low"]) if type(config) is dict and "set_point_low" in config.keys() else 0.5
         self._set_point_high = float(config["set_point_high"]) if type(config) is dict and "set_point_high" in config.keys() else 5.0
         self._setpoint_reassesment_interval = float(config["setpoint_reassesment_interval"]) if type(config) is dict and "setpoint_reassesment_interval" in config.keys() else 60.0 * 10.0
+        self._cop = float(config["cop"]) if type(config) is dict and "cop" in config.keys() else 3.0
+        self._number_of_people = None
+        self._volume_m3 = float(config["volume_m3"]) if type(config) is dict and "volume_m3" in config.keys() else 3000 #volume of tent in m3
+        self._heat_w_per_person = 120 # Heat (W) generated per person
+        self._kwh_per_m3_1c = 1.0 / 3000.0 # 1 kwh to heat 3000 m3 by 1 C
+        self._kj_per_m3_c = 1.2 # amount of energy (kj) it takees to heat 1 m3 by 1 C
 
         self._set_point_target = self._current_set_point
+        self._temperature_hourly_profile = None
+        self._current_outdoor_temperature = None
+        self._temperature_update_interval = 60.0 * 10.0 # every 10 minutes?
+        self._last_temperature_update_time = 0.0 # the time the last internal temperature update occured
+        self._heat_gain_rate = None
+        self._cop = 3.0
+        self._max_c_delta = 10.0 #the maximum temeprature the ECU can handle in 1 hr
+        self._compressor_max_c_per_kwh = self._max_c_delta / self._max_power_use
 
         self._events = []
 
         # call the super constructor
-        TemperatureDependentDevice.__init__(self, config)
+        Device.__init__(self, config)
+
+        self.computeHeatGainRate()
+        self._temperature_hourly_profile = self.buildHourlyTemperatureProfile()
+        self.logMessage("Hourly temperature profile: \n{}".format(pprint.pformat(self._temperature_hourly_profile, indent=4)))
+        self.scheduleNextEvents()
 
     def getLogMessageString(self, message):
         return colors.colorize(Device.getLogMessageString(self, message), colors.Colors.BLUE)
+
+    def buildHourlyTemperatureProfile(self):
+        """
+        these are average hourly tempeartures for edwards airforce base from august 2015
+        """
+        return [
+            {"hour": 0, "hour_seconds": 3600.0 * 0, "value": 23.2},
+            {"hour": 1, "hour_seconds": 3600.0 * 1, "value": 22.3},
+            {"hour": 2, "hour_seconds": 3600.0 * 2, "value": 21.6},
+            {"hour": 3, "hour_seconds": 3600.0 * 3, "value": 20.9},
+            {"hour": 4, "hour_seconds": 3600.0 * 4, "value": 20.1},
+            {"hour": 5, "hour_seconds": 3600.0 * 5, "value": 20.3},
+            {"hour": 6, "hour_seconds": 3600.0 * 6, "value": 23.3},
+            {"hour": 7, "hour_seconds": 3600.0 * 7, "value": 26.4},
+            {"hour": 8, "hour_seconds": 3600.0 * 8, "value": 29.8},
+            {"hour": 9, "hour_seconds": 3600.0 * 9, "value": 32.2},
+            {"hour": 10, "hour_seconds": 3600.0 * 10, "value": 34.3},
+            {"hour": 11, "hour_seconds": 3600.0 * 11, "value": 35.8},
+            {"hour": 12, "hour_seconds": 3600.0 * 12, "value": 37.0},
+            {"hour": 13, "hour_seconds": 3600.0 * 13, "value": 37.6},
+            {"hour": 14, "hour_seconds": 3600.0 * 14, "value": 37.6},
+            {"hour": 15, "hour_seconds": 3600.0 * 15, "value": 37.2},
+            {"hour": 16, "hour_seconds": 3600.0 * 16, "value": 35.9},
+            {"hour": 17, "hour_seconds": 3600.0 * 17, "value": 33.5},
+            {"hour": 18, "hour_seconds": 3600.0 * 18, "value": 31.1},
+            {"hour": 19, "hour_seconds": 3600.0 * 19, "value": 28.8},
+            {"hour": 20, "hour_seconds": 3600.0 * 20, "value": 27.2},
+            {"hour": 21, "hour_seconds": 3600.0 * 21, "value": 25.7},
+            {"hour": 22, "hour_seconds": 3600.0 * 22, "value": 24.7},
+            {"hour": 23, "hour_seconds": 3600.0 * 23, "value": 23.7}
+        ]
 
     def onPowerChange(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
@@ -97,11 +146,6 @@ class AirConditioner(TemperatureDependentDevice):
 
     def processEvents(self):
         "Process any events that need to be processed"
-
-        # process the base class events
-        # this would be a temperature change event if it is set to execute
-        TemperatureDependentDevice.processEvents(self)
-
         remove_items = []
         for event in self._events:
             if event["time"] <= self._time:
@@ -112,7 +156,14 @@ class AirConditioner(TemperatureDependentDevice):
                     self.calculateHourlyPrice()
                     remove_items.append(event)
                 elif event["operation"] == "reasses_setpoint":
+                    self.adjustInternalTemperature()
                     self.reassesSetpoint()
+                    self.controlCompressorOperation()
+                    remove_items.append(event)
+                elif event["operation"] == "update_outdoor_temperature":
+                    self.adjustInternalTemperature()
+                    self.controlCompressorOperation()
+                    self.processOutdoorTemperatureChange()
                     remove_items.append(event)
 
         # remove the processed events from the list
@@ -142,11 +193,10 @@ class AirConditioner(TemperatureDependentDevice):
 
     def scheduleNextEvents(self):
         "Schedule upcoming events if necessary"
-        # first call the base class method to handle hourly temperature changes
-        TemperatureDependentDevice.scheduleNextEvents(self)
-        # then set the event for the hourly price calculation
+        # set the event for the hourly price calculation and setpoint reassesment
         self.setHourlyPriceCalculationEvent()
         self.setReassesSetpointEvent()
+        self.scheduleNextOutdoorTemperatureChange()
         return
 
     def setHourlyPriceCalculationEvent(self):
@@ -187,8 +237,7 @@ class AirConditioner(TemperatureDependentDevice):
     def reassesSetpoint(self):
         """determine the setpoint based on the current price and 24 hr. price history"""
 
-        # check to see if there's 24 hours worth of data
-        self.logMessage("hourly price list {}".format(len(self._hourly_prices)))
+        # check to see if there's 24 hours worth of data, if there isn't exit
         if len(self._hourly_prices) < 24:
             return
 
@@ -199,7 +248,94 @@ class AirConditioner(TemperatureDependentDevice):
                 break
 
         price_percentile = float(i + 1) / 24.0
-        new_setpoint = self._set_point_low + (self._set_point_high - self.set_point_low) * price_percentile
+        new_setpoint = self._set_point_low + (self._set_point_high - self._set_point_low) * price_percentile
+        self.logMessage('reassesSetpoint: current setpoint = {}, new setpoint = {}'.format(self._current_set_point, new_setpoint));
+        if new_setpoint != self._current_set_point:
+            self._current_set_point = new_setpoint
+            self.logMessage("calculated new setpoint as {}".format(new_setpoint))
+
+    def adjustInternalTemperature(self):
+        """
+        adjust the temperature of the device based on the indoor/outdoor temperature difference
+        """
+        if self._time > self._last_temperature_update_time:
+            if self.isOn():
+                energy_used = self._max_power_use * (self._time - self._last_temperature_update_time) / 3600.0
+                delta_c = self._compressor_max_c_per_kwh * energy_used
+                self._current_temperature -= delta_c
+                self.logMessage("calculated compressors decrease of C to {}".format(delta_c))
 
 
+            if not self._current_outdoor_temperature is None:
+                # difference between indoor and outdoor temp
+                delta_indoor_outdoor = self._current_outdoor_temperature - self._current_temperature
+                # calculate the fraction of the hour that has passed since the last update
+                scale = (self._time - self._last_temperature_update_time) / 3600.0
+                # calculate how much of that heat gets into the tent
+                c_change = delta_indoor_outdoor * self._heat_gain_rate * scale
+
+                self.logMessage("internal temperature changed from {} to {}".format(self._current_temperature, self._current_temperature + c_change))
+                self._current_temperature += c_change
+                self._last_temperature_update_time = self._time
+
+    def controlCompressorOperation(self):
+        """turn the compressor on/off when needed"""
+        # see if the current tempreature is outside of the allowable range
+        delta = self._current_temperature - self._current_set_point
+        if abs(delta) > self._temperature_max_delta:
+            if delta > 0 and not self.isOn():
+                # if the current temperature is above the set point and compressor is off, turn it on
+                self.turnOn()
+                self.broadcastNewPower(self._max_power_use)
+            elif delta < 0 and self.isOn():
+                # if current temperature is below the set point and compressor is on, turn it off
+                self.turnOff()
+                self.broadcastNewPower(0.0)
+
+    def calculateNextTTIE(self):
+        "calculate the next TTIE - look through the pending events for the one that will happen first"
+        ttie = None
+        for event in self._events:
+            if ttie == None or event["time"] < ttie:
+                ttie = event["time"]
+
+        if ttie != None and ttie != self._ttie:
+            self._ttie = ttie
+            self.broadcastNewTTIE(ttie)
+
+    def scheduleNextOutdoorTemperatureChange(self):
+        """schedule the next temperature update (in one hour)"""
+        # first search for existing events
+        search_events = [event for event in self._events if event["operation"] == "update_outdoor_temperature"]
+        if not len(search_events):
+            self._events.append({"time": self._time + self._temperature_update_interval, "operation": "update_outdoor_temperature"})
+
+    def processOutdoorTemperatureChange(self):
+        """Update the current outdoor temperature"""
+        # get the time of day in seconds
+        time_of_day = self.timeOfDaySeconds()
+        found_temp = None
+        for temp in self._temperature_hourly_profile:
+            if temp["hour_seconds"] >= time_of_day:
+                found_temp = temp
+                break
+
+        if found_temp:
+            self.updateOutdoorTemperature(temp["value"])
+
+    def updateOutdoorTemperature(self, new_temperature):
+        "This method needs to be implemented by a device if it needs to act on a change in temperature"
+        self._current_outdoor_temperature = new_temperature
+        self.logMessage("Outdoor temperature changed to {}".format(new_temperature))
+        return
+
+    def computeHeatGainRate(self):
+        """
+        compute the heat gain
+        want the ECU to be able to handle a 10C change in temperature
+        """
+        kwh_per_c = self._kj_per_m3_c * self._volume_m3 / 3600.0
+        max_c_per_hr = self._max_power_use / 1000.0 / kwh_per_c * self._cop
+        self._heat_gain_rate = self._max_c_delta / max_c_per_hr
+        self.logMessage("set heat gain rate to {}".format(self._heat_gain_rate))
 

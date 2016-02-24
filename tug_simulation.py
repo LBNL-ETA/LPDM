@@ -5,6 +5,7 @@ from tug_devices.insight_eud import InsightEud
 from tug_devices.diesel_generator import DieselGenerator
 from tug_devices.fan_eud import PWMfan_eud
 from tug_devices.refrigerator import Refrigerator
+from tug_devices.air_conditioner import AirConditioner
 from messenger import Messenger
 from tug_logger import TugLogger
 from simulation_logger import SimulationLogger
@@ -142,6 +143,14 @@ class TugSimulation:
                 self.messenger.subscribeToPowerChanges(device)
                 self.messenger.subscribeToTimeChanges(device)
                 self.device_info.append({'device': 'refrigerator', 'config': self.configToJSON(device_config)})
+            elif device_config["device_type"] == "air_conditioner":
+                device = AirConditioner(device_config)
+
+                self.eud_devices.append(device)
+                self.messenger.subscribeToPriceChanges(device)
+                self.messenger.subscribeToPowerChanges(device)
+                self.messenger.subscribeToTimeChanges(device)
+                self.device_info.append({'device': 'air_conditioner', 'config': self.configToJSON(device_config)})
             # elif device_config["device_type"] == "temperature_controller":
                 # self.temperature_controller = TemperatureController(device_config)
                 # self.messenger.subscribeToTimeChanges(self.temperature_controller)

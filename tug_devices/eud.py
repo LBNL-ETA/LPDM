@@ -30,7 +30,10 @@ class Eud(Device):
         # the power level (%) to dim down to when price between price_dim and price_off
         self._power_level_low = float(config["power_level_low"]) if type(config) is dict and "power_level_low" in config.keys() else 20.0
 
-        self._daily_schedule = self.parseSchedule(config["schedule"]) if type(config) is dict and "schedule" in config.keys() else None
+        # _schedule_array is the raw schedule passed in
+        # _dailY_schedule is the parsed schedule used by the device to schedule events
+        self._schedule_array = config["schedule"] if type(config) is dict and config.has_key("schedule") else None
+        self._daily_schedule = self.parseSchedule(self._schedule_array) if self._schedule_array else None
 
         self._power_level = 0.0
 
@@ -59,6 +62,35 @@ class Eud(Device):
             "power_level": self._power_level,
             "fuel_price": self._price
         }
+
+    def refresh(self):
+        "Refresh the eud. For a basic eud this means resetting the operation schedule."
+        self._ttie = None
+        self._next_event = None
+        self._events = []
+        self._daily_schedule = self.parseSchedule(self._schedule_array) if self._schedule_array else None
+
+        # turn on/off the device based on the updated schedule
+        should_be_in_operation = self.should_be_in_operation()
+
+        if should_be_in_operation and not self._in_operation:
+            self.turnOn()
+        elif not should_be_in_operation and self._in_operation:
+            self.turnOff()
+
+        self.calculateNextTTIE()
+
+    def should_be_in_operation(self):
+        """determine if the device should be operating when a refresh event occurs"""
+
+        current_time_of_day_seconds = self.timeOfDaySeconds()
+        operating = False
+        for item in self._daily_schedule:
+            if  item['time_of_day_seconds'] > current_time_of_day_seconds:
+                break
+            else:
+                operating = True if item['operation'] == 1 else False
+        return operating
 
     def onPowerChange(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"

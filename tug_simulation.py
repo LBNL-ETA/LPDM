@@ -255,9 +255,6 @@ class TugSimulation:
         if self.signalSimulationStart():
             for self.current_time in range(0, self.end_time):
                 self.messenger.changeTime(self.current_time)
-                log = self.tug_logger.jsonTime(self.current_time)
-                if log and not self.signalSimulationEvent(log):
-                    return
 
             self.signalSimulationEnd()
             self.logger.info("Simulation #{} finished".format(self.simulation_id))

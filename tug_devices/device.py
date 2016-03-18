@@ -7,6 +7,8 @@ import logging
 import coloredlogs
 import pprint
 import datetime
+import requests
+import json
 from notification import NotificationReceiver, NotificationSender
 
 class Device(NotificationReceiver, NotificationSender):
@@ -34,10 +36,13 @@ class Device(NotificationReceiver, NotificationSender):
         self._simulation_id = int(config["simulation_id"]) if type(config) is dict and "simulation_id" in config.keys() else None
         self._app_log_manager = config["app_log_manager"] if type(config) is dict and "app_log_manager" in config.keys() else None
         self._app_logger = config["logger"] if type(config) is dict and "logger" in config.keys() else None
-        self._tug_logger = config["tug_logger"] if type(config) is dict and "tug_logger" in config.keys() else None
+        # self._tug_logger = config["tug_logger"] if type(config) is dict and "tug_logger" in config.keys() else None
+        self._tug_logger = None
         self._config_time = config["config_time"] if type(config) is dict and "config_time" in config.keys() else 1
         self._uuid = config["uuid"] if type(config) is dict and "uuid" in config.keys() else None
         self._price = config["price"] if type(config) is dict and "price" in config.keys() else 0.0
+        self._dashboard = config["dashboard"] if type(config) is dict and "dashboard" in config.keys() else None
+        self._dashboard_url = None
         self._power_level = 0.0
         self._time = 0
         self._units = None
@@ -53,7 +58,9 @@ class Device(NotificationReceiver, NotificationSender):
         self._broadcastNewPowerCallback = config["broadcastNewPower"] if type(config) is dict and "broadcastNewPower" in config.keys() and callable(config["broadcastNewPower"]) else None
         self._broadcastNewTTIECallback = config["broadcastNewTTIE"] if type(config) is dict and "broadcastNewTTIE" in config.keys() and callable(config["broadcastNewTTIE"]) else None
 
+        # Setup logging
         self.setLogger()
+        self.setTugLogger()
 
         self.calculateNextTTIE()
 
@@ -76,9 +83,47 @@ class Device(NotificationReceiver, NotificationSender):
     def deviceName(self):
         return self._device_name
 
+    def setTugLogger(self):
+        """ Setup the logging for the TuG dashboard, send info directly to dashboard server via http post """
+        print 'setup tug logger'
+        print self._dashboard
+        if self._dashboard:
+            self._dashboard_url = 'http://{0}:{1}/api/simulation_event'.format(self._dashboard["host"], self._dashboard["port"])
+            print self._dashboard_url
+            # r = requests.post(url, data=data, allow_redirects=True)
+            # print r.content
+            # self._logging_http_request = urllib2.Request(url)
+            # self._logging_http_request.add_header('Content-Type', 'application/json')
+
     def tugSendMessage(self, action, is_initial_event, value, description=""):
-        if self._tug_logger:
-            self._tug_logger.logAction(self, self._time, action, is_initial_event, value, description)
+        if self._dashboard_url:
+            try:
+                payload = {
+                    "time": self._time,
+                    "time_string": "Day {0} {1}".format(1 + int(self._time / (60 * 60 * 24)), datetime.datetime.utcfromtimestamp(self._time).strftime('%H:%M:%S')),
+                    "socket_id": self._dashboard["socket_id"],
+                    "client_id": self._dashboard["client_id"],
+                    "device_name": self.deviceName(),
+                    "is_initial_event": is_initial_event,
+                    "uuid": self.uuid(),
+                    "action": action,
+                    "values": value,
+                    "description": description
+                }
+                # payload = {"test": 1}
+                self._dashboard_url
+                r = requests.post(self._dashboard_url, data=payload)
+                # response = urllib2.urlopen(self._logging_http_request, json.dumps(payload))
+                # print response
+            except Exception as inst:
+                print 'http post error'
+                print type(inst)     # the exception instance
+                print inst.args      # arguments stored in .args
+                print inst           # __str__ allows args to be printed directly
+                # x, y = inst.args
+                # print 'x =', x
+                # print 'y =', y
+                raise
 
     def status(self):
         return None

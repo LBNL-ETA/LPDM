@@ -5,11 +5,13 @@ import json
 import re
 import threading
 import time
+import pprint
 
 app = Flask(__name__)
 # manager = Manager(app)
 
 def runSimulation(params):
+    pprint.pprint(params)
     sim = TugSimulation(params)
     sim.run()
 

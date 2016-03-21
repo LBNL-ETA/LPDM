@@ -40,6 +40,8 @@ class TugSimulation:
         self.client_id = params["client_id"] if params and 'client_id' in params.keys() else None
         self.socket_id = params["socket_id"] if params and 'socket_id' in params.keys() else None
 
+        self.headless = params["headless"] if params and params.has_key("headless") else False
+
         self.last_dump = None
 
         self.device_status = []
@@ -219,36 +221,45 @@ class TugSimulation:
     #     }
 
     def signalSimulationStart(self):
-        try:
-            req = urllib2.Request('http://{0}:{1}/api/simulation_start'.format(self.server_ip, self.server_port))
-            req.add_header('Content-Type', 'application/json')
-            response = urllib2.urlopen(req, json.dumps({"client_id": self.client_id, "socket_id": self.socket_id}))
+        if self.headless:
             return True
-        except:
-            self.logger.exception("Unable to connect to web client for simulation {}".format(self.simulation_id))
-            return False
+        else:
+            try:
+                req = urllib2.Request('http://{0}:{1}/api/simulation_start'.format(self.server_ip, self.server_port))
+                req.add_header('Content-Type', 'application/json')
+                response = urllib2.urlopen(req, json.dumps({"client_id": self.client_id, "socket_id": self.socket_id}))
+                return True
+            except:
+                self.logger.exception("Unable to connect to web client for simulation {}".format(self.simulation_id))
+                return False
 
     def signalSimulationEvent(self, data):
-        try:
-            data["socket_id"] = self.socket_id
-            data["client_id"] = self.client_id
-            req = urllib2.Request('http://{0}:{1}/api/simulation_event'.format(self.server_ip, self.server_port))
-            req.add_header('Content-Type', 'application/json')
-            response = urllib2.urlopen(req, json.dumps(data))
+        if self.headless:
             return True
-        except:
-            self.logger.exception("Unable to connect to web client for simulation {}".format(self.simulation_id))
-            return False
+        else:
+            try:
+                data["socket_id"] = self.socket_id
+                data["client_id"] = self.client_id
+                req = urllib2.Request('http://{0}:{1}/api/simulation_event'.format(self.server_ip, self.server_port))
+                req.add_header('Content-Type', 'application/json')
+                response = urllib2.urlopen(req, json.dumps(data))
+                return True
+            except:
+                self.logger.exception("Unable to connect to web client for simulation {}".format(self.simulation_id))
+                return False
 
     def signalSimulationEnd(self):
-        try:
-            req = urllib2.Request('http://{0}:{1}/api/simulation_end'.format(self.server_ip, self.server_port))
-            req.add_header('Content-Type', 'application/json')
-            response = urllib2.urlopen(req, json.dumps({"client_id": self.client_id, "socket_id": self.socket_id}))
+        if self.headless:
             return True
-        except:
-            self.logger.exception("Unable to connect to web client for simulation {}".format(self.simulation_id))
-            return False
+        else:
+            try:
+                req = urllib2.Request('http://{0}:{1}/api/simulation_end'.format(self.server_ip, self.server_port))
+                req.add_header('Content-Type', 'application/json')
+                response = urllib2.urlopen(req, json.dumps({"client_id": self.client_id, "socket_id": self.socket_id}))
+                return True
+            except:
+                self.logger.exception("Unable to connect to web client for simulation {}".format(self.simulation_id))
+                return False
 
     def run(self):
         self.logger.info('run simulation for {} days'.format(self.end_time / 60.0 / 60.0 / 24.0))

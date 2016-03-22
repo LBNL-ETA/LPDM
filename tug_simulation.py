@@ -67,12 +67,15 @@ class TugSimulation:
             device_config["broadcastNewPrice"] = self.messenger.onPriceChange
             device_config["broadcastNewPower"] = self.messenger.onPowerChange
             device_config["broadcastNewTTIE"] = self.messenger.onNewTTIE
-            device_config["dashboard"] = {
-                "host": self.server_ip,
-                "port": self.server_port,
-                "client_id": self.client_id,
-                "socket_id": self.socket_id
-            }
+            if self.headless:
+                device_config["dashboard"] = None
+            else:
+                device_config["dashboard"] = {
+                    "host": self.server_ip,
+                    "port": self.server_port,
+                    "client_id": self.client_id,
+                    "socket_id": self.socket_id
+                }
 
             self.logger.info("initialize a {}".format(device_config["device_type"]))
 

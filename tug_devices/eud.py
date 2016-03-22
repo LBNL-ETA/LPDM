@@ -112,12 +112,13 @@ class Eud(Device):
 
     def onPriceChange(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
-        self._time = time
-        self._price = new_price
-        self.logMessage("received new price {}".format(new_price))
-        if self.current_schedule_value():
-            self.setPowerLevel()
-        return
+        if not self._static_price:
+            self._time = time
+            self._price = new_price
+            self.logMessage("received new price {}".format(new_price))
+            if self.current_schedule_value():
+                self.setPowerLevel()
+            return
 
     # def onPriceChange(self, source_device_id, target_device_id, time, new_price):
     #     "Receives message when a price change has occured"
@@ -236,12 +237,15 @@ class Eud(Device):
 
     def calculateNewPowerLevel(self):
         "Set the power level of the eud"
-        if self._price <= self._price_dim:
+        if self._static_price:
             return self._max_power_use
-        elif self._price <= self._price_off:
-            return self.interpolatePower()
         else:
-            return 0.0
+            if self._price <= self._price_dim:
+                return self._max_power_use
+            elif self._price <= self._price_off:
+                return self.interpolatePower()
+            else:
+                return 0.0
 
     def interpolatePower(self):
         "Calculate energy consumption for the eud (in this case a linear interpolation) when the price is between price_dim and price_off."

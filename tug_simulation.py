@@ -40,7 +40,11 @@ class TugSimulation:
         self.client_id = params["client_id"] if params and 'client_id' in params.keys() else None
         self.socket_id = params["socket_id"] if params and 'socket_id' in params.keys() else None
 
+        # simulation doesn't try and send results to the dashboard
         self.headless = params["headless"] if params and params.has_key("headless") else False
+
+        # force the devices to ignore changes in price
+        self.static_price = True if params and params.has_key('static_price') and params["static_price"] else False
 
         self.last_dump = None
 
@@ -67,6 +71,9 @@ class TugSimulation:
             device_config["broadcastNewPrice"] = self.messenger.onPriceChange
             device_config["broadcastNewPower"] = self.messenger.onPowerChange
             device_config["broadcastNewTTIE"] = self.messenger.onNewTTIE
+            device_config["headless"] = self.headless
+            device_config["static_price"] = self.static_price
+
             if self.headless:
                 device_config["dashboard"] = None
             else:

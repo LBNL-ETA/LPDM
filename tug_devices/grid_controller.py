@@ -83,15 +83,15 @@ class GridController(Device):
 
     def onPriceChange(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
-        # self.logMessage("Price change received (t = {0}, p = {1}, source = {2})".format(time, new_price, source_device.deviceName()), logging.INFO)
-        self.logMessage("Price change received (new_price = {}, source_device_id = {}, target_device_id = {})".format(new_price, source_device_id, target_device_id), app_log_level=None)
-        self._power_price = new_price
-        self._time = time
+        if not self._static_price:
+            self.logMessage("Price change received (new_price = {}, source_device_id = {}, target_device_id = {})".format(new_price, source_device_id, target_device_id), app_log_level=None)
+            self._power_price = new_price
+            self._time = time
 
-        # self.setPowerSources()
-        # self.scheduleNextEvents()
-        # self.calculateNextTTIE()
-        self.sendPriceChangeToDevices()
+            # self.setPowerSources()
+            # self.scheduleNextEvents()
+            # self.calculateNextTTIE()
+            self.sendPriceChangeToDevices()
 
         return
 

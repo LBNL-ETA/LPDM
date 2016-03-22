@@ -76,19 +76,20 @@ class Refrigerator(Device):
 
     def onPriceChange(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
-        self.logMessage("Price change received (new_price = {}, source_device_id = {}, target_device_id = {})".format(new_price, source_device_id, target_device_id))
+        if not self._static_price:
+            self.logMessage("Price change received (new_price = {}, source_device_id = {}, target_device_id = {})".format(new_price, source_device_id, target_device_id))
 
-        if self._nominal_price is None:
-            if not self._nominal_price_calc_running:
-                # if the nominal price has not be calculated or is not running
-                # then schedule the event and log the prices
-                self.setNominalPriceCalculationEvent()
-            self._nominal_price_list.append(new_price)
+            if self._nominal_price is None:
+                if not self._nominal_price_calc_running:
+                    # if the nominal price has not be calculated or is not running
+                    # then schedule the event and log the prices
+                    self.setNominalPriceCalculationEvent()
+                self._nominal_price_list.append(new_price)
 
-        # add the price to the list of prices for the hourly avg calculation
-        self._hourly_price_list.append(new_price)
-        self.setNewFuelPrice(new_price)
-        return
+            # add the price to the list of prices for the hourly avg calculation
+            self._hourly_price_list.append(new_price)
+            self.setNewFuelPrice(new_price)
+            return
 
     def onTimeChange(self, new_time):
         "Receives message when time for an 'initial event' change has occured"

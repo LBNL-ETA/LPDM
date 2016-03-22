@@ -41,7 +41,9 @@ class Device(NotificationReceiver, NotificationSender):
         self._config_time = config["config_time"] if type(config) is dict and "config_time" in config.keys() else 1
         self._uuid = config["uuid"] if type(config) is dict and "uuid" in config.keys() else None
         self._price = config["price"] if type(config) is dict and "price" in config.keys() else 0.0
+        self._static_price = True if type(config) is dict and "static_price" in config.keys() and config["static_price"] else False
         self._dashboard = config["dashboard"] if type(config) is dict and "dashboard" in config.keys() else None
+        self._headless = config["headless"] if type(config) is dict and config.has_key("headless") else False
         self._dashboard_url = None
         self._power_level = 0.0
         self._time = 0
@@ -85,11 +87,8 @@ class Device(NotificationReceiver, NotificationSender):
 
     def setTugLogger(self):
         """ Setup the logging for the TuG dashboard, send info directly to dashboard server via http post """
-        print 'setup tug logger'
-        print self._dashboard
         if self._dashboard:
             self._dashboard_url = 'http://{0}:{1}/api/simulation_event'.format(self._dashboard["host"], self._dashboard["port"])
-            print self._dashboard_url
             # r = requests.post(url, data=data, allow_redirects=True)
             # print r.content
             # self._logging_http_request = urllib2.Request(url)

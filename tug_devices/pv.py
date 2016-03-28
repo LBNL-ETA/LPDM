@@ -2,6 +2,7 @@
 Implementation of a PV module
 """
 
+import os
 from device import Device
 import logging
 import pprint
@@ -35,7 +36,7 @@ class Pv(Device):
         self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "pv"
 
         self._current_power_output = 0
-        self._pv_file_name = "tug_devices/pv_data.csv"
+        self._pv_file_name = "pv_data.csv"
         self._power_profile = None
 
         # call the super constructor
@@ -57,8 +58,9 @@ class Pv(Device):
     def loadPowerProfile(self):
         "Load the power profile for each 15-minute period of the day"
 
+        print "real path = {}".format(os.path.dirname(os.path.realpath(__file__)))
         self._power_profile = []
-        for line in open(self._pv_file_name):
+        for line in open(os.path.join(os.path.dirname(os.path.realpath(__file__)), self._pv_file_name)):
             parts = line.strip().split(',')
             time_parts = parts[0].split(':')
             time_secs = (int(time_parts[0]) * 60 * 60) + (int(time_parts[1]) * 60) + int(time_parts[2])

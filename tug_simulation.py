@@ -169,6 +169,15 @@ class TugSimulation:
                 self.messenger.subscribeToPowerChanges(device)
                 self.messenger.subscribeToTimeChanges(device)
                 self.device_info.append({'device': 'air_conditioner', 'config': self.configToJSON(device_config)})
+            elif device_config["device_type"] == "eud":
+                eud = Eud(device_config)
+
+                self.eud_devices.append(eud)
+                self.messenger.subscribeToPriceChanges(eud)
+                self.messenger.subscribeToPowerChanges(eud)
+                self.messenger.subscribeToTimeChanges(eud)
+                self.device_info.append({'device': 'eud', 'config': self.configToJSON(device_config)})
+
             # elif device_config["device_type"] == "temperature_controller":
                 # self.temperature_controller = TemperatureController(device_config)
                 # self.messenger.subscribeToTimeChanges(self.temperature_controller)

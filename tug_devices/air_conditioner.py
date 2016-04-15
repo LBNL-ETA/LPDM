@@ -29,6 +29,8 @@ class AirConditioner(Device):
                     "set_point_low" (float): the low value for the set point
                     "set_point_high" (float): the high value for the set point
                     "setpoint_reassesment_interval" (int): number of seconds between reassesing the set point
+                    "price_range_low" (float): the low price reference for setpoint adjustment [$/kwh]
+                    "price_range_high" (float): the high price reference for setpoint adjustment [$/kwh]
         """
         self._device_type = "air_conditioner"
         self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "air_conditioner"
@@ -53,6 +55,8 @@ class AirConditioner(Device):
         self._set_point_low = float(config["set_point_low"]) if type(config) is dict and "set_point_low" in config.keys() else 0.5
         self._set_point_high = float(config["set_point_high"]) if type(config) is dict and "set_point_high" in config.keys() else 5.0
         self._setpoint_reassesment_interval = float(config["setpoint_reassesment_interval"]) if type(config) is dict and "setpoint_reassesment_interval" in config.keys() else 60.0 * 10.0
+        self._price_range_low = float(config["price_range_low"]) if type(config) is dict and "price_range_low" in config.keys() else 0.2
+        self._price_range_high = float(config["price_range_high"]) if type(config) is dict and "price_range_high" in config.keys() else 0.7
         self._cop = float(config["cop"]) if type(config) is dict and "cop" in config.keys() else 3.0
         self._number_of_people = None
         self._volume_m3 = float(config["volume_m3"]) if type(config) is dict and "volume_m3" in config.keys() else 3000 #volume of tent in m3
@@ -133,6 +137,9 @@ class AirConditioner(Device):
         # add the price to the list of prices for the hourly avg calculation
         self._hourly_price_list.append(new_price)
         self.setNewFuelPrice(new_price)
+
+        # reasses the setpoint for a price change event
+        self.reassesSetpoint()
         return
 
     def onTimeChange(self, new_time):
@@ -235,20 +242,32 @@ class AirConditioner(Device):
         self._fuel_price = new_price
 
     def reassesSetpoint(self):
-        """determine the setpoint based on the current price and 24 hr. price history"""
+        """
+            determine the setpoint based on the current price and 24 hr. price history,
+            and the current fuel price relative to price_range_low and price_range_high
+        """
 
         # check to see if there's 24 hours worth of data, if there isn't exit
         if len(self._hourly_prices) < 24:
             return
 
-        # determine the current price in relation to the past 24 hours of prices
-        sorted_hourly_prices = sorted(self._hourly_prices)
-        for i in xrange(24):
-            if  self._fuel_price < sorted_hourly_prices[i]:
-                break
+        # adjust setpoint based on price
+        if self._fuel_price > self._price_range_high:
+            # price > price_range_high, then setpoint to max plus (price - price_range_high)/5
+            new_setpoint = self._setpoint_high + (self._fuel_price - self._price_range_high) / 5.0
+        elif self._fuel_price > self._price_range_low and self._fuel_price <= self._price_range_high:
+            # fuel_price_low < fuel_price < fuel_price_high
+            # determine the current price in relation to the past 24 hours of prices
+            sorted_hourly_prices = sorted(self._hourly_prices)
+            for i in xrange(24):
+                if  self._fuel_price < sorted_hourly_prices[i]:
+                    break
+            price_percentile = float(i + 1) / 24.0
+            new_setpoint = self._set_point_low + (self._set_point_high - self._set_point_low) * price_percentile
+        else:
+            # price < price_range_low
+            new_setpoint = self._setpoint_low
 
-        price_percentile = float(i + 1) / 24.0
-        new_setpoint = self._set_point_low + (self._set_point_high - self._set_point_low) * price_percentile
         self.logMessage('reassesSetpoint: current setpoint = {}, new setpoint = {}'.format(self._current_set_point, new_setpoint));
         if new_setpoint != self._current_set_point:
             self._current_set_point = new_setpoint

@@ -354,7 +354,7 @@ class AirConditioner(Device):
         # adjust setpoint based on price
         if self._fuel_price > self._price_range_high:
             # price > price_range_high, then setpoint to max plus (price - price_range_high)/5
-            new_setpoint = self._setpoint_high + (self._fuel_price - self._price_range_high) / 5.0
+            new_setpoint = self._set_point_high + (self._fuel_price - self._price_range_high) / 5.0
             self.logMessage("fuel price > high_value = {}".format(new_setpoint))
         elif self._fuel_price > self._price_range_low and self._fuel_price <= self._price_range_high:
             # fuel_price_low < fuel_price < fuel_price_high
@@ -367,7 +367,7 @@ class AirConditioner(Device):
             new_setpoint = self._set_point_low + (self._set_point_high - self._set_point_low) * price_percentile
         else:
             # price < price_range_low
-            new_setpoint = self._setpoint_low
+            new_setpoint = self._set_point_low
 
         self.logMessage('reassesSetpoint: current setpoint = {}, new setpoint = {}'.format(self._current_set_point, new_setpoint));
         if new_setpoint != self._current_set_point:

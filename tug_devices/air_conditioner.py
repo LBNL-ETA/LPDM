@@ -70,7 +70,7 @@ class AirConditioner(Device):
         self._kwh_per_m3_1c = 1.0 / 3000.0 # 1 kwh to heat 3000 m3 by 1 C
         self._kj_per_m3_c = 1.2 # amount of energy (kj) it takees to heat 1 m3 by 1 C
 
-        if type(config) is dict and "set_point_schedule" in config.keys() and type(config)["set_point_schedule"] is list:
+        if type(config) is dict and "set_point_schedule" in config.keys() and config["set_point_schedule"] is list:
             self._set_point_schedule = config["set_point_schedule"]
         else:
             self._set_point_schedule = self.defaultSetpointSchedule()

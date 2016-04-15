@@ -31,6 +31,12 @@ class AirConditioner(Device):
                     "setpoint_reassesment_interval" (int): number of seconds between reassesing the set point
                     "price_range_low" (float): the low price reference for setpoint adjustment [$/kwh]
                     "price_range_high" (float): the high price reference for setpoint adjustment [$/kwh]
+                    "set_point_schedule" (list of int, float, float): hourly schedule of setpoints. e.g. [[0, 21.0, 25.0], [1, 21.0, 25.0], [2, 21.0, 25.0], ..., [23, 21.0, 25.0]]
+                        schedule is an array with array elements for each hour of the day.
+                        the array element for each hour has 3 items
+                            1) hour
+                            2) set_point_low
+                            3) set_point_high
         """
         self._device_type = "air_conditioner"
         self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "air_conditioner"
@@ -52,8 +58,8 @@ class AirConditioner(Device):
         self._current_temperature = float(config["current_temperature"]) if type(config) is dict and "current_temperature" in config.keys() else 2.5
         self._current_set_point = float(config["current_set_point"]) if type(config) is dict and "current_set_point" in config.keys() else 2.5
         self._temperature_max_delta = float(config["temperature_max_delta"]) if type(config) is dict and "temperature_max_delta" in config.keys() else 0.5
-        self._set_point_low = float(config["set_point_low"]) if type(config) is dict and "set_point_low" in config.keys() else 0.5
-        self._set_point_high = float(config["set_point_high"]) if type(config) is dict and "set_point_high" in config.keys() else 5.0
+        self._set_point_low = float(config["set_point_low"]) if type(config) is dict and "set_point_low" in config.keys() else 20.0
+        self._set_point_high = float(config["set_point_high"]) if type(config) is dict and "set_point_high" in config.keys() else 25.0
         self._setpoint_reassesment_interval = float(config["setpoint_reassesment_interval"]) if type(config) is dict and "setpoint_reassesment_interval" in config.keys() else 60.0 * 10.0
         self._price_range_low = float(config["price_range_low"]) if type(config) is dict and "price_range_low" in config.keys() else 0.2
         self._price_range_high = float(config["price_range_high"]) if type(config) is dict and "price_range_high" in config.keys() else 0.7
@@ -63,6 +69,13 @@ class AirConditioner(Device):
         self._heat_w_per_person = 120 # Heat (W) generated per person
         self._kwh_per_m3_1c = 1.0 / 3000.0 # 1 kwh to heat 3000 m3 by 1 C
         self._kj_per_m3_c = 1.2 # amount of energy (kj) it takees to heat 1 m3 by 1 C
+
+        if type(config) is dict and "set_point_schedule" in config.keys() and type(config)["set_point_schedule"] is list:
+            self._set_point_schedule = config["set_point_schedule"]
+        else:
+            self._set_point_schedule = self.defaultSetpointSchedule()
+
+        self.setInitialSetpoints()
 
         self._set_point_target = self._current_set_point
         self._temperature_hourly_profile = None
@@ -82,10 +95,45 @@ class AirConditioner(Device):
         self.computeHeatGainRate()
         self._temperature_hourly_profile = self.buildHourlyTemperatureProfile()
         self.logMessage("Hourly temperature profile: \n{}".format(pprint.pformat(self._temperature_hourly_profile, indent=4)))
+        self.logMessage("setpoint schedule: \n{setpoint_schedule}".format(setpoint_schedule=self._set_point_schedule))
         self.scheduleNextEvents()
 
     def getLogMessageString(self, message):
         return colors.colorize(Device.getLogMessageString(self, message), colors.Colors.BLUE)
+
+    def defaultSetpointSchedule(self):
+        """generate a default setpoint schedule if none has been passed"""
+        return [
+            [0, 20.0, 25.0],
+            [1, 20.0, 25.0],
+            [2, 20.0, 25.0],
+            [3, 20.0, 25.0],
+            [4, 20.0, 25.0],
+            [5, 20.0, 25.0],
+            [6, 20.0, 25.0],
+            [7, 20.0, 25.0],
+            [8, 20.0, 25.0],
+            [9, 20.0, 25.0],
+            [10, 20.0, 25.0],
+            [11, 20.0, 25.0],
+            [12, 20.0, 25.0],
+            [13, 20.0, 25.0],
+            [14, 20.0, 25.0],
+            [15, 20.0, 25.0],
+            [16, 20.0, 25.0],
+            [17, 20.0, 25.0],
+            [18, 20.0, 25.0],
+            [19, 20.0, 25.0],
+            [20, 20.0, 25.0],
+            [21, 20.0, 25.0],
+            [22, 20.0, 25.0],
+            [23, 20.0, 25.0],
+        ]
+
+    def setInitialSetpoints(self):
+        """set the initial set_point_low and set_point_high values"""
+        self._set_point_low = self._set_point_schedule[0][1]
+        self._set_point_high = self._set_point_schedule[0][2]
 
     def buildHourlyTemperatureProfile(self):
         """
@@ -139,7 +187,7 @@ class AirConditioner(Device):
         self.setNewFuelPrice(new_price)
 
         # reasses the setpoint for a price change event
-        self.reassesSetpoint()
+        # self.reassesSetpoint()
         return
 
     def onTimeChange(self, new_time):
@@ -153,25 +201,57 @@ class AirConditioner(Device):
 
     def processEvents(self):
         "Process any events that need to be processed"
+        events_occurred = {
+            "set_nominal_price": False,
+            "hourly_price_calculation": False,
+            "set_point_range": False,
+            "reasses_setpoint": False,
+            "update_outdoor_temperature": False
+        }
+
+        # loop through the current events
         remove_items = []
         for event in self._events:
             if event["time"] <= self._time:
-                if event["operation"] == "set_nominal_price":
-                    self.calculateNominalPrice()
-                    remove_items.append(event)
-                elif event["operation"] == "hourly_price_calculation":
-                    self.calculateHourlyPrice()
-                    remove_items.append(event)
-                elif event["operation"] == "reasses_setpoint":
-                    self.adjustInternalTemperature()
-                    self.reassesSetpoint()
-                    self.controlCompressorOperation()
-                    remove_items.append(event)
-                elif event["operation"] == "update_outdoor_temperature":
-                    self.adjustInternalTemperature()
-                    self.controlCompressorOperation()
-                    self.processOutdoorTemperatureChange()
-                    remove_items.append(event)
+                events_occurred[event["operation"]] = True
+                remove_items.append(event)
+                # if event["operation"] == "set_nominal_price":
+                    # self.calculateNominalPrice()
+                    # remove_items.append(event)
+                # elif event["operation"] == "hourly_price_calculation":
+                    # self.calculateHourlyPrice()
+                    # remove_items.append(event)
+                # elif event["operation"] == "set_point_range":
+                    # self.setSetpointRange()
+                    # remove_items.append(event)
+                # elif event["operation"] == "reasses_setpoint":
+                    # self.adjustInternalTemperature()
+                    # self.reassesSetpoint()
+                    # self.controlCompressorOperation()
+                    # remove_items.append(event)
+                # elif event["operation"] == "update_outdoor_temperature":
+                    # self.adjustInternalTemperature()
+                    # self.controlCompressorOperation()
+                    # self.processOutdoorTemperatureChange()
+                    # remove_items.append(event)
+
+        # execute the found events in order
+        if events_occurred["set_nominal_price"]:
+            self.calculateNominalPrice()
+
+        if events_occurred["hourly_price_calculation"]:
+            self.calculateHourlyPrice()
+
+        if events_occurred["set_point_range"]:
+            self.setSetpointRange()
+
+        if events_occurred["reasses_setpoint"] or events_occurred["update_outdoor_temperature"]:
+            self.adjustInternalTemperature()
+            if events_occurred["reasses_setpoint"]:
+                self.reassesSetpoint()
+            if events_occurred["update_outdoor_temperature"]:
+                self.processOutdoorTemperatureChange()
+            self.controlCompressorOperation()
 
         # remove the processed events from the list
         for event in remove_items:
@@ -202,9 +282,17 @@ class AirConditioner(Device):
         "Schedule upcoming events if necessary"
         # set the event for the hourly price calculation and setpoint reassesment
         self.setHourlyPriceCalculationEvent()
+        self.setSetpointRangeEvent()
         self.setReassesSetpointEvent()
         self.scheduleNextOutdoorTemperatureChange()
         return
+
+    def setSetpointRangeEvent(self):
+        """changes the set_point_low and set_point_high values based on the set_point_schedule (hour of day)"""
+        found_events = filter(lambda x: x["operation"] == "set_point_range", self._events)
+        if not len(found_events):
+            # create a new event to execute in 60 minutes(?) if an event hasn't yet been scheduled
+            self._events.append({"time": self._time + 60.0 * 60.0, "operation": "set_point_range"})
 
     def setHourlyPriceCalculationEvent(self):
         "set the next event to calculate the avg hourly prices"
@@ -241,6 +329,18 @@ class AirConditioner(Device):
         self.logMessage("New fuel price = {}".format(new_price), app_log_level=None)
         self._fuel_price = new_price
 
+    def setSetpointRange(self):
+        """change the set_point_low and set_point_high parameter for the current hour"""
+        current_hour = int(self.timeOfDaySeconds() / 3600)
+        schedule_item = self._set_point_schedule[current_hour-1]
+        if type(schedule_item) is list and len(schedule_item) == 3:
+            self._set_point_low = schedule_item[1]
+            self._set_point_high = schedule_item[2]
+            self.logMessage("change set point range ({low} - {high})".format(low=self._set_point_low, high=self._set_point_high))
+        else:
+            self.logMessage("the setpoint schedule item ({0}) is not in the correct format - [hour, low, high]".format(schedule_item))
+            raise Exception("Invalid setpoint schedule item {}".format(schedule_item))
+
     def reassesSetpoint(self):
         """
             determine the setpoint based on the current price and 24 hr. price history,
@@ -255,6 +355,7 @@ class AirConditioner(Device):
         if self._fuel_price > self._price_range_high:
             # price > price_range_high, then setpoint to max plus (price - price_range_high)/5
             new_setpoint = self._setpoint_high + (self._fuel_price - self._price_range_high) / 5.0
+            self.logMessage("fuel price > high_value = {}".format(new_setpoint))
         elif self._fuel_price > self._price_range_low and self._fuel_price <= self._price_range_high:
             # fuel_price_low < fuel_price < fuel_price_high
             # determine the current price in relation to the past 24 hours of prices

@@ -20,14 +20,13 @@ class AirConditioner(Device):
                 config (Dict): Dictionary of configuration values for the air conditioner
 
                 keys:
-                    "device_type" (string): Type of device
                     "device_name" (string): Name of the device
                     "max_power_use" (float): the maximum power output of the device
                     "current_temperature" (float): the current temperature inside the device
                     "current_set_point (float)": the initial set point
                     "temperature_max_delta" (float): the maximum amount that the temperature can increase by for every reassessment
-                    "set_point_low" (float): the low value for the set point
-                    "set_point_high" (float): the high value for the set point
+                    "cop" (float) : coefficient of performance
+                    "volume_m3" (int) [m3]: volume of space to condition
                     "setpoint_reassesment_interval" (int): number of seconds between reassesing the set point
                     "price_range_low" (float): the low price reference for setpoint adjustment [$/kwh]
                     "price_range_high" (float): the high price reference for setpoint adjustment [$/kwh]
@@ -55,8 +54,8 @@ class AirConditioner(Device):
         self._hourly_prices = []
         self._hourly_price_list = []
 
-        self._current_temperature = float(config["current_temperature"]) if type(config) is dict and "current_temperature" in config.keys() else 2.5
-        self._current_set_point = float(config["current_set_point"]) if type(config) is dict and "current_set_point" in config.keys() else 2.5
+        self._current_temperature = float(config["current_temperature"]) if type(config) is dict and "current_temperature" in config.keys() else 25.0
+        self._current_set_point = float(config["current_set_point"]) if type(config) is dict and "current_set_point" in config.keys() else 25.0
         self._temperature_max_delta = float(config["temperature_max_delta"]) if type(config) is dict and "temperature_max_delta" in config.keys() else 0.5
         self._set_point_low = float(config["set_point_low"]) if type(config) is dict and "set_point_low" in config.keys() else 20.0
         self._set_point_high = float(config["set_point_high"]) if type(config) is dict and "set_point_high" in config.keys() else 25.0

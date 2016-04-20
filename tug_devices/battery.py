@@ -31,7 +31,6 @@ class Battery(Device):
                     "max_soc" (float): Fraction of capacity at which the battery wants to stop charging
                     "max_charge_rate" (float): Max charge rate (Watts)
                     "roundtrip_eff" (float): Fraction of power that is stored and available for withdrawl
-                    "battery_on_time" (int): Time (seconds) when the battery was turned on
         """
         self._device_type = "battery"
         self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "battery"

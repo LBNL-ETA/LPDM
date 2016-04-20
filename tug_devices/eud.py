@@ -18,16 +18,21 @@ class Eud(Device):
         self._max_power_use = float(config["max_power_use"]) if type(config) is dict and "max_power_use" in config.keys() else 100.0
 
         # the price (c/kWh) at which to begin dimming down the power
-        # when price > 'price_dim', linearly dim down to power level (%) set at 'power_level_low' of power at 'price_off'
-        self._price_dim = float(config["price_dim"]) if type(config) is dict and "price_dim" in config.keys() else 0.3
+        # when price > 'price_dim_start' and price < 'price_dim_end', linearly dim down to power level (%) set at 'power_level_low' of power at 'price_dim_end'
+        self._price_dim_start = float(config["price_dim_start"]) if type(config) is dict and "price_dim_start" in config.keys() else 0.3
 
-        # the price (c/kWh) at which to turn off the power completeley
-        self._price_off = float(config["price_off"]) if type(config) is dict and "price_off" in config.keys() else 0.7
+        # the price ($/kWh) at which to stop dimming the power output
+        # when price > price_dim_end and price < price_off, set to power_level_low
+        self._price_dim_end = float(config["price_dim_end"]) if type(config) is dict and "price_dim_end" in config.keys() else 0.7
+
+        # the price ($/kWh) at which to turn off the power completeley
+        self._price_off = float(config["price_off"]) if type(config) is dict and "price_off" in config.keys() else 0.9
 
         # the max operating power level (%)
         self._power_level_max = float(config["power_level_max"]) if type(config) is dict and "power_level_max" in config.keys() else 100.0
 
         # the power level (%) to dim down to when price between price_dim and price_off
+        # the low operating power level
         self._power_level_low = float(config["power_level_low"]) if type(config) is dict and "power_level_low" in config.keys() else 20.0
 
         # _schedule_array is the raw schedule passed in
@@ -240,16 +245,22 @@ class Eud(Device):
         if self._static_price:
             return self._max_power_use
         else:
-            if self._price <= self._price_dim:
+            if self._price <= self._price_dim_start:
                 return self._max_power_use
-            elif self._price <= self._price_off:
+            elif self._price <= self._price_dim_end:
                 return self.interpolatePower()
+            elif self._price <= self._price_off:
+                return self.getPowerLevelLow()
             else:
                 return 0.0
 
+    def getPowerLevelLow(self):
+        """calculate the lowest operating power output"""
+        return self._max_power_use * (self._power_level_low / 100.0)
+
     def interpolatePower(self):
-        "Calculate energy consumption for the eud (in this case a linear interpolation) when the price is between price_dim and price_off."
-        power_reduction_ratio = (self._price - self._price_dim) / (self._price_off - self._price_dim)
+        "Calculate energy consumption for the eud (in this case a linear interpolation) when the price is between price_dim_start and price_dim_end."
+        power_reduction_ratio = (self._price - self._price_dim_start) / (self._price_dim_end - self._price_dim_start)
         power_level_percent = self._power_level_max - (self._power_level_max - self._power_level_low) * power_reduction_ratio
         return self._max_power_use * power_level_percent / 100.0
 

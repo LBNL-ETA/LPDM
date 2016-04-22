@@ -411,18 +411,19 @@ class AirConditioner(Device):
         if abs(delta) > self._temperature_max_delta:
             if delta > 0 and not self.isOn():
                 # if the current temperature is above the set point and compressor is off, turn it on
+                self.sumEnergyUsed(0.0)
                 self.turnOn()
                 self.broadcastNewPower(self._max_power_use)
                 self.logPlotValue("power_level", self._max_power_use)
             elif delta < 0 and self.isOn():
                 # if current temperature is below the set point and compressor is on, turn it off
-                self.sumEnergyUsed()
+                self.sumEnergyUsed(self._max_power_use)
                 self.turnOff()
                 self.broadcastNewPower(0.0)
                 self.logPlotValue("power_level", 0.0)
 
-    def sumEnergyUsed(self):
-        self._total_energy_use += self._max_power_use * (self._time - self._last_total_energy_update_time) / (1000 * 3600)
+    def sumEnergyUsed(self, power_level):
+        self._total_energy_use += power_level * (self._time - self._last_total_energy_update_time) / (1000 * 3600)
         self._last_total_energy_update_time = self._time
         self.logPlotValue("total_energy_use", self._total_energy_use)
 
@@ -474,3 +475,7 @@ class AirConditioner(Device):
         self._heat_gain_rate = self._max_c_delta / max_c_per_hr
         self.logMessage("set heat gain rate to {}".format(self._heat_gain_rate))
 
+    def finish(self):
+        "at the end of the simulation calculate the final total energy used"
+        if self.isOn():
+            self.sumEnergyUsed(self._max_power_use)

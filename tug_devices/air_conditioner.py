@@ -63,6 +63,7 @@ class AirConditioner(Device):
         self._price_range_low = float(config["price_range_low"]) if type(config) is dict and "price_range_low" in config.keys() else 0.2
         self._price_range_high = float(config["price_range_high"]) if type(config) is dict and "price_range_high" in config.keys() else 0.7
         self._cop = float(config["cop"]) if type(config) is dict and "cop" in config.keys() else 3.0
+        self._set_point_factor = float(config["set_point_factor"]) if type(config) is dict and "set_point_factor" in config.keys() else 0.05
         self._number_of_people = None
         self._volume_m3 = float(config["volume_m3"]) if type(config) is dict and "volume_m3" in config.keys() else 3000 #volume of tent in m3
         self._heat_w_per_person = 120 # Heat (W) generated per person
@@ -358,7 +359,7 @@ class AirConditioner(Device):
         # adjust setpoint based on price
         if self._fuel_price > self._price_range_high:
             # price > price_range_high, then setpoint to max plus (price - price_range_high)/5
-            new_setpoint = self._set_point_high + (self._fuel_price - self._price_range_high) / 0.05
+            new_setpoint = self._set_point_high + (self._fuel_price - self._price_range_high) / self._set_point_factor
             self.logMessage("fuel price > high_value = {}".format(new_setpoint))
         elif self._fuel_price > self._price_range_low and self._fuel_price <= self._price_range_high:
             # fuel_price_low < fuel_price < fuel_price_high

@@ -69,6 +69,10 @@ class AirConditioner(Device):
         self._kwh_per_m3_1c = 1.0 / 3000.0 # 1 kwh to heat 3000 m3 by 1 C
         self._kj_per_m3_c = 1.2 # amount of energy (kj) it takees to heat 1 m3 by 1 C
 
+        # sum the total energy used
+        self._total_energy_use = 0.0
+        self._last_total_energy_update_time = 0
+
         if type(config) is dict and "set_point_schedule" in config.keys() and config["set_point_schedule"] is list:
             self._set_point_schedule = config["set_point_schedule"]
         else:
@@ -327,6 +331,7 @@ class AirConditioner(Device):
         """Set a new fuel price"""
         self.logMessage("New fuel price = {}".format(new_price), app_log_level=None)
         self._fuel_price = new_price
+        self.logPlotValue("fuel_price", self._fuel_price)
 
     def setSetpointRange(self):
         """change the set_point_low and set_point_high parameter for the current hour"""
@@ -353,7 +358,7 @@ class AirConditioner(Device):
         # adjust setpoint based on price
         if self._fuel_price > self._price_range_high:
             # price > price_range_high, then setpoint to max plus (price - price_range_high)/5
-            new_setpoint = self._set_point_high + (self._fuel_price - self._price_range_high) / 5.0
+            new_setpoint = self._set_point_high + (self._fuel_price - self._price_range_high) / 0.05
             self.logMessage("fuel price > high_value = {}".format(new_setpoint))
         elif self._fuel_price > self._price_range_low and self._fuel_price <= self._price_range_high:
             # fuel_price_low < fuel_price < fuel_price_high
@@ -371,6 +376,7 @@ class AirConditioner(Device):
         self.logMessage('reassesSetpoint: current setpoint = {}, new setpoint = {}'.format(self._current_set_point, new_setpoint));
         if new_setpoint != self._current_set_point:
             self._current_set_point = new_setpoint
+            self.logPlotValue("set_point", self._current_set_point)
             self.logMessage("calculated new setpoint as {}".format(new_setpoint))
 
     def adjustInternalTemperature(self):
@@ -395,6 +401,7 @@ class AirConditioner(Device):
 
                 self.logMessage("internal temperature changed from {} to {}".format(self._current_temperature, self._current_temperature + c_change))
                 self._current_temperature += c_change
+                self.logPlotValue("current_temperature", self._current_temperature)
                 self._last_temperature_update_time = self._time
 
     def controlCompressorOperation(self):
@@ -406,10 +413,18 @@ class AirConditioner(Device):
                 # if the current temperature is above the set point and compressor is off, turn it on
                 self.turnOn()
                 self.broadcastNewPower(self._max_power_use)
+                self.logPlotValue("power_level", self._max_power_use)
             elif delta < 0 and self.isOn():
                 # if current temperature is below the set point and compressor is on, turn it off
+                self.sumEnergyUsed()
                 self.turnOff()
                 self.broadcastNewPower(0.0)
+                self.logPlotValue("power_level", 0.0)
+
+    def sumEnergyUsed(self):
+        self._total_energy_use += self._max_power_use * (self._time - self._last_total_energy_update_time) / (1000 * 3600)
+        self._last_total_energy_update_time = self._time
+        self.logPlotValue("total_energy_use", self._total_energy_use)
 
     def calculateNextTTIE(self):
         "calculate the next TTIE - look through the pending events for the one that will happen first"
@@ -446,6 +461,7 @@ class AirConditioner(Device):
         "This method needs to be implemented by a device if it needs to act on a change in temperature"
         self._current_outdoor_temperature = new_temperature
         self.logMessage("Outdoor temperature changed to {}".format(new_temperature))
+        self.logPlotValue("current_outdoor_temperature", self._current_outdoor_temperature)
         return
 
     def computeHeatGainRate(self):

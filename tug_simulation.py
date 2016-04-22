@@ -280,6 +280,14 @@ class TugSimulation:
                 self.logger.exception("Unable to connect to web client for simulation {}".format(self.simulation_id))
                 return False
 
+    def makeDevicePlots(self):
+        print "sim log path = {}".format(self.simulation_log_manager.simulationLogPath())
+        for dev in self.eud_devices:
+            dev.generatePlots()
+        self.grid_controller.generatePlots()
+        self.diesel_generator.generatePlots()
+
+
     def run(self):
         self.logger.info('run simulation for {} days'.format(self.end_time / 60.0 / 60.0 / 24.0))
         if self.signalSimulationStart():
@@ -287,6 +295,7 @@ class TugSimulation:
                 self.messenger.changeTime(self.current_time)
 
             self.signalSimulationEnd()
+            self.makeDevicePlots()
             self.logger.info("Simulation #{} finished".format(self.simulation_id))
         else:
             self.logger.exception("Unable to connect to web client for simulation {}".format(self.simulation_id))

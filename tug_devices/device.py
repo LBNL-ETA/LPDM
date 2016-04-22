@@ -10,6 +10,7 @@ import datetime
 import requests
 import json
 from notification import NotificationReceiver, NotificationSender
+from plot import Plot
 
 class Device(NotificationReceiver, NotificationSender):
     """
@@ -44,6 +45,10 @@ class Device(NotificationReceiver, NotificationSender):
         self._static_price = True if type(config) is dict and "static_price" in config.keys() and config["static_price"] else False
         self._dashboard = config["dashboard"] if type(config) is dict and "dashboard" in config.keys() else None
         self._headless = config["headless"] if type(config) is dict and config.has_key("headless") else False
+        self._plot = None
+        if type(config) is dict and config.has_key("plot_config"):
+            self._plot = Plot(config["plot_config"])
+
         self._dashboard_url = None
         self._power_level = 0.0
         self._time = 0
@@ -63,6 +68,9 @@ class Device(NotificationReceiver, NotificationSender):
         # Setup logging
         self.setLogger()
         self.setTugLogger()
+
+        if self._plot:
+            self._plot.setFilePaths(self._app_log_manager.simulationLogPath())
 
         self.calculateNextTTIE()
 
@@ -123,6 +131,15 @@ class Device(NotificationReceiver, NotificationSender):
                 # print 'x =', x
                 # print 'y =', y
                 raise
+
+    def generatePlots(self):
+        if self._plot:
+            self._plot.generatePlots()
+
+    def logPlotValue(self, parameter, value):
+        """log values used for plots"""
+        if self._plot:
+            self._plot.logValue(parameter, self._time, value)
 
     def status(self):
         return None

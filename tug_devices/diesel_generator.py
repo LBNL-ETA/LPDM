@@ -116,6 +116,7 @@ class DieselGenerator(Device):
         self.setNextHourlyConsumptionCalculationEvent()
         self.setNextReassesFuelChangeEvent()
         self.setNextRefuelEvent()
+        self.setInitialPriceEvent()
 
         self.calculateNextTTIE()
 
@@ -232,6 +233,10 @@ class DieselGenerator(Device):
 
         return
 
+    def setInitialPriceEvent(self):
+        """Let all other devices know of the initial price of energy"""
+        self._events.append({"time": 0, "operation": "emit_initial_price"})
+
     def setNextRefuelEvent(self):
         self._events.append({"time": self._time + self._days_to_refuel * 3600.0 * 24.0, "operation": "refuel"})
 
@@ -263,6 +268,9 @@ class DieselGenerator(Device):
                 elif event["operation"] == "refuel":
                     self.refuel()
                     self.setNextRefuelEvent()
+                    remove_items.append(event)
+                elif event["operation"] == "emit_initial_price":
+                    self.calculateElectricityPrice()
                     remove_items.append(event)
 
         # remove the processed events from the list
@@ -338,7 +346,7 @@ class DieselGenerator(Device):
 
     def calculateElectricityPrice(self, is_initial_event=False):
         "Calculate a new electricity price ($/W-sec), based on instantaneous part-load efficiency of generator"
-        if self.okToCalculatePrice():
+        if self.okToCalculatePrice() and (not self._static_price or (self._static_price and self._current_fuel_price is None)):
             self._time_price_last_update = self._time
             new_price = self._fuel_base_cost / self.getCurrentGenerationRate() * self._scarcity_multiplier
             if self._current_fuel_price and abs(new_price - self._current_fuel_price) / self._current_fuel_price > (self._fuel_price_change_rate / 100.0):

@@ -20,7 +20,8 @@ import urllib2
 class TugSimulation:
     def __init__(self, params=None):
         # self.logger = logging.getLogger('{}.{}'.format(logger_setup.APP_NAME, __name__))
-        self.simulation_log_manager = SimulationLogger()
+        verbose_logging = True if type(params) is dict and params["verbose_logging"] else False
+        self.simulation_log_manager = SimulationLogger(verbose_logging)
         self.simulation_id = self.simulation_log_manager.log_id
         self.logger = self.simulation_log_manager.logger
 

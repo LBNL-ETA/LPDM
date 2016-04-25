@@ -4,12 +4,13 @@ import logging
 import coloredlogs
 
 class SimulationLogger:
-    def __init__(self):
+    def __init__(self, verbose=True):
         self.app_name = "tug"
         self.base_path = "logs"
         self.folder = None
         self.log_id = None
         self.logger = None
+        self.verbose = verbose
 
         self.generateSimulationId()
         self.createSimulationLogFolder()
@@ -59,6 +60,7 @@ class SimulationLogger:
         fh.setFormatter(formatter)
 
         # add the handlers to logger
-        self.logger.addHandler(ch)
+        if self.verbose:
+            self.logger.addHandler(ch)
         self.logger.addHandler(fh)
 

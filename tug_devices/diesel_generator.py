@@ -270,6 +270,7 @@ class DieselGenerator(Device):
                     self.setNextRefuelEvent()
                     remove_items.append(event)
                 elif event["operation"] == "emit_initial_price":
+                    self.logMessage("emit_innitial_price diesel generator")
                     self.calculateElectricityPrice()
                     remove_items.append(event)
 
@@ -318,6 +319,7 @@ class DieselGenerator(Device):
         new_fuel_level = new_gallons / self._fuel_tank_capacity * 100
         if new_fuel_level != self._fuel_level:
             self.tugSendMessage(action="fuel_level", is_initial_event=False, value=self._fuel_level, description="%")
+            self.logPlotValue("fuel_level", new_fuel_level)
 
         self.logMessage("fuel level updated ({} to {})".format(self._fuel_level, new_fuel_level), app_log_level=None)
         self._fuel_level = new_fuel_level
@@ -346,7 +348,7 @@ class DieselGenerator(Device):
 
     def calculateElectricityPrice(self, is_initial_event=False):
         "Calculate a new electricity price ($/W-sec), based on instantaneous part-load efficiency of generator"
-        if self.okToCalculatePrice() and (not self._static_price or (self._static_price and self._current_fuel_price is None)):
+        if (self.okToCalculatePrice() or self._time == 0) and (not self._static_price or (self._static_price and self._current_fuel_price is None)):
             self._time_price_last_update = self._time
             new_price = self._fuel_base_cost / self.getCurrentGenerationRate() * self._scarcity_multiplier
             if self._current_fuel_price and abs(new_price - self._current_fuel_price) / self._current_fuel_price > (self._fuel_price_change_rate / 100.0):

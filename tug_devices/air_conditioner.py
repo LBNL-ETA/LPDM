@@ -320,6 +320,7 @@ class AirConditioner(Device):
             hour_avg = sum(self._hourly_price_list) / float(len(self._hourly_price_list))
         elif self._fuel_price is not None:
             hour_avg = self._fuel_price
+        self.logMessage("hourly price calc {}".format(hour_avg))
 
         self._hourly_prices.append(hour_avg)
         if len(self._hourly_prices) > 24:
@@ -377,8 +378,9 @@ class AirConditioner(Device):
         self.logMessage('reassesSetpoint: current setpoint = {}, new setpoint = {}'.format(self._current_set_point, new_setpoint));
         if new_setpoint != self._current_set_point:
             self._current_set_point = new_setpoint
-            self.logPlotValue("set_point", self._current_set_point)
             self.logMessage("calculated new setpoint as {}".format(new_setpoint))
+
+        self.logPlotValue("set_point", self._current_set_point)
 
     def adjustInternalTemperature(self):
         """

@@ -97,6 +97,9 @@ class Device(NotificationReceiver, NotificationSender):
     def deviceName(self):
         return self._device_name
 
+    def outOfFuel(self):
+        return self._price > 1e5
+
     def setTugLogger(self):
         """ Setup the logging for the TuG dashboard, send info directly to dashboard server via http post """
         if self._dashboard:

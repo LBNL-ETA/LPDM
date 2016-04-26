@@ -43,7 +43,7 @@ class AirConditioner(Device):
         # maximim power output, set to 4000 W if no value given
         self._max_power_use = float(config["max_power_use"]) if type(config) is dict and "max_power_use" in config.keys() else 4000.0
 
-        self._fuel_price = None
+        self._price = None
 
         # set the nominal price to be price of first hour of generation
         self._nominal_price = None
@@ -172,7 +172,10 @@ class AirConditioner(Device):
 
     def onPowerChange(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
-        self._time = time
+        if target_device_id == self._device_id:
+            if new_power == 0 and self._in_operation:
+                self._time = time
+                self.turnOff()
         return
 
     def onPriceChange(self, source_device_id, target_device_id, time, new_price):
@@ -318,8 +321,8 @@ class AirConditioner(Device):
         hour_avg = None
         if len(self._hourly_price_list):
             hour_avg = sum(self._hourly_price_list) / float(len(self._hourly_price_list))
-        elif self._fuel_price is not None:
-            hour_avg = self._fuel_price
+        elif self._price is not None:
+            hour_avg = self._price
         self.logMessage("hourly price calc {}".format(hour_avg))
 
         self._hourly_prices.append(hour_avg)
@@ -332,8 +335,9 @@ class AirConditioner(Device):
     def setNewFuelPrice(self, new_price):
         """Set a new fuel price"""
         self.logMessage("New fuel price = {}".format(new_price), app_log_level=None)
-        self._fuel_price = new_price
-        self.logPlotValue("fuel_price", self._fuel_price)
+        self._price = new_price
+        if self._price < 1e5:
+            self.logPlotValue("fuel_price", self._price)
 
     def setSetpointRange(self):
         """change the set_point_low and set_point_high parameter for the current hour"""
@@ -358,16 +362,16 @@ class AirConditioner(Device):
             return
 
         # adjust setpoint based on price
-        if self._fuel_price > self._price_range_high:
+        if self._price > self._price_range_high:
             # price > price_range_high, then setpoint to max plus (price - price_range_high)/5
-            new_setpoint = self._set_point_high + (self._fuel_price - self._price_range_high) / self._set_point_factor
+            new_setpoint = self._set_point_high + (self._price - self._price_range_high) / self._set_point_factor
             self.logMessage("fuel price > high_value = {}".format(new_setpoint))
-        elif self._fuel_price > self._price_range_low and self._fuel_price <= self._price_range_high:
+        elif self._price > self._price_range_low and self._price <= self._price_range_high:
             # fuel_price_low < fuel_price < fuel_price_high
             # determine the current price in relation to the past 24 hours of prices
             sorted_hourly_prices = sorted(self._hourly_prices)
             for i in xrange(24):
-                if  self._fuel_price < sorted_hourly_prices[i]:
+                if  self._price < sorted_hourly_prices[i]:
                     break
             price_percentile = float(i + 1) / 24.0
             new_setpoint = self._set_point_low + (self._set_point_high - self._set_point_low) * price_percentile
@@ -380,7 +384,8 @@ class AirConditioner(Device):
             self._current_set_point = new_setpoint
             self.logMessage("calculated new setpoint as {}".format(new_setpoint))
 
-        self.logPlotValue("set_point", self._current_set_point)
+        if self._current_set_point < 1000:
+            self.logPlotValue("set_point", self._current_set_point)
 
     def adjustInternalTemperature(self):
         """
@@ -412,13 +417,13 @@ class AirConditioner(Device):
         # see if the current tempreature is outside of the allowable range
         delta = self._current_temperature - self._current_set_point
         if abs(delta) > self._temperature_max_delta:
-            if delta > 0 and not self.isOn():
+            if delta > 0 and not self.isOn() and not self.outOfFuel():
                 # if the current temperature is above the set point and compressor is off, turn it on
                 self.sumEnergyUsed(0.0)
                 self.turnOn()
                 self.broadcastNewPower(self._max_power_use)
                 self.logPlotValue("power_level", self._max_power_use)
-            elif delta < 0 and self.isOn():
+            elif (delta < 0 or self.outOfFuel()) and self.isOn():
                 # if current temperature is below the set point and compressor is on, turn it off
                 self.sumEnergyUsed(self._max_power_use)
                 self.turnOff()

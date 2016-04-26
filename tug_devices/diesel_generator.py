@@ -194,6 +194,12 @@ class DieselGenerator(Device):
                 self.logPowerChange(time, new_power)
                 self.calculateElectricityPrice(is_initial_event=False)
 
+            elif new_power > 0 and self._fuel_level <= 0:
+                if self.isOn():
+                    self.turnOff()
+                    self._power_level = 0.0
+                self.broadcastNewPower(0.0)
+
             elif new_power <= 0 and self.isOn():
                 # Shutoff power
                 self.turnOff()
@@ -328,6 +334,8 @@ class DieselGenerator(Device):
             self.turnOff()
             self._power_level = 0.0
             self.broadcastNewPower(self._power_level)
+            self._current_fuel_price = 1e6
+            self.broadcastNewPrice(self._current_fuel_price)
         return
 
     def setDaysToRefuel(self, days_to_refuel):
@@ -348,7 +356,9 @@ class DieselGenerator(Device):
 
     def calculateElectricityPrice(self, is_initial_event=False):
         "Calculate a new electricity price ($/W-sec), based on instantaneous part-load efficiency of generator"
-        if (self.okToCalculatePrice() or self._time == 0) and (not self._static_price or (self._static_price and self._current_fuel_price is None)):
+        if self._fuel_level > 0 and (self.okToCalculatePrice() or self._time == 0) and (not self._static_price or (self._static_price and self._current_fuel_price is None)):
+            if self._current_fuel_price > 1e5:
+                self._current_fuel_price = None
             self._time_price_last_update = self._time
             new_price = self._fuel_base_cost / self.getCurrentGenerationRate() * self._scarcity_multiplier
             if self._current_fuel_price and abs(new_price - self._current_fuel_price) / self._current_fuel_price > (self._fuel_price_change_rate / 100.0):
@@ -469,6 +479,7 @@ class DieselGenerator(Device):
                 if self._scarcity_multiplier < 1.0:
                     self._scarcity_multiplier = 1.0
 
+            self.logMessage("reasses_fuel {}".format(self._scarcity_multiplier))
             self.tugSendMessage(action="reasses_fuel", is_initial_event=is_initial_event, value=self._fuel_level, description="%")
             self.tugSendMessage(action="scarcity_multiplier", is_initial_event=False, value=self._scarcity_multiplier, description="")
             self.tugSendMessage(action="output_capacity", is_initial_event=False, value=self.currentOutputCapacity(), description="%")

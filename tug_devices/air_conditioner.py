@@ -89,7 +89,7 @@ class AirConditioner(Device):
         self._heat_gain_rate = None
         self._cop = 3.0
         self._max_c_delta = 10.0 #the maximum temeprature the ECU can handle in 1 hr
-        self._compressor_max_c_per_kwh = self._max_c_delta / self._max_power_use
+        self._compressor_max_c_per_kwh = 1.0 * (3000.0 / self._volume_m3) / 1000.0
 
         self._events = []
 

@@ -55,7 +55,8 @@ class AirConditioner(Device):
         self._hourly_price_list = []
 
         self._current_temperature = float(config["current_temperature"]) if type(config) is dict and "current_temperature" in config.keys() else 25.0
-        self._current_set_point = float(config["current_set_point"]) if type(config) is dict and "current_set_point" in config.keys() else 25.0
+        # self._current_set_point = float(config["current_set_point"]) if type(config) is dict and "current_set_point" in config.keys() else 25.0
+        self._current_set_point = None
         self._temperature_max_delta = float(config["temperature_max_delta"]) if type(config) is dict and "temperature_max_delta" in config.keys() else 0.5
         self._set_point_low = float(config["set_point_low"]) if type(config) is dict and "set_point_low" in config.keys() else 20.0
         self._set_point_high = float(config["set_point_high"]) if type(config) is dict and "set_point_high" in config.keys() else 25.0
@@ -182,15 +183,15 @@ class AirConditioner(Device):
         "Receives message when a price change has occured"
         self.logMessage("Price change received (new_price = {}, source_device_id = {}, target_device_id = {})".format(new_price, source_device_id, target_device_id))
 
-        if self._nominal_price is None:
-            if not self._nominal_price_calc_running:
-                # if the nominal price has not be calculated or is not running
-                # then schedule the event and log the prices
-                self.setNominalPriceCalculationEvent()
-            self._nominal_price_list.append(new_price)
+        # if self._nominal_price is None:
+            # if not self._nominal_price_calc_running:
+                # # if the nominal price has not be calculated or is not running
+                # # then schedule the event and log the prices
+                # self.setNominalPriceCalculationEvent()
+            # self._nominal_price_list.append(new_price)
 
-        # add the price to the list of prices for the hourly avg calculation
-        self._hourly_price_list.append(new_price)
+        # # add the price to the list of prices for the hourly avg calculation
+        # self._hourly_price_list.append(new_price)
         self.setNewFuelPrice(new_price)
 
         # reasses the setpoint for a price change event
@@ -222,25 +223,6 @@ class AirConditioner(Device):
             if event["time"] <= self._time:
                 events_occurred[event["operation"]] = True
                 remove_items.append(event)
-                # if event["operation"] == "set_nominal_price":
-                    # self.calculateNominalPrice()
-                    # remove_items.append(event)
-                # elif event["operation"] == "hourly_price_calculation":
-                    # self.calculateHourlyPrice()
-                    # remove_items.append(event)
-                # elif event["operation"] == "set_point_range":
-                    # self.setSetpointRange()
-                    # remove_items.append(event)
-                # elif event["operation"] == "reasses_setpoint":
-                    # self.adjustInternalTemperature()
-                    # self.reassesSetpoint()
-                    # self.controlCompressorOperation()
-                    # remove_items.append(event)
-                # elif event["operation"] == "update_outdoor_temperature":
-                    # self.adjustInternalTemperature()
-                    # self.controlCompressorOperation()
-                    # self.processOutdoorTemperatureChange()
-                    # remove_items.append(event)
 
         # execute the found events in order
         if events_occurred["set_nominal_price"]:
@@ -288,7 +270,7 @@ class AirConditioner(Device):
     def scheduleNextEvents(self):
         "Schedule upcoming events if necessary"
         # set the event for the hourly price calculation and setpoint reassesment
-        self.setHourlyPriceCalculationEvent()
+        # self.setHourlyPriceCalculationEvent()
         self.setSetpointRangeEvent()
         self.setReassesSetpointEvent()
         self.scheduleNextOutdoorTemperatureChange()
@@ -357,24 +339,22 @@ class AirConditioner(Device):
             and the current fuel price relative to price_range_low and price_range_high
         """
 
-        # check to see if there's 24 hours worth of data, if there isn't exit
-        if len(self._hourly_prices) < 24:
-            return
+        # # check to see if there's 24 hours worth of data, if there isn't exit
+        # if len(self._hourly_prices) < 24:
+            # return
 
         # adjust setpoint based on price
-        if self._price > self._price_range_high:
+        if self._price is None:
+            # price hasn't been set yet
+            new_setpoint = self._set_point_low
+        elif self._price > self._price_range_high:
             # price > price_range_high, then setpoint to max plus (price - price_range_high)/5
             new_setpoint = self._set_point_high + (self._price - self._price_range_high) / self._set_point_factor
             self.logMessage("fuel price > high_value = {}".format(new_setpoint))
         elif self._price > self._price_range_low and self._price <= self._price_range_high:
             # fuel_price_low < fuel_price < fuel_price_high
-            # determine the current price in relation to the past 24 hours of prices
-            sorted_hourly_prices = sorted(self._hourly_prices)
-            for i in xrange(24):
-                if  self._price < sorted_hourly_prices[i]:
-                    break
-            price_percentile = float(i + 1) / 24.0
-            new_setpoint = self._set_point_low + (self._set_point_high - self._set_point_low) * price_percentile
+            # new setpoint is relative to where the current price is between price_low and price_high
+            new_setpoint = self._set_point_low + (self._set_point_high - self._set_point_low) * ((self._price - self._price_range_low) / (self._price_range_high - self._price_range_low))
         else:
             # price < price_range_low
             new_setpoint = self._set_point_low
@@ -471,7 +451,6 @@ class AirConditioner(Device):
         self._current_outdoor_temperature = new_temperature
         self.logMessage("Outdoor temperature changed to {}".format(new_temperature))
         self.logPlotValue("current_outdoor_temperature", self._current_outdoor_temperature)
-        return
 
     def computeHeatGainRate(self):
         """

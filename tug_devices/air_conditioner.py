@@ -3,6 +3,8 @@
 """
 
 from device import Device
+import os
+import json
 import logging
 import colors
 import pprint
@@ -75,7 +77,7 @@ class AirConditioner(Device):
         self._total_energy_use = 0.0
         self._last_total_energy_update_time = 0
 
-        if type(config) is dict and "set_point_schedule" in config.keys() and config["set_point_schedule"] is list:
+        if type(config) is dict and "set_point_schedule" in config.keys() and type(config["set_point_schedule"]) is list:
             self._set_point_schedule = config["set_point_schedule"]
         else:
             self._set_point_schedule = self.defaultSetpointSchedule()
@@ -84,8 +86,9 @@ class AirConditioner(Device):
 
         self._set_point_target = self._current_set_point
         self._temperature_hourly_profile = None
+        self._temperature_file_name = "weather_5_secs.json"
         self._current_outdoor_temperature = None
-        self._temperature_update_interval = 60.0 * 10.0 # every 10 minutes?
+        self._temperature_update_interval = 60.0 * 5.0 # every 10 minutes?
         self._last_temperature_update_time = 0.0 # the time the last internal temperature update occured
         self._heat_gain_rate = None
         self._cop = 3.0
@@ -98,8 +101,9 @@ class AirConditioner(Device):
         Device.__init__(self, config)
 
         self.computeHeatGainRate()
-        self._temperature_hourly_profile = self.buildHourlyTemperatureProfile()
-        self.logMessage("Hourly temperature profile: \n{}".format(pprint.pformat(self._temperature_hourly_profile, indent=4)))
+        # self._temperature_hourly_profile = self.buildHourlyTemperatureProfile()
+        self.loadTemperatureProfile()
+        # self.logMessage("5-minute temperature profile: \n{}".format(pprint.pformat(self._temperature_hourly_profile, indent=4)))
         self.logMessage("setpoint schedule: \n{setpoint_schedule}".format(setpoint_schedule=self._set_point_schedule))
         self.scheduleNextEvents()
 
@@ -145,31 +149,40 @@ class AirConditioner(Device):
         these are average hourly tempeartures for edwards airforce base from august 2015
         """
         return [
-            {"hour": 0, "hour_seconds": 3600.0 * 0, "value": 23.2},
-            {"hour": 1, "hour_seconds": 3600.0 * 1, "value": 22.3},
-            {"hour": 2, "hour_seconds": 3600.0 * 2, "value": 21.6},
-            {"hour": 3, "hour_seconds": 3600.0 * 3, "value": 20.9},
-            {"hour": 4, "hour_seconds": 3600.0 * 4, "value": 20.1},
-            {"hour": 5, "hour_seconds": 3600.0 * 5, "value": 20.3},
-            {"hour": 6, "hour_seconds": 3600.0 * 6, "value": 23.3},
-            {"hour": 7, "hour_seconds": 3600.0 * 7, "value": 26.4},
-            {"hour": 8, "hour_seconds": 3600.0 * 8, "value": 29.8},
-            {"hour": 9, "hour_seconds": 3600.0 * 9, "value": 32.2},
-            {"hour": 10, "hour_seconds": 3600.0 * 10, "value": 34.3},
-            {"hour": 11, "hour_seconds": 3600.0 * 11, "value": 35.8},
-            {"hour": 12, "hour_seconds": 3600.0 * 12, "value": 37.0},
-            {"hour": 13, "hour_seconds": 3600.0 * 13, "value": 37.6},
-            {"hour": 14, "hour_seconds": 3600.0 * 14, "value": 37.6},
-            {"hour": 15, "hour_seconds": 3600.0 * 15, "value": 37.2},
-            {"hour": 16, "hour_seconds": 3600.0 * 16, "value": 35.9},
-            {"hour": 17, "hour_seconds": 3600.0 * 17, "value": 33.5},
-            {"hour": 18, "hour_seconds": 3600.0 * 18, "value": 31.1},
-            {"hour": 19, "hour_seconds": 3600.0 * 19, "value": 28.8},
-            {"hour": 20, "hour_seconds": 3600.0 * 20, "value": 27.2},
-            {"hour": 21, "hour_seconds": 3600.0 * 21, "value": 25.7},
-            {"hour": 22, "hour_seconds": 3600.0 * 22, "value": 24.7},
-            {"hour": 23, "hour_seconds": 3600.0 * 23, "value": 23.7}
+            {"hour": 0, "seconds": 3600.0 * 0, "value": 23.2},
+            {"hour": 1, "seconds": 3600.0 * 1, "value": 22.3},
+            {"hour": 2, "seconds": 3600.0 * 2, "value": 21.6},
+            {"hour": 3, "seconds": 3600.0 * 3, "value": 20.9},
+            {"hour": 4, "seconds": 3600.0 * 4, "value": 20.1},
+            {"hour": 5, "seconds": 3600.0 * 5, "value": 20.3},
+            {"hour": 6, "seconds": 3600.0 * 6, "value": 23.3},
+            {"hour": 7, "seconds": 3600.0 * 7, "value": 26.4},
+            {"hour": 8, "seconds": 3600.0 * 8, "value": 29.8},
+            {"hour": 9, "seconds": 3600.0 * 9, "value": 32.2},
+            {"hour": 10, "seconds": 3600.0 * 10, "value": 34.3},
+            {"hour": 11, "seconds": 3600.0 * 11, "value": 35.8},
+            {"hour": 12, "seconds": 3600.0 * 12, "value": 37.0},
+            {"hour": 13, "seconds": 3600.0 * 13, "value": 37.6},
+            {"hour": 14, "seconds": 3600.0 * 14, "value": 37.6},
+            {"hour": 15, "seconds": 3600.0 * 15, "value": 37.2},
+            {"hour": 16, "seconds": 3600.0 * 16, "value": 35.9},
+            {"hour": 17, "seconds": 3600.0 * 17, "value": 33.5},
+            {"hour": 18, "seconds": 3600.0 * 18, "value": 31.1},
+            {"hour": 19, "seconds": 3600.0 * 19, "value": 28.8},
+            {"hour": 20, "seconds": 3600.0 * 20, "value": 27.2},
+            {"hour": 21, "seconds": 3600.0 * 21, "value": 25.7},
+            {"hour": 22, "seconds": 3600.0 * 22, "value": 24.7},
+            {"hour": 23, "seconds": 3600.0 * 23, "value": 23.7}
         ]
+
+    def loadTemperatureProfile(self):
+        "load the temperature profile from a json file"
+
+        print "real path = {}".format(os.path.dirname(os.path.realpath(__file__)))
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), self._temperature_file_name), 'r') as content_file:
+            self._temperature_hourly_profile = json.loads(content_file.read())
+
+        self.logMessage("temperature profile loaded: {}".format(pprint.pformat(self._temperature_hourly_profile, indent=4)))
 
     def onPowerChange(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
@@ -395,6 +408,9 @@ class AirConditioner(Device):
     def controlCompressorOperation(self):
         """turn the compressor on/off when needed"""
         # see if the current tempreature is outside of the allowable range
+        if self._current_set_point is None:
+            return
+
         delta = self._current_temperature - self._current_set_point
         if abs(delta) > self._temperature_max_delta:
             if delta > 0 and not self.isOn() and not self.outOfFuel():
@@ -439,7 +455,7 @@ class AirConditioner(Device):
         time_of_day = self.timeOfDaySeconds()
         found_temp = None
         for temp in self._temperature_hourly_profile:
-            if temp["hour_seconds"] >= time_of_day:
+            if temp["seconds"] >= time_of_day:
                 found_temp = temp
                 break
 

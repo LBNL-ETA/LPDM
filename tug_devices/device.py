@@ -142,6 +142,10 @@ class Device(NotificationReceiver, NotificationSender):
     def generatePlots(self):
         if self._plot:
             self._plot.generatePlots()
+        if hasattr(self, '_battery') and self._battery:
+            self._battery.generatePlots()
+        if hasattr(self, '_pv') and self._pv:
+            self._pv.generatePlots()
 
     def logPlotValue(self, parameter, value):
         """log values used for plots"""

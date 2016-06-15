@@ -293,6 +293,7 @@ class GridController(Device):
             # update the pv
             if previous_load_pv != self._load_on_pv:
                 self._pv.setPowerOutput(self._time, self._load_on_pv)
+                self.logPlotValue("pv_power_output", self._load_on_pv)
 
             if previous_load_generator != self._load_on_generator or previous_load_battery != self._load_on_battery:
                 self.tugSendMessage(action="gc_total_load", is_initial_event=False, value=self._total_load, description="W")
@@ -339,6 +340,7 @@ class GridController(Device):
             if previous_load_pv != self._load_on_pv:
                 self.logMessage("pv power output {}".format(self._load_on_pv))
                 self._pv.setPowerOutput(self._time, self._load_on_pv)
+                self.logPlotValue("pv_power_output", self._load_on_pv)
 
             # self.tugSendMessage(action="output_capacity", is_initial_event=False, value=self.currentOutputCapacity(), description="%")
             # print("generator output = {0}".format(generator.currentOutputCapacity()))

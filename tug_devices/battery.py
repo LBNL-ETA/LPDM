@@ -137,6 +137,8 @@ class Battery(Device):
                 self._current_soc = ((self._capacity * 1000.0 * self._current_soc) - (load_on_battery * (time - self._last_update_time) / 3600.0)) / (self._capacity * 1000.0)
                 self.tugSendMessage(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
 
+            self.logPlotValue("battery_soc", self._current_soc)
+
             self._last_update_time = time
 
     # def startUsingBattery(self, time):

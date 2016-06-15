@@ -27,6 +27,8 @@ class Plot:
             if parameter == self.parameter:
                 self.times.append(self.getDateTime(time))
                 self.values.append(value)
+                # if parameter == "battery_soc":
+                    # print "soc value {}".format(value)
 
         def generatePlot(self):
             """generate the plot"""

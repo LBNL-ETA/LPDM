@@ -40,6 +40,7 @@ class Messenger:
                 device.onPriceChange(source_device_id, target_device_id, time, new_price)
 
     def onNewTTIE(self, source_device_id, target_device_id, new_ttie):
+        time.sleep(0.12) # When time.sleep(0.12), one day will run in one minute (1d = 1m)
         return
 
     def changePower(self, source_device_id, target_device_id, time, new_power):

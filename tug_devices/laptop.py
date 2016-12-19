@@ -51,7 +51,7 @@ class Laptop(InsightEud):
         self._last_update_time = None
         self._min_soc_refresh_rate = 60
         # No laptop is set up, so IP is a dummy for now.
-        self._insight_server_url = config['insight_server_url'] if type(config) is dict and 'insight_ipaddr' in config.keys() else '***REMOVED***'
+        self._insight_server_url = config['insight_server_url'] if type(config) is dict and 'insight_ipaddr' in config.keys() else None
         self._insight_name = config['insight_name'] if type(config) is dict and 'insight_name' in config.keys() else 'WeMo Insight'
         self._laptop_link = RemoteLaptopControl(self.ipaddr)
         self._current_plan = self._laptop_link.getPlan()

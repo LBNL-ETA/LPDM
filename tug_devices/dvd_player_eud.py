@@ -27,7 +27,7 @@ class InsightEud(Eud):
         Eud.__init__(self, config)
 
         # Bridge IP address on Global Cache Device
-        self._bridge_ipaddr = config["bridge_ipaddr"] if type(config) is dict and "bridge_ipaddr" in config.keys() else '***REMOVED***'
+        self._bridge_ipaddr = config["bridge_ipaddr"] if type(config) is dict and "bridge_ipaddr" in config.keys() else None
 
         # Number of emitter on Global Cache Device
         self._emitter_num = config["_emitter_num"] if type(config) is dict and "_emitter_num" in config.keys() else 1

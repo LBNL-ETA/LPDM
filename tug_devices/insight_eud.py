@@ -29,7 +29,7 @@ class InsightEud(Eud):
         self._insight_name = config["insight_name"] if type(config) is dict and "insight_name" in config.keys() else "WeMo Insight"
 
         # Server on which WeMo connections are running
-        self._insight_server_url = config["insight_server_url"] if type(config) is dict and "insight_server_url" in config.keys() else "***REMOVED***"
+        self._insight_server_url = config["insight_server_url"] if type(config) is dict and "insight_server_url" in config.keys() else None
 
         # Build hardware link
         self._insight = WemoInsight(self._insight_name, self._insight_server_url)

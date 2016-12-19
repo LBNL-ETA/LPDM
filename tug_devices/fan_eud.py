@@ -27,7 +27,7 @@ class PWMfan_eud(Eud, PWMfan):
         Eud.__init__(self, config)
 
         # Server on which WeMo connections are running
-        self._login_at_ip  = config["login_at_ip"] if type(config) is dict and "login_at_ip" in config.keys() else "***REMOVED***"
+        self._login_at_ip  = config["login_at_ip"] if type(config) is dict and "login_at_ip" in config.keys() else None
         self._fan_speed    = config["fan_speed"] if type(config) is dict and "fan_speed" in config.keys() else 100
 
         self._fan_max = 99

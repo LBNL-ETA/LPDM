@@ -49,8 +49,8 @@ class TugSimulation:
         self.end_time = int(params["run_time_days"]) * 60 * 60 * 24 if params and 'run_time_days' in params.keys() and params['run_time_days'] else 60 * 60 * 24 * 7
         self.status_interval = None
 
-        self.server_ip = params["server_ip"] if params and 'server_ip' in params.keys() else  "***REMOVED***"
-        self.server_port = params["server_port"] if params and 'server_port' in params.keys() else "***REMOVED***"
+        self.server_ip = params["server_ip"] if params and 'server_ip' in params.keys() else  None
+        self.server_port = params["server_port"] if params and 'server_port' in params.keys() else None
         self.client_id = params["client_id"] if params and 'client_id' in params.keys() else None
         self.socket_id = params["socket_id"] if params and 'socket_id' in params.keys() else None
 

@@ -3,11 +3,11 @@
 ################################################################################################################################
 # *** Copyright Notice ***
 #
-# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v1.0" 
-# Copyright (c) 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory 
+# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v1.0"
+# Copyright (c) 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory
 # (subject to receipt of any required approvals from the U.S. Dept. of Energy).  All rights reserved.
 #
-# If you have questions about your rights to use or distribute this software, please contact 
+# If you have questions about your rights to use or distribute this software, please contact
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 ################################################################################################################################
 
@@ -20,7 +20,6 @@ from tug_devices.fan_eud import PWMfan_eud
 from tug_devices.refrigerator import Refrigerator
 from tug_devices.air_conditioner import AirConditioner
 from messenger import Messenger
-from tug_logger import TugLogger
 from simulation_logger import SimulationLogger
 import logging
 import os
@@ -42,7 +41,6 @@ class TugSimulation:
         self.grid_controller = None
         self.diesel_generator = None
         self.messenger = None
-        self.tug_logger = None
         self.temperature_controller = None
 
         self.current_time = None
@@ -69,7 +67,6 @@ class TugSimulation:
         self.initializeSimulation(params)
 
     def initializeSimulation(self, params):
-        self.tug_logger = TugLogger()
 
         self.logger.info('Initialize Simulation {}'.format(self.simulation_id))
         self.logger.info(pprint.pformat(params))
@@ -81,7 +78,6 @@ class TugSimulation:
             device_config["uuid"] = uuid
             device_config["app_log_manager"] = self.simulation_log_manager
             device_config["logger"] = self.logger
-            device_config["tug_logger"] = self.tug_logger
             device_config["broadcastNewPrice"] = self.messenger.onPriceChange
             device_config["broadcastNewPower"] = self.messenger.onPowerChange
             device_config["broadcastNewTTIE"] = self.messenger.onNewTTIE
@@ -111,20 +107,16 @@ class TugSimulation:
                 if len(battery):
                     device_config['battery_config'] = battery[0]
                     uuid += 1
-                    device_config["battery_config"]["tug_logger"] = self.tug_logger
                     device_config["battery_config"]["uuid"] = uuid
                     device_config["battery_config"]["app_log_manager"] = self.simulation_log_manager
                     device_config["battery_config"]["logger"] = self.logger
-                    device_config["battery_config"]["tug_logger"] = self.tug_logger
 
                 if "pv" in device_config.keys() and device_config["pv"] == "1":
                     uuid += 1
                     device_config["pv_config"] = {}
-                    device_config["pv_config"]["tug_logger"] = self.tug_logger
                     device_config["pv_config"]["uuid"] = uuid
                     device_config["pv_config"]["app_log_manager"] = self.simulation_log_manager
                     device_config["pv_config"]["logger"] = self.logger
-                    device_config["pv_config"]["tug_logger"] = self.tug_logger
                 else:
                     device_config["pv_config"] = None
 

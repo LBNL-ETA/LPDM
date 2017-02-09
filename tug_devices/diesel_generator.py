@@ -3,11 +3,11 @@
 ################################################################################################################################
 # *** Copyright Notice ***
 #
-# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v1.0" 
-# Copyright (c) 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory 
+# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v1.0"
+# Copyright (c) 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory
 # (subject to receipt of any required approvals from the U.S. Dept. of Energy).  All rights reserved.
 #
-# If you have questions about your rights to use or distribute this software, please contact 
+# If you have questions about your rights to use or distribute this software, please contact
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 ################################################################################################################################
 
@@ -15,7 +15,6 @@
     Implementation of the Diesel Generator device.
 """
 from device import Device
-import colors
 import logging
 import pprint
 
@@ -106,7 +105,6 @@ class DieselGenerator(Device):
 
         self._target_refuel_time_secs = None
         self._base_refuel_time_secs = 0
-        self.setTargetRefuelTime()
 
         self._scarcity_multiplier = 1.0
 
@@ -117,9 +115,11 @@ class DieselGenerator(Device):
         # call the super constructor
         Device.__init__(self, config)
 
+        # setup the next refuel time
+        self.setTargetRefuelTime()
+
         # set the units for a deisel generator
         self._units = 'MW'
-
 
         # load a set of attribute values if a 'scenario' key is present
         if type(config) is dict and 'scenario' in config.keys():
@@ -135,9 +135,6 @@ class DieselGenerator(Device):
 
         # self._tasks = config["tasks"] if type(config) is dict and "tasks" in config.keys() else None
         # self._setupDeviceTasks()
-
-    def getLogMessageString(self, message):
-        return colors.colorize(Device.getLogMessageString(self, message), colors.Colors.BROWN)
 
     def status(self):
         return {
@@ -177,15 +174,11 @@ class DieselGenerator(Device):
         "Receives messages when a power change has occured (W)"
 
         if target_device_id == self._device_id:
-            self.logMessage('power change received, source = {}, target = {}, time = {}, new_power = {}'.format(source_device_id, target_device_id, time, new_power))
             self._time = time
-            self.logMessage("received power change, new power = {}, is_on = {}, fuel_level = {}".format(new_power, self.isOn(), self._fuel_level), app_log_level=None)
             if new_power > 0 and not self.isOn() and self._fuel_level > 0:
                 # If the generator is not in operation the turn it on
                 self.turnOn()
                 self._power_level = new_power
-                self.tugSendMessage(action="turn_on", is_initial_event=False, value=self._power_level, description="W")
-                self.logMessage("Turn on generator")
 
                 # calculate the new electricity price
                 self.calculateElectricityPrice(is_initial_event=False)
@@ -201,9 +194,12 @@ class DieselGenerator(Device):
             elif new_power > 0 and self.isOn() and self._fuel_level > 0:
                 # power has changed when already in operation
                 # store the new power value for the hourly usage calculation
-                self.logMessage("change generator power level ({} to {})".format(self._power_level, new_power), app_log_level=None)
+                self.logMessage(
+                    message="change generator power level ({} to {})".format(self._power_level, new_power),
+                    tag="power",
+                    value=new_power
+                )
                 self._power_level = new_power
-                self.tugSendMessage(action="power_change", is_initial_event=False, value=self._power_level, description="W")
                 self.logPowerChange(time, new_power)
                 self.calculateElectricityPrice(is_initial_event=False)
 
@@ -211,15 +207,23 @@ class DieselGenerator(Device):
                 if self.isOn():
                     self.turnOff()
                     self._power_level = 0.0
+                    self.logMessage(
+                        message="change generator power",
+                        tag="power",
+                        value=0
+                    )
                 self.broadcastNewPower(0.0)
 
             elif new_power <= 0 and self.isOn():
                 # Shutoff power
                 self.turnOff()
+                self.logMessage(
+                    message="change generator power",
+                    tag="power",
+                    value=0
+                )
                 self._power_level = 0.0
-                self.tugSendMessage(action="turn_off", is_initial_event=False, value=self._power_level, description="W")
                 self.logPowerChange(time, 0.0)
-                self.logMessage("Turn on generator")
         return
 
     def onPriceChange(self, source_device_id, target_device_id, time, new_price):
@@ -289,7 +293,6 @@ class DieselGenerator(Device):
                     self.setNextRefuelEvent()
                     remove_items.append(event)
                 elif event["operation"] == "emit_initial_price":
-                    self.logMessage("emit_innitial_price diesel generator")
                     self.calculateElectricityPrice()
                     remove_items.append(event)
 
@@ -337,10 +340,13 @@ class DieselGenerator(Device):
         self._last_fuel_status_time = self._time
         new_fuel_level = new_gallons / self._fuel_tank_capacity * 100
         if new_fuel_level != self._fuel_level:
-            self.tugSendMessage(action="fuel_level", is_initial_event=False, value=self._fuel_level, description="%")
             self.logPlotValue("fuel_level", new_fuel_level)
 
-        self.logMessage("fuel level updated ({} to {})".format(self._fuel_level, new_fuel_level), app_log_level=None)
+        self.logMessage(
+            message="Fuel level updated",
+            tag="fuel_level",
+            value=new_fuel_level
+        )
         self._fuel_level = new_fuel_level
 
         if self._fuel_level <= 0:
@@ -353,7 +359,11 @@ class DieselGenerator(Device):
 
     def setDaysToRefuel(self, days_to_refuel):
         "Sets the number of days until refuel"
-        self.logMessage("Set refuel days =  {}".format(days_to_refuel))
+        self.logMessage(
+            message="Set days to refuel",
+            tag="days_until_refuel",
+            value=days_to_refuel
+        )
 
     def getCurrentGenerationRate(self):
         "Calculates the current generation rate in kwh/gallon"
@@ -379,13 +389,8 @@ class DieselGenerator(Device):
 
             # print("fuel_level = {0}, gen_rate = {1}, price = {2}, base_cost = {3}, raw_calc = {4}".format(self._fuel_level, self.getCurrentGenerationRate(), new_price, self._fuel_base_cost, self._fuel_base_cost / self.getTotalEnergyAvailable()))
             if new_price != self._current_fuel_price:
-                self.logMessage("calculate new price ({} to {})".format(self._current_fuel_price, new_price), app_log_level=None)
                 self._current_fuel_price = new_price
 
-                self.tugSendMessage(action="new_electricity_price", is_initial_event=is_initial_event, value=self._current_fuel_price, description="$/kWh")
-                self.tugSendMessage(action="fuel_level", is_initial_event=False, value=self._fuel_level, description="%")
-                self.tugSendMessage(action="generation_rate", is_initial_event=False, value=self.getCurrentGenerationRate(), description="kwh/gallon")
-                self.tugSendMessage(action="output_capacity", is_initial_event=False, value=self.currentOutputCapacity(), description="%")
                 self.broadcastNewPrice(new_price)
 
         return
@@ -429,26 +434,40 @@ class DieselGenerator(Device):
         for item in self._consumption_24hr:
             sum_24hr += item["consumption"]
 
-        self.tugSendMessage(action="consumption_hr", is_initial_event=is_initial_event, value=total_kwh, description="kwh")
-        self.tugSendMessage(action="consumption_24hrs", is_initial_event=is_initial_event, value=sum_24hr, description="kwh")
-        self.logMessage("consumption last hour = {}".format(total_kwh), app_log_level=None)
-        self.logMessage("consumption last 24 hrs = {}".format(sum_24hr), app_log_level=None)
-
+        # Log the messages
+        self.logMessage(
+            message="consumption last hour = {}".format(total_kwh),
+            tag="consump_hour_kwh",
+            value=total_kwh
+        )
+        self.logMessage(
+            message="consumption last 24 hours = {}".format(sum_24hr),
+            tag="consump_24_hr_kwh",
+            value=sum_24hr
+        )
         return
 
     def setTargetRefuelTime(self):
         "Set the next target refuel time (sec)"
         self._target_refuel_time_secs = self._base_refuel_time_secs + (self._days_to_refuel * 24 * 60 * 60) if self._days_to_refuel != None else None
+        self.logMessage(
+            message="Set next refuel time",
+            tag="set_refuel_time",
+            value=self._target_refuel_time_secs
+        )
 
     def refuel(self):
         "Refuel"
-        self.logMessage("Refuel the diesel generator, from {} to 100.0".format(self._fuel_level))
+        self.logMessage(
+            message="Refuel the diesel generator, from {} to 100.0".format(self._fuel_level),
+            tag="refuel",
+            value=1
+        )
         self._base_refuel_time_secs = self._time
         self.setTargetRefuelTime()
 
         self._fuel_level = 100.0
         self._scarcity_multiplier = 1.0
-        self.tugSendMessage(action="refuel", is_initial_event=True, value=None)
         self.calculateElectricityPrice(is_initial_event=False)
 
     def reassesFuel(self, is_initial_event=False):
@@ -492,12 +511,11 @@ class DieselGenerator(Device):
                 if self._scarcity_multiplier < 1.0:
                     self._scarcity_multiplier = 1.0
 
-            self.logMessage("reasses_fuel {}".format(self._scarcity_multiplier))
-            self.tugSendMessage(action="reasses_fuel", is_initial_event=is_initial_event, value=self._fuel_level, description="%")
-            self.tugSendMessage(action="scarcity_multiplier", is_initial_event=False, value=self._scarcity_multiplier, description="")
-            self.tugSendMessage(action="output_capacity", is_initial_event=False, value=self.currentOutputCapacity(), description="%")
-
-            # self.logMessage("Set scarcity multiplier (t = {0}, scarcity mult = {1}".format(self._time, self._scarcity_multiplier))
+            self.logMessage(
+                message="reasses fuel - scarcity multiplier",
+                tag="scarcity_mult",
+                value=self._scarcity_multiplier
+            )
         return
 
     def currentOutputCapacity(self):

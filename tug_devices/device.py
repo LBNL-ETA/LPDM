@@ -3,11 +3,11 @@
 ################################################################################################################################
 # *** Copyright Notice ***
 #
-# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v1.0" 
-# Copyright (c) 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory 
+# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v1.0"
+# Copyright (c) 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory
 # (subject to receipt of any required approvals from the U.S. Dept. of Energy).  All rights reserved.
 #
-# If you have questions about your rights to use or distribute this software, please contact 
+# If you have questions about your rights to use or distribute this software, please contact
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 ################################################################################################################################
 
@@ -17,7 +17,6 @@
 import os
 import random
 import logging
-import coloredlogs
 import pprint
 import datetime
 import requests
@@ -50,8 +49,6 @@ class Device(NotificationReceiver, NotificationSender):
         self._simulation_id = int(config["simulation_id"]) if type(config) is dict and "simulation_id" in config.keys() else None
         self._app_log_manager = config["app_log_manager"] if type(config) is dict and "app_log_manager" in config.keys() else None
         self._app_logger = config["logger"] if type(config) is dict and "logger" in config.keys() else None
-        # self._tug_logger = config["tug_logger"] if type(config) is dict and "tug_logger" in config.keys() else None
-        self._tug_logger = None
         self._config_time = config["config_time"] if type(config) is dict and "config_time" in config.keys() else 1
         self._uuid = config["uuid"] if type(config) is dict and "uuid" in config.keys() else None
         self._price = config["price"] if type(config) is dict and "price" in config.keys() else 0.0
@@ -88,7 +85,6 @@ class Device(NotificationReceiver, NotificationSender):
         self.calculateNextTTIE()
 
         self.logMessage("initialized device #{} - {}".format(self._uuid, self._device_type))
-        self.logMessage(pprint.pformat(config), app_log_level=None, device_log_level=logging.DEBUG)
 
     def __repr__(self):
         "Default string representation of an object, prints out all attributes and values"
@@ -171,7 +167,6 @@ class Device(NotificationReceiver, NotificationSender):
     def setLogger(self):
         self._device_logger = logging.getLogger("sim_{}_device_{}".format(self._simulation_id, self._uuid))
         self._device_logger.setLevel(logging.DEBUG)
-        # coloredlogs.install(level='INFO', logger=logger)
 
         # create file handler which logs even debug messages
         self._app_logger.debug("app log manager")
@@ -183,11 +178,10 @@ class Device(NotificationReceiver, NotificationSender):
         ch = logging.StreamHandler()
         ch.setLevel(logging.INFO)
 
-        colored_formatter = coloredlogs.ColoredFormatter('%(asctime)s %(name)-10s %(levelname)-8s %(message)s')
         # create formatter and add it to the handlers
         formatter = logging.Formatter('%(asctime)s %(name)-10s %(levelname)-8s %(message)s')
         # ch.setFormatter(formatter)
-        ch.setFormatter(colored_formatter)
+        ch.setFormatter(formatter)
         fh.setFormatter(formatter)
 
         # add the handlers to logger
@@ -195,17 +189,21 @@ class Device(NotificationReceiver, NotificationSender):
         self._device_logger.addHandler(fh)
         return
 
-    def logMessage(self, message='', app_log_level=logging.INFO, device_log_level=logging.DEBUG):
+    def logMessage(self, message='', app_log_level=logging.INFO, device_log_level=logging.DEBUG, tag=None, value=None):
         "Logs a message using the loggin module, default debug level is set to INFO"
-        message = self.getLogMessageString(message)
+        message = self.getLogMessageString(message, tag, value)
         if app_log_level is not None:
             self._app_logger.log(app_log_level, message)
         if device_log_level is not None:
             self._device_logger.log(device_log_level, message)
 
-    def getLogMessageString(self, message):
-        time_string = "Day {0} {1} ({2})".format(1 + int(self._time / (60 * 60 * 24)), datetime.datetime.utcfromtimestamp(self._time).strftime('%H:%M:%S'), self._time)
-        return "time: {}, device: {}, message: {}".format(time_string, self._device_name, message)
+    def getLogMessageString(self, message, tag=None, value=None):
+        time_string = "Day {0} {1} ({2})".format(
+                1 + int(self._time / (60 * 60 * 24)),
+                datetime.datetime.utcfromtimestamp(self._time).strftime('%H:%M:%S'), self._time
+        )
+        return "time_string: {}, time_value: {}, device: {}, message: {}, tag: {}, value: {}".format(
+                time_string, self._time, self._device_name, message, tag, value)
 
 
     def calculateNextTTIE(self):
@@ -219,7 +217,11 @@ class Device(NotificationReceiver, NotificationSender):
     def broadcastNewPrice(self, new_price, target_device_id='all', debug_level=logging.DEBUG):
         "Broadcast a new price if a callback has been setup, otherwise raise an exception."
         if callable(self._broadcastNewPriceCallback):
-            self.logMessage("Broadcast new price {} from {}".format(new_price, self._device_name), app_log_level=None)
+            self.logMessage(
+                message="Broadcast new price {} from {}".format(new_price, self._device_name),
+                tag="price",
+                value=new_price
+            )
             self._broadcastNewPriceCallback(self._device_id, target_device_id, self._time, new_price)
         else:
             raise Exception("broadcastNewPrice has not been set for this device!")
@@ -228,8 +230,12 @@ class Device(NotificationReceiver, NotificationSender):
     def broadcastNewPower(self, new_power, target_device_id='all', debug_level=logging.DEBUG):
         "Broadcast the new power value if a callback has been setup, otherwise raise an exception."
         if callable(self._broadcastNewPowerCallback):
-            # self.logMessage("Broadcast new power (t = {0}, power = {1})".format(self._time, new_power), debug_level)
             self.logMessage("Broadcast new power {} from {}".format(new_power, self._device_name), app_log_level=None)
+            self.logMessage(
+                message="Broadcast new power {} from {}".format(new_power, self._device_name),
+                tag="power",
+                value=new_power
+            )
             self._broadcastNewPowerCallback(self._device_id, target_device_id, self._time, new_power)
         else:
             raise Exception("broadcastNewPower has not been set for this device!")
@@ -238,8 +244,11 @@ class Device(NotificationReceiver, NotificationSender):
     def broadcastNewTTIE(self, new_ttie, target_device_id='all', debug_level=logging.DEBUG):
         "Broadcast the new TTIE if a callback has been setup, otherwise raise an exception."
         if callable(self._broadcastNewTTIECallback):
-            # self.logMessage("Broadcast new ttie (t = {0}, ttie = {1})".format(self._time, new_ttie), debug_level)
-            self.logMessage("Broadcast new TTIE {} from {}".format(new_ttie, self._device_name), app_log_level=None)
+            # self.logMessage(
+                # message="Broadcast new TTIE {} from {}".format(new_ttie, self._device_name),
+                # tag="ttie",
+                # value=new_ttie
+            # )
             self._broadcastNewTTIECallback(self._device_id, target_device_id, new_ttie - self._time)
         else:
             raise Exception("broadcastNewTTIE has not been set for this device!")
@@ -254,12 +263,12 @@ class Device(NotificationReceiver, NotificationSender):
 
     def turnOn(self):
         "Turn on the device"
-        self.logMessage("{} turned on".format(self._device_name))
+        self.logMessage("{} turned on".format(self._device_name), tag="on/off", value=1)
         self._in_operation = True
 
     def turnOff(self):
         "Turn off the device"
-        self.logMessage("{} turned off".format(self._device_name))
+        self.logMessage("{} turned off".format(self._device_name), tag="on/off", value=0)
         self._in_operation = False
 
     def isOn(self):

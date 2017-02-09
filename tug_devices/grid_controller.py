@@ -20,7 +20,6 @@ from battery import Battery
 from pv import Pv
 from diesel_generator import DieselGenerator
 import logging
-import pprint
 
 class GridController(Device):
     """

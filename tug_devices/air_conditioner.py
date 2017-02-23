@@ -3,11 +3,11 @@
 ################################################################################################################################
 # *** Copyright Notice ***
 #
-# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v1.0" 
-# Copyright (c) 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory 
+# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v1.0"
+# Copyright (c) 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory
 # (subject to receipt of any required approvals from the U.S. Dept. of Energy).  All rights reserved.
 #
-# If you have questions about your rights to use or distribute this software, please contact 
+# If you have questions about your rights to use or distribute this software, please contact
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 ################################################################################################################################
 
@@ -119,9 +119,6 @@ class AirConditioner(Device):
         # self.logMessage("5-minute temperature profile: \n{}".format(pprint.pformat(self._temperature_hourly_profile, indent=4)))
         self.logMessage("setpoint schedule: \n{setpoint_schedule}".format(setpoint_schedule=self._set_point_schedule))
         self.scheduleNextEvents()
-
-    def getLogMessageString(self, message):
-        return colors.colorize(Device.getLogMessageString(self, message), colors.Colors.BLUE)
 
     def defaultSetpointSchedule(self):
         """generate a default setpoint schedule if none has been passed"""

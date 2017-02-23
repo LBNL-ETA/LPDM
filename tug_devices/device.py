@@ -219,7 +219,7 @@ class Device(NotificationReceiver, NotificationSender):
         if callable(self._broadcastNewPriceCallback):
             self.logMessage(
                 message="Broadcast new price {} from {}".format(new_price, self._device_name),
-                tag="price",
+                tag="broadcast_price",
                 value=new_price
             )
             self._broadcastNewPriceCallback(self._device_id, target_device_id, self._time, new_price)
@@ -233,7 +233,7 @@ class Device(NotificationReceiver, NotificationSender):
             self.logMessage("Broadcast new power {} from {}".format(new_power, self._device_name), app_log_level=None)
             self.logMessage(
                 message="Broadcast new power {} from {}".format(new_power, self._device_name),
-                tag="power",
+                tag="broadcast_power",
                 value=new_power
             )
             self._broadcastNewPowerCallback(self._device_id, target_device_id, self._time, new_power)

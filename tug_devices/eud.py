@@ -3,11 +3,11 @@
 ################################################################################################################################
 # *** Copyright Notice ***
 #
-# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v1.0" 
-# Copyright (c) 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory 
+# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v1.0"
+# Copyright (c) 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory
 # (subject to receipt of any required approvals from the U.S. Dept. of Energy).  All rights reserved.
 #
-# If you have questions about your rights to use or distribute this software, please contact 
+# If you have questions about your rights to use or distribute this software, please contact
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 ################################################################################################################################
 
@@ -15,7 +15,6 @@
     Implementation of a general EUD device
 """
 from device import Device
-import colors
 import logging
 
 class Eud(Device):
@@ -68,9 +67,6 @@ class Eud(Device):
         # if self._price > 0:
             # self.setPowerLevel()
             # self.broadcastNewPower(self._power_level)
-
-    def getLogMessageString(self, message):
-        return colors.colorize(Device.getLogMessageString(self, message), colors.Colors.GREY)
 
     def status(self):
         return {
@@ -132,19 +128,16 @@ class Eud(Device):
         "Receives message when a price change has occured"
         if not self._static_price:
             self._time = time
-            self._price = new_price
-            self.logMessage("received new price {}".format(new_price))
+            if new_price != self._price:
+                self._price = new_price
+                self.logMessage(
+                    message="new price",
+                    tag="price",
+                    value=new_price
+                )
             if self.current_schedule_value():
                 self.setPowerLevel()
             return
-
-    # def onPriceChange(self, source_device_id, target_device_id, time, new_price):
-    #     "Receives message when a price change has occured"
-    #     self._time = time
-    #     self._price = new_price
-    #     self.setPowerLevel()
-
-    #     return
 
     def onTimeChange(self, new_time):
         "Receives message when a time change has occured"
@@ -167,8 +160,11 @@ class Eud(Device):
         "Turn on the device"
         if not self._in_operation:
             self._in_operation = True
-            self.tugSendMessage(action="operation", is_initial_event=True, value=1, description="on")
-            self.logMessage("Turn on eud {}".format(self._device_name))
+            self.logMessage(
+                message="turn on eud",
+                tag="on/off",
+                value=1
+            )
             self.setPowerLevel()
 
     def turnOff(self):
@@ -177,8 +173,11 @@ class Eud(Device):
         if self._in_operation:
             self._power_level = 0.0
             self._in_operation = False
-            self.tugSendMessage(action="operation", is_initial_event=True, value=0, description="off")
-            self.logMessage("Turn off eud {}".format(self._device_name))
+            self.logMessage(
+                message="turn off eud",
+                tag="on/off",
+                value=0
+            )
 
     def processEvent(self):
         if (self._next_event and self._time == self._ttie):
@@ -237,7 +236,6 @@ class Eud(Device):
 
         if new_power != self._power_level:
             self._power_level = new_power
-            self.tugSendMessage(action="set_power_level", is_initial_event=False, value=self._power_level, description='W')
 
             if self._power_level == 0 and self._in_operation:
                 self.turnOff()

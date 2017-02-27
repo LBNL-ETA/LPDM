@@ -23,34 +23,34 @@ class Eud(Device):
             self._device_type = "eud"
 
         # set the properties for an end-use device
-        self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "EUD"
-
+        self._device_name = config.get("device_name", "EUD")
         # max power - set default to 100 watts unless different value provided in configuration
-        # operate at max_power_use unless price > 'price_dim'
-        self._max_power_use = float(config["max_power_use"]) if type(config) is dict and "max_power_use" in config.keys() else 100.0
+        # operate at max_power_output unless price > 'price_dim'
+        self._max_power_output = config.get("max_power_output", 100.0)
 
         # the price (c/kWh) at which to begin dimming down the power
         # when price > 'price_dim_start' and price < 'price_dim_end', linearly dim down to power level (%) set at 'power_level_low' of power at 'price_dim_end'
-        self._price_dim_start = float(config["price_dim_start"]) if type(config) is dict and "price_dim_start" in config.keys() else 0.3
+        self._price_dim_start = config.get("price_dim_start", 0.3)
 
         # the price ($/kWh) at which to stop dimming the power output
         # when price > price_dim_end and price < price_off, set to power_level_low
-        self._price_dim_end = float(config["price_dim_end"]) if type(config) is dict and "price_dim_end" in config.keys() else 0.7
+        self._price_dim_end = config.get("price_dim_end", 0.7)
 
         # the price ($/kWh) at which to turn off the power completeley
-        self._price_off = float(config["price_off"]) if type(config) is dict and "price_off" in config.keys() else 0.9
+        self._price_off = config.get("price_off", 0.9)
 
         # the max operating power level (%)
-        self._power_level_max = float(config["power_level_max"]) if type(config) is dict and "power_level_max" in config.keys() else 100.0
+        # self._power_level_max = float(config["power_level_max"]) if type(config) is dict and "power_level_max" in config.keys() else 100.0
+        self._power_level_max = 100.0
 
         # the power level (%) to dim down to when price between price_dim and price_off
         # the low operating power level
-        self._power_level_low = float(config["power_level_low"]) if type(config) is dict and "power_level_low" in config.keys() else 20.0
+        self._power_level_low = config.get("power_level_low", 20.0)
 
         # _schedule_array is the raw schedule passed in
-        # _dailY_schedule is the parsed schedule used by the device to schedule events
+        # _dail_y_schedule is the parsed schedule used by the device to schedule events
         self._schedule_array = config["schedule"] if type(config) is dict and config.has_key("schedule") else None
-        self._daily_schedule = self.parseSchedule(self._schedule_array) if self._schedule_array else None
+        self._daily_schedule = self.parse_schedule(self._schedule_array) if self._schedule_array else None
 
         self._power_level = 0.0
 
@@ -62,11 +62,11 @@ class Eud(Device):
 
         # load a set of attribute values if a 'scenario' key is present
         if type(config) is dict and 'scenario' in config.keys():
-            self.setScenario(config['scenario'])
+            self.set_scenario(config['scenario'])
 
         # if self._price > 0:
-            # self.setPowerLevel()
-            # self.broadcastNewPower(self._power_level)
+            # self.set_power_level()
+            # self.broadcast_new_power(self._power_level)
 
     def status(self):
         return {
@@ -82,22 +82,22 @@ class Eud(Device):
         self._ttie = None
         self._next_event = None
         self._events = []
-        self._daily_schedule = self.parseSchedule(self._schedule_array) if self._schedule_array else None
+        self._daily_schedule = self.parse_schedule(self._schedule_array) if self._schedule_array else None
 
         # turn on/off the device based on the updated schedule
         should_be_in_operation = self.should_be_in_operation()
 
         if should_be_in_operation and not self._in_operation:
-            self.turnOn()
+            self.turn_on()
         elif not should_be_in_operation and self._in_operation:
-            self.turnOff()
+            self.turn_off()
 
-        self.calculateNextTTIE()
+        self.calculate_next_ttie()
 
     def should_be_in_operation(self):
         """determine if the device should be operating when a refresh event occurs"""
 
-        current_time_of_day_seconds = self.timeOfDaySeconds()
+        current_time_of_day_seconds = self.time_of_day_seconds()
         operating = False
         for item in self._daily_schedule:
             if  item['time_of_day_seconds'] > current_time_of_day_seconds:
@@ -106,16 +106,16 @@ class Eud(Device):
                 operating = True if item['operation'] == 1 else False
         return operating
 
-    def onPowerChange(self, source_device_id, target_device_id, time, new_power):
+    def on_power_change(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
         if target_device_id == self._device_id:
             if new_power == 0 and self._in_operation:
                 self._time = time
-                self.turnOff()
+                self.turn_off()
         return
 
     def current_schedule_value(self):
-        current_time_of_day_seconds = self.timeOfDaySeconds()
+        current_time_of_day_seconds = self.time_of_day_seconds()
         res = None
         for schedule_pt in self._daily_schedule:
             if schedule_pt["time_of_day_seconds"] <= current_time_of_day_seconds:
@@ -124,75 +124,75 @@ class Eud(Device):
             res = self._daily_schedule[-1]["operation"]
         return res
 
-    def onPriceChange(self, source_device_id, target_device_id, time, new_price):
+    def on_price_change(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
         if not self._static_price:
             self._time = time
             if new_price != self._price:
                 self._price = new_price
-                self.logMessage(
+                self.log_message(
                     message="new price",
                     tag="price",
                     value=new_price
                 )
             if self.current_schedule_value():
-                self.setPowerLevel()
+                self.set_power_level()
             return
 
-    def onTimeChange(self, new_time):
+    def on_time_change(self, new_time):
         "Receives message when a time change has occured"
         self._time = new_time
-        self.processEvent()
-        self.calculateNextTTIE()
+        self.process_event()
+        self.calculate_next_ttie()
         return
 
-    def forceOn(self, time):
+    def force_on(self, time):
         if not self._in_operation:
             self._time = time
-            self.turnOn()
+            self.turn_on()
 
-    def forceOff(self, time):
+    def force_off(self, time):
         if self._in_operation:
             self._time = time
-            self.turnOff()
+            self.turn_off()
 
-    def turnOn(self):
+    def turn_on(self):
         "Turn on the device"
         if not self._in_operation:
             self._in_operation = True
-            self.logMessage(
+            self.log_message(
                 message="turn on eud",
                 tag="on/off",
                 value=1
             )
-            self.setPowerLevel()
+            self.set_power_level()
 
-    def turnOff(self):
+    def turn_off(self):
         "Turn off the device"
 
         if self._in_operation:
             self._power_level = 0.0
             self._in_operation = False
-            self.logMessage(
+            self.log_message(
                 message="turn off eud",
                 tag="on/off",
                 value=0
             )
 
-    def processEvent(self):
+    def process_event(self):
         if (self._next_event and self._time == self._ttie):
             if self._in_operation and self._next_event["operation"] == 0:
-                self.turnOff()
-                self.broadcastNewPower(0.0)
+                self.turn_off()
+                self.broadcast_new_power(0.0)
             elif not self._in_operation and self._next_event["operation"] == 1:
-                self.setPowerLevel()
+                self.set_power_level()
 
-            self.calculateNextTTIE()
+            self.calculate_next_ttie()
 
-    def calculateNextTTIE(self):
+    def calculate_next_ttie(self):
         "Override the base class function"
         if type(self._daily_schedule) is list:
-            current_time_of_day_seconds = self.timeOfDaySeconds()
+            current_time_of_day_seconds = self.time_of_day_seconds()
             new_ttie = None
             next_event = None
             for item in self._daily_schedule:
@@ -211,13 +211,13 @@ class Eud(Device):
             if new_ttie != self._ttie:
                 self._next_event = next_event
                 self._ttie = new_ttie
-                self.broadcastNewTTIE(new_ttie)
+                self.broadcast_new_ttie(new_ttie)
 
-    def parseSchedule(self, schedule):
+    def parse_schedule(self, schedule):
         if type(schedule) is list:
-            return self.loadArraySchedule(schedule)
+            return self.load_array_schedule(schedule)
 
-    def loadArraySchedule(self, schedule):
+    def load_array_schedule(self, schedule):
         if type(schedule) is list:
             parsed_schedule = []
             for (task_time, task_operation) in schedule:
@@ -229,50 +229,50 @@ class Eud(Device):
 
 
     # eud specific methods
-    def setPowerLevel(self):
+    def set_power_level(self):
         "Set the power level for the eud (W).  If the energy consumption has changed then broadcast the new power usage."
 
-        new_power = self.calculateNewPowerLevel()
+        new_power = self.calculate_new_power_level()
 
         if new_power != self._power_level:
             self._power_level = new_power
 
             if self._power_level == 0 and self._in_operation:
-                self.turnOff()
+                self.turn_off()
 
             elif self._power_level > 0 and not self._in_operation:
-                self.turnOn()
+                self.turn_on()
             else:
-                self.adjustHardwarePower()
+                self.adjust_hardware_power()
 
-            self.broadcastNewPower(new_power)
+            self.broadcast_new_power(new_power)
 
-    def adjustHardwarePower(self):
+    def adjust_hardware_power(self):
         "Override this method to tell the hardware to adjust its power output"
         return None
 
-    def calculateNewPowerLevel(self):
+    def calculate_new_power_level(self):
         "Set the power level of the eud"
         if self._static_price:
-            return self._max_power_use
+            return self._max_power_output
         else:
             if self._price <= self._price_dim_start:
-                return self._max_power_use
+                return self._max_power_output
             elif self._price <= self._price_dim_end:
-                return self.interpolatePower()
+                return self.interpolate_power()
             elif self._price <= self._price_off:
-                return self.getPowerLevelLow()
+                return self.get_power_level_low()
             else:
                 return 0.0
 
-    def getPowerLevelLow(self):
+    def get_power_level_low(self):
         """calculate the lowest operating power output"""
-        return self._max_power_use * (self._power_level_low / 100.0)
+        return self._max_power_output * (self._power_level_low / 100.0)
 
-    def interpolatePower(self):
+    def interpolate_power(self):
         "Calculate energy consumption for the eud (in this case a linear interpolation) when the price is between price_dim_start and price_dim_end."
         power_reduction_ratio = (self._price - self._price_dim_start) / (self._price_dim_end - self._price_dim_start)
         power_level_percent = self._power_level_max - (self._power_level_max - self._power_level_low) * power_reduction_ratio
-        return self._max_power_use * power_level_percent / 100.0
+        return self._max_power_output * power_level_percent / 100.0
 
 

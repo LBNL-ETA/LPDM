@@ -1,0 +1,18 @@
+{
+    "device_type": "diesel_generator",
+    "device_name": "diesel_generator",
+    "fuel_tank_capacity": 100.0,
+    "fuel_level": null,
+    "fuel_reserve": 20.0,
+    "days_to_refuel": 7,
+    "kwh_per_gallon": 36.36,
+    "time_to_reassess_fuel": 21600,
+    "fuel_price_change_rate": 5.0,
+    "capacity": 2000.0,
+    "gen_eff_zero": 0.0,
+    "gen_eff_100": 100.0,
+    "price_reassess_time": 3600,
+    "fuel_base_cost": 5.0,
+    "static_price": false,
+    "current_fuel_price": null
+}

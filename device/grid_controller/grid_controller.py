@@ -43,13 +43,13 @@ class GridController(Device):
                     "battery_config" (Dict): Configuration object for the battery attached to the grid controller
         """
         self._device_type = "grid_controller"
-        self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "grid_controller"
-        self._connected_devices = config["connected_devices"] if type(config) is dict and "connected_devices" in config.keys() else []
-        self._power_price = float(config["power_price"]) if type(config) is dict and "power_price" in config.keys() else  None
-        self._capacity = float(config["capacity"]) if type(config) is dict and "capacity" in config.keys() else 3000.0
-        self._diesel_output_threshold = float(config["diesel_output_threshold"]) if type(config) is dict and "diesel_output_threshold" in config.keys() else 70.0
-        self._check_battery_soc_rate = int(config["check_battery_soc_rate"]) if type(config) is dict and "check_battery_soc_rate" in config.keys() else 60 * 5
-        self._pv_power_update_rate = 15 * 60 # update the pv power output every 15 minutes
+        self._device_name = config.get("device_name", "grid_controller")
+        self._connected_devices = config.get("connected_devices", [])
+        self._power_price = config.get("power_price", None)
+        self._capacity = config.get("capacity", 3000.0)
+        # self._diesel_output_threshold = float(config["diesel_output_threshold"]) if type(config) is dict and "diesel_output_threshold" in config.keys() else 70.0
+        self._check_battery_soc_rate = config.get("check_battery_soc_rate", 300)
+        self._pv_power_update_rate = config.get("pv_power_update_rate", 900)
 
         self._battery = Battery(config["battery_config"]) if type(config) is dict and "battery_config" in config.keys() else None
         self._pv = Pv(config["pv_config"]) if type(config) is dict and "pv_config" in config.keys() and config["pv_config"] else None
@@ -64,40 +64,38 @@ class GridController(Device):
 
         self._events = []
 
-        # self.setInitialPriceEvent()
-
         # call the super constructor
         Device.__init__(self, config)
 
-    def onPowerChange(self, source_device_id, target_device_id, time, new_power):
+    def on_power_change(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
         self._time = time
-        self.logMessage(
+        self.log_message(
             message="Power change, source_device_id = {}, target_device_id = {}".format(source_device_id, target_device_id),
             tag="power",
             value=new_power
         )
 
         changed_power = False
-        if new_power == 0 and source_device_id == self.getDieselGeneratorID() and self._load_on_generator > 0:
+        if new_power == 0 and source_device_id == self.get_diesel_generator_id() and self._load_on_generator > 0:
             # if the diesel generator has changed its power to zero without being instructed then it's out of fuel
-            self.shutdownGenerator()
+            self.shutdown_generator()
             changed_power = True
         else:
-            changed_power = self.setPowerForDevice(source_device_id, new_power)
+            changed_power = self.set_power_for_device(source_device_id, new_power)
 
         if self._battery:
-            self._battery.updateStateOfCharge(self._time, self._load_on_battery)
+            self._battery.update_state_of_charge(self._time, self._load_on_battery)
 
-        self.setPowerSources()
-        self.scheduleNextEvents()
-        self.calculateNextTTIE()
+        self.set_power_sources()
+        self.schedule_next_events()
+        self.calculate_next_ttie()
         return
 
-    def onPriceChange(self, source_device_id, target_device_id, time, new_price):
+    def on_price_change(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
         if not self._static_price:
-            self.logMessage(
+            self.log_message(
                 message="Price change received (new_price = {}, source_device_id = {}, target_device_id = {})".format(new_price, source_device_id, target_device_id),
                 tag="price",
                 value=new_price
@@ -105,41 +103,41 @@ class GridController(Device):
             self._power_price = new_price
             self._time = time
 
-            self.sendPriceChangeToDevices()
+            self.send_price_change_to_devices()
         return
 
-    def onTimeChange(self, new_time):
+    def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"
         self._time = new_time
         if self._battery:
-            self._battery.updateStateOfCharge(self._time, self._load_on_battery)
-        self.processEvents()
-        self.scheduleNextEvents()
-        self.calculateNextTTIE()
+            self._battery.update_state_of_charge(self._time, self._load_on_battery)
+        self.process_events()
+        self.schedule_next_events()
+        self.calculate_next_ttie()
         return
 
-    def addDevice(self, new_device_id, type_of_device):
+    def add_device(self, new_device_id, type_of_device):
         "Add a device to the list devices connected to the grid controller"
-        self.logMessage(
+        self.log_message(
             "added device to the grid controller (device_id = {}, device_type = {})".format(new_device_id, type_of_device)
         )
         self._connected_devices.append({"device_id": new_device_id, "device_type": type_of_device})
         return
 
-    def sendPriceChangeToDevices(self):
+    def send_price_change_to_devices(self):
         "Sends a change in price notification to the connected devices"
-        # self.logMessage("Send price change messages to all devices (t = {0}, p = {1})".format(self._time, self._power_price), logging.INFO)
-        self.logMessage(
+        # self.log_message("Send price change messages to all devices (t = {0}, p = {1})".format(self._time, self._power_price), logging.INFO)
+        self.log_message(
             message="send price change to all devices (new_price = {})".format(self._power_price),
             tag="send_price_change",
             value="1"
         )
         for device in self._connected_devices:
-            self.broadcastNewPrice(self._power_price, device["device_id"])
+            self.broadcast_new_price(self._power_price, device["device_id"])
 
-    def shutdownGenerator(self):
+    def shutdown_generator(self):
         "Shutdown the generator - shut down all devices, set all loads to 0, notify all connected devices to shutdown"
-        self.logMessage(
+        self.log_message(
             message="Shutdown the generator",
             tag="shutdown",
             value="1"
@@ -148,21 +146,21 @@ class GridController(Device):
         self._load_on_generator = 0.0
         self._load_on_battery = 0.0
 
-        if self._battery and self._battery.isCharging():
-            self._battery.stopCharging()
-        elif self._battery and self._battery.isDischarging():
-            self._battery.stopDischarging()
+        if self._battery and self._battery.is_charging():
+            self._battery.stop_charging()
+        elif self._battery and self._battery.is_discharging():
+            self._battery.stop_discharging()
 
         if self._pv and self._load_on_pv > 0:
             self._load_on_pv = 0.0
-            self._pv.setPowerOutput(self._time, self._load_on_pv)
+            self._pv.set_power_output(self._time, self._load_on_pv)
 
         for item in self._power_usage_by_device:
             item["power"] = 0.0
-            if item["device_id"] != self.getDieselGeneratorID():
-                self.broadcastNewPower(0.0, item["device_id"])
+            if item["device_id"] != self.get_diesel_generator_id():
+                self.broadcast_new_power(0.0, item["device_id"])
 
-    def setPowerForDevice(self, source_device_id, power):
+    def set_power_for_device(self, source_device_id, power):
         """
             Need to keep track of the power output for each device, which is stored in the dictionary self._power_usage_by_device.
             update or add the new power value, then update the total power output.
@@ -183,18 +181,18 @@ class GridController(Device):
             self._power_usage_by_device.append({'device_id': source_device_id, 'power': power})
             self._total_load += power
 
-    def currentOutputCapacity(self):
+    def current_output_capacity(self):
         "Current output capacity of the GC (%)"
         return 100.0 * self._total_load / self._capacity
 
-    def batteryDischarge(self):
-        if self._battery and not self._battery.isCharging() and not self._battery.isDischarging():
-            self.logMessage(
+    def battery_discharge(self):
+        if self._battery and not self._battery.is_charging() and not self._battery.is_discharging():
+            self.log_message(
                 message="start battery discharge",
                 tag="battery_discharge",
                 value="1"
             )
-            self._battery.startDischarging(self._time)
+            self._battery.start_discharging(self._time)
             if self._load_on_generator > self._battery.capacity():
                 self._load_on_generator -= self._battery.capacity()
                 self._load_on_battery = self._battery.capacity()
@@ -202,60 +200,60 @@ class GridController(Device):
                 self._load_on_battery = self._load_on_generator
                 self._load_on_generator = 0.0
 
-            self.logMessage(
+            self.log_message(
                 message="load_on_battery",
                 tag="load_battery",
                 value=self._load_on_battery
             )
-            self.logMessage(
+            self.log_message(
                 message="load_on_generator",
                 tag="load_generator",
                 value=self._load_on_generator
             )
         else:
-            self.logMessage("battery is not able to discharge, check parameters")
+            self.log_message("battery is not able to discharge, check parameters")
             raise Exception("battery is not able to discharge, check parameters")
 
-    def batteryCharge(self):
-        if self._battery and not self._battery.isCharging() and not self._battery.isDischarging():
+    def battery_charge(self):
+        if self._battery and not self._battery.is_charging() and not self._battery.is_discharging():
             # add the load needed to charge the battery on to the generator
-            self._total_load += self._battery.chargeRate()
-            self._load_on_generator += self._battery.chargeRate()
-            self.logMessage(
+            self._total_load += self._battery.charge_rate()
+            self._load_on_generator += self._battery.charge_rate()
+            self.log_message(
                 message="charge the battery",
                 tag="battery_charge",
-                value=self.battery.chargeRate()
+                value=self.battery.charge_rate()
             )
         else:
-            self.logMessage("battery is not able to charge, check parameters")
+            self.log_message("battery is not able to charge, check parameters")
             raise Exception("battery is not able to charge, check parameters")
 
-    def batteryNeither(self):
-        self.logMessage("battery neither (is_charging = {}, is_discharging = {})".format(self._battery.isCharging(), self._battery.isDischarging()), app_log_level=None)
-        if self._battery and self._battery.isDischarging():
-            self._battery.stopDischarging(self._time)
+    def battery_neither(self):
+        self.log_message("battery neither (is_charging = {}, is_discharging = {})".format(self._battery.is_charging(), self._battery.is_discharging()), app_log_level=None)
+        if self._battery and self._battery.is_discharging():
+            self._battery.stop_discharging(self._time)
             # put the load that was on the battery back on the generator
             self._load_on_generator += self._load_on_battery
             self._load_on_battery = 0.0
-            self.logMessage(
+            self.log_message(
                 message="stop battery discharge",
                 tag="battery_discharge",
                 value=0
             )
-        elif self._battery.isCharging():
-            self._battery.stopCharging(self._time)
-            self._total_load -= self._battery.chargeRate()
-            self._load_on_generator -= self._battery.chargeRate()
-            self.logMessage(
+        elif self._battery.is_charging():
+            self._battery.stop_charging(self._time)
+            self._total_load -= self._battery.charge_rate()
+            self._load_on_generator -= self._battery.charge_rate()
+            self.log_message(
                 message="stop charging the battery",
                 tag="battery_charge",
                 value=0
             )
 
-    def setPowerSources(self):
+    def set_power_sources(self):
         "Set the power output for the diesel generator, battery, pv, ..."
-        generator_id = self.getDieselGeneratorID()
-        output_capacity = self.currentOutputCapacity()
+        generator_id = self.get_diesel_generator_id()
+        output_capacity = self.current_output_capacity()
 
         previous_load_generator = self._load_on_generator
 
@@ -270,50 +268,50 @@ class GridController(Device):
             previous_load_battery = self._load_on_battery
             previous_load_pv = self._load_on_pv
 
-            self.logMessage("set power sources (output_capacity = {}, generator_load = {}, battery_load = {}, battery_soc = {}, total_load = {}, pv = {})".format(
+            self.log_message("set power sources (output_capacity = {}, generator_load = {}, battery_load = {}, battery_soc = {}, total_load = {}, pv = {})".format(
                 output_capacity,
                 self._load_on_generator,
                 self._load_on_battery,
-                self._battery.stateOfCharge(),
+                self._battery.state_of_charge(),
                 self._total_load,
                 self._load_on_pv), app_log_level=None)
 
-            if self._battery.isDischarging():
+            if self._battery.is_discharging():
                 # if battery is discharging
                 if self._total_load > 0:
-                    if self.currentOutputCapacity() > 70 and self._battery.stateOfCharge() < 0.65:
+                    if self.current_output_capacity() > 70 and self._battery.state_of_charge() < 0.65:
                         # stop discharging dn do nothing
-                        self.batteryNeither()
-                    elif self._battery.stateOfCharge() < 0.20:
+                        self.battery_neither()
+                    elif self._battery.state_of_charge() < 0.20:
                         # stop discharging and start charging
-                        self.batteryNeither()
-                        self.batteryCharge()
+                        self.battery_neither()
+                        self.battery_charge()
                 else:
-                    self.batteryNeither()
+                    self.battery_neither()
 
-            elif self._battery.isCharging():
+            elif self._battery.is_charging():
                 # battery is charging
-                if self._battery.stateOfCharge() >= 0.8 or (self.currentOutputCapacity() < 30 and self._battery.stateOfCharge() > 0.65):
+                if self._battery.state_of_charge() >= 0.8 or (self.current_output_capacity() < 30 and self._battery.state_of_charge() > 0.65):
                     # stop discharging dn do nothing
-                    self.batteryNeither()
+                    self.battery_neither()
             else:
                 # Neither - not charging and not discharging
-                if self._total_load > 0 and self.currentOutputCapacity() < 30.0 and self._battery.stateOfCharge() > 0.65:
+                if self._total_load > 0 and self.current_output_capacity() < 30.0 and self._battery.state_of_charge() > 0.65:
                     # start to discharge the battery
-                    self.batteryDischarge()
+                    self.battery_discharge()
 
             # if there's power output from the pv set it to 0 and add back to the generator
             if self._pv and self._load_on_pv > 0:
                 self._load_on_generator += self._load_on_pv
                 self._load_on_pv = 0
-                self.logMessage(
+                self.log_message(
                     message="turn off pv power generation",
                     tag="pv_power",
                     value=0
                 )
 
             # Add the new load to the battery or the generator
-            if self._battery.isDischarging() and delta_power:
+            if self._battery.is_discharging() and delta_power:
                 self._load_on_battery += delta_power
                 if self._load_on_battery > self._battery.capacity():
                     # set the load on the battery to full capacity, add the difference to the generator
@@ -321,19 +319,19 @@ class GridController(Device):
                     self._load_on_battery = self._battery.capacity()
                 # log the new battery load if it has changed
                 if self._load_on_battery != previous_load_battery:
-                    self.logMessage(
+                    self.log_message(
                         message="load on battery changed",
                         tag="battery_load",
                         value=self._load_on_battery
                     )
             elif delta_power:
-                self.logMessage("Add the new load ({})to the diesel generator".format(delta_power))
+                self.log_message("Add the new load ({})to the diesel generator".format(delta_power))
                 self._load_on_generator += delta_power
 
             # take load off of the generator and put it on pv if there's a need
             if self._pv and self._load_on_generator > 0:
                 # get the max power available from the pv
-                pv_kw_available = self._pv.getMaximumPower(self._time)
+                pv_kw_available = self._pv.get_maximum_power(self._time)
 
                 if pv_kw_available > 0 and self._load_on_generator > 0:
                     # there's power available from the pv
@@ -347,36 +345,36 @@ class GridController(Device):
 
             # update the generator if the required load on it has changed
             if previous_load_generator != self._load_on_generator:
-                self.logMessage(
+                self.log_message(
                     message="update the load on the generator",
                     tag="generator_load",
                     value=self._load_on_generator
                 )
-                self.broadcastNewPower(self._load_on_generator, generator_id)
+                self.broadcast_new_power(self._load_on_generator, generator_id)
 
 
             # update the pv power output if it has changed
             if previous_load_pv != self._load_on_pv:
-                self._pv.setPowerOutput(self._time, self._load_on_pv)
-                self.logMessage(
+                self._pv.set_power_output(self._time, self._load_on_pv)
+                self.log_message(
                     message="pv power output changed",
                     tag="pv_load",
                     value=self._load_on_pv
                 )
-                self.logPlotValue("pv_power_output", self._load_on_pv)
+                self.log_plot_value("pv_power_output", self._load_on_pv)
         elif generator_id:
             # only a generator is connected to the grid controller
-            self.logMessage("set power sources (dg = {}, pv = {}, total_load = {})".format(self._load_on_generator, self._load_on_pv, self._total_load), app_log_level=None)
+            self.log_message("set power sources (dg = {}, pv = {}, total_load = {})".format(self._load_on_generator, self._load_on_pv, self._total_load), app_log_level=None)
             previous_load_pv = self._load_on_pv
             self._load_on_generator = self._total_load
             # if previous_load_generator != self._load_on_generator:
-                # self.broadcastNewPower(self._total_load, generator_id)
-                # self.tugSendMessage(action="load_on_generator", is_initial_event=False, value=self._load_on_generator, description="kW")
+                # self.broadcast_new_power(self._total_load, generator_id)
+                # self.tug_send_message(action="load_on_generator", is_initial_event=False, value=self._load_on_generator, description="kW")
 
             # take load off of the generator and put it on pv if there's a need
             if self._pv and self._load_on_generator > 0:
                 # get the max power available from the pv
-                pv_kw_available = self._pv.getMaximumPower(self._time)
+                pv_kw_available = self._pv.get_maximum_power(self._time)
                 if pv_kw_available > 0:
                     # there's power available from the pv
                     if pv_kw_available > self._load_on_generator:
@@ -389,27 +387,27 @@ class GridController(Device):
 
             # update the generator
             if previous_load_generator != self._load_on_generator:
-                self.logMessage(
+                self.log_message(
                     message="update the load on the generator",
                     tag="generator_load",
                     value=self._load_on_generator
                 )
-                self.broadcastNewPower(self._load_on_generator, generator_id)
+                self.broadcast_new_power(self._load_on_generator, generator_id)
 
             # update the pv
             if previous_load_pv != self._load_on_pv:
-                self.logMessage(
+                self.log_message(
                     message="pv power output changed",
                     tag="pv_load",
                     value=self._load_on_pv
                 )
-                self._pv.setPowerOutput(self._time, self._load_on_pv)
-                self.logPlotValue("pv_power_output", self._load_on_pv)
+                self._pv.set_power_output(self._time, self._load_on_pv)
+                self.log_plot_value("pv_power_output", self._load_on_pv)
         else:
             # no power sources are connected to the grid controller
             raise Exception("No power sources are connected to the grid controller")
 
-    def getDieselGeneratorID(self):
+    def get_diesel_generator_id(self):
         "Find the diesel generator in the connected devices"
         if self._diesel_generator_id:
             return self._diesel_generator_id
@@ -424,10 +422,10 @@ class GridController(Device):
             return generator_id
 
 
-    def connectedDevices(self):
+    def connected_devices(self):
         return self._connected_devices
 
-    def processEvents(self):
+    def process_events(self):
         "Process any events that need to be processed"
 
         remove_items = []
@@ -437,16 +435,16 @@ class GridController(Device):
             if event["time"] <= self._time:
                 if event["operation"] == "battery_status":
                     if not set_power_sources_called:
-                        self.setPowerSources()
+                        self.set_power_sources()
                         set_power_sources_called = True
                     remove_items.append(event)
                 elif event["operation"] == "pv_power_update":
                     if not set_power_sources_called:
-                        self.setPowerSources()
+                        self.set_power_sources()
                         set_power_sources_called = True
                     remove_items.append(event)
                 elif event["operation"] == "emit_initial_price":
-                    self.sendPriceChangeToDevices()
+                    self.send_price_change_to_devices()
                     remove_items.append(event)
 
         # remove the processed events from the list
@@ -455,34 +453,34 @@ class GridController(Device):
 
         return
 
-    def setNextBatteryUpdateEvent(self):
+    def set_next_battery_update_event(self):
         "If the battery is on update its state of charge every X number of seconds"
         self._events.append({"time": self._time + self._check_battery_soc_rate, "operation": "battery_status"})
 
-    def setNextPvUpdateEvent(self):
+    def set_next_pv_update_event(self):
         "Update the pv power output every 15 minutes"
         self._events.append({"time": self._time + self._pv_power_update_rate, "operation": "pv_power_update"})
 
-    def scheduleNextEvents(self):
+    def schedule_next_events(self):
         "Schedule upcoming events if necessary"
         if self._battery:
             # if the battery is charging/discharging then check out the state_of_charge in self._check_battery_soc_rate seconds
             search_events = [event for event in self._events if event["operation"] == "battery_status"]
             if not len(search_events):
-                self.setNextBatteryUpdateEvent()
+                self.set_next_battery_update_event()
 
         if self._pv:
             search_events = [event for event in self._events if event["operation"] == "pv_power_update"]
             if not len(search_events):
-                self.setNextPvUpdateEvent()
+                self.set_next_pv_update_event()
 
         return
 
-    def setInitialPriceEvent(self):
+    def set_initial_price_event(self):
         """Let all other devices know of the initial price of energy"""
         self._events.append({"time": 0, "operation": "emit_initial_price"})
 
-    def calculateNextTTIE(self):
+    def calculate_next_ttie(self):
         "calculate the next TTIE - look through the pending events for the one that will happen first"
         ttie = None
         for event in self._events:
@@ -491,4 +489,4 @@ class GridController(Device):
 
         if ttie != None and ttie != self._ttie:
             self._ttie = ttie
-            self.broadcastNewTTIE(ttie)
+            self.broadcast_new_ttie(ttie)

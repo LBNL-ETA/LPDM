@@ -46,6 +46,7 @@ class DeviceThread(threading.Thread):
         """initialize the device"""
         self.add_callbacks_to_config(self.device_config)
         self.device = self.DeviceClass(self.device_config)
+        self.device.init()
 
     def add_callbacks_to_config(self, config):
         """add the callback functions for power, price, ttie to the device configuration"""

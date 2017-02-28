@@ -10,23 +10,28 @@
 ################################################################################################################################
 
 import os
+import sys
 import re
 import logging
+import traceback
+import ConfigParser
 from pg_handler import PgHandler
 
 class SimulationLogger:
     """
     This class sets up the logging and handlers for the simulation.
     """
-    def __init__(self, verbose=True):
+    def __init__(self, console_log_level=logging.DEBUG, file_log_level=logging.DEBUG, pg_log_level=logging.DEBUG):
         self.app_name = "lpdm"
         self.base_path = "logs"
         self.folder = None
         self.log_id = None
         self.logger = None
-        self.verbose = verbose
+        self.console_log_level = console_log_level
+        self.file_log_level = file_log_level
+        self.pg_log_level = pg_log_level
 
-    def initialize_logging(self):
+    def init(self):
         """Setup the log paths and create the logging handlers"""
         self.generate_simulation_id()
         self.create_simulation_log_folder()
@@ -71,35 +76,45 @@ class SimulationLogger:
 
         # create file handler which logs even debug messages
         fh = logging.FileHandler(os.path.join(self.simulation_log_path(), 'app.log'), mode='w')
-        fh.setLevel(logging.DEBUG)
+        fh.setLevel(self.file_log_level)
 
         # create console handler with a higher log level
         ch = logging.StreamHandler()
-        ch.setLevel(logging.INFO)
+        ch.setLevel(self.console_log_level)
 
-        # colored_formatter = coloredlogs.ColoredFormatter('%(asctime)s %(name)-10s %(levelname)-8s %(message)s')
-        # create formatter and add it to the handlers
-        # formatter = logging.Formatter('%(asctime)s %(name)-10s %(levelname)-8s %(message)s')
+        # add the formatters
         ch.setFormatter(formatter)
         fh.setFormatter(formatter)
 
-        # setup the database logger
-        config = {
-            "pg_enabled": True,
-            "pg_host": "172.22.0.2",
-            "pg_port": "5432",
-            "pg_dbname": "lpdm",
-            "pg_user": "docker",
-            "pg_pass": "q^r+_#H=9fz&yGJ8",
-            "pg_schema": "mikey2"
-        }
-        db_handler = PgHandler(config)
-        db_handler.connect()
-        db_handler.setLevel(logging.DEBUG)
-
-        # add the handlers to logger
-        # if self.verbose:
+        # add the file and console loggeres
         self.logger.addHandler(ch)
         self.logger.addHandler(fh)
-        self.logger.addHandler(db_handler)
+
+        # setup the database logger if there's a configuration file
+        path = os.path.dirname(os.path.realpath(__file__))
+        pg_config = os.path.join(path, 'pg.cfg')
+        if os.path.exists(pg_config):
+            try:
+                config = ConfigParser.ConfigParser()
+                config.read(pg_config)
+
+                if config.get("postgres", "enabled"):
+                    config = {
+                        "pg_enabled": config.get("postgres", "enabled"),
+                        "pg_host": config.get("postgres", "host"),
+                        "pg_port": config.get("postgres", "port"),
+                        "pg_dbname": config.get("postgres", "dbname"),
+                        "pg_user": config.get("postgres", "user"),
+                        "pg_pass": config.get("postgres", "pass"),
+                        "pg_schema": config.get("postgres", "schema")
+                    }
+                    db_handler = PgHandler(config)
+                    db_handler.connect()
+                    db_handler.setLevel(self.pg_log_level)
+                    self.logger.addHandler(db_handler)
+            except Exception as e:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                tb = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                self.logger.error("Unable to setup the postgres logger")
+                self.logger.error("\n".join(tb))
 

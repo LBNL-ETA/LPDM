@@ -14,7 +14,7 @@
 """
     Implementation of the Diesel Generator device.
 """
-from device import Device
+from device.device import Device
 import logging
 import pprint
 
@@ -77,9 +77,10 @@ class DieselGenerator(Device):
                 "fuel_base_cost" (float): Base cost of fuel ($/gallon)
                 "current_fuel_price" (float): The initial price of fuel ($/kWh)
         """
+        # call the super constructor
+        Device.__init__(self, config)
+
         # set the properties specific to a diesel generator
-        self._device_type = config.get("device_type", "diesel_generator")
-        self._device_name = config.get("device_name", "diesel_generator")
         self._fuel_tank_capacity = config.get("fuel_tank_capacity", 100.0)
         self._fuel_level = config.get("fuel_level", None)
         self._fuel_reserve = config.get("fuel_reserve", 20.0)
@@ -93,8 +94,7 @@ class DieselGenerator(Device):
         self._price_reassess_time = config.get("price_reassess_time", 3600)
         self._fuel_base_cost = config.get("fuel_base_cost", 5.0)
 
-        self._static_price = config.get("static_price", False)
-        self._current_fuel_price = float(config["current_fuel_price"]) if type(config) is dict and "current_fuel_price" in config.keys() else None # current price of fuel ($/kWh)
+        self._current_fuel_price = config.get("current_fuel_price", None)
 
         self._start_hour_consumption = 0 # time when the last consumption calculation occured
         self._consumption_activity = []    #track the consumption changes for the hour
@@ -108,33 +108,21 @@ class DieselGenerator(Device):
 
         self._scarcity_multiplier = 1.0
 
-        self._power_level = 0.0
-
         self._time_price_last_update = 0
-
-        # call the super constructor
-        Device.__init__(self, config)
-
-        # setup the next refuel time
-        self.set_target_refuel_time()
-
-        # set the units for a deisel generator
-        self._units = 'MW'
 
         # load a set of attribute values if a 'scenario' key is present
         if type(config) is dict and 'scenario' in config.keys():
             self.set_scenario(config['scenario'])
 
+    def init(self):
+        """Run any initialization functions for the device"""
         # Setup the next events for the device
+        self.set_target_refuel_time()
         self.set_next_hourly_consumption_calculation_event()
         self.set_next_reasses_fuel_change_event()
         self.set_next_refuel_event()
         self.set_initial_price_event()
-
         self.calculate_next_ttie()
-
-        # self._tasks = config["tasks"] if type(config) is dict and "tasks" in config.keys() else None
-        # self._setup_device_tasks()
 
     def status(self):
         return {
@@ -339,8 +327,6 @@ class DieselGenerator(Device):
 
         self._last_fuel_status_time = self._time
         new_fuel_level = new_gallons / self._fuel_tank_capacity * 100
-        if new_fuel_level != self._fuel_level:
-            self.log_plot_value("fuel_level", new_fuel_level)
 
         self.log_message(
             message="Fuel level updated",

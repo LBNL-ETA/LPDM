@@ -13,6 +13,7 @@ Welcome to LPDM's documentation!
    install
    running
    devices
+   device_base
    diesel_generator
    grid_controller
    eud

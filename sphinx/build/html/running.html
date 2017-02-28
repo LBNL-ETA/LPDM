@@ -87,10 +87,19 @@
                 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">LPDM Installation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Running Simulations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Running Simulations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#run-time-days">run_time_days</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#console-log-level">console_log_level</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-log-level">file_log_level</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="devices.html">Devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="diesel_generator.html">Diesel Generator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="grid_controller.html">Grid Controller</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eud.html">End-Use Device</a></li>
 </ul>
 
             
@@ -137,6 +146,105 @@
             
   <div class="section" id="running-simulations">
 <h1>Running Simulations<a class="headerlink" href="#running-simulations" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="run-time-days">
+<h3>run_time_days<a class="headerlink" href="#run-time-days" title="Permalink to this headline">¶</a></h3>
+<p>The number of days to run the simulation for.</p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Data Type</th>
+<th class="head">Range</th>
+<th class="head">Units</th>
+<th class="head">Default Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>int</td>
+<td>n/a</td>
+<td>days</td>
+<td>7 days</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="console-log-level">
+<h3>console_log_level<a class="headerlink" href="#console-log-level" title="Permalink to this headline">¶</a></h3>
+<p>The log level of the console logger.</p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Level</th>
+<th class="head">Numeric Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>CRITICAL</td>
+<td>50</td>
+</tr>
+<tr class="row-odd"><td>ERROR</td>
+<td>40</td>
+</tr>
+<tr class="row-even"><td>WARNING</td>
+<td>30</td>
+</tr>
+<tr class="row-odd"><td>INFO</td>
+<td>20</td>
+</tr>
+<tr class="row-even"><td>DEBUG</td>
+<td>10</td>
+</tr>
+<tr class="row-odd"><td>NOTSET</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="file-log-level">
+<h3>file_log_level<a class="headerlink" href="#file-log-level" title="Permalink to this headline">¶</a></h3>
+<p>The log level for the file logger.</p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Level</th>
+<th class="head">Numeric Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>CRITICAL</td>
+<td>50</td>
+</tr>
+<tr class="row-odd"><td>ERROR</td>
+<td>40</td>
+</tr>
+<tr class="row-even"><td>WARNING</td>
+<td>30</td>
+</tr>
+<tr class="row-odd"><td>INFO</td>
+<td>20</td>
+</tr>
+<tr class="row-even"><td>DEBUG</td>
+<td>10</td>
+</tr>
+<tr class="row-odd"><td>NOTSET</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 
 

@@ -1,0 +1,88 @@
+{
+    "run_time_days": "14",
+    "static_price": 0,
+    "devices": [
+        {
+            "capacity": "2000.0",
+            "days_to_refuel": "7",
+            "device_id": "",
+            "device_name": "Diesel Generator",
+            "device_type": "diesel_generator",
+            "fuel_base_cost": "5",
+            "fuel_level": "100.0",
+            "fuel_price_change_rate": "5",
+            "fuel_reserve": "20.0",
+            "fuel_tank_capacity": "100.0",
+            "gen_eff_100": "40",
+            "gen_eff_zero": "25",
+            "grid_controller_id": "grid_controller",
+            "kwh_per_gallon": "36.36",
+            "price_reassess_time": "3600",
+            "time_to_reassess_fuel": "21600",
+            "type": "Generator",
+            "uuid": 1,
+            "plot_config": {
+                "resolution": "on_change",
+                "on_change": true,
+                "time_interval": 600,
+                "height": 500,
+                "width": 500,
+                "items": [{
+                        "file_name": "diesel_generator_fuel_level.pdf",
+                        "title": "Fuel Level (gallons)",
+                        "on_change": true,
+                        "time_interval": 600,
+                        "height": 500,
+                        "width": 900,
+                        "parameter": "fuel_level"
+                }]
+            }
+        }, {
+            "capacity": "3000.0",
+            "device_id": "",
+            "device_name": "Grid Controller",
+            "device_type": "grid_controller",
+            "pv": "0",
+            "type": "Grid_Controller",
+            "uuid": 2
+        }, {
+            "capacity": "5.0",
+            "check_battery_soc_rate": "300.0",
+            "device_name": "Battery",
+            "device_type": "battery",
+            "max_charge_rate": "1000.0",
+            "max_soc": "0.80",
+            "min_soc": "0.20",
+            "roundtrip_eff": "0.9",
+            "uuid": 3,
+            "plot_config": {
+                "resolution": "on_change",
+                "on_change": true,
+                "time_interval": 600,
+                "height": 500,
+                "width": 500,
+                "items": [{
+                        "file_name": "battery_soc.pdf",
+                        "title": "State of Charge (%)",
+                        "on_change": true,
+                        "time_interval": 600,
+                        "height": 500,
+                        "width": 900,
+                        "parameter": "battery_soc"
+                }]
+            }
+        }, {
+            "device_id": "",
+            "device_name": "PWM fan",
+            "device_type": "pwm_fan",
+            "grid_controller_id": "grid_controller",
+            "is_real_device": "0",
+            "max_power_use": "150.0",
+            "price_dim": "0.3",
+            "price_off": "0.7",
+            "schedule": [["0300", 1], ["2300", 0]],
+            "type": "End_Use_Device",
+            "uuid": 4
+        }
+    ]
+}

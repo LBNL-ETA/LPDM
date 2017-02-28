@@ -11,6 +11,7 @@
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 ################################################################################################################################
 
+from supervisor import Supervisor
 from tug_devices.grid_controller import GridController
 from tug_devices.eud import Eud
 from tug_devices.light import Light
@@ -33,7 +34,11 @@ class TugSimulation:
     def __init__(self, params=None):
         # self.logger = logging.getLogger('{}.{}'.format(logger_setup.APP_NAME, __name__))
         verbose_logging = True if type(params) is dict and params["verbose_logging"] else False
+
+        # setup the log manager
         self.simulation_log_manager = SimulationLogger(verbose_logging)
+        self.simulation_log_manager.initializeLogging()
+
         self.simulation_id = self.simulation_log_manager.log_id
         self.logger = self.simulation_log_manager.logger
 

@@ -228,14 +228,10 @@ if __name__ == "__main__":
         file_log_level=config.get("file_log_level", logging.DEBUG),
         pg_log_level=config.get("pg_log_level", logging.DEBUG)
     )
-    print "init log manager"
     log_manager.init()
-    print "done"
-
 
     supervisor = Supervisor()
     supervisor.load_config(config)
 
     log_manager.logger.info("run the simulation")
     supervisor.run_simulation()
-

@@ -27,7 +27,7 @@ start_container_bash:
 	--ip ${CONTAINER_IP} \
 	${IMG_NAME} /bin/bash
 
-run_simulation:
+run:
 	docker run -it --rm --name=${CONTAINER_NAME} \
 	-v ${CURDIR}:/LPDM \
 	--net=${NETWORK_NAME} \

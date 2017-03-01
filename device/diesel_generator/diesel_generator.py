@@ -14,11 +14,11 @@
 """
     Implementation of the Diesel Generator device.
 """
-from device.device import Device
+from device.power_source import PowerSource
 import logging
 import pprint
 
-class DieselGenerator(Device):
+class DieselGenerator(PowerSource):
     """
         Device implementation of a diesel generator.
 
@@ -78,7 +78,7 @@ class DieselGenerator(Device):
                 "current_fuel_price" (float): The initial price of fuel ($/kWh)
         """
         # call the super constructor
-        Device.__init__(self, config)
+        PowerSource.__init__(self, config)
 
         # set the properties specific to a diesel generator
         self._fuel_tank_capacity = config.get("fuel_tank_capacity", 100.0)

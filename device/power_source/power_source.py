@@ -15,27 +15,39 @@
     Base class for power sources (diesel generator, battery, pv, ...)
 """
 from device.device import Device
-import logging
-import pprint
+from abc import ABCMeta, abstractmethod
 
 class PowerSource(Device):
-    """
-    """
-
     def __init__(self, config = None):
-        """
-        """
         # call the super constructor
         Device.__init__(self, config)
 
+    @abstractmethod
+    def init(self):
+        """Run any initialization functions for the device"""
+        pass
 
-    # def init(self):
-        # """Run any initialization functions for the device"""
-        # # Setup the next events for the device
-        # self.set_target_refuel_time()
-        # self.set_next_hourly_consumption_calculation_event()
-        # self.set_next_reasses_fuel_change_event()
-        # self.set_next_refuel_event()
-        # self.set_initial_price_event()
-        # self.calculate_next_ttie()
+    @abstractmethod
+    def refresh(self):
+        """Refresh the device"""
+        pass
 
+    @abstractmethod
+    def on_power_change(self, source_device_id, target_device_id, time, power):
+        """A power change has occured"""
+        pass
+
+    @abstractmethod
+    def on_time_change(self, new_time):
+        """A power change has occured"""
+        pass
+
+    @abstractmethod
+    def set_initial_price_event(self):
+        """Let the grid controller know of the initial price of energy"""
+        pass
+
+    @abstractmethod
+    def calculate_next_ttie(self):
+        """calculate the next ttie"""
+        pass

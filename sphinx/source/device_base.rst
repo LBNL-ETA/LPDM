@@ -4,6 +4,16 @@ Device Base Class
 Configurable Parameters
 _______________________
 
+device_id
+---------
+The unique identifier of the device.
+
+.. csv-table::
+   :header: "Data Type", "Range", "Units", "Default Value"
+   :widths: 40, 40, 40, 40
+
+   string, n/a, n/a, n/a
+
 device_name
 -----------
 The unique name of the device.

@@ -1,0 +1,4 @@
+# ignore everyhting
+*
+# keep .gitignore
+!.gitignore

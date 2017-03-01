@@ -13,7 +13,8 @@
         "generators": [
             {
                 "device_id": "dg_1",
-                "device_type": "diesel_generator"
+                "device_type": "diesel_generator",
+                "fuel_tank_capacity": 10.0
             }
         ],
         "euds": [
@@ -22,9 +23,9 @@
                 "device_type": "eud",
                 "grid_controller_id": "gc_1",
                 "is_real_device": "0",
-                "max_power_use": "150.0",
-                "price_dim": "0.3",
-                "price_off": "0.7",
+                "max_power_use": 150000.0,
+                "price_dim": 0.3,
+                "price_off": 0.7,
                 "schedule": [["0300", 1], ["2300", 0]],
                 "type": "End_Use_Device",
                 "uuid": 4

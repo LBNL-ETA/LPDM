@@ -14,16 +14,18 @@
 """
     Implementation of a general EUD device
 """
-from device import Device
+from device.device import Device
 import logging
 
 class Eud(Device):
     def __init__(self, config = None):
-        if not "_device_type" in dir(self) or not self._device_type:
-            self._device_type = "eud"
+        # call the super constructor
+        Device.__init__(self, config)
 
+        self._device_type = "eud"
         # set the properties for an end-use device
         self._device_name = config.get("device_name", "EUD")
+
         # max power - set default to 100 watts unless different value provided in configuration
         # operate at max_power_output unless price > 'price_dim'
         self._max_power_output = config.get("max_power_output", 100.0)
@@ -54,19 +56,12 @@ class Eud(Device):
 
         self._power_level = 0.0
 
-        # call the super constructor
-        Device.__init__(self, config)
-
         # set the units
         self._units = 'W'
 
         # load a set of attribute values if a 'scenario' key is present
         if type(config) is dict and 'scenario' in config.keys():
             self.set_scenario(config['scenario'])
-
-        # if self._price > 0:
-            # self.set_power_level()
-            # self.broadcast_new_power(self._power_level)
 
     def status(self):
         return {
@@ -183,7 +178,7 @@ class Eud(Device):
         if (self._next_event and self._time == self._ttie):
             if self._in_operation and self._next_event["operation"] == 0:
                 self.turn_off()
-                self.broadcast_new_power(0.0)
+                self.broadcast_new_power(0.0, target_device_id=self._grid_controller_id)
             elif not self._in_operation and self._next_event["operation"] == 1:
                 self.set_power_level()
 
@@ -245,7 +240,7 @@ class Eud(Device):
             else:
                 self.adjust_hardware_power()
 
-            self.broadcast_new_power(new_power)
+            self.broadcast_new_power(new_power, target_device_id=self._grid_controller_id)
 
     def adjust_hardware_power(self):
         "Override this method to tell the hardware to adjust its power output"

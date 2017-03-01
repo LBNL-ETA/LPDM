@@ -72,7 +72,7 @@ class SimulationLogger:
         self.logger.setLevel(logging.DEBUG)
 
         # setup the formatter
-        formatter = logging.Formatter('[%(relativeCreated)d-%(threadName)s-%(filename)s-%(funcName)s-%(lineno)d] - %(message)s')
+        formatter = logging.Formatter('[%(relativeCreated)d-%(levelname)-s-%(threadName)s-%(filename)s-%(funcName)s-%(lineno)d] - %(message)s')
 
         # create file handler which logs even debug messages
         fh = logging.FileHandler(os.path.join(self.simulation_log_path(), 'app.log'), mode='w')
@@ -98,9 +98,10 @@ class SimulationLogger:
                 config = ConfigParser.ConfigParser()
                 config.read(pg_config)
 
-                if config.get("postgres", "enabled"):
+                pg_enabled = int(config.get("postgres", "enabled"))
+                if pg_enabled:
                     config = {
-                        "pg_enabled": config.get("postgres", "enabled"),
+                        "pg_enabled": pg_enabled,
                         "pg_host": config.get("postgres", "host"),
                         "pg_port": config.get("postgres", "port"),
                         "pg_dbname": config.get("postgres", "dbname"),
@@ -117,4 +118,5 @@ class SimulationLogger:
                 tb = traceback.format_exception(exc_type, exc_value, exc_traceback)
                 self.logger.error("Unable to setup the postgres logger")
                 self.logger.error("\n".join(tb))
+                raise
 

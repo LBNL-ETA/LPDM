@@ -15,39 +15,41 @@
     Implementation of a Grid Controller
 """
 
-from device import Device
-from battery import Battery
-from pv import Pv
-from diesel_generator import DieselGenerator
+from device.device import Device
+from device.battery import Battery
+from device.pv import Pv
+from device.diesel_generator import DieselGenerator
 import logging
 
 class GridController(Device):
     """
-        Device implementation of a grid controller.
+    Device implementation of a grid controller.
 
-        Use the battery to try and keep the diesel generator above 70% capacity
+    Use the battery to try and keep the diesel generator above 70% capacity
     """
 
     def __init__(self, config):
         """
-            Args:
-                config (Dict): Dictionary of configuration values for the grid controller
+        Args:
+            config (Dict): Dictionary of configuration values for the grid controller
 
-                keys:
-                    "device_name" (string): Name of the device
-                    "connected_devices (List): Array of devices connected to the grid controller,
-                    "power_price" (float): Price of power ($/kWh)
-                    "capacity (float): Maximum available capacity (Watts),
-                    "diesel_output_threshold" (float): Percentage of output capacity of the diesel generator to keep above using the battery
-                    "check_battery_soc_rate" (int): Rate at which to update the battery state of charge when charging or discharging (seconds)
-                    "battery_config" (Dict): Configuration object for the battery attached to the grid controller
+            keys:
+                "device_name" (string): Name of the device
+                "connected_devices (List): Array of devices connected to the grid controller,
+                "power_price" (float): Price of power ($/kWh)
+                "capacity (float): Maximum available capacity (Watts),
+                "diesel_output_threshold" (float): Percentage of output capacity of the diesel generator to keep above using the battery
+                "check_battery_soc_rate" (int): Rate at which to update the battery state of charge when charging or discharging (seconds)
+                "battery_config" (Dict): Configuration object for the battery attached to the grid controller
         """
+        # call the super constructor
+        Device.__init__(self, config)
+
         self._device_type = "grid_controller"
         self._device_name = config.get("device_name", "grid_controller")
         self._connected_devices = config.get("connected_devices", [])
         self._power_price = config.get("power_price", None)
         self._capacity = config.get("capacity", 3000.0)
-        # self._diesel_output_threshold = float(config["diesel_output_threshold"]) if type(config) is dict and "diesel_output_threshold" in config.keys() else 70.0
         self._check_battery_soc_rate = config.get("check_battery_soc_rate", 300)
         self._pv_power_update_rate = config.get("pv_power_update_rate", 900)
 
@@ -63,9 +65,6 @@ class GridController(Device):
         self._diesel_generator_id = None
 
         self._events = []
-
-        # call the super constructor
-        Device.__init__(self, config)
 
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
@@ -174,6 +173,7 @@ class GridController(Device):
                     self._total_load += delta_power
                     item["power"] = power
                     found_item = True
+                    self.log_message("power changed to {}".format(power))
                 break
 
         if not found_item:
@@ -364,7 +364,9 @@ class GridController(Device):
                 self.log_plot_value("pv_power_output", self._load_on_pv)
         elif generator_id:
             # only a generator is connected to the grid controller
-            self.log_message("set power sources (dg = {}, pv = {}, total_load = {})".format(self._load_on_generator, self._load_on_pv, self._total_load), app_log_level=None)
+            self.log_message(
+                "set power sources (dg = {}, pv = {}, total_load = {})".format(self._load_on_generator, self._load_on_pv, self._total_load)
+            )
             previous_load_pv = self._load_on_pv
             self._load_on_generator = self._total_load
             # if previous_load_generator != self._load_on_generator:
@@ -414,7 +416,7 @@ class GridController(Device):
         else:
             generator_id = None
             for device in self._connected_devices:
-                if device["device_type"] is DieselGenerator:
+                if device["device_type"] == "diesel_generator":
                     generator_id = device["device_id"]
                     self._diesel_generator_id = generator_id
                     break

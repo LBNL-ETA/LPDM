@@ -1,11 +1,15 @@
+import sys
+import traceback
 import Queue
 import threading
 import logging
+import pprint
 from ttie_event_manager import TtieEventManager
 from event_manager import EventManager
 from lpdm_event import LpdmPowerEvent, LpdmPriceEvent, LpdmTtieEvent
 from device_thread_manager import DeviceThreadManager
 from device_thread import DeviceThread
+from device_class_loader import DeviceClassLoader
 
 class Supervisor:
     """
@@ -13,88 +17,88 @@ class Supervisor:
     The Supervisor creates a thread for each separate device.
     """
     def __init__(self):
+        # this is the queue for receiving events from device threads
         self.queue = Queue.Queue()
         self.ttie_event_manager = TtieEventManager()
-        self.non_ttie_event_manager = EventManager()
         self.device_thread_manager = DeviceThreadManager(supervisor_queue=self.queue)
+        # get the app logger
+        self.logger = logging.getLogger("lpdm")
+        self.config = None
+        self.max_ttie = None
 
-    def callback_new_power(self, source_device_id, target_device_id, time_value, value):
-        """broadcast a power change"""
-        logging.debug("power change event received")
-        self.non_ttie_event_manager.add(
-            LpdmPowerEvent(source_device_id, target_device_id, value)
-        )
+    def load_config(self, config):
+        """ Load the configuration dict for the simulation. """
+        self.config = config
+        # calculate the max ttie (seconds)
+        self.max_ttie = config.get('run_time_days', 7) * 24 * 60 * 60
+        device_class_loader = DeviceClassLoader()
+        device_sections = ["grid_controllers", "generators", "euds"]
 
-    def callback_new_price(self, source_device_id, target_device_id, time_value, value):
-        """broadcast  price change"""
-        logging.debug("Price change event received")
-        self.non_ttie_event_manager.add(
-            LpdmPriceEvent(source_device_id, target_device_id, value)
-        )
-
-    def callback_new_ttie(self, device_id, value):
-        """register a new ttie for a device"""
-        logging.debug("received new ttie {} - {}".format(device_id, value))
-        self.ttie_event_manager.add(LpdmTtieEvent(target_device_id=device_id, value=value))
+        # build the devices: first grid_controllers, then generators, then euds
+        for section in device_sections:
+            for dc in config["devices"][section]:
+                # get the device class from it's device_type
+                DeviceClass = device_class_loader.get_device_class_from_name(dc["device_type"])
+                self.add_device(DeviceClass=DeviceClass, config=dc)
 
     def process_supervisor_events(self):
         """Process events in the supervisor's queue"""
-        logging.debug("process supervisor events ({})".format(self.queue.qsize()))
+        self.logger.debug("process supervisor events ({})".format(self.queue.qsize()))
         while not self.queue.empty():
-            logging.debug("Queue not empty ({}), process event...".format(self.queue.qsize()))
             the_event = self.queue.get()
             if isinstance(the_event, LpdmTtieEvent):
                 # new ttie event: add it to the ttie event list
-                logging.debug("new ttie event found")
+                self.logger.debug("new ttie event found")
+                self.logger.debug(the_event)
                 self.ttie_event_manager.add(the_event)
             elif isinstance(the_event, LpdmPowerEvent) or isinstance(the_event, LpdmPriceEvent):
                 # power or price event: call the thread and pass along the event
-                logging.debug("power/price event found")
-                logging.debug(the_event)
+                self.logger.debug("power/price event found")
+                self.logger.debug(the_event)
                 # get the target thread and put the event in the queue
                 t = self.device_thread_manager.get(the_event.target_device_id)
                 t.queue.put(the_event)
                 t.queue.join()
-        logging.debug("finished processing supervisor events")
+        self.logger.debug("finished processing supervisor events")
 
-    def add_device(self, device_id, DeviceClass, config):
+    def add_device(self, DeviceClass, config):
         """
         Register a device with the supervisor.
         This will create the device in its own separate thread.
         Set the listen_for_power and listen_for_price variables to allow a device to receive global price and power
         notifications.
         """
-        logging.info("add device {} - {}".format(device_id, DeviceClass))
-        # assign the callbacks
-
         # create the new thread for the device
-        self.device_thread_manager.add(device_id, DeviceClass, config)
+        self.device_thread_manager.add(DeviceClass, config)
 
     def dispatch_next_ttie(self):
         """Notify the device it's time to execute their next event"""
-        logging.debug("dispatch next ttie")
+        self.logger.debug("dispatch next ttie")
         # get the next ttie event
         next_ttie = self.ttie_event_manager.get()
         if next_ttie:
-            logging.debug("found new ttie {}".format(next_ttie))
-            # get the device thread and put the event in the queue
-            t = self.device_thread_manager.get(next_ttie.target_device_id)
-            logging.debug("put event in queue...")
-            t.queue.put(next_ttie)
-            logging.debug("wait for device thread to finish...")
-            t.queue.join()
-            logging.debug("device thread finished")
+            if next_ttie.value < self.max_ttie:
+                self.logger.debug("found new ttie {}".format(next_ttie))
+                # get the device thread and put the event in the queue
+                t = self.device_thread_manager.get(next_ttie.target_device_id)
+                self.logger.debug("put event in queue...")
+                t.queue.put(next_ttie)
+                self.logger.debug("wait for device thread to finish...")
+                t.queue.join()
+                self.logger.debug("device thread finished")
 
-            # process any other resulting events
-            self.process_supervisor_events()
+                # process any other resulting events
+                self.process_supervisor_events()
+            else:
+                self.logger.info("max ttie reached ({}), quit simulation".format(next_ttie.value))
 
         else:
-            logging.info("No ttie found... quit.")
+            self.logger.info("No ttie found... quit.")
         return next_ttie
 
     def finish_ttie(self):
         """call back for finished ttie events"""
-        logging.debug("Finish processing ttie...")
+        self.logger.debug("Finish processing ttie...")
         self.process_non_ttie_events()
 
     def process_non_ttie_events(self):
@@ -103,22 +107,29 @@ class Supervisor:
 
     def wait_for_threads(self):
         """Wait for threads to finsih what their tasks"""
-        logging.debug("wait for threads")
+        self.logger.debug("wait for threads")
         self.device_thread_manager.wait_for_all()
-        logging.debug("finished waiting for threads")
+        self.logger.debug("finished waiting for threads")
 
     def run_simulation(self):
         """Start running the simulation"""
-        logging.info("start the simulation")
+        self.logger.info("start the simulation")
         # star tthe device threads
         self.device_thread_manager.start_all()
+        self.device_thread_manager.connect_devices()
         self.process_supervisor_events()
         # keep dispatching the next ttie events until finished
-        while self.dispatch_next_ttie():
-            pass
-        logging.info("Simulation finished.")
-        # kill all threads
-        self.device_thread_manager.kill_all()
+        try:
+            while self.dispatch_next_ttie():
+                pass
+            self.logger.info("Simulation finished.")
+        except Exception as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            tb = traceback.format_exception(exc_type, exc_value, exc_traceback)
+            self.logger.error("\n".join(tb))
+        finally:
+            # kill all threads
+            self.device_thread_manager.kill_all()
 
     def stop_simulation(self):
         """Clean up and destroy the simulation when finished"""

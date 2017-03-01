@@ -4,9 +4,10 @@ Device Base Class
 Configurable Parameters
 _______________________
 
-device_name
------------
-The unique name of the device.
+device_id
+---------
+The unique identifier of the device. The simulation will not run if another device is found
+with the same device_id.
 
 .. csv-table::
    :header: "Data Type", "Range", "Units", "Default Value"

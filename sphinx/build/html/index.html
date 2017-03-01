@@ -87,11 +87,13 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">LPDM Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="running.html">Running Simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulation Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="devices.html">Devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="device_base.html">Device Base Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="diesel_generator.html">Diesel Generator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="grid_controller.html">Grid Controller</a></li>
 <li class="toctree-l1"><a class="reference internal" href="eud.html">End-Use Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="create_device.html">Creating Your Own Devices</a></li>
 </ul>
 
             
@@ -142,12 +144,19 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">LPDM Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="install.html#simulation-runner">Simulation Runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#github">GitHub</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#docker">Docker</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="running.html">Running Simulations</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="running.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="running.html#setting-up-the-docker-environment">Setting up the Docker Environment</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulation Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="simulation.html#run-time-days">run_time_days</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simulation.html#console-log-level">console_log_level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simulation.html#file-log-level">file_log_level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simulation.html#pg-log-level">pg_log_level</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="devices.html">Devices</a><ul>
@@ -170,6 +179,11 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="eud.html">End-Use Device</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="eud.html#configurable-parameters">Configurable Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="create_device.html">Creating Your Own Devices</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="create_device.html#how-the-simulation-loads-devices">How the Simulation Loads Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="create_device.html#steps-for-creating-devices">Steps for Creating Devices</a></li>
 </ul>
 </li>
 </ul>

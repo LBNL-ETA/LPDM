@@ -34,7 +34,7 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="LPDM 1.0.0 documentation" href="index.html"/>
-        <link rel="next" title="Devices" href="devices.html"/>
+        <link rel="next" title="Simulation Configuration" href="simulation.html"/>
         <link rel="prev" title="LPDM Installation" href="install.html"/> 
 
   
@@ -88,15 +88,18 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">LPDM Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Running Simulations</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#run-time-days">run_time_days</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#console-log-level">console_log_level</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#file-log-level">file_log_level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setting-up-the-docker-environment">Setting up the Docker Environment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-the-docker-network">Creating the Docker Network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#starting-the-postgresql-database">Starting the PostgreSQL Database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#logging-to-postgresql">Logging to PostgreSQL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Running Simulations</a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulation Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="devices.html">Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device_base.html">Device Base Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="diesel_generator.html">Diesel Generator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="grid_controller.html">Grid Controller</a></li>
 <li class="toctree-l1"><a class="reference internal" href="eud.html">End-Use Device</a></li>
@@ -146,103 +149,61 @@
             
   <div class="section" id="running-simulations">
 <h1>Running Simulations<a class="headerlink" href="#running-simulations" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="configuration">
-<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="run-time-days">
-<h3>run_time_days<a class="headerlink" href="#run-time-days" title="Permalink to this headline">¶</a></h3>
-<p>The number of days to run the simulation for.</p>
-<table border="1" class="colwidths-given docutils">
-<colgroup>
-<col width="25%" />
-<col width="25%" />
-<col width="25%" />
-<col width="25%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Data Type</th>
-<th class="head">Range</th>
-<th class="head">Units</th>
-<th class="head">Default Value</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>int</td>
-<td>n/a</td>
-<td>days</td>
-<td>7 days</td>
-</tr>
-</tbody>
-</table>
+<div class="section" id="setting-up-the-docker-environment">
+<h2>Setting up the Docker Environment<a class="headerlink" href="#setting-up-the-docker-environment" title="Permalink to this headline">¶</a></h2>
+<p>The Dockerfile in the root of the LPDM repository will setup the image for running
+simulations.  The Makefile in the root of the LPDM repository provides the docker commands
+needed to run a simulation.</p>
+<div class="section" id="creating-the-docker-network">
+<h3>Creating the Docker Network<a class="headerlink" href="#creating-the-docker-network" title="Permalink to this headline">¶</a></h3>
+<p>Prior to running any simulations, first run the following command from the root directory of the LPDM repository:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">create</span> <span class="n">network</span>
+</pre></div>
 </div>
-<div class="section" id="console-log-level">
-<h3>console_log_level<a class="headerlink" href="#console-log-level" title="Permalink to this headline">¶</a></h3>
-<p>The log level of the console logger.</p>
-<table border="1" class="colwidths-given docutils">
-<colgroup>
-<col width="50%" />
-<col width="50%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Level</th>
-<th class="head">Numeric Value</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>CRITICAL</td>
-<td>50</td>
-</tr>
-<tr class="row-odd"><td>ERROR</td>
-<td>40</td>
-</tr>
-<tr class="row-even"><td>WARNING</td>
-<td>30</td>
-</tr>
-<tr class="row-odd"><td>INFO</td>
-<td>20</td>
-</tr>
-<tr class="row-even"><td>DEBUG</td>
-<td>10</td>
-</tr>
-<tr class="row-odd"><td>NOTSET</td>
-<td>0</td>
-</tr>
-</tbody>
-</table>
+<p>This will run the <code class="docutils literal"><span class="pre">docker</span> <span class="pre">network</span> <span class="pre">create</span></code> command to setup the network for the docker containers.
+Since the optional PostgreSQL database (used for logging) is run inside a separate docker container, creating
+a custom network with static IP addresses will faciliate communication between the two containers.</p>
 </div>
-<div class="section" id="file-log-level">
-<h3>file_log_level<a class="headerlink" href="#file-log-level" title="Permalink to this headline">¶</a></h3>
-<p>The log level for the file logger.</p>
-<table border="1" class="colwidths-given docutils">
-<colgroup>
-<col width="50%" />
-<col width="50%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Level</th>
-<th class="head">Numeric Value</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>CRITICAL</td>
-<td>50</td>
-</tr>
-<tr class="row-odd"><td>ERROR</td>
-<td>40</td>
-</tr>
-<tr class="row-even"><td>WARNING</td>
-<td>30</td>
-</tr>
-<tr class="row-odd"><td>INFO</td>
-<td>20</td>
-</tr>
-<tr class="row-even"><td>DEBUG</td>
-<td>10</td>
-</tr>
-<tr class="row-odd"><td>NOTSET</td>
-<td>0</td>
-</tr>
-</tbody>
-</table>
+<div class="section" id="starting-the-postgresql-database">
+<h3>Starting the PostgreSQL Database<a class="headerlink" href="#starting-the-postgresql-database" title="Permalink to this headline">¶</a></h3>
+<p>The docker_postgres folder contains a Makefile, which has the Docker commands needed to
+start the database container, some scripts needed for the Postgres image, and a folder named <strong>postgres_data</strong>,
+which is setup as a shared volume with the container in order to persist the database when the
+container is finished running.</p>
+<p>From inside the docker_postgres folder run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">run</span>
+</pre></div>
+</div>
+<p>This will start the PostgreSQL docker container as a daemon process.</p>
+</div>
+<div class="section" id="logging-to-postgresql">
+<h3>Logging to PostgreSQL<a class="headerlink" href="#logging-to-postgresql" title="Permalink to this headline">¶</a></h3>
+<p>To enable logging to PostgreSQL first start the database container with the steps outlined above.</p>
+<p>The LPDM repository containers a folder named <strong>simulation_logger</strong> which contains the code for
+setting up the various logging mechanisims: 1) console, 2) file, and 3) database.  To enabled the
+database logging feature see the pg.cfg file and set the <strong>enabled</strong> property to 1.  If the
+Makefile is used to start the containers, the other properties should not need to be changed.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">There is currently not an interface set up to view the PostgreSQL log output, so the only
+way to look at it is with a PostgreSQL client.  The Makefile command for starting the PostgreSQL
+container will map the container&#8217;s database port (5432) to port (5437) on your local machine.</p>
+</div>
+</div>
+<div class="section" id="id1">
+<h3>Running Simulations<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Before running any simulations the docker image must first be built:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">build_image</span>
+</pre></div>
+</div>
+<p>This will run the <code class="docutils literal"><span class="pre">docker</span> <span class="pre">build</span></code> command to create the image outlined in the Dockerfile.</p>
+<p>Once the image is built, run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">run</span>
+</pre></div>
+</div>
+<p>This will run the <code class="docutils literal"><span class="pre">docker</span> <span class="pre">run</span></code> command and execute the default command specified in the Dockerfile.
+Once the simulation has finished running the container should automatically exit.</p>
+<p>The log files for the simulations can be found in the <strong>logs</strong> folder.</p>
 </div>
 </div>
 </div>
@@ -254,7 +215,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="devices.html" class="btn btn-neutral float-right" title="Devices" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="simulation.html" class="btn btn-neutral float-right" title="Simulation Configuration" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="install.html" class="btn btn-neutral" title="LPDM Installation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>

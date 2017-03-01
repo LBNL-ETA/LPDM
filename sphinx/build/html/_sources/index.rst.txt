@@ -12,9 +12,10 @@ Welcome to LPDM's documentation!
 
    install
    running
+   simulation
    devices
    device_base
    diesel_generator
    grid_controller
    eud
-
+   create_device

@@ -87,14 +87,16 @@
                 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">LPDM Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#simulation-runner">Simulation Runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#github">GitHub</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#docker">Docker</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="running.html">Running Simulations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="devices.html">Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device_base.html">Device Base Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="diesel_generator.html">Diesel Generator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="grid_controller.html">Grid Controller</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eud.html">End-Use Device</a></li>
 </ul>
 
             
@@ -141,20 +143,19 @@
             
   <div class="section" id="lpdm-installation">
 <h1>LPDM Installation<a class="headerlink" href="#lpdm-installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="github">
+<h2>GitHub<a class="headerlink" href="#github" title="Permalink to this headline">¶</a></h2>
 <p>The LPDM and LPDM-Drivers code repositories can be found on GitHub at:</p>
 <ul class="simple">
 <li>LPDM: <a class="reference external" href="https://github.com/LBNL-ETA/LPDM">https://github.com/LBNL-ETA/LPDM</a></li>
 <li>LPDM-Drivers: <a class="reference external" href="https://github.com/LBNL-ETA/LPDM-Drivers">https://github.com/LBNL-ETA/LPDM-Drivers</a></li>
 </ul>
-<p>Simulations can be run using only the two LPDM and LPDM-Drivers repositories, but
-there are additional repositories that can assist with installation and running the
-simulations.</p>
-<div class="section" id="simulation-runner">
-<h2>Simulation Runner<a class="headerlink" href="#simulation-runner" title="Permalink to this headline">¶</a></h2>
-<p>The Simulation Runner can process batches of scenarios.</p>
 </div>
 <div class="section" id="docker">
 <h2>Docker<a class="headerlink" href="#docker" title="Permalink to this headline">¶</a></h2>
+<p>Although the simulation does not require Docker to run, Dockerfiles are included for
+running the simulations and the optional PostgreSQL logging.  See <a class="reference external" href="https://docs.docker.com/engine/installation/">https://docs.docker.com/engine/installation/</a>
+for installation instructions.</p>
 </div>
 </div>
 

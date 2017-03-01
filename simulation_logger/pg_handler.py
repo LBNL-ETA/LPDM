@@ -88,12 +88,10 @@ class PgHandler(logging.Handler):
         self.cursor.execute("insert into {}.sim_run (time_stamp) values (now()) returning id".format(self.schema))
         row = self.cursor.fetchone()
         self.sim_run_id = row[0]
-        print "run id = {}".format(self.sim_run_id)
         self.conn.commit()
 
     def emit(self, record):
         db_fields = self.parse_message(record.msg)
-        print db_fields
         if len(db_fields.keys()):
             names = ["run_id"]
             names.extend(db_fields.keys())
@@ -108,7 +106,6 @@ class PgHandler(logging.Handler):
 
     def parse_message(self, message):
         """parse a log message into parts"""
-        print message
         fields = ["message", "tag", "value", "device", "time_value"]
         field_map = {}
         for field in fields:

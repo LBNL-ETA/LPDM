@@ -42,6 +42,7 @@ class Device(NotificationReceiver, NotificationSender):
                     broadcast_new_ttie
     """
     def __init__(self, config):
+        self._device_id = config.get("device_id")
         self._device_name = config.get("device_name", "device")
         self._device_type = config.get("device_type")
         self._uuid = config.get("uuid", None)
@@ -54,15 +55,14 @@ class Device(NotificationReceiver, NotificationSender):
         self._in_operation = False
         self._ttie = None
         self._next_event = None
-
-        self._device_id = self._build_device_id()
+        self._grid_controller_id = None
 
         self._broadcast_new_price_callback = config["broadcast_new_price"] if type(config) is dict and  "broadcast_new_price" in config.keys() and callable(config["broadcast_new_price"]) else None
         self._broadcast_new_power_callback = config["broadcast_new_power"] if type(config) is dict and "broadcast_new_power" in config.keys() and callable(config["broadcast_new_power"]) else None
         self._broadcast_new_ttie_callback = config["broadcast_new_ttie"] if type(config) is dict and "broadcast_new_ttie" in config.keys() and callable(config["broadcast_new_ttie"]) else None
 
         # Setup logging
-        self._logger = logging.getLogger(config.get("app_name"))
+        self._logger = logging.getLogger("lpdm")
 
         self.log_message("initialized device #{} - {}".format(self._uuid, self._device_type))
 
@@ -74,18 +74,17 @@ class Device(NotificationReceiver, NotificationSender):
         "Default string representation of an object, prints out all attributes and values"
         return ", ".join(["{0} = {1}".format(key, getattr(self,key)) for key in self.__dict__.keys() if not callable(getattr(self, key))])
 
+    def assign_grid_controller(self, grid_controller_id):
+        """set the grid controller for the device"""
+        self.log_message("attach device to GC {}".format(grid_controller_id))
+        self._grid_controller_id = grid_controller_id
+
     def finish(self):
         "Gets called at the end of the simulation"
         pass
 
     def uuid(self):
         return self._uuid;
-
-    def device_id(self):
-        return self._device_id
-
-    def _build_device_id(self):
-        return "device_{0}".format(self._uuid if self._uuid else "not_specified")
 
     def device_name(self):
         return self._device_name
@@ -107,7 +106,7 @@ class Device(NotificationReceiver, NotificationSender):
                 datetime.datetime.utcfromtimestamp(self._time).strftime('%H:%M:%S'), self._time
         )
         return "time_string: {}, time_value: {}, device: {}, message: {}, tag: {}, value: {}".format(
-                time_string, self._time, self._device_name, message, tag, value)
+                time_string, self._time, self._device_id, message, tag, value)
 
     def calculate_next_ttie(self):
         "Calculate the Time Till next Initial Event, this must be overriden for each derived class"
@@ -129,7 +128,6 @@ class Device(NotificationReceiver, NotificationSender):
     def broadcast_new_power(self, new_power, target_device_id='all', debug_level=logging.DEBUG):
         "Broadcast the new power value if a callback has been setup, otherwise raise an exception."
         if callable(self._broadcast_new_power_callback):
-            self.log_message("Broadcast new power {} from {}".format(new_power, self._device_name), app_log_level=None)
             self.log_message(
                 message="Broadcast new power {} from {}".format(new_power, self._device_name),
                 tag="broadcast_power",
@@ -140,15 +138,10 @@ class Device(NotificationReceiver, NotificationSender):
             raise Exception("broadcast_new_power has not been set for this device!")
         return
 
-    def broadcast_new_ttie(self, new_ttie, target_device_id='all', debug_level=logging.DEBUG):
+    def broadcast_new_ttie(self, new_ttie, debug_level=logging.DEBUG):
         "Broadcast the new TTIE if a callback has been setup, otherwise raise an exception."
         if callable(self._broadcast_new_ttie_callback):
-            # self.log_message(
-                # message="Broadcast new TTIE {} from {}".format(new_ttie, self._device_name),
-                # tag="ttie",
-                # value=new_ttie
-            # )
-            self._broadcast_new_ttie_callback(self._device_id, target_device_id, new_ttie - self._time)
+            self._broadcast_new_ttie_callback(self._device_id, new_ttie)
         else:
             raise Exception("broadcast_new_ttie has not been set for this device!")
         return

@@ -82,7 +82,7 @@ class DieselGenerator(Device):
 
         # set the properties specific to a diesel generator
         self._fuel_tank_capacity = config.get("fuel_tank_capacity", 100.0)
-        self._fuel_level = config.get("fuel_level", None)
+        self._fuel_level = config.get("fuel_level", 100.0)
         self._fuel_reserve = config.get("fuel_reserve", 20.0)
         self._days_to_refuel = config.get("days_to_refuel", 7)
         self._kwh_per_gallon = config.get("kwh_per_gallon", 36.36)
@@ -163,22 +163,20 @@ class DieselGenerator(Device):
 
         if target_device_id == self._device_id:
             self._time = time
+            self.log_message(
+                "received power change from {}, to {}, new_power = {}".format(source_device_id, target_device_id,  new_power)
+            )
             if new_power > 0 and not self.is_on() and self._fuel_level > 0:
                 # If the generator is not in operation the turn it on
                 self.turn_on()
                 self._power_level = new_power
-
                 # calculate the new electricity price
                 self.calculate_electricity_price(is_initial_event=False)
-
                 # set to re calculate a new price
                 self.set_next_price_change_event()
-
                 self.calculate_next_ttie()
-
                 # store the new power consumption for the hourly usage calculations
                 self.log_power_change(time, new_power)
-
             elif new_power > 0 and self.is_on() and self._fuel_level > 0:
                 # power has changed when already in operation
                 # store the new power value for the hourly usage calculation
@@ -190,7 +188,6 @@ class DieselGenerator(Device):
                 self._power_level = new_power
                 self.log_power_change(time, new_power)
                 self.calculate_electricity_price(is_initial_event=False)
-
             elif new_power > 0 and self._fuel_level <= 0:
                 if self.is_on():
                     self.turn_off()
@@ -200,8 +197,7 @@ class DieselGenerator(Device):
                         tag="power",
                         value=0
                     )
-                self.broadcast_new_power(0.0)
-
+                self.broadcast_new_power(0.0, target_device_id=self._grid_controller_id)
             elif new_power <= 0 and self.is_on():
                 # Shutoff power
                 self.turn_off()
@@ -220,6 +216,7 @@ class DieselGenerator(Device):
 
     def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"
+        self.log_message("DG received new ttie {}".format(new_time))
         self._time = new_time
         self.process_events()
         self.calculate_next_ttie()
@@ -257,7 +254,6 @@ class DieselGenerator(Device):
 
     def process_events(self):
         "Process any events that need to be processed"
-
         remove_items = []
         for event in self._events:
             if event["time"] <= self._time:
@@ -294,11 +290,14 @@ class DieselGenerator(Device):
     def calculate_next_ttie(self):
         "calculate the next TTIE - look through the pending events for the one that will happen first"
         ttie = None
+        the_event = None
         for event in self._events:
             if ttie == None or event["time"] < ttie:
                 ttie = event["time"]
+                the_event = event
 
         if ttie != None and ttie != self._ttie:
+            self.log_message("the next event found is {} at time {}".format(the_event, ttie))
             self.broadcast_new_ttie(ttie)
             self._ttie = ttie
 
@@ -338,9 +337,9 @@ class DieselGenerator(Device):
         if self._fuel_level <= 0:
             self.turn_off()
             self._power_level = 0.0
-            self.broadcast_new_power(self._power_level)
+            self.broadcast_new_power(self._power_level, target_device_id=self._grid_controller_id)
             self._current_fuel_price = 1e6
-            self.broadcast_new_price(self._current_fuel_price)
+            self.broadcast_new_price(self._current_fuel_price, target_device_id=self._grid_controller_id)
         return
 
     def set_days_to_refuel(self, days_to_refuel):
@@ -356,6 +355,9 @@ class DieselGenerator(Device):
         return self.get_generation_rate(self._fuel_level)
 
     def get_generation_rate(self, fuel_level):
+        self.log_message("gen_eff_zero = {}".format(self._gen_eff_zero))
+        self.log_message("fuel level {}".format(fuel_level))
+        self.log_message("kwh_per_gallon = {}".format(self._kwh_per_gallon))
         return (self._gen_eff_zero / 100.0 + (self._gen_eff_100 - self._gen_eff_zero) / 100.0 * (fuel_level / 100.0)) * self._kwh_per_gallon
 
     def get_total_energy_available(self):
@@ -377,7 +379,7 @@ class DieselGenerator(Device):
             if new_price != self._current_fuel_price:
                 self._current_fuel_price = new_price
 
-                self.broadcast_new_price(new_price)
+                self.broadcast_new_price(new_price, target_device_id=self._grid_controller_id)
 
         return
 

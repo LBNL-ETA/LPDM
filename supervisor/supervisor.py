@@ -32,7 +32,7 @@ class Supervisor:
         # calculate the max ttie (seconds)
         self.max_ttie = config.get('run_time_days', 7) * 24 * 60 * 60
         device_class_loader = DeviceClassLoader()
-        device_sections = ["grid_controllers", "generators", "euds"]
+        device_sections = ["grid_controllers", "power_sources", "euds"]
 
         # build the devices: first grid_controllers, then generators, then euds
         for section in device_sections:
@@ -116,7 +116,9 @@ class Supervisor:
         self.logger.info("start the simulation")
         # star tthe device threads
         self.device_thread_manager.start_all()
+        # connect the devices
         self.device_thread_manager.connect_devices()
+        # process any resulting events from the device.init()
         self.process_supervisor_events()
         # keep dispatching the next ttie events until finished
         try:

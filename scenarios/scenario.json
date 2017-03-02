@@ -10,7 +10,7 @@
                 "device_type": "grid_controller"
             }
         ],
-        "generators": [
+        "power_sources": [
             {
                 "device_id": "dg_1",
                 "device_type": "diesel_generator",

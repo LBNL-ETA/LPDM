@@ -1,6 +1,5 @@
 IMG_NAME=lpdm_sim_img
 CONTAINER_NAME=lpdm_sim_container
-CONTAINER_IP=127.18.0.2
 NETWORK_NAME=lpdm_network
 SUBNET=172.26.5.0/24
 CONTAINER_IP=172.26.5.5

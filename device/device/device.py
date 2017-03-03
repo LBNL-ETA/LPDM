@@ -109,8 +109,18 @@ class Device(NotificationReceiver, NotificationSender):
                 time_string, self._time, self._device_id, message, tag, value)
 
     def calculate_next_ttie(self):
-        "Calculate the Time Till next Initial Event, this must be overriden for each derived class"
-        raise Exception('Need to define method to calculate the next ttie (calculate_next_ttie)')
+        "calculate the next TTIE - look through the pending events for the one that will happen first"
+        ttie = None
+        the_event = None
+        for event in self._events:
+            if ttie == None or event["time"] < ttie:
+                ttie = event["time"]
+                the_event = event
+
+        if ttie != None and ttie != self._ttie:
+            self.log_message("the next event found is {} at time {}".format(the_event, ttie))
+            self.broadcast_new_ttie(ttie)
+            self._ttie = ttie
 
     def broadcast_new_price(self, new_price, target_device_id='all', debug_level=logging.DEBUG):
         "Broadcast a new price if a callback has been setup, otherwise raise an exception."

@@ -34,6 +34,10 @@ class NotificationReceiver:
         "Message a device receives when a price change has occured"
         return
 
+    def on_capacity_change(self, source_device_id, target_device_id, time, capacity):
+        "Message a device receives when a capacity change has occured"
+        return
+
 class NotificationSender:
     "Defines the interface for devices sending messages"
     __metaclass__ = abc.ABCMeta
@@ -50,3 +54,8 @@ class NotificationSender:
     def broadcast_new_ttie(self, new_ttie):
         "Broadcasts a 'new TTIE' message for a device"
         return
+
+    def broadcast_new_capacity(self, source_device_id, target_device_id, time, capacity):
+        "Broadcasts a 'new capacity' message for a device"
+        return
+

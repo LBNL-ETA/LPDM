@@ -18,7 +18,8 @@
 from device.device import Device
 from device.battery import Battery
 from device.pv import Pv
-from device.diesel_generator import DieselGenerator
+from power_source_manager import PowerSourceManager
+from device.power_source import PowerSource
 import logging
 
 class GridController(Device):
@@ -63,6 +64,8 @@ class GridController(Device):
         self._load_on_pv = 0.0
 
         self._diesel_generator_id = None
+
+        self.power_source_manager = PowerSourceManager()
 
         self._events = []
 
@@ -117,17 +120,25 @@ class GridController(Device):
 
     def on_capacity_change(self, source_device_id, target_device_id, time, value):
         """A device registers its capacity to the grid controller it's registered to"""
+        self._time = time
         self.log_message(
-            message="received capacity change {} -> {}".format(source_device_id, value)
+            message="received capacity change {} -> {}".format(source_device_id, value),
+            tag="receive_capacity",
+            value=value
         )
+        self.power_source_manager.set_capacity(source_device_id, value)
 
-    def add_device(self, new_device_id, type_of_device):
+    def add_device(self, new_device_id, type_of_device, DeviceClass):
         "Add a device to the list devices connected to the grid controller"
+        self.log_message("message: is power source?  {} - {}".format(DeviceClass, issubclass(DeviceClass, PowerSource)))
+        if issubclass(DeviceClass, PowerSource):
+            self.log_message(message="connected a power source to the gc {} - {}".format(new_device_id, DeviceClass))
+            self.power_source_manager.add(new_device_id, DeviceClass)
+        else:
+            self._connected_devices.append({"device_id": new_device_id, "device_type": type_of_device})
         self.log_message(
             "added device to the grid controller (device_id = {}, device_type = {})".format(new_device_id, type_of_device)
         )
-        self._connected_devices.append({"device_id": new_device_id, "device_type": type_of_device})
-        return
 
     def send_price_change_to_devices(self):
         "Sends a change in price notification to the connected devices"
@@ -258,7 +269,7 @@ class GridController(Device):
 
     def set_power_sources(self):
         "Set the power output for the diesel generator, battery, pv, ..."
-        generator_id = self.get_diesel_generator_id()
+        # generator_id = self.get_diesel_generator_id()
         output_capacity = self.current_output_capacity()
 
         previous_load_generator = self._load_on_generator

@@ -26,9 +26,9 @@ class Battery(PowerSource):
         and it doesn't respond to any power, price, or time changes.
 
         Methods:
-            startCharging: starts the battery charging,
-            stopCharging: stops the battery charging,
-            stateOfCharge: gets the current SOC of the battery
+            start_charging: starts the battery charging,
+            stop_charging: stops the battery charging,
+            state_of_charge: gets the current SOC of the battery
     """
 
     def __init__(self, config):
@@ -45,6 +45,9 @@ class Battery(PowerSource):
                     "max_charge_rate" (float): Max charge rate (Watts)
                     "roundtrip_eff" (float): Fraction of power that is stored and available for withdrawl
         """
+        # call the super constructor
+        Device.__init__(self, config)
+
         self._device_type = "battery"
         self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "battery"
         self._capacity = float(config["capacity"]) if type(config) is dict and "capacity" in config.keys() else 5.0
@@ -60,102 +63,93 @@ class Battery(PowerSource):
         self._is_charging = False
         self._is_discharging = False
 
-        # call the super constructor
-        Device.__init__(self, config)
+    def init(self):
+        """no need to do any initialization for the battery"""
+        pass
 
     def capacity(self):
         "Return the capcity of the battery (W)"
         return self._capacity * 1000.0
 
-    def onPowerChange(self, time, new_power):
+    def on_power_change(self, time, new_power):
         "Receives messages when a power change has occured"
         return
 
-    def onPriceChange(self, new_price):
+    def on_price_change(self, new_price):
         "Receives message when a price change has occured"
         return
 
-    def calculateNextTTIE(self):
+    def calculate_next_ttie(self):
         return
 
-    def maxChargeRate(self):
+    def max_charge_rate(self):
         return self._max_charge_rate
 
-    def chargeRate(self):
+    def charge_rate(self):
         "Charge rate (W)"
         return self._max_charge_rate * self._roundtrip_eff
 
-    def startCharging(self, time):
+    def start_charging(self, time):
         self._time = time
         if not self._is_charging:
-            self.logMessage("Start charging battery (soc = {})".format(self._current_soc))
+            self.log_message("Start charging battery (soc = {})".format(self._current_soc))
             self._is_charging = True
             self._last_update_time = time
         return
 
-    def stopCharging(self, time):
+    def stop_charging(self, time):
         self._time = time
         if self._is_charging:
-            self.logMessage("Stop charging battery (soc = {})".format(self._current_soc))
+            self.log_message("Stop charging battery (soc = {})".format(self._current_soc))
             self._is_charging = False
             self._last_update_time = time
         return
 
-    def isCharging(self):
+    def is_charging(self):
         return self._is_charging
 
-    def wantsToStopCharging(self):
+    def wants_to_stop_charging(self):
         return self._current_soc >= self._max_soc
 
-    def wantsToStartCharging(self):
+    def wants_to_start_charging(self):
         return self._current_soc <= self._min_soc
 
     def discharge(self, amount):
         "Remove energy (kwh) from the battery when requested, battery must be set to discharge first"
         if self._is_discharging:
             self._current_soc = ((self._capacity * self._current_soc) - amount) / self._capacity
-            self.tugSendMessage(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
         else:
             raise Exception("Battery must have been set to discharge before removing energy.")
         return
 
-    def startDischarging(self, time):
+    def start_discharging(self, time):
         self._time = time
         if not self._is_charging and not self._is_discharging:
-            self.logMessage("Start discharging battery (soc = {})".format(self._current_soc))
+            self.log_message("Start discharging battery (soc = {})".format(self._current_soc))
             self._is_discharging = True
             self._last_update_time = time
 
-    def stopDischarging(self, time):
+    def stop_discharging(self, time):
         self._time = time
         if self._is_discharging:
-            self.logMessage("Stop discharging battery (soc = {})".format(self._current_soc))
+            self.log_message("Stop discharging battery (soc = {})".format(self._current_soc))
             self._is_discharging = False
             self._last_update_time = time
 
-    def isDischarging(self):
+    def is_discharging(self):
         return self._is_discharging
 
-    def stateOfCharge(self):
+    def state_of_charge(self):
         "Returns the current SOC"
         return self._current_soc
 
-    def updateStateOfCharge(self, time, load_on_battery):
+    def update_state_of_charge(self, time, load_on_battery):
         self._time = time
         if not self._last_update_time or time - self._last_update_time > self._min_soc_refresh_rate:
             if self._is_charging:
-                self._current_soc = ((self._capacity * 1000.0 * self._current_soc) + (self.chargeRate() * (time - self._last_update_time) / 3600.0)) / (self._capacity * 1000.0)
-                self.tugSendMessage(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
+                self._current_soc = ((self._capacity * 1000.0 * self._current_soc) + (self.charge_rate() * (time - self._last_update_time) / 3600.0)) / (self._capacity * 1000.0)
             elif self._is_discharging and load_on_battery:
                 self._current_soc = ((self._capacity * 1000.0 * self._current_soc) - (load_on_battery * (time - self._last_update_time) / 3600.0)) / (self._capacity * 1000.0)
-                self.tugSendMessage(action="state_of_charge", is_initial_event=False, value=self._current_soc, description="")
-
-            self.logPlotValue("battery_soc", self._current_soc)
 
             self._last_update_time = time
-
-    # def startUsingBattery(self, time):
-    #     if not self.isOn():
-    #         self._battery_on_time = time
-    #         self.turnOn()
 

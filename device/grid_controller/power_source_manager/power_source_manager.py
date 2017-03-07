@@ -1,4 +1,5 @@
 import logging
+from device.power_source import PowerSource
 
 class PowerSourceItem:
     def __init__(self, device_id, DeviceClass, capacity=None, load=None, price=None):
@@ -20,6 +21,11 @@ class PowerSourceManager(object):
 
     def add(self, device_id, DeviceClass):
         """Register a power source"""
+        # make sure the type of object added is a power source
+        if not issubclass(DeviceClass, PowerSource):
+            raise Exception("The PowerSourceManager can only accepts PowerSource devices.")
+
+        # make sure a device with the same id does not exist
         found = filter(lambda d: d.device_id == device_id, self.power_sources)
         if len(found) == 0:
             self.power_sources.append(PowerSourceItem(device_id, DeviceClass))

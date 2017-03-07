@@ -2,6 +2,9 @@ import logging
 import Queue
 from lpdm_event import LpdmInitEvent, LpdmKillEvent, LpdmConnectDeviceEvent, LpdmAssignGridControllerEvent
 from device_thread import DeviceThread
+from device.grid_controller import GridController
+from device.power_source import PowerSource
+from device.eud import Eud
 
 class DeviceThreadManager(object):
     def __init__(self, supervisor_queue):
@@ -59,11 +62,15 @@ class DeviceThreadManager(object):
         And let the eud's know which gc they're connected to
         """
         # find the grid controllers
-        gcs = filter(lambda t: t.device_config["device_type"] == "grid_controller", self.threads)
-        # find the generators
-        dgs = filter(lambda t: t.device_config["device_type"] == "diesel_generator", self.threads)
+        gcs = filter(lambda t: t.DeviceClass is GridController, self.threads)
+        # find the power sources
+        dgs = filter(lambda t: issubclass(t.DeviceClass, PowerSource), self.threads)
         # find the euds
-        euds = filter(lambda t: t.device_config["device_type"] == "eud", self.threads)
+        euds = filter(lambda t: issubclass(t.DeviceClass, Eud), self.threads)
+
+        # TODO: allow for more than 1 grid controller
+        if len(gcs) > 1:
+            raise Exception("Only 1 grid controller is allowed to run at a time.")
 
         gc = gcs[0]
         for dg in dgs:

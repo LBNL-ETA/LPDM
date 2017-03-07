@@ -18,36 +18,54 @@ from device.device import Device
 from abc import ABCMeta, abstractmethod
 
 class PowerSource(Device):
-    def __init__(self, config = None):
+    def __init__(self, config = {}):
         # call the super constructor
         Device.__init__(self, config)
 
-    @abstractmethod
-    def init(self):
-        """Run any initialization functions for the device"""
-        pass
+        # define a capacity property
+        self._capacity = config.get("capacity", None)
+        self._current_fuel_price = config.get("current_fuel_price", None)
 
-    @abstractmethod
-    def refresh(self):
-        """Refresh the device"""
-        pass
+    # def init(self):
+        # """Run any initialization functions for the device"""
+        # # setup the events at time=0 to let the grid controller know about
+        # # the device's price and capacity
+        # self.set_initial_price_event()
+        # self.set_initial_capacity_event()
+        # self.process_events()
+
+    # def process_events(self):
+        # "Process any events that need to be processed"
+        # remove_items = []
+        # for event in self._events:
+            # if event["time"] <= self._time:
+                # if event["operation"] == "emit_initial_price":
+                    # self.broadcast_new_price(self._current_fuel_price, target_device_id=self._grid_controller_id),
+                    # remove_items.append(event)
+                # elif event["operation"] == "emit_initial_capacity":
+                    # self.broadcast_new_capacity(self._capacity, target_device_id=self._grid_controller_id)
+                    # remove_items.append(event)
+
+        # # remove the processed events from the list
+        # if len(remove_items):
+            # for event in remove_items:
+                # self._events.remove(event)
 
     @abstractmethod
     def on_power_change(self, source_device_id, target_device_id, time, power):
-        """A power change has occured"""
+        """The GC calls this method to tell the power source how much power to output"""
         pass
 
     @abstractmethod
     def on_time_change(self, new_time):
-        """A power change has occured"""
+        """A time change has occured"""
         pass
 
-    @abstractmethod
-    def set_initial_price_event(self):
-        """Let the grid controller know of the initial price of energy"""
-        pass
+    # def set_initial_price_event(self):
+        # """Let the grid controller know of the initial price of energy"""
+        # self._events.append({"time": 0, "operation": "emit_initial_price"})
 
-    @abstractmethod
-    def calculate_next_ttie(self):
-        """calculate the next ttie"""
-        pass
+    # def set_initial_capacity_event(self):
+        # """Let the grid controller know of the initial capacity of the device"""
+        # self._events.append({"time": 0, "operation": "emit_initial_capacity"})
+

@@ -13,6 +13,7 @@
         "power_sources": [
             {
                 "device_id": "dg_1",
+                "grid_controller_id": "gc_1",
                 "device_type": "diesel_generator",
                 "fuel_tank_capacity": 10.0
             }

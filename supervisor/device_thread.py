@@ -65,7 +65,8 @@ class DeviceThread(threading.Thread):
                     )
                 elif isinstance(the_event, LpdmConnectDeviceEvent):
                     self.logger.debug("found lpdm connect device event {}".format(the_event))
-                    self.device.add_device(the_event.device_id, the_event.device_type)
+                    self.logger.debug("message = device_class = {}".format(the_event.DeviceClass))
+                    self.device.add_device(the_event.device_id, the_event.device_type, the_event.DeviceClass)
                 elif isinstance(the_event, LpdmAssignGridControllerEvent):
                     self.logger.debug("found lpdm connect device event {}".format(the_event))
                     self.device.assign_grid_controller(the_event.grid_controller_id)

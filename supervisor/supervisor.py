@@ -6,7 +6,7 @@ import logging
 import pprint
 from ttie_event_manager import TtieEventManager
 from event_manager import EventManager
-from lpdm_event import LpdmPowerEvent, LpdmPriceEvent, LpdmTtieEvent, LpdmCapacityEvent
+from lpdm_event import LpdmPowerEvent, LpdmPriceEvent, LpdmTtieEvent, LpdmCapacityEvent, LpdmRunTimeErrorEvent
 from device_thread_manager import DeviceThreadManager
 from device_thread import DeviceThread
 from device_class_loader import DeviceClassLoader

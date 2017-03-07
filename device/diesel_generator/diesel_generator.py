@@ -94,8 +94,6 @@ class DieselGenerator(PowerSource):
         self._price_reassess_time = config.get("price_reassess_time", 3600)
         self._fuel_base_cost = config.get("fuel_base_cost", 5.0)
 
-        self._current_fuel_price = config.get("current_fuel_price", None)
-
         self._start_hour_consumption = 0 # time when the last consumption calculation occured
         self._consumption_activity = []    #track the consumption changes for the hour
         self._consumption_24hr = [] # keeps track of the last 24 hours of diesel consumption by hour
@@ -121,7 +119,8 @@ class DieselGenerator(PowerSource):
         self.set_next_hourly_consumption_calculation_event()
         self.set_next_reasses_fuel_change_event()
         self.set_next_refuel_event()
-        self.set_initial_price_event()
+        self.calculate_electricity_price()
+        self.broadcast_new_capacity()
         self.calculate_next_ttie()
 
     def status(self):
@@ -171,7 +170,7 @@ class DieselGenerator(PowerSource):
                 self.turn_on()
                 self._power_level = new_power
                 # calculate the new electricity price
-                self.calculate_electricity_price(is_initial_event=False)
+                self.calculate_electricity_price()
                 # set to re calculate a new price
                 self.set_next_price_change_event()
                 self.calculate_next_ttie()
@@ -187,7 +186,7 @@ class DieselGenerator(PowerSource):
                 )
                 self._power_level = new_power
                 self.log_power_change(time, new_power)
-                self.calculate_electricity_price(is_initial_event=False)
+                self.calculate_electricity_price()
             elif new_power > 0 and self._fuel_level <= 0:
                 if self.is_on():
                     self.turn_off()
@@ -245,6 +244,10 @@ class DieselGenerator(PowerSource):
         """Let all other devices know of the initial price of energy"""
         self._events.append({"time": 0, "operation": "emit_initial_price"})
 
+    def set_initial_capacity_event(self):
+        """Let all other devices know of the initial price of energy"""
+        self._events.append({"time": 0, "operation": "emit_initial_capacity"})
+
     def set_next_refuel_event(self):
         self._events.append({"time": self._time + self._days_to_refuel * 3600.0 * 24.0, "operation": "refuel"})
 
@@ -260,7 +263,7 @@ class DieselGenerator(PowerSource):
                 if event["operation"] == "price":
                     if self.is_on():
                         self.update_fuel_level()
-                        self.calculate_electricity_price(is_initial_event=True)
+                        self.calculate_electricity_price()
 
                     self.set_next_price_change_event()
                     remove_items.append(event)
@@ -279,27 +282,14 @@ class DieselGenerator(PowerSource):
                 elif event["operation"] == "emit_initial_price":
                     self.calculate_electricity_price()
                     remove_items.append(event)
+                elif event["operation"] == "emit_initial_capacity":
+                    self.broadcast_new_capacity()
+                    remove_items.append(event)
 
         # remove the processed events from the list
         if len(remove_items):
             for event in remove_items:
                 self._events.remove(event)
-
-        return
-
-    def calculate_next_ttie(self):
-        "calculate the next TTIE - look through the pending events for the one that will happen first"
-        ttie = None
-        the_event = None
-        for event in self._events:
-            if ttie == None or event["time"] < ttie:
-                ttie = event["time"]
-                the_event = event
-
-        if ttie != None and ttie != self._ttie:
-            self.log_message("the next event found is {} at time {}".format(the_event, ttie))
-            self.broadcast_new_ttie(ttie)
-            self._ttie = ttie
 
         return
 
@@ -355,9 +345,6 @@ class DieselGenerator(PowerSource):
         return self.get_generation_rate(self._fuel_level)
 
     def get_generation_rate(self, fuel_level):
-        self.log_message("gen_eff_zero = {}".format(self._gen_eff_zero))
-        self.log_message("fuel level {}".format(fuel_level))
-        self.log_message("kwh_per_gallon = {}".format(self._kwh_per_gallon))
         return (self._gen_eff_zero / 100.0 + (self._gen_eff_100 - self._gen_eff_zero) / 100.0 * (fuel_level / 100.0)) * self._kwh_per_gallon
 
     def get_total_energy_available(self):
@@ -365,7 +352,7 @@ class DieselGenerator(PowerSource):
         # return self._fuel_tank_capacity * (self._fuel_level / 100.0) * self.get_current_generation_rate() * (60 * 60 * 1000)
         return self._fuel_tank_capacity * (self._fuel_level / 100.0) * self.get_current_generation_rate()
 
-    def calculate_electricity_price(self, is_initial_event=False):
+    def calculate_electricity_price(self):
         "Calculate a new electricity price ($/W-sec), based on instantaneous part-load efficiency of generator"
         if self._fuel_level > 0 and (self.ok_to_calculate_price() or self._time == 0) and (not self._static_price or (self._static_price and self._current_fuel_price is None)):
             if self._current_fuel_price > 1e5:
@@ -378,10 +365,7 @@ class DieselGenerator(PowerSource):
             # print("fuel_level = {0}, gen_rate = {1}, price = {2}, base_cost = {3}, raw_calc = {4}".format(self._fuel_level, self.get_current_generation_rate(), new_price, self._fuel_base_cost, self._fuel_base_cost / self.get_total_energy_available()))
             if new_price != self._current_fuel_price:
                 self._current_fuel_price = new_price
-
                 self.broadcast_new_price(new_price, target_device_id=self._grid_controller_id)
-
-        return
 
     def ok_to_calculate_price(self):
         "Check if enough time has passed to recalculate the price"
@@ -456,7 +440,7 @@ class DieselGenerator(PowerSource):
 
         self._fuel_level = 100.0
         self._scarcity_multiplier = 1.0
-        self.calculate_electricity_price(is_initial_event=False)
+        self.calculate_electricity_price()
 
     def reasses_fuel(self, is_initial_event=False):
         "Calculate the scarcity multiplier"

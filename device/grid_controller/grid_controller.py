@@ -115,6 +115,12 @@ class GridController(Device):
         self.calculate_next_ttie()
         return
 
+    def on_capacity_change(self, source_device_id, target_device_id, time, value):
+        """A device registers its capacity to the grid controller it's registered to"""
+        self.log_message(
+            message="received capacity change {} -> {}".format(source_device_id, value)
+        )
+
     def add_device(self, new_device_id, type_of_device):
         "Add a device to the list devices connected to the grid controller"
         self.log_message(

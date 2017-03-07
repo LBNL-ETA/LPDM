@@ -6,7 +6,7 @@ import logging
 import pprint
 from ttie_event_manager import TtieEventManager
 from event_manager import EventManager
-from lpdm_event import LpdmPowerEvent, LpdmPriceEvent, LpdmTtieEvent
+from lpdm_event import LpdmPowerEvent, LpdmPriceEvent, LpdmTtieEvent, LpdmCapacityEvent
 from device_thread_manager import DeviceThreadManager
 from device_thread import DeviceThread
 from device_class_loader import DeviceClassLoader
@@ -51,7 +51,9 @@ class Supervisor:
                 self.logger.debug("new ttie event found")
                 self.logger.debug(the_event)
                 self.ttie_event_manager.add(the_event)
-            elif isinstance(the_event, LpdmPowerEvent) or isinstance(the_event, LpdmPriceEvent):
+            elif isinstance(the_event, LpdmPowerEvent) \
+                    or isinstance(the_event, LpdmPriceEvent) \
+                    or isinstance(the_event, LpdmCapacityEvent):
                 # power or price event: call the thread and pass along the event
                 self.logger.debug("power/price event found")
                 self.logger.debug(the_event)
@@ -59,6 +61,11 @@ class Supervisor:
                 t = self.device_thread_manager.get(the_event.target_device_id)
                 t.queue.put(the_event)
                 t.queue.join()
+            elif isinstance(the_event, LpdmRunTimeErrorEvent):
+                # an exception has occured, kill the simulation
+                raise Exception("LpdmRunTimeErrorEvent encountered.")
+
+
         self.logger.debug("finished processing supervisor events")
 
     def add_device(self, DeviceClass, config):
@@ -114,14 +121,14 @@ class Supervisor:
     def run_simulation(self):
         """Start running the simulation"""
         self.logger.info("start the simulation")
-        # star tthe device threads
-        self.device_thread_manager.start_all()
-        # connect the devices
-        self.device_thread_manager.connect_devices()
-        # process any resulting events from the device.init()
-        self.process_supervisor_events()
-        # keep dispatching the next ttie events until finished
         try:
+            # star tthe device threads
+            self.device_thread_manager.start_all()
+            # connect the devices
+            self.device_thread_manager.connect_devices()
+            # process any resulting events from the device.init()
+            self.process_supervisor_events()
+            # keep dispatching the next ttie events until finished
             while self.dispatch_next_ttie():
                 pass
             self.logger.info("Simulation finished.")

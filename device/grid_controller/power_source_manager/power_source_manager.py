@@ -37,6 +37,12 @@ class PowerSourceManager(object):
                 "Attempt to set the capacity for a power source that is less than the load ({} > {})".format(d.load, capacity)
             )
 
+    def set_price(self, device_id, price):
+        """set the price of electricity for a power source"""
+        d = self.get(device_id)
+        d.price = price
+        self.logger.debug("message: power_source_manager set price for device {} to {}".format(device_id, price))
+
     def set_load(device_id, load):
         """set the load for a power source"""
         d = self.get(device_id)

@@ -102,6 +102,7 @@ class GridController(Device):
                 tag="price",
                 value=new_price
             )
+            self.power_source_manager.set_price(source_device_id, new_price)
             self._power_price = new_price
             self._time = time
 

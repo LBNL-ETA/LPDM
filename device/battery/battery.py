@@ -15,10 +15,10 @@
     Implementation of a battery
 """
 
-from device.device import Device
+from device.power_source import PowerSource
 import logging
 
-class Battery(Device):
+class Battery(PowerSource):
     """
         Device implementation of a battery.
 

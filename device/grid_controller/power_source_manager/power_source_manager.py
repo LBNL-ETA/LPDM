@@ -1,13 +1,6 @@
 import logging
 from device.power_source import PowerSource
-
-class PowerSourceItem:
-    def __init__(self, device_id, DeviceClass, capacity=None, load=None, price=None):
-        self.device_id = device_id
-        self.DeviceClass = DeviceClass
-        self.capacity = 0.0
-        self.load = 0.0
-        self.price = 0.0
+from power_source_item import PowerSourceItem
 
 class PowerSourceManager(object):
 
@@ -49,10 +42,10 @@ class PowerSourceManager(object):
         d.price = price
         self.logger.debug("message: power_source_manager set price for device {} to {}".format(device_id, price))
 
-    def set_load(device_id, load):
+    def set_load(self, device_id, load):
         """set the load for a power source"""
         d = self.get(device_id)
-        if load <= capacity:
+        if load <= d.capacity:
             d.load = load
         else:
             raise Exception(
@@ -67,3 +60,11 @@ class PowerSourceManager(object):
             return found[0]
         else:
             raise Exception("An error occured trying to retrieve the power source {}".format(device_id))
+
+    def total_capacity(self):
+        """calculate the total capacity for all power sources"""
+        return sum(d.capacity for d in with_capacities if not d.capacity is None)
+
+    def get_available_power_sources(self):
+        """get the power sources that have a non-zero capacity"""
+        return filter(lambda d: d.capacity > 0, self.power_sources)

@@ -12,13 +12,13 @@ class DeviceClassLoader(object):
     def __init__(self):
         self.logger = logging.getLogger("lpdm")
 
-    def get_device_class_from_name(self, device_name):
+    def get_device_class_from_name(self, module_name):
         """Get a device class from the folder name"""
-        module_name = "device.{}".format(device_name)
         # build the class name
         # which should be the camelcase version of the device_name, which is snakecase
         # eg diesel_generator = DieselGenerator
-        class_name = "".join([p.capitalize() for p in device_name.split("_")])
+        parts = module_name.split(".")
+        class_name = "".join([p.capitalize() for p in parts[-1].split("_")])
         return self.class_for_name(module_name, class_name)
 
     def class_for_name(self, module_name, class_name):

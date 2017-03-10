@@ -163,7 +163,7 @@ class Device(NotificationReceiver, NotificationSender):
             self.log_message(
                 message="Broadcast new capacity {} from {}".format(value, self._device_name),
                 tag="broadcast_capacity",
-                value=value
+                value=value if not value is None else self._capacity
             )
             self._broadcast_new_capacity_callback(
                 self._device_id,

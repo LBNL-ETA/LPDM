@@ -63,8 +63,8 @@ class PowerSourceManager(object):
 
     def total_capacity(self):
         """calculate the total capacity for all power sources"""
-        return sum(d.capacity for d in with_capacities if not d.capacity is None)
+        return sum(d.capacity for d in self.power_sources if not d.capacity is None)
 
     def get_available_power_sources(self):
         """get the power sources that have a non-zero capacity"""
-        return filter(lambda d: d.capacity > 0, self.power_sources)
+        return filter(lambda d: d.capacity > 0 and not d.price is None, self.power_sources)

@@ -9,7 +9,7 @@ from event_manager import EventManager
 from lpdm_event import LpdmPowerEvent, LpdmPriceEvent, LpdmTtieEvent, LpdmCapacityEvent, LpdmRunTimeErrorEvent
 from device_thread_manager import DeviceThreadManager
 from device_thread import DeviceThread
-from device_class_loader import DeviceClassLoader
+from common.device_class_loader import DeviceClassLoader
 
 class Supervisor:
     """
@@ -38,7 +38,7 @@ class Supervisor:
         for section in device_sections:
             for dc in config["devices"][section]:
                 # get the device class from it's device_type
-                DeviceClass = device_class_loader.get_device_class_from_name(dc["device_type"])
+                DeviceClass = device_class_loader.get_device_class_from_name("device.{}".format(dc["device_type"]))
                 self.add_device(DeviceClass=DeviceClass, config=dc)
 
     def process_supervisor_events(self):

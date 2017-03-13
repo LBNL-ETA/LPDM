@@ -52,14 +52,18 @@ class PowerSourceManager(object):
                 "Attempt to set the load for a power source that is greater than capacity ({} > {})".format(load, d.capacity)
             )
 
-    def get(self, device_id):
+    def get(self, device_id=None):
         """Get the info for a power source by its ID"""
-        found = filter(lambda d: d.device_id == device_id, self.power_sources)
-        self.logger.debug("message: found power source {}".format(found))
-        if len(found) == 1:
-            return found[0]
+        if device_id is None:
+            # return all devices
+            return self.power_sources
         else:
-            raise Exception("An error occured trying to retrieve the power source {}".format(device_id))
+            found = filter(lambda d: d.device_id == device_id, self.power_sources)
+            self.logger.debug("message: look for device {}, found power source {}".format(device_id, found))
+            if len(found) == 1:
+                return found[0]
+            else:
+                return None
 
     def total_capacity(self):
         """calculate the total capacity for all power sources"""
@@ -68,3 +72,4 @@ class PowerSourceManager(object):
     def get_available_power_sources(self):
         """get the power sources that have a non-zero capacity"""
         return filter(lambda d: d.capacity > 0 and not d.price is None, self.power_sources)
+

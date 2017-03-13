@@ -1,5 +1,6 @@
 {
     "run_time_days": 7,
+    "log_to_postgres": 1,
     "console_log_level": 10,
     "file_log_level": 10,
     "pg_log_level": 10,
@@ -16,6 +17,11 @@
                 "grid_controller_id": "gc_1",
                 "device_type": "diesel_generator",
                 "fuel_tank_capacity": 10.0
+            },
+            {
+                "device_id": "pv_1",
+                "grid_controller_id": "gc_1",
+                "device_type": "pv"
             }
         ],
         "euds": [

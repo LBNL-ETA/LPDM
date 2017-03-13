@@ -18,7 +18,7 @@ class PgHandler(logging.Handler):
 
     def connect(self):
         """create a connection to the database"""
-        if type(self.config) is dict and self.config.get("pg_enabled", None):
+        if type(self.config) is dict:
             self.conn = psycopg2.connect(
                     host=self.config["pg_host"],
                     port=self.config["pg_port"],

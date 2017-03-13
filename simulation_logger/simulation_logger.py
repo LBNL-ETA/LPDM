@@ -21,7 +21,7 @@ class SimulationLogger:
     """
     This class sets up the logging and handlers for the simulation.
     """
-    def __init__(self, console_log_level=logging.DEBUG, file_log_level=logging.DEBUG, pg_log_level=logging.DEBUG):
+    def __init__(self, console_log_level=logging.DEBUG, file_log_level=logging.DEBUG, pg_log_level=logging.DEBUG, log_to_postgres=False):
         self.app_name = "lpdm"
         self.base_path = "logs"
         self.folder = None
@@ -30,6 +30,7 @@ class SimulationLogger:
         self.console_log_level = console_log_level
         self.file_log_level = file_log_level
         self.pg_log_level = pg_log_level
+        self.log_to_postgres = log_to_postgres
 
     def init(self):
         """Setup the log paths and create the logging handlers"""
@@ -98,10 +99,8 @@ class SimulationLogger:
                 config = ConfigParser.ConfigParser()
                 config.read(pg_config)
 
-                pg_enabled = int(config.get("postgres", "enabled"))
-                if pg_enabled:
+                if self.log_to_postgres:
                     config = {
-                        "pg_enabled": pg_enabled,
                         "pg_host": config.get("postgres", "host"),
                         "pg_port": config.get("postgres", "port"),
                         "pg_dbname": config.get("postgres", "dbname"),
@@ -118,5 +117,4 @@ class SimulationLogger:
                 tb = traceback.format_exception(exc_type, exc_value, exc_traceback)
                 self.logger.error("Unable to setup the postgres logger")
                 self.logger.error("\n".join(tb))
-                raise
 

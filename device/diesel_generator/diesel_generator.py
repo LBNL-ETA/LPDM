@@ -120,7 +120,7 @@ class DieselGenerator(PowerSource):
         self.set_next_reasses_fuel_change_event()
         self.set_next_refuel_event()
         self.calculate_electricity_price()
-        self.broadcast_new_capacity()
+        self.make_available()
         self.calculate_next_ttie()
 
     def status(self):

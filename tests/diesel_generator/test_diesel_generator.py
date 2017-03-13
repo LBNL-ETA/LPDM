@@ -9,6 +9,7 @@ class TestDieselGenerator(unittest.TestCase):
             "fuel_tank_capacity": 100.0, # set to 100 gallons
             "fuel_level": 100.0, # set to 100% full
             "days_to_refuel": 7, # 7 days to refuel
+            "capacity": 2000.0 # 2000 W capacity
         }
 
         self.device = DieselGenerator(config)
@@ -18,27 +19,6 @@ class TestDieselGenerator(unittest.TestCase):
         self.device._broadcast_new_power_callback = MagicMock(name="_broadcast_new_power_callback")
         self.device._broadcast_new_price_callback = MagicMock(name="_broadcast_new_price_callback")
         self.device._broadcast_new_capacity_callback = MagicMock(name="_broadcast_new_capacity_callback")
-
-    # def test_emit_initial_event(self):
-        # """Test if the generator will emit an initial price event at time 0"""
-        # self.device._broadcast_new_ttie_callback = MagicMock(name="_broadcast_new_ttie_callback")
-        # print self.device._broadcast_new_ttie_callback
-        # self.device.init()
-        # self.device._broadcast_new_ttie_callback.assert_called_with(self.device._device_id, 0)
-
-    # def test_for_initial_price_event(self):
-        # """Make sure the initial price and initial capacity events are setup after call to init"""
-        # self.device._broadcast_new_ttie_callback = MagicMock(name="_broadcast_new_ttie_callback")
-        # self.device.init()
-        # found = filter(lambda d: d["operation"]=="emit_initial_price" and d["time"] == 0, self.device._events)
-        # self.assertEqual(len(found), 1)
-
-    # def test_for_initial_capacity_event(self):
-        # """Make sure the initial price and initial capacity events are setup after call to init"""
-        # self.device._broadcast_new_ttie_callback = MagicMock(name="_broadcast_new_ttie_callback")
-        # self.device.init()
-        # found = filter(lambda d: d["operation"] == "emit_initial_capacity" and d["time"] == 0, self.device._events)
-        # self.assertEqual(len(found), 1)
 
     def test_for_initial_price(self):
         """Make sure there is a price for electricity at t == 0"""
@@ -67,7 +47,7 @@ class TestDieselGenerator(unittest.TestCase):
             self.device._device_id, # source device_id
             self.device._grid_controller_id, # target device id
             0, # current time
-            self.device._capacity # capacity of the device
+            self.device._current_capacity # capacity of the device
         )
 
     def test_fuel_level(self):
@@ -103,6 +83,19 @@ class TestDieselGenerator(unittest.TestCase):
         # update the fuel level for the device and check the results
         self.device.update_fuel_level()
         self.assertEqual(self.device._fuel_level, new_fuel_level)
+
+    def test_make_unavailable(self):
+        """Test making the power source unavailable, ie _current_capacity = 0"""
+        self.device.init()
+        self.device.make_unavailable()
+        self.assertEqual(self.device._current_capacity, 0.0)
+
+    def test_make_available(self):
+        """Test making the power source available, ie _current_capacity > 0"""
+        self.device.init()
+        self.device.make_unavailable()
+        self.device.make_available()
+        self.assertGreater(self.device._current_capacity, 0.0)
 
 
 if __name__ == "__main__":

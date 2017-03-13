@@ -165,7 +165,10 @@ class DieselGenerator(PowerSource):
             self.log_message(
                 "received power change from {}, to {}, new_power = {}".format(source_device_id, target_device_id,  new_power)
             )
-            if new_power > 0 and not self.is_on() and self._fuel_level > 0:
+            if not self.is_available():
+                # if the device has its capacity set to zero then not available, raise an excpetion
+                raise Exception("Attempt to set load on a power source that has no capacity available.")
+            elif new_power > 0 and not self.is_on() and self._fuel_level > 0:
                 # If the generator is not in operation the turn it on
                 self.turn_on()
                 self._power_level = new_power
@@ -207,7 +210,6 @@ class DieselGenerator(PowerSource):
                 )
                 self._power_level = 0.0
                 self.log_power_change(time, 0.0)
-        return
 
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
@@ -492,5 +494,5 @@ class DieselGenerator(PowerSource):
 
     def current_output_capacity(self):
         "Gets the current output capacity (%)"
-        return 100.0 * self._power_level / self._capacity
+        return 100.0 * self._power_level / self.current_capacity
 

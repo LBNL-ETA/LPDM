@@ -54,8 +54,3 @@ class NotificationSender:
     def broadcast_new_ttie(self, new_ttie):
         "Broadcasts a 'new TTIE' message for a device"
         return
-
-    def broadcast_new_capacity(self, source_device_id, target_device_id, time, capacity):
-        "Broadcasts a 'new capacity' message for a device"
-        return
-

@@ -60,7 +60,6 @@ class Device(NotificationReceiver, NotificationSender):
         self._broadcast_new_price_callback = config["broadcast_new_price"] if type(config) is dict and  "broadcast_new_price" in config.keys() and callable(config["broadcast_new_price"]) else None
         self._broadcast_new_power_callback = config["broadcast_new_power"] if type(config) is dict and "broadcast_new_power" in config.keys() and callable(config["broadcast_new_power"]) else None
         self._broadcast_new_ttie_callback = config["broadcast_new_ttie"] if type(config) is dict and "broadcast_new_ttie" in config.keys() and callable(config["broadcast_new_ttie"]) else None
-        self._broadcast_new_capacity_callback = config["broadcast_new_capacity"] if type(config) is dict and "broadcast_new_capacity" in config.keys() and callable(config["broadcast_new_capacity"]) else None
 
         # Setup logging
         self._logger = logging.getLogger("lpdm")
@@ -155,24 +154,6 @@ class Device(NotificationReceiver, NotificationSender):
             self._broadcast_new_ttie_callback(self._device_id, new_ttie)
         else:
             raise Exception("broadcast_new_ttie has not been set for this device!")
-        return
-
-    def broadcast_new_capacity(self, value=None, target_device_id=None, debug_level=logging.DEBUG):
-        "Broadcast the new capacity value if a callback has been setup, otherwise raise an exception."
-        if callable(self._broadcast_new_capacity_callback):
-            self.log_message(
-                message="Broadcast new capacity {} from {}".format(value, self._device_name),
-                tag="broadcast_capacity",
-                value=value if not value is None else self._capacity
-            )
-            self._broadcast_new_capacity_callback(
-                self._device_id,
-                target_device_id if not target_device_id is None else self._grid_controller_id,
-                self._time,
-                value if not value is None  else self._capacity
-            )
-        else:
-            raise Exception("broadcast_new_capacity has not been set for this device!")
         return
 
     def time_of_day_seconds(self):

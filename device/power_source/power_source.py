@@ -16,40 +16,21 @@
 """
 from device.device import Device
 from abc import ABCMeta, abstractmethod
+import logging
 
 class PowerSource(Device):
     def __init__(self, config = {}):
         # call the super constructor
         Device.__init__(self, config)
 
-        # define a capacity property
         self._capacity = config.get("capacity", None)
+        self._current_capacity = 0.0
+
         self._current_fuel_price = config.get("current_fuel_price", None)
+        self._events = []
 
-    # def init(self):
-        # """Run any initialization functions for the device"""
-        # # setup the events at time=0 to let the grid controller know about
-        # # the device's price and capacity
-        # self.set_initial_price_event()
-        # self.set_initial_capacity_event()
-        # self.process_events()
-
-    # def process_events(self):
-        # "Process any events that need to be processed"
-        # remove_items = []
-        # for event in self._events:
-            # if event["time"] <= self._time:
-                # if event["operation"] == "emit_initial_price":
-                    # self.broadcast_new_price(self._current_fuel_price, target_device_id=self._grid_controller_id),
-                    # remove_items.append(event)
-                # elif event["operation"] == "emit_initial_capacity":
-                    # self.broadcast_new_capacity(self._capacity, target_device_id=self._grid_controller_id)
-                    # remove_items.append(event)
-
-        # # remove the processed events from the list
-        # if len(remove_items):
-            # for event in remove_items:
-                # self._events.remove(event)
+        self._broadcast_new_capacity_callback = config["broadcast_new_capacity"] if type(config) is dict and "broadcast_new_capacity" in config.keys() and callable(config["broadcast_new_capacity"]) else None
+        self.log_message("initialized power source")
 
     @abstractmethod
     def on_power_change(self, source_device_id, target_device_id, time, power):
@@ -61,11 +42,35 @@ class PowerSource(Device):
         """A time change has occured"""
         pass
 
-    # def set_initial_price_event(self):
-        # """Let the grid controller know of the initial price of energy"""
-        # self._events.append({"time": 0, "operation": "emit_initial_price"})
+    def broadcast_new_capacity(self, value=None, target_device_id=None, debug_level=logging.DEBUG):
+        "Broadcast the new capacity value if a callback has been setup, otherwise raise an exception."
+        if callable(self._broadcast_new_capacity_callback):
+            self.log_message(
+                message="Broadcast new capacity {} from {}".format(value, self._device_name),
+                tag="broadcast_capacity",
+                value=value if not value is None else self._current_capacity
+            )
+            self._broadcast_new_capacity_callback(
+                self._device_id,
+                target_device_id if not target_device_id is None else self._grid_controller_id,
+                self._time,
+                value if not value is None  else self._current_capacity
+            )
+        else:
+            raise Exception("broadcast_new_capacity has not been set for this device!")
 
-    # def set_initial_capacity_event(self):
-        # """Let the grid controller know of the initial capacity of the device"""
-        # self._events.append({"time": 0, "operation": "emit_initial_capacity"})
+    def make_available(self):
+        """Make the power source available, ie set its capacity to a non-zero value"""
+        self.log_message("Make powersoure available")
+        self._current_capacity = self._capacity
+        self.broadcast_new_capacity()
 
+    def make_unavailable(self):
+        """Make the power source unavailable, ie set its capacity to zero"""
+        self.log_message("Make powersoure unavailable")
+        self._current_capacity = 0.0
+        self.broadcast_new_capacity()
+
+    def is_available(self):
+        """Is the current powersource available? ie current capacity > 0"""
+        return self._current_capacity > 0

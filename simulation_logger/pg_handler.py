@@ -75,7 +75,8 @@ class PgHandler(logging.Handler):
                 message varchar(200),
                 tag varchar(20),
                 value float8,
-                time_value float8
+                time_value float8,
+                time_string text
             )
         """.format(schema_name))
         self.conn.commit()
@@ -106,7 +107,7 @@ class PgHandler(logging.Handler):
 
     def parse_message(self, message):
         """parse a log message into parts"""
-        fields = ["message", "tag", "value", "device", "time_value"]
+        fields = ["message", "tag", "value", "device", "time_value", "time_string"]
         field_map = {}
         for field in fields:
             results = re.search(r"\b" + field + r": (.*?)($|, \w+:)", str(message), re.I)

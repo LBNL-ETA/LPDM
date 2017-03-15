@@ -33,7 +33,8 @@ class Simulation(object):
             console_log_level=self.config.get("console_log_level", logging.DEBUG),
             file_log_level=self.config.get("file_log_level", logging.DEBUG),
             pg_log_level=self.config.get("pg_log_level", logging.DEBUG),
-            log_to_postgres=self.config.get("log_to_postgres", False)
+            log_to_postgres=self.config.get("log_to_postgres", False),
+            log_format=self.config.get("log_format", None)
         )
         self.log_manager.init()
 

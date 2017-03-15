@@ -21,7 +21,7 @@ class SimulationLogger:
     """
     This class sets up the logging and handlers for the simulation.
     """
-    def __init__(self, console_log_level=logging.DEBUG, file_log_level=logging.DEBUG, pg_log_level=logging.DEBUG, log_to_postgres=False):
+    def __init__(self, console_log_level=logging.DEBUG, file_log_level=logging.DEBUG, pg_log_level=logging.DEBUG, log_to_postgres=False, log_format=None):
         self.app_name = "lpdm"
         self.base_path = "logs"
         self.folder = None
@@ -31,6 +31,7 @@ class SimulationLogger:
         self.file_log_level = file_log_level
         self.pg_log_level = pg_log_level
         self.log_to_postgres = log_to_postgres
+        self.log_format = log_format
 
     def init(self):
         """Setup the log paths and create the logging handlers"""
@@ -73,7 +74,12 @@ class SimulationLogger:
         self.logger.setLevel(logging.DEBUG)
 
         # setup the formatter
-        formatter = logging.Formatter('[%(relativeCreated)d-%(levelname)-s-%(threadName)s-%(filename)s-%(funcName)s-%(lineno)d] - %(message)s')
+
+        if self.log_format == "debug":
+            formatter = logging.Formatter('[%(relativeCreated)d-%(levelname)-s-%(threadName)s-%(filename)s-%(funcName)s-%(lineno)d] - %(message)s')
+        else:
+            formatter = logging.Formatter('%(message)s')
+
 
         # create file handler which logs even debug messages
         fh = logging.FileHandler(os.path.join(self.simulation_log_path(), 'app.log'), mode='w')

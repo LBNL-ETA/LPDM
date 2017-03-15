@@ -173,6 +173,11 @@ class Eud(Device):
                 tag="on/off",
                 value=0
             )
+            self.log_message(
+                message="Power level {}".format(self._power_level),
+                tag="power",
+                value=self._power_level
+            )
 
     def process_event(self):
         if (self._next_event and self._time == self._ttie):

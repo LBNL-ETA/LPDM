@@ -4,6 +4,7 @@
     "console_log_level": 10,
     "file_log_level": 10,
     "pg_log_level": 10,
+    "log_format": "debug",
     "devices": {
         "grid_controllers": [
             {
@@ -16,7 +17,7 @@
                 "device_id": "dg_1",
                 "grid_controller_id": "gc_1",
                 "device_type": "diesel_generator",
-                "fuel_tank_capacity": 10.0
+                "fuel_tank_capacity": 100.0
             },
             {
                 "device_id": "pv_1",

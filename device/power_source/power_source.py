@@ -54,7 +54,7 @@ class PowerSource(Device):
                 self._device_id,
                 target_device_id if not target_device_id is None else self._grid_controller_id,
                 self._time,
-                value if not value is None  else self._current_capacity
+                self._current_capacity if value is None else value
             )
         else:
             raise Exception("broadcast_new_capacity has not been set for this device!")

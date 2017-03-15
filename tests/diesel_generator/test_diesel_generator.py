@@ -97,6 +97,12 @@ class TestDieselGenerator(unittest.TestCase):
         self.device.make_available()
         self.assertGreater(self.device._current_capacity, 0.0)
 
+    def test_set_power_level_unavailable(self):
+        """Test setting the power level when it is unavailable (ie capacity == 0)"""
+        self.device.init()
+        self.device.make_unavailable()
+        with self.assertRaises(Exception):
+            self.device.on_power_change("gc_1", self.device.device_id, 0, 100.0)
 
 if __name__ == "__main__":
     unittest.main()

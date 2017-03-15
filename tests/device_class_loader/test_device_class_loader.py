@@ -2,7 +2,7 @@ import unittest
 from common.device_class_loader import DeviceClassLoader
 from device.eud import Eud
 from device.grid_controller import GridController
-from device.grid_controller.price_logic import AveragePrice
+from device.grid_controller.price_logic import AveragePriceLogic
 
 class TestDeviceManager(unittest.TestCase):
     def setUp(self):
@@ -21,9 +21,9 @@ class TestDeviceManager(unittest.TestCase):
     def test_load_by_class_name(self):
         """Test retrieving a class by passing in module and class name"""
         module_name = "device.grid_controller.price_logic"
-        class_name = "AveragePrice"
+        class_name = "AveragePriceLogic"
         TheClass = self.device_class_loader.class_for_name(module_name, class_name)
-        self.assertIs(TheClass, AveragePrice)
+        self.assertIs(TheClass, AveragePriceLogic)
 
 if __name__ == "__main__":
     unittest.main()

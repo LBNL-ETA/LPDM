@@ -15,11 +15,11 @@
     Implementation of a Grid Controller
 """
 
-from device.device import Device
-from device.battery import Battery
-from device.pv import Pv
+from device_manager import DeviceManager
 from power_source_manager import PowerSourceManager
 from device.power_source import PowerSource
+from device.device import Device
+from common.device_class_loader import DeviceClassLoader
 import logging
 
 class GridController(Device):
@@ -36,7 +36,6 @@ class GridController(Device):
 
             keys:
                 "device_name" (string): Name of the device
-                "connected_devices (List): Array of devices connected to the grid controller,
                 "power_price" (float): Price of power ($/kWh)
                 "capacity (float): Maximum available capacity (Watts),
                 "diesel_output_threshold" (float): Percentage of output capacity of the diesel generator to keep above using the battery
@@ -48,74 +47,126 @@ class GridController(Device):
 
         self._device_type = "grid_controller"
         self._device_name = config.get("device_name", "grid_controller")
-        self._connected_devices = config.get("connected_devices", [])
-        self._power_price = config.get("power_price", None)
         self._capacity = config.get("capacity", 3000.0)
-        self._check_battery_soc_rate = config.get("check_battery_soc_rate", 300)
-        self._pv_power_update_rate = config.get("pv_power_update_rate", 900)
+        self._static_price = config.get("static_price", False)
 
-        self._battery = Battery(config["battery_config"]) if type(config) is dict and "battery_config" in config.keys() else None
-        self._pv = Pv(config["pv_config"]) if type(config) is dict and "pv_config" in config.keys() and config["pv_config"] else None
+        # setup the logic for calculating the gc's price, default to average price
+        self._price_logic_class_name = config.get("price_logic_class", "AveragePriceLogic")
+        self._price_logic = None
 
+        self._gc_price = 0.0
         self._total_load = 0.0
-        self._power_usage_by_device = []
-        self._load_on_generator = 0.0
-        self._load_on_battery = 0.0
-        self._load_on_pv = 0.0
+        self._total_capacity = 0.0
 
-        self._diesel_generator_id = None
-
+        # setup the managers for devices and power sources
+        self.device_manager = DeviceManager()
         self.power_source_manager = PowerSourceManager()
+
+        # set up class loader
+        self._device_class_loader = DeviceClassLoader()
 
         self._events = []
 
+    def init(self):
+        """Initialize the grid controller"""
+        self.set_price_logic()
+
+    def set_price_logic(self):
+        """Set the logic for calculating the GC's price"""
+        # get the class object from the class name
+        LogicClass = self._device_class_loader.class_for_name(
+            "device.grid_controller.price_logic", self._price_logic_class_name
+        )
+        # create the object
+        self._price_logic = LogicClass(self.power_source_manager)
+        self.log_message("Set price logic class to {}".format(LogicClass))
+
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
-        "Receives messages when a power change has occured"
+        """
+        Notification from a device that a power change has occurred.
+        Could be from either a power source or an eud.
+        If from a power source (Diesel Generator, PV, ...) then it's a change in power output.
+            This should only happen when a device is turing itself off
+        If from an EUD then it's a change in it's power consumption.
+        """
         self._time = time
+
         self.log_message(
             message="Power change, source_device_id = {}, target_device_id = {}".format(source_device_id, target_device_id),
             tag="power",
             value=new_power
         )
 
-        changed_power = False
-        if new_power == 0 and source_device_id == self.get_diesel_generator_id() and self._load_on_generator > 0:
-            # if the diesel generator has changed its power to zero without being instructed then it's out of fuel
-            self.shutdown_generator()
-            changed_power = True
+        # is this a power source or an eud?
+        if self.power_source_manager.get(source_device_id):
+            # if it's a power source, register its new usage
+            # TODO: check capacity?
+            self.power_source_manager.set_load(source_device_id, new_power)
         else:
-            changed_power = self.set_power_for_device(source_device_id, new_power)
+            # this is not a power source so need to add the device's requested power to a power source
+            # if add_load returns False, then unable to set power for the device
 
-        if self._battery:
-            self._battery.update_state_of_charge(self._time, self._load_on_battery)
+            # get the change in power for the device
+            device = self.device_manager.get(source_device_id)
+            p_diff = new_power - device.load
+            self.log_message(message="power difference", tag="power_difference", value=p_diff)
 
-        self.set_power_sources()
-        self.schedule_next_events()
+            if p_diff == 0:
+                # no change in power for the device
+                self.log_message(message="No change in power for {}".format(source_device_id))
+            elif not self.power_source_manager.has_available_power_sources():
+                # power for the device has changed but no available power sources
+                # set all devices to zero power
+                self.log_message("No power sources available, unable to set load for {}".format(source_device_id))
+                for device in self.device_manager.device_list():
+                    self.broadcast_new_power(0.0, d.device_id)
+            else:
+                # power has changed, either positive or negative
+                if p_diff > 0:
+                    result_success = self.power_source_manager.add_load(p_diff)
+                else:
+                    result_success = self.power_source_manager.remove_load(p_diff)
+
+                if result_success:
+                    # adding/removing load was successfull
+                    self.device_manager.set_load(source_device_id, new_power)
+                    for p in self.power_source_manager.get_changed_power_sources():
+                        # broadcast the messages to the power sources that have changed
+                        self.broadcast_new_power(p.load, p.device_id)
+                else:
+                    # unable to provide the requested power
+                    # TODO: if can't provide power, shutdown ? or restore to previous load?
+                    self.device_manager.set_load(source_device_id, 0.0)
+                    self.broadcast_new_power(0.0, source_device_id)
+        # self.schedule_next_events()
         self.calculate_next_ttie()
-        return
 
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
+        self._time = time
         if not self._static_price:
             self.log_message(
                 message="Price change received (new_price = {}, source_device_id = {}, target_device_id = {})".format(new_price, source_device_id, target_device_id),
                 tag="price",
                 value=new_price
             )
+            # set the price for the device
             self.power_source_manager.set_price(source_device_id, new_price)
-            self._power_price = new_price
-            self._time = time
-
-            self.send_price_change_to_devices()
-        return
+            self.power_source_manager.optimize_load()
+            for p in self.power_source_manager.get_changed_power_sources():
+                self.broadcast_new_power(p.load, p.device_id)
+            # calculate the new gc price
+            if self.calculate_gc_price():
+                # send the new price to the devices if changed
+                self.send_price_change_to_devices()
+            self.power_source_manager.reset_changed()
 
     def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"
         self._time = new_time
-        if self._battery:
-            self._battery.update_state_of_charge(self._time, self._load_on_battery)
+
         self.process_events()
-        self.schedule_next_events()
+        # self.schedule_next_events()
         self.calculate_next_ttie()
         return
 
@@ -128,145 +179,118 @@ class GridController(Device):
             value=value
         )
         self.power_source_manager.set_capacity(source_device_id, value)
+        self.power_source_manager.optimize_load()
+        for p in self.power_source_manager.get_changed_power_sources():
+            self.broadcast_new_power(p.load, p.device_id)
+        self.power_source_manager.reset_changed()
 
-    def add_device(self, new_device_id, type_of_device, DeviceClass):
+    def add_device(self, new_device_id, DeviceClass):
         "Add a device to the list devices connected to the grid controller"
-        self.log_message("message: is power source?  {} - {}".format(DeviceClass, issubclass(DeviceClass, PowerSource)))
         if issubclass(DeviceClass, PowerSource):
             self.log_message(message="connected a power source to the gc {} - {}".format(new_device_id, DeviceClass))
             self.power_source_manager.add(new_device_id, DeviceClass)
         else:
-            self._connected_devices.append({"device_id": new_device_id, "device_type": type_of_device})
-        self.log_message(
-            "added device to the grid controller (device_id = {}, device_type = {})".format(new_device_id, type_of_device)
-        )
+            self.log_message(message="connected a device to the gc {} - {}".format(new_device_id, DeviceClass))
+            self.device_manager.add(new_device_id, DeviceClass)
+
+    def calculate_gc_price(self):
+        """Calculate the price grid controller's price"""
+        price_has_changed = False
+        previous_price = self._gc_price
+        self._gc_price = self._price_logic.get_price()
+        # return boolean indicating if price has changed
+        return previous_price != self._gc_price
 
     def send_price_change_to_devices(self):
         "Sends a change in price notification to the connected devices"
         # self.log_message("Send price change messages to all devices (t = {0}, p = {1})".format(self._time, self._power_price), logging.INFO)
         self.log_message(
-            message="send price change to all devices (new_price = {})".format(self._power_price),
+            message="send price change to all devices (new_price = {})".format(self._gc_price),
             tag="send_price_change",
             value="1"
         )
-        for device in self._connected_devices:
-            self.broadcast_new_price(self._power_price, device["device_id"])
+        # send the new price to the non-power-sources
+        for d in self.device_manager.devices():
+            self.broadcast_new_price(self._gc_price, d.device_id)
 
-    def shutdown_generator(self):
-        "Shutdown the generator - shut down all devices, set all loads to 0, notify all connected devices to shutdown"
+    def shutdown(self):
+        """Shutdown the grid, set all loads to zero, notify all devices"""
         self.log_message(
-            message="Shutdown the generator",
+            message="Shutdown",
             tag="shutdown",
             value="1"
         )
         self._total_load = 0.0
-        self._load_on_generator = 0.0
-        self._load_on_battery = 0.0
+        # set all device power outputs to zero
+        for d in self.device_manager.devices():
+            self.broadcast_new_power(0.0, d.device_id)
+            d.load = 0.0
 
-        if self._battery and self._battery.is_charging():
-            self._battery.stop_charging()
-        elif self._battery and self._battery.is_discharging():
-            self._battery.stop_discharging()
+        # set the power output of the power sources to zero
+        for p in self.power_source_manager.get():
+            self.broadcast_new_power(0.0, p.device_id)
+            p.load = 0.0
 
-        if self._pv and self._load_on_pv > 0:
-            self._load_on_pv = 0.0
-            self._pv.set_power_output(self._time, self._load_on_pv)
 
-        for item in self._power_usage_by_device:
-            item["power"] = 0.0
-            if item["device_id"] != self.get_diesel_generator_id():
-                self.broadcast_new_power(0.0, item["device_id"])
+    # def shutdown_generator(self):
+        # "Shutdown the generator - shut down all devices, set all loads to 0, notify all connected devices to shutdown"
+        # self.log_message(
+            # message="Shutdown the generator",
+            # tag="shutdown",
+            # value="1"
+        # )
+        # self._total_load = 0.0
+        # self._load_on_generator = 0.0
+        # self._load_on_battery = 0.0
 
-    def set_power_for_device(self, source_device_id, power):
-        """
-            Need to keep track of the power output for each device, which is stored in the dictionary self._power_usage_by_device.
-            update or add the new power value, then update the total power output.
-        """
-        found_item = False
-        # Update the existing device if it's already there
-        for item in self._power_usage_by_device:
-            if source_device_id == item["device_id"]:
-                if power != item["power"]:
-                    delta_power = power - item["power"]
-                    self._total_load += delta_power
-                    item["power"] = power
-                    found_item = True
-                    self.log_message("power changed to {}".format(power))
-                break
+        # if self._battery and self._battery.is_charging():
+            # self._battery.stop_charging()
+        # elif self._battery and self._battery.is_discharging():
+            # self._battery.stop_discharging()
 
-        if not found_item:
-            # If the item is not in the list then create a new item for the device
-            self._power_usage_by_device.append({'device_id': source_device_id, 'power': power})
-            self._total_load += power
+        # if self._pv and self._load_on_pv > 0:
+            # self._load_on_pv = 0.0
+            # self._pv.set_power_output(self._time, self._load_on_pv)
+
+        # for item in self._power_usage_by_device:
+            # item["power"] = 0.0
+            # if item["device_id"] != self.get_diesel_generator_id():
+                # self.broadcast_new_power(0.0, item["device_id"])
+
+    # def set_power_for_device(self, source_device_id, power):
+        # """
+            # Need to keep track of the power output for each device, which is stored in the dictionary self._power_usage_by_device.
+            # update or add the new power value, then update the total power output.
+        # """
+        # found_item = False
+        # # Update the existing device if it's already there
+        # for item in self._power_usage_by_device:
+            # if source_device_id == item["device_id"]:
+                # if power != item["power"]:
+                    # delta_power = power - item["power"]
+                    # self._total_load += delta_power
+                    # item["power"] = power
+                    # found_item = True
+                    # self.log_message("power changed to {}".format(power))
+                # break
+
+        # if not found_item:
+            # # If the item is not in the list then create a new item for the device
+            # self._power_usage_by_device.append({'device_id': source_device_id, 'power': power})
+            # self._total_load += power
 
     def current_output_capacity(self):
         "Current output capacity of the GC (%)"
         return 100.0 * self._total_load / self._capacity
 
-    def battery_discharge(self):
-        if self._battery and not self._battery.is_charging() and not self._battery.is_discharging():
-            self.log_message(
-                message="start battery discharge",
-                tag="battery_discharge",
-                value="1"
-            )
-            self._battery.start_discharging(self._time)
-            if self._load_on_generator > self._battery.capacity():
-                self._load_on_generator -= self._battery.capacity()
-                self._load_on_battery = self._battery.capacity()
-            else:
-                self._load_on_battery = self._load_on_generator
-                self._load_on_generator = 0.0
+    # def add_load(self, device_id, new_load):
+        # """Add load, distrubute power among the various power sources"""
+        # # get the available power sources
+        # if not self.power_source_manager.has_available_power_sources():
+            # raise Exception("There are no available power sources.")
 
-            self.log_message(
-                message="load_on_battery",
-                tag="load_battery",
-                value=self._load_on_battery
-            )
-            self.log_message(
-                message="load_on_generator",
-                tag="load_generator",
-                value=self._load_on_generator
-            )
-        else:
-            self.log_message("battery is not able to discharge, check parameters")
-            raise Exception("battery is not able to discharge, check parameters")
-
-    def battery_charge(self):
-        if self._battery and not self._battery.is_charging() and not self._battery.is_discharging():
-            # add the load needed to charge the battery on to the generator
-            self._total_load += self._battery.charge_rate()
-            self._load_on_generator += self._battery.charge_rate()
-            self.log_message(
-                message="charge the battery",
-                tag="battery_charge",
-                value=self.battery.charge_rate()
-            )
-        else:
-            self.log_message("battery is not able to charge, check parameters")
-            raise Exception("battery is not able to charge, check parameters")
-
-    def battery_neither(self):
-        self.log_message("battery neither (is_charging = {}, is_discharging = {})".format(self._battery.is_charging(), self._battery.is_discharging()), app_log_level=None)
-        if self._battery and self._battery.is_discharging():
-            self._battery.stop_discharging(self._time)
-            # put the load that was on the battery back on the generator
-            self._load_on_generator += self._load_on_battery
-            self._load_on_battery = 0.0
-            self.log_message(
-                message="stop battery discharge",
-                tag="battery_discharge",
-                value=0
-            )
-        elif self._battery.is_charging():
-            self._battery.stop_charging(self._time)
-            self._total_load -= self._battery.charge_rate()
-            self._load_on_generator -= self._battery.charge_rate()
-            self.log_message(
-                message="stop charging the battery",
-                tag="battery_charge",
-                value=0
-            )
+        # if not self.power_source_manager.add_load(new_load):
+            # raise Exception
 
     def set_power_sources(self):
         "Set the power output for the diesel generator, battery, pv, ..."
@@ -427,24 +451,6 @@ class GridController(Device):
             # no power sources are connected to the grid controller
             raise Exception("No power sources are connected to the grid controller")
 
-    def get_diesel_generator_id(self):
-        "Find the diesel generator in the connected devices"
-        if self._diesel_generator_id:
-            return self._diesel_generator_id
-        else:
-            generator_id = None
-            for device in self._connected_devices:
-                if device["device_type"] == "diesel_generator":
-                    generator_id = device["device_id"]
-                    self._diesel_generator_id = generator_id
-                    break
-
-            return generator_id
-
-
-    def connected_devices(self):
-        return self._connected_devices
-
     def process_events(self):
         "Process any events that need to be processed"
 
@@ -481,20 +487,19 @@ class GridController(Device):
         "Update the pv power output every 15 minutes"
         self._events.append({"time": self._time + self._pv_power_update_rate, "operation": "pv_power_update"})
 
-    def schedule_next_events(self):
-        "Schedule upcoming events if necessary"
-        if self._battery:
-            # if the battery is charging/discharging then check out the state_of_charge in self._check_battery_soc_rate seconds
-            search_events = [event for event in self._events if event["operation"] == "battery_status"]
-            if not len(search_events):
-                self.set_next_battery_update_event()
+    # def schedule_next_events(self):
+        # "Schedule upcoming events if necessary"
+        # if self._battery:
+            # # if the battery is charging/discharging then check out the state_of_charge in self._check_battery_soc_rate seconds
+            # search_events = [event for event in self._events if event["operation"] == "battery_status"]
+            # if not len(search_events):
+                # self.set_next_battery_update_event()
 
-        if self._pv:
-            search_events = [event for event in self._events if event["operation"] == "pv_power_update"]
-            if not len(search_events):
-                self.set_next_pv_update_event()
-
-        return
+        # if self._pv:
+            # search_events = [event for event in self._events if event["operation"] == "pv_power_update"]
+            # if not len(search_events):
+                # self.set_next_pv_update_event()
+        # pass
 
     def set_initial_price_event(self):
         """Let all other devices know of the initial price of energy"""

@@ -30,6 +30,10 @@ class DeviceManager(object):
         d = self.get(device_id)
         d.load = load
 
+    def total_load(self):
+        """calculate the total load for all devices"""
+        return sum(d.load for d in self.device_list if not d.load is None)
+
     def get(self, device_id):
         """Get the info for a device by its ID"""
         found = filter(lambda d: d.device_id == device_id, self.device_list)

@@ -101,9 +101,9 @@ class Device(NotificationReceiver, NotificationSender):
         self._logger.log(log_level, message)
 
     def get_log_message_string(self, message, tag=None, value=None):
-        time_string = "Day {0} {1} ({2})".format(
+        time_string = "Day {0} {1}".format(
                 1 + int(self._time / (60 * 60 * 24)),
-                datetime.datetime.utcfromtimestamp(self._time).strftime('%H:%M:%S'), self._time
+                datetime.datetime.utcfromtimestamp(self._time).strftime('%H:%M:%S')
         )
         return "time_string: {}, time_value: {}, device: {}, message: {}, tag: {}, value: {}".format(
                 time_string, self._time, self._device_id, message, tag, value)

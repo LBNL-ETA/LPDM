@@ -16,11 +16,10 @@ Implementation of a PV module
 """
 
 import os
-from device.device import Device
-import logging
+from device.power_source import PowerSource
 import pprint
 
-class Pv(Device):
+class Pv(PowerSource):
     """
         Device implementation of a PV module.
 
@@ -45,33 +44,75 @@ class Pv(Device):
                     "roundtrip_eff" (float): Fraction of power that is stored and available for withdrawl
                     "battery_on_time" (int): Time (seconds) when the battery was turned on
         """
-        self._device_type = "pv"
-        self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "pv"
+        # call the super constructor
+        PowerSource.__init__(self, config)
 
-        self._current_power_output = 0
-        self._pv_file_name = "pv_data.csv"
+        self._device_type = "pv"
+        self._device_name = config.get("device_name", "pv")
+        self._pv_file_name = config.get("pv_file_name", "pv_data.csv")
+        self._capacity_update_interval = config.get("capacity_update_interval", 15.0 * 60.0)
+        self._price = 0.0
+
         self._power_profile = None
 
-        # call the super constructor
-        Device.__init__(self, config)
+    def init(self):
+        """Load the power profile for the pv on initialization"""
+        self.load_power_profile()
+        self.make_available()
+        self.set_update_capacity_event()
+        self.broadcast_new_price(self._price, target_device_id=self._grid_controller_id)
+        self.calculate_next_ttie()
 
-        self.loadPowerProfile()
+    def make_available(self):
+        """Make the power source available, ie set its capacity to a non-zero value"""
+        self.log_message("Make pv available")
+        self.set_capacity()
+        self.broadcast_new_capacity()
 
-    def onPowerChange(self, time, new_power):
+    def set_update_capacity_event(self):
+        """Set the next event for updating the pv capacity"""
+        self._events.append({"time": self._time + self._capacity_update_interval, "operation": "update_capacity"})
+
+    def on_time_change(self, new_time):
+        "Receives message when time for an 'initial event' change has occured"
+        self.log_message("received new ttie {}".format(new_time))
+        self._time = new_time
+        self.process_events()
+        self.calculate_next_ttie()
+
+    def process_events(self):
+        "Process any events that need to be processed"
+        remove_items = []
+        for event in self._events:
+            if event["time"] <= self._time:
+                if event["operation"] == "update_capacity":
+                    self.set_capacity()
+                    self.set_update_capacity_event()
+                    remove_items.append(event)
+
+        # remove the processed events from the list
+        if len(remove_items):
+            for event in remove_items:
+                self._events.remove(event)
+
+    def on_power_change(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
+        self._time = time
+        self._power_level = new_power
+        self.log_message(
+            message="Update power output {}".format(new_power),
+            tag="power",
+            value=self._power_level
+        )
         return
 
-    def onPriceChange(self, new_price):
+    def on_price_change(self, new_price):
         "Receives message when a price change has occured"
         return
 
-    def calculateNextTTIE(self):
-        return
-
-    def loadPowerProfile(self):
+    def load_power_profile(self):
         "Load the power profile for each 15-minute period of the day"
 
-        print "real path = {}".format(os.path.dirname(os.path.realpath(__file__)))
         self._power_profile = []
         for line in open(os.path.join(os.path.dirname(os.path.realpath(__file__)), self._pv_file_name)):
             parts = line.strip().split(',')
@@ -79,16 +120,29 @@ class Pv(Device):
             time_secs = (int(time_parts[0]) * 60 * 60) + (int(time_parts[1]) * 60) + int(time_parts[2])
             self._power_profile.append({"time": time_secs, "power": float(parts[1])})
 
-        self.logMessage("Power profile loaded: {}".format(pprint.pformat(self._power_profile)))
+        self.log_message("Power profile loaded: {}".format(pprint.pformat(self._power_profile)))
 
-    def setPowerOutput(self, time, value):
-        self._time = time
-        self._current_power_output = value
-        self.logMessage("Update power output {}".format(value))
+    def set_capacity(self):
+        """set the capacity of the pv at the current time"""
+        time_of_day_secs = self.time_of_day_seconds()
+        found_time = None
+        self.log_message("set_capacity: time = {}, secs = {}".format(self._time, time_of_day_secs))
+        for item in self._power_profile:
+            if  item["time"] > time_of_day_secs:
+                break
+            found_time = item
 
-    def getMaximumPower(self, time):
+        if found_time:
+            self._current_capacity = found_time["power"]
+            self.broadcast_new_capacity()
+            self.log_message("setting pv capcity to {}".format(self._current_capacity), tag="capacity", value=self._current_capacity)
+        else:
+            self.log_message("Unable to find a capacity value for time {}".format(self._time))
+            raise Exception("An error occured getting the pv power output")
+
+    def get_maximum_power(self, time):
         self._time = time
-        time_of_day = self.timeOfDaySeconds()
+        time_of_day = self.time_of_day_seconds()
         found_time = None
         for item in self._power_profile:
             found_time = item
@@ -99,5 +153,3 @@ class Pv(Device):
             return found_time["power"]
         else:
             raise Exception("An error occured getting the pv power output")
-
-

@@ -136,7 +136,6 @@ class DieselGenerator(PowerSource):
 
     def refresh(self):
         "Refresh the diesel generator."
-        self.log_message("Refresh the diesel generator")
         self.remove_refresh_events()
         self.set_target_refuel_time()
         self.set_next_refuel_event()
@@ -154,7 +153,6 @@ class DieselGenerator(PowerSource):
                 next_refuels.append(event)
 
         for event in next_refuels:
-            self.log_message("Remove event: {}".format(pprint.pformat(event), app_log_level=None))
             self._events.remove(event)
 
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
@@ -162,8 +160,12 @@ class DieselGenerator(PowerSource):
 
         if target_device_id == self._device_id:
             self._time = time
-            self.log_message(
-                "received power change from {}, to {}, new_power = {}".format(source_device_id, target_device_id,  new_power)
+            self._logger.debug(
+                self.build_message(
+                    message="received power change from {}, new_power = {}".format(source_device_id,  new_power),
+                    tag="receive_power",
+                    value=new_power
+                )
             )
             if not self.is_available():
                 # if the device has its capacity set to zero then not available, raise an excpetion
@@ -202,7 +204,6 @@ class DieselGenerator(PowerSource):
 
     def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"
-        self.log_message("DG received new ttie {}".format(new_time))
         self._time = new_time
         self.process_events()
         self.calculate_next_ttie()
@@ -211,10 +212,12 @@ class DieselGenerator(PowerSource):
     def set_power(self, power):
         """Set the power level for the device"""
         self._power_level = power
-        self.log_message(
-            message="Set new power level",
-            tag="power",
-            value=self._power_level
+        self._logger.debug(
+            self.build_message(
+                message="Set new power level",
+                tag="power",
+                value=self._power_level
+            )
         )
 
     def set_next_hourly_consumption_calculation_event(self):
@@ -313,10 +316,12 @@ class DieselGenerator(PowerSource):
         self._last_fuel_status_time = self._time
         new_fuel_level = new_gallons / self._fuel_tank_capacity * 100
 
-        self.log_message(
-            message="Fuel level updated",
-            tag="fuel_level",
-            value=new_fuel_level
+        self._logger.debug(
+            self.build_message(
+                message="Fuel level updated",
+                tag="fuel_level",
+                value=new_fuel_level
+            )
         )
         self._fuel_level = new_fuel_level
 
@@ -327,14 +332,6 @@ class DieselGenerator(PowerSource):
             self._current_fuel_price = 1e6
             self.broadcast_new_price(self._current_fuel_price, target_device_id=self._grid_controller_id)
         return
-
-    def set_days_to_refuel(self, days_to_refuel):
-        "Sets the number of days until refuel"
-        self.log_message(
-            message="Set days to refuel",
-            tag="days_until_refuel",
-            value=days_to_refuel
-        )
 
     def get_current_generation_rate(self):
         "Calculates the current generation rate in kwh/gallon"
@@ -403,33 +400,40 @@ class DieselGenerator(PowerSource):
             sum_24hr += item["consumption"]
 
         # Log the messages
-        self.log_message(
-            message="consumption last hour = {}".format(total_kwh),
-            tag="consump_hour_kwh",
-            value=total_kwh
+        self._logger.debug(
+            self.build_message(
+                message="consumption last hour = {}".format(total_kwh),
+                tag="consump_hour_kwh",
+                value=total_kwh
+            )
         )
-        self.log_message(
-            message="consumption last 24 hours = {}".format(sum_24hr),
-            tag="consump_24_hr_kwh",
-            value=sum_24hr
+        self._logger.debug(
+            self.build_message(
+                message="consumption last 24 hours = {}".format(sum_24hr),
+                tag="consump_24_hr_kwh",
+                value=sum_24hr
+            )
         )
-        return
 
     def set_target_refuel_time(self):
         "Set the next target refuel time (sec)"
         self._target_refuel_time_secs = self._base_refuel_time_secs + (self._days_to_refuel * 24 * 60 * 60) if self._days_to_refuel != None else None
-        self.log_message(
-            message="Set next refuel time",
-            tag="set_refuel_time",
-            value=self._target_refuel_time_secs
+        self._logger.debug(
+            self.build_message(
+                message="Set next refuel time",
+                tag="set_refuel_time",
+                value=self._target_refuel_time_secs
+            )
         )
 
     def refuel(self):
         "Refuel"
-        self.log_message(
-            message="Refuel the diesel generator, from {} to 100.0".format(self._fuel_level),
-            tag="refuel",
-            value=1
+        self._logger.info(
+            self.build_message(
+                message="Refuel the diesel generator, from {} to 100.0".format(self._fuel_level),
+                tag="refuel",
+                value=1
+            )
         )
         self._base_refuel_time_secs = self._time
         self.set_target_refuel_time()
@@ -479,11 +483,6 @@ class DieselGenerator(PowerSource):
                 if self._scarcity_multiplier < 1.0:
                     self._scarcity_multiplier = 1.0
 
-            self.log_message(
-                message="reasses fuel - scarcity multiplier",
-                tag="scarcity_mult",
-                value=self._scarcity_multiplier
-            )
         return
 
     def current_output_capacity(self):

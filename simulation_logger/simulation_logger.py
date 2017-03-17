@@ -71,6 +71,8 @@ class SimulationLogger:
         Create handler for writing log messages to Postgres
         """
         self.logger = logging.getLogger(self.app_name)
+        # the handlers won't be able to log anything lower than this log value
+        # so set to the lowest (logging.DEBUG)
         self.logger.setLevel(logging.DEBUG)
 
         # setup the formatter

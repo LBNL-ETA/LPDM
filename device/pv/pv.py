@@ -65,7 +65,6 @@ class Pv(PowerSource):
 
     def make_available(self):
         """Make the power source available, ie set its capacity to a non-zero value"""
-        self.log_message("Make pv available")
         self.set_capacity()
         self.broadcast_new_capacity()
 
@@ -75,7 +74,6 @@ class Pv(PowerSource):
 
     def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"
-        self.log_message("received new ttie {}".format(new_time))
         self._time = new_time
         self.process_events()
         self.calculate_next_ttie()
@@ -99,10 +97,12 @@ class Pv(PowerSource):
         "Receives messages when a power change has occured"
         self._time = time
         self._power_level = new_power
-        self.log_message(
-            message="Update power output {}".format(new_power),
-            tag="power",
-            value=self._power_level
+        self._logger.debug(
+            self.build_message(
+                message="Update power output {}".format(new_power),
+                tag="power",
+                value=self._power_level
+            )
         )
         return
 
@@ -120,13 +120,10 @@ class Pv(PowerSource):
             time_secs = (int(time_parts[0]) * 60 * 60) + (int(time_parts[1]) * 60) + int(time_parts[2])
             self._power_profile.append({"time": time_secs, "power": float(parts[1])})
 
-        self.log_message("Power profile loaded: {}".format(pprint.pformat(self._power_profile)))
-
     def set_capacity(self):
         """set the capacity of the pv at the current time"""
         time_of_day_secs = self.time_of_day_seconds()
         found_time = None
-        self.log_message("set_capacity: time = {}, secs = {}".format(self._time, time_of_day_secs))
         for item in self._power_profile:
             if  item["time"] > time_of_day_secs:
                 break
@@ -135,9 +132,17 @@ class Pv(PowerSource):
         if found_time:
             self._current_capacity = found_time["power"]
             self.broadcast_new_capacity()
-            self.log_message("setting pv capcity to {}".format(self._current_capacity), tag="capacity", value=self._current_capacity)
+            self._logger.debug(
+                self.build_message(
+                    message="setting pv capcity to {}".format(self._current_capacity),
+                    tag="capacity",
+                    value=self._current_capacity
+                )
+            )
         else:
-            self.log_message("Unable to find a capacity value for time {}".format(self._time))
+            self._logger.error(
+                self.build_message("Unable to find capacity value")
+            )
             raise Exception("An error occured getting the pv power output")
 
     def get_maximum_power(self, time):

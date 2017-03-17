@@ -30,7 +30,6 @@ class PowerSource(Device):
         self._events = []
 
         self._broadcast_new_capacity_callback = config["broadcast_new_capacity"] if type(config) is dict and "broadcast_new_capacity" in config.keys() and callable(config["broadcast_new_capacity"]) else None
-        self.log_message("initialized power source")
 
     @abstractmethod
     def on_power_change(self, source_device_id, target_device_id, time, power):
@@ -45,10 +44,12 @@ class PowerSource(Device):
     def broadcast_new_capacity(self, value=None, target_device_id=None, debug_level=logging.DEBUG):
         "Broadcast the new capacity value if a callback has been setup, otherwise raise an exception."
         if callable(self._broadcast_new_capacity_callback):
-            self.log_message(
-                message="Broadcast new capacity {} from {}".format(value, self._device_name),
-                tag="broadcast_capacity",
-                value=value if not value is None else self._current_capacity
+            self._logger.debug(
+                self.build_message(
+                    message="Broadcast new capacity {} from {}".format(value, self._device_name),
+                    tag="broadcast_capacity",
+                    value=value if not value is None else self._current_capacity
+                )
             )
             self._broadcast_new_capacity_callback(
                 self._device_id,
@@ -61,13 +62,11 @@ class PowerSource(Device):
 
     def make_available(self):
         """Make the power source available, ie set its capacity to a non-zero value"""
-        self.log_message("Make powersoure available")
         self._current_capacity = self._capacity
         self.broadcast_new_capacity()
 
     def make_unavailable(self):
         """Make the power source unavailable, ie set its capacity to zero"""
-        self.log_message("Make powersoure unavailable")
         self._current_capacity = 0.0
         self.broadcast_new_capacity()
 

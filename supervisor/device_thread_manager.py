@@ -8,7 +8,8 @@ from device.eud import Eud
 
 class DeviceThreadManager(object):
     def __init__(self, supervisor_queue):
-        self.logger = logging.getLogger("lpdm")
+        # self.logger = logging.getLogger("lpdm")
+        self.logger = logging.LoggerAdapter(logging.getLogger("lpdm"), {"sim_seconds": "", "device_id": "device_thread_manager"})
         self.supervisor_queue = supervisor_queue
         self.threads = []
 
@@ -46,7 +47,7 @@ class DeviceThreadManager(object):
 
     def start_all(self):
         """Start all of the threads"""
-        self.logger.info("Start all threads")
+        self.logger.debug("Start all threads")
         # start all of the device threads
         # wait for each one to finish initializing
         for t in self.threads:
@@ -54,7 +55,7 @@ class DeviceThreadManager(object):
             t.queue.put(LpdmInitEvent())
             t.start()
             t.queue.join()
-        self.logger.info("finished starting threads")
+        self.logger.debug("finished starting threads")
 
     def connect_devices(self):
         """
@@ -121,6 +122,6 @@ class DeviceThreadManager(object):
 
     def wait_for_all(self):
         """Wait for all threads (call join method for each thread)"""
-        self.logger.info("wait for all threads")
+        self.logger.debug("wait for all threads")
         [t.join() for t in self.threads]
-        self.logger.info("finished waiting for threads")
+        self.logger.debug("finished waiting for threads")

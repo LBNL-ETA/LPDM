@@ -125,10 +125,12 @@ class Eud(Device):
             self._time = time
             if new_price != self._price:
                 self._price = new_price
-                self.log_message(
-                    message="new price",
-                    tag="price",
-                    value=new_price
+                self._logger.debug(
+                    self.build_message(
+                        message="new price",
+                        tag="price",
+                        value=new_price
+                    )
                 )
             if self.current_schedule_value():
                 self.set_power_level()
@@ -155,10 +157,12 @@ class Eud(Device):
         "Turn on the device"
         if not self._in_operation:
             self._in_operation = True
-            self.log_message(
-                message="turn on eud",
-                tag="on/off",
-                value=1
+            self._logger.info(
+                self.build_message(
+                    message="turn on eud",
+                    tag="on/off",
+                    value=1
+                )
             )
             self.set_power_level()
 
@@ -168,15 +172,19 @@ class Eud(Device):
         if self._in_operation:
             self._power_level = 0.0
             self._in_operation = False
-            self.log_message(
-                message="turn off eud",
-                tag="on/off",
-                value=0
+            self._logger.info(
+                self.build_message(
+                    message="turn off eud",
+                    tag="on/off",
+                    value=0
+                )
             )
-            self.log_message(
-                message="Power level {}".format(self._power_level),
-                tag="power",
-                value=self._power_level
+            self._logger.info(
+                self.build_message(
+                    message="Power level {}".format(self._power_level),
+                    tag="power",
+                    value=self._power_level
+                )
             )
 
     def process_event(self):

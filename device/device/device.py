@@ -21,6 +21,7 @@ import pprint
 import datetime
 import json
 from notification import NotificationReceiver, NotificationSender
+from simulation_logger import message_formatter
 
 class Device(NotificationReceiver, NotificationSender):
     """
@@ -64,7 +65,9 @@ class Device(NotificationReceiver, NotificationSender):
         # Setup logging
         self._logger = logging.getLogger("lpdm")
 
-        self.log_message("initialized device #{} - {}".format(self._uuid, self._device_type))
+        self._logger.info(
+            self.build_message("initialized device #{} - {}".format(self._uuid, self._device_type))
+        )
 
     def init(self):
         """Run any initialization functions for the device"""
@@ -76,7 +79,9 @@ class Device(NotificationReceiver, NotificationSender):
 
     def assign_grid_controller(self, grid_controller_id):
         """set the grid controller for the device"""
-        self.log_message("attach device to GC {}".format(grid_controller_id))
+        self._logger.info(
+            self.build_message("attach device to GC {}".format(grid_controller_id))
+        )
         self._grid_controller_id = grid_controller_id
 
     def finish(self):
@@ -95,18 +100,15 @@ class Device(NotificationReceiver, NotificationSender):
     def status(self):
         return None
 
-    def log_message(self, message='', log_level=logging.DEBUG, tag=None, value=None):
-        "Logs a message using the loggin module, default debug level is set to INFO"
-        message = self.get_log_message_string(message, tag, value)
-        self._logger.log(log_level, message)
-
-    def get_log_message_string(self, message, tag=None, value=None):
-        time_string = "Day {0} {1}".format(
-                1 + int(self._time / (60 * 60 * 24)),
-                datetime.datetime.utcfromtimestamp(self._time).strftime('%H:%M:%S')
+    def build_message(self, message="", tag="", value=""):
+        """Build the log message string"""
+        return message_formatter.build_message(
+            message=message,
+            tag=tag,
+            value=value,
+            time_seconds=self._time,
+            device_id = self._device_id
         )
-        return "time_string: {}, time_value: {}, device: {}, message: {}, tag: {}, value: {}".format(
-                time_string, self._time, self._device_id, message, tag, value)
 
     def calculate_next_ttie(self):
         "calculate the next TTIE - look through the pending events for the one that will happen first"
@@ -118,17 +120,21 @@ class Device(NotificationReceiver, NotificationSender):
                 the_event = event
 
         if ttie != None and ttie != self._ttie:
-            self.log_message("the next event found is {} at time {}".format(the_event, ttie))
+            self._logger.debug(
+                self.build_message(message="the next event found is {} at time {}".format(the_event, ttie))
+            )
             self.broadcast_new_ttie(ttie)
             self._ttie = ttie
 
     def broadcast_new_price(self, new_price, target_device_id='all', debug_level=logging.DEBUG):
         "Broadcast a new price if a callback has been setup, otherwise raise an exception."
         if callable(self._broadcast_new_price_callback):
-            self.log_message(
-                message="Broadcast new price {} from {}".format(new_price, self._device_name),
-                tag="broadcast_price",
-                value=new_price
+            self._logger.debug(
+                self.build_message(
+                    message="Broadcast new price {} from {}".format(new_price, self._device_name),
+                    tag="broadcast_price",
+                    value=new_price
+                )
             )
             self._broadcast_new_price_callback(self._device_id, target_device_id, self._time, new_price)
         else:
@@ -138,10 +144,12 @@ class Device(NotificationReceiver, NotificationSender):
     def broadcast_new_power(self, new_power, target_device_id='all', debug_level=logging.DEBUG):
         "Broadcast the new power value if a callback has been setup, otherwise raise an exception."
         if callable(self._broadcast_new_power_callback):
-            self.log_message(
-                message="Broadcast new power {} from {}".format(new_power, self._device_name),
-                tag="broadcast_power",
-                value=new_power
+            self._logger.debug(
+                self.build_message(
+                    message="Broadcast new power {} from {}".format(new_power, self._device_name),
+                    tag="broadcast_power",
+                    value=new_power
+                )
             )
             self._broadcast_new_power_callback(self._device_id, target_device_id, self._time, new_power)
         else:
@@ -165,12 +173,16 @@ class Device(NotificationReceiver, NotificationSender):
 
     def turn_on(self):
         "Turn on the device"
-        self.log_message("{} turned on".format(self._device_name), tag="on/off", value=1)
+        self._logger.info(
+            self.build_message(message="{} turned on".format(self._device_name), tag="on/off", value=1)
+        )
         self._in_operation = True
 
     def turn_off(self):
         "Turn off the device"
-        self.log_message("{} turned off".format(self._device_name), tag="on/off", value=0)
+        self._logger.info(
+            self.build_message(message="{} turned off".format(self._device_name), tag="on/off", value=0)
+        )
         self._in_operation = False
 
     def is_on(self):

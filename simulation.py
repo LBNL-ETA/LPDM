@@ -42,7 +42,6 @@ class Simulation(object):
         supervisor = Supervisor()
         supervisor.load_config(self.config)
 
-        self.log_manager.logger.info("run the simulation")
         supervisor.run_simulation()
 
 if __name__ == "__main__":

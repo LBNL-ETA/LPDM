@@ -1,12 +1,23 @@
 import logging
 from device.power_source import PowerSource
 from power_source_item import PowerSourceItem
+from simulation_logger import message_formatter
 
 class PowerSourceManager(object):
-
     def __init__(self):
         self.power_sources = []
         self.logger = logging.getLogger("lpdm")
+        self._device_id = "power_source_manager"
+
+    def build_message(self, message="", tag="", value=""):
+        """Build the log message string"""
+        return message_formatter.build_message(
+            message=message,
+            tag=tag,
+            value=value,
+            time_seconds=None,
+            device_id=self._device_id
+        )
 
     def count(self):
         """Return the number of power sources connected"""
@@ -22,7 +33,6 @@ class PowerSourceManager(object):
         found = filter(lambda d: d.device_id == device_id, self.power_sources)
         if len(found) == 0:
             self.power_sources.append(PowerSourceItem(device_id, DeviceClass))
-            self.logger.debug("message: registered a power source {} - {}".format(device_id, DeviceClass))
         else:
             raise Exception("The device_id already exists {}".format(device_id))
 
@@ -40,7 +50,6 @@ class PowerSourceManager(object):
         """set the price of electricity for a power source"""
         d = self.get(device_id)
         d.price = price
-        self.logger.debug("message: power_source_manager set price for device {} to {}".format(device_id, price))
 
     def set_load(self, device_id, load):
         """set the load for a specific power source"""
@@ -62,7 +71,6 @@ class PowerSourceManager(object):
             return self.power_sources
         else:
             found = filter(lambda d: d.device_id == device_id, self.power_sources)
-            self.logger.debug("message: look for device {}, found power source {}".format(device_id, found))
             if len(found) == 1:
                 return found[0]
             else:
@@ -121,7 +129,6 @@ class PowerSourceManager(object):
 
     def remove_load(self, new_load):
         """Remove load from the system"""
-        self.logger.debug("message: remove load {}, total_load = {}".format(new_load, self.total_load()))
         # exit immediately if adding no load
         if new_load == 0:
             return True
@@ -142,18 +149,15 @@ class PowerSourceManager(object):
 
         for power_source in [p for p in power_sources if p.load > 0]:
             # get the power available
-            self.logger.debug("begin state: {}".format(power_source))
             available = power_source.capacity - power_source.load
             if abs(new_load) > power_source.load:
                 # removing more load than is on this power source
                 new_load += power_source.load
                 power_source.set_load(0.0)
-                self.logger.debug("end state: {}".format(power_source))
             else:
                 power_source.add_load(new_load)
                 new_load = 0
                 success=True
-                self.logger.debug("end state: {}".format(power_source))
                 break
         return success
 
@@ -165,7 +169,6 @@ class PowerSourceManager(object):
         """
         remaining_load = self.total_load()
         starting_load = remaining_load
-        self.logger.debug("message: optimize power, total load = {}".format(starting_load))
         if remaining_load == 0:
             # no need to do anything if there's no load
             return
@@ -177,10 +180,8 @@ class PowerSourceManager(object):
         power_sources = sorted(power_sources, lambda a, b: cmp(a.price, b.price))
         for ps in power_sources:
             # how much power is available for the device
-            self.logger.debug("message: start - power source = {}, total_load = {}, remaining_load = {}".format(ps, self.total_load(), remaining_load))
             if remaining_load == 0:
                 # no more load left to distribute, remove power
-                self.logger.debug("Set ps load to zero.")
                 ps.set_load(0.0)
             else:
                 # there is power available for this device and power left to distribute
@@ -192,26 +193,18 @@ class PowerSourceManager(object):
                         # can't put all the remaining load on this power source
                         # set to 100% and try the next power source
                         if ps.load != ps.capacity:
-                            self.logger.debug("message: update load {} -> {}, remaining = {}".format(ps.load, ps.capacity, remaining_load))
                             ps.set_load(ps.capacity)
                         remaining_load -= ps.capacity
                     else:
                         # this power source can handle all of the remaining load
                         if ps.load != remaining_load:
-                            self.logger.debug("message: update_load {}, load {} -> {}".format(ps, ps.load, remaining_load))
                             ps.set_load(remaining_load)
                         remaining_load = 0
-            self.logger.debug("message: ending state {}, total_load = {}, remaining_load = {}".format(ps, self.total_load(), remaining_load))
 
         if remaining_load != 0:
-            for p in self.power_sources:
-                self.logger.debug("message: {}".format(p))
             raise Exception ("Error optimizing the load.")
         elif starting_load != self.total_load():
-            for p in self.power_sources:
-                self.logger.debug("message: {}".format(p))
             raise Exception("starting/ending loads do not match {} != {}".format(starting_load, self.total_load()))
-
 
     def get_available_power_sources(self):
         """get the power sources that have a non-zero capacity"""

@@ -1,0 +1,1 @@
+from lpdm_base_exception import LpdmBaseException

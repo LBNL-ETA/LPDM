@@ -20,10 +20,11 @@ class DeviceThread(threading.Thread):
         self.supervisor_queue = supervisor_queue
         self.device = None
 
-        self.logger = logging.getLogger("lpdm")
+        # self.logger = logging.getLogger("lpdm")
+        self.logger = logging.LoggerAdapter(logging.getLogger("lpdm"), {"sim_seconds": "", "device_id": "device_thread"})
 
     def run(self):
-        self.logger.info("run the device thread for device id {}".format(self.device_id))
+        self.logger.debug("run the device thread for device id {}".format(self.device_id))
 
         the_event = None
         # loop until a kill event is received

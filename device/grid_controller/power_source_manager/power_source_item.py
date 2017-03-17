@@ -11,7 +11,7 @@ class PowerSourceItem:
         self.capacity_changed = False
         self.load_changed = False
 
-        self.logger = logging.getLogger("lpdm")
+        self.logger = logging.LoggerAdapter(logging.getLogger("lpdm"), {"sim_seconds": "", "device_id": "psi"})
 
     def __repr__(self):
         return "id: {}, class: {}, capacity: {}, load: {}, price: {}".format(

@@ -4,7 +4,7 @@ from device_item import DeviceItem
 class DeviceManager(object):
     def __init__(self):
         self.device_list = []
-        self.logger = logging.getLogger("lpdm")
+        self.logger = logging.LoggerAdapter(logging.getLogger("lpdm"), {"sim_seconds": "", "device_id": "dm"})
 
     def count(self):
         """Return the number of devices connected"""

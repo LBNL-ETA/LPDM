@@ -1,7 +1,7 @@
 {
     "run_time_days": 7,
     "log_to_postgres": 0,
-    "console_log_level": 10,
+    "console_log_level": 20,
     "file_log_level": 10,
     "pg_log_level": 10,
     "devices": {

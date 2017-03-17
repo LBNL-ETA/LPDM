@@ -23,6 +23,7 @@ from simulation_logger import SimulationLogger
 class Simulation(object):
     def __init__(self):
         self.config = None
+        self.log_manager = None
 
     def load_config(self, file_name):
         with open(file_name) as config_file:
@@ -46,6 +47,6 @@ class Simulation(object):
 
 if __name__ == "__main__":
     sim = Simulation()
-    sim.load_config("scenarios/scenario.json")
+    sim.load_config("scenarios/pv_only.json")
     sim.init_logger()
     sim.run()

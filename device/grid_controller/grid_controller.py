@@ -128,7 +128,7 @@ class GridController(Device):
                 self._logger.info(
                     self.build_message("No power sources available, unable to set load for {}".format(source_device_id))
                 )
-                for device in self.device_manager.device_list():
+                for d in self.device_manager.device_list:
                     self.broadcast_new_power(0.0, d.device_id)
             else:
                 # power has changed, either positive or negative

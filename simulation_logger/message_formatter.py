@@ -14,11 +14,12 @@ def format_time_seconds(time_seconds):
             datetime.datetime.utcfromtimestamp(time_seconds).strftime('%H:%M:%S')
         )
     except:
-        return None
+        return ""
 
 def build_message(message="", time_seconds=None, device_id="", tag="", value=""):
     """Format the message for the log file/console output"""
-    return "time: {0}; seconds: {1}; device_id: {2}; tag: {3}; value: {4}; message: {5}".format(
+    # time_string; seconds; device_id, tag, value, message
+    return "{0}; {1}; {2}; {3}; {4}; {5}".format(
         format_time_seconds(time_seconds) if not time_seconds is None else "",
         time_seconds,
         device_id,

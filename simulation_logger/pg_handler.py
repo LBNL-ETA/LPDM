@@ -107,11 +107,16 @@ class PgHandler(logging.Handler):
 
     def parse_message(self, message):
         """parse a log message into parts"""
-        fields = ["message", "tag", "value", "device", "time_value", "time_string"]
-        field_map = {}
-        for field in fields:
-            results = re.search(r"\b" + field + r": (.*?)($|, \w+:)", str(message), re.I)
-            if results:
-                field_map[field] = results.groups()[0]
-        return field_map
-
+        parts = message.split(";")
+        if len(parts) == 6:
+            parts = [p.strip() for p in parts]
+            return {
+                "time_string": parts[0] if parts[0] != "" else None,
+                "time_value": parts[1] if parts[1] != "" else None,
+                "device": parts[2] if parts[2] != "" else None,
+                "tag": parts[3] if parts[3] != "" else None,
+                "value": parts[4] if parts[4] != "" else None,
+                "message": parts[5]
+            }
+        else:
+            return {"message": message}

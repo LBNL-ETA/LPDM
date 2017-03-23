@@ -32,3 +32,6 @@ run:
 	--net=${NETWORK_NAME} \
 	--ip ${CONTAINER_IP} \
 	${IMG_NAME}
+
+test:
+	python -m unittest discover

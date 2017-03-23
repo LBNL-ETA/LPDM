@@ -2,13 +2,16 @@
     "run_time_days": 7,
     "log_to_postgres": 1,
     "console_log_level": 20,
-    "file_log_level": 20,
+    "file_log_level": 10,
     "pg_log_level": 10,
     "devices": {
         "grid_controllers": [
             {
                 "device_id": "gc_1",
-                "device_type": "grid_controller"
+                "device_type": "grid_controller",
+                "battery": {
+                    "device_id": "bt_1"
+                }
             }
         ],
         "power_sources": [
@@ -17,11 +20,6 @@
                 "grid_controller_id": "gc_1",
                 "device_type": "diesel_generator",
                 "fuel_tank_capacity": 100.0
-            },
-            {
-                "device_id": "pv_1",
-                "grid_controller_id": "gc_1",
-                "device_type": "pv"
             }
         ],
         "euds": [
@@ -29,17 +27,6 @@
                 "device_id": "eud_1",
                 "device_type": "eud",
                 "grid_controller_id": "gc_1",
-                "is_real_device": "0",
-                "max_power_output": 100.0,
-                "price_dim": 0.3,
-                "price_off": 0.7,
-                "schedule": [["0300", 1], ["2300", 0]]
-            },
-            {
-                "device_id": "eud_2",
-                "device_type": "eud",
-                "grid_controller_id": "gc_1",
-                "is_real_device": "0",
                 "max_power_output": 100.0,
                 "price_dim": 0.3,
                 "price_off": 0.7,

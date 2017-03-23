@@ -4,4 +4,4 @@ RUN pip install requests psycopg2
 
 RUN mkdir /LPDM
 WORKDIR /LPDM
-CMD ["python", "simulation.py"]
+CMD ["python", "run_simulation.py"]

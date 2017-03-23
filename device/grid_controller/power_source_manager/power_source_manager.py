@@ -1,5 +1,6 @@
 import logging
 from device.power_source import PowerSource
+from device.battery import Battery
 from power_source_item import PowerSourceItem
 from simulation_logger import message_formatter
 
@@ -84,6 +85,12 @@ class PowerSourceManager(object):
         """calculate the total load on all the power sources"""
         return sum(d.load for d in self.power_sources)
 
+    def output_capacity(self):
+        """Calculate the output capacity (total_load / total_capaacity)"""
+        total_capacity = self.total_capacity()
+        total_load = self.total_load()
+        return total_load / total_capacity if total_capacity else None
+
     def can_handle_load(self, new_load):
         """Is there enough capacity to handle the load?"""
         return (self.total_load() + new_load) <= self.total_capacity()
@@ -160,7 +167,6 @@ class PowerSourceManager(object):
                 success=True
                 break
         return success
-
 
     def optimize_load(self):
         """

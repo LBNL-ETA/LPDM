@@ -71,6 +71,7 @@ class DeviceThread(threading.Thread):
                     self.logger.debug("found lpdm connect device event {}".format(the_event))
                     self.device.assign_grid_controller(the_event.grid_controller_id)
                 elif isinstance(the_event, LpdmKillEvent):
+                    self.device.finish()
                     self.logger.debug("found a ldpm kill event {}".format(the_event))
                 else:
                     self.logger.error("event type not found {}".format(the_event))

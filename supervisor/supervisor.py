@@ -38,7 +38,6 @@ class Supervisor:
             device_id=self._device_id
         )
 
-
     def load_config(self, config):
         """ Load the configuration dict for the simulation. """
         self.config = config
@@ -97,11 +96,11 @@ class Supervisor:
                 # process any other resulting events
                 self.process_supervisor_events()
             else:
-                self.logger.info(
+                self.logger.debug(
                     self.build_message("max ttie reached ({}), quit simulation".format(next_ttie.value))
                 )
         else:
-            self.logger.info(
+            self.logger.debug(
                 self.build_message("No ttie found... quit.")
             )
         return next_ttie

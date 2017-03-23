@@ -160,7 +160,7 @@ class DieselGenerator(PowerSource):
 
         if target_device_id == self._device_id:
             self._time = time
-            self._logger.debug(
+            self._logger.info(
                 self.build_message(
                     message="received power change from {}, new_power = {}".format(source_device_id,  new_power),
                     tag="receive_power",

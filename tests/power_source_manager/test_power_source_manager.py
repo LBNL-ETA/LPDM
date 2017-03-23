@@ -1,9 +1,9 @@
 import unittest
-from device.grid_controller.power_source_manager import PowerSourceManager
-from device.grid_controller.power_source_manager import PowerSourceItem
-from device.power_source import PowerSource
-from device.diesel_generator import DieselGenerator
-from device.eud import Eud
+from device.simulated.grid_controller.power_source_manager import PowerSourceManager
+from device.simulated.grid_controller.power_source_manager import PowerSourceItem
+from device.simulated.power_source import PowerSource
+from device.simulated.diesel_generator import DieselGenerator
+from device.simulated.eud import Eud
 
 class TestPowerSourceManager(unittest.TestCase):
     def setUp(self):

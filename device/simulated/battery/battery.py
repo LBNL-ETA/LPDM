@@ -15,7 +15,7 @@
     Implementation of a battery
 """
 
-from device.power_source import PowerSource
+from device.base.power_source import PowerSource
 import logging
 from lpdm_exception import LpdmMissingPowerSourceManager, LpdmBatteryDischargeWhileCharging, \
         LpdmBatteryNotDischarging, LpdmBatteryAlreadyDischarging, LpdmBatteryCannotDischarge, \

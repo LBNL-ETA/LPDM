@@ -1,4 +1,4 @@
-from device.lpdm_exception import LpdmBaseException
+from device.base.lpdm_exception import LpdmBaseException
 
 class LpdmBatteryNotDischarging(LpdmBaseException):
     """Attempt to stop discharging if it isn't actually discharging"""

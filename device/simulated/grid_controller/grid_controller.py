@@ -17,9 +17,9 @@
 
 from device_manager import DeviceManager
 from power_source_manager import PowerSourceManager
-from device.power_source import PowerSource
-from device.device import Device
-from device.battery import Battery
+from device.base.power_source import PowerSource
+from device.base.device import Device
+from device.simulated.battery import Battery
 from common.device_class_loader import DeviceClassLoader
 import logging
 
@@ -95,7 +95,7 @@ class GridController(Device):
         """Set the logic for calculating the GC's price"""
         # get the class object from the class name
         LogicClass = self._device_class_loader.class_for_name(
-            "device.grid_controller.price_logic", self._price_logic_class_name
+            "device.simulated.grid_controller.price_logic", self._price_logic_class_name
         )
         # create the object
         self._price_logic = LogicClass(self.power_source_manager)

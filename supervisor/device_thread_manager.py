@@ -2,9 +2,9 @@ import logging
 import Queue
 from lpdm_event import LpdmInitEvent, LpdmKillEvent, LpdmConnectDeviceEvent, LpdmAssignGridControllerEvent
 from device_thread import DeviceThread
-from device.grid_controller import GridController
-from device.power_source import PowerSource
-from device.eud import Eud
+from device.simulated.grid_controller import GridController
+from device.base.power_source import PowerSource
+from device.simulated.eud import Eud
 
 class DeviceThreadManager(object):
     def __init__(self, supervisor_queue):

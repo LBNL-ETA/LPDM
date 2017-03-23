@@ -1,10 +1,10 @@
 import unittest
 from mock import MagicMock, patch, call
-from device.grid_controller import GridController
-from device.diesel_generator import DieselGenerator
-from device.pv import Pv
-from device.grid_controller.price_logic import AveragePriceLogic
-from device.eud import Eud
+from device.simulated.grid_controller import GridController
+from device.simulated.diesel_generator import DieselGenerator
+from device.simulated.pv import Pv
+from device.simulated.grid_controller.price_logic import AveragePriceLogic
+from device.simulated.eud import Eud
 
 class TestGridController(unittest.TestCase):
     def setUp(self):

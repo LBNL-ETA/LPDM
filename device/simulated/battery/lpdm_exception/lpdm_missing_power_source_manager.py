@@ -1,4 +1,4 @@
-from device.lpdm_exception import LpdmBaseException
+from device.base.lpdm_exception import LpdmBaseException
 
 class LpdmMissingPowerSourceManager(LpdmBaseException):
     """Battery is missing the power source manager"""

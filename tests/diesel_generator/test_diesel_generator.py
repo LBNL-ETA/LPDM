@@ -1,6 +1,6 @@
 import unittest
 from mock import MagicMock, patch
-from device.diesel_generator import DieselGenerator
+from device.simulated.diesel_generator import DieselGenerator
 
 class TestDieselGenerator(unittest.TestCase):
     def setUp(self):

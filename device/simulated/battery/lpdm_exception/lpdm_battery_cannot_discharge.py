@@ -1,4 +1,4 @@
-from device.lpdm_exception import LpdmBaseException
+from device.base.lpdm_exception import LpdmBaseException
 
 class LpdmBatteryCannotDischarge(LpdmBaseException):
     """An attempt was made to add load to the battery before its ok_to_discharge flag was set to True"""

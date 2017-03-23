@@ -15,7 +15,7 @@
     Implementation of an air conditioner
 """
 
-from device.device import Device
+from device.base.device import Device
 import os
 import json
 import logging

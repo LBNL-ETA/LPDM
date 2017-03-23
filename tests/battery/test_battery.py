@@ -1,12 +1,12 @@
 import unittest
 from mock import MagicMock, patch, call
-from device.grid_controller import GridController
-from device.battery import Battery
-from device.battery.lpdm_exception import LpdmMissingPowerSourceManager, LpdmBatteryDischargeWhileCharging, \
+from device.simulated.grid_controller import GridController
+from device.simulated.battery import Battery
+from device.simulated.battery.lpdm_exception import LpdmMissingPowerSourceManager, LpdmBatteryDischargeWhileCharging, \
         LpdmBatteryNotDischarging
-from device.diesel_generator import DieselGenerator
-from device.grid_controller.price_logic import AveragePriceLogic
-from device.eud import Eud
+from device.simulated.diesel_generator import DieselGenerator
+from device.simulated.grid_controller.price_logic import AveragePriceLogic
+from device.simulated.eud import Eud
 
 class TestBattery(unittest.TestCase):
     def setUp(self):

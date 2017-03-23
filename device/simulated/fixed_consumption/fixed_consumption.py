@@ -11,7 +11,7 @@
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 ################################################################################################################################
 
-from device.device import Device
+from device.base.device import Device
 import logging
 
 class FixedConsumption(Device):

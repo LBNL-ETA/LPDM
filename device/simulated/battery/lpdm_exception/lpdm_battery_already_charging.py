@@ -1,4 +1,4 @@
-from device.lpdm_exception import LpdmBaseException
+from device.base.lpdm_exception import LpdmBaseException
 
 class LpdmBatteryAlreadyCharging(LpdmBaseException):
     """Attempted to charge battery while it is already charging"""

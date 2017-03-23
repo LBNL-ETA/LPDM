@@ -1,7 +1,7 @@
 import unittest
-from device.diesel_generator import DieselGenerator
-from device.grid_controller.power_source_manager import PowerSourceManager
-from device.grid_controller.price_logic import AveragePriceLogic
+from device.simulated.diesel_generator import DieselGenerator
+from device.simulated.grid_controller.power_source_manager import PowerSourceManager
+from device.simulated.grid_controller.price_logic import AveragePriceLogic
 
 class TestAveragePrice(unittest.TestCase):
     """Test the average price algorithm for the grid controller"""

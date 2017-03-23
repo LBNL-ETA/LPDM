@@ -16,7 +16,7 @@ Implementation of a PV module
 """
 
 import os
-from device.power_source import PowerSource
+from device.base.power_source import PowerSource
 import pprint
 
 class Pv(PowerSource):

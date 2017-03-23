@@ -1,6 +1,6 @@
 import unittest
 from mock import MagicMock, patch
-from device.pv import Pv
+from device.simulated.pv import Pv
 
 class TestPv(unittest.TestCase):
     def setUp(self):

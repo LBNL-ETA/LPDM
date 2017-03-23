@@ -8,6 +8,7 @@
         "grid_controllers": [
             {
                 "device_id": "gc_1",
+                "simulated_or_real": "simulated",
                 "device_type": "grid_controller"
             }
         ],
@@ -16,6 +17,7 @@
                 "device_id": "dg_1",
                 "grid_controller_id": "gc_1",
                 "device_type": "diesel_generator",
+                "simulated_or_real": "simulated",
                 "fuel_tank_capacity": 100.0
             }
         ],
@@ -23,6 +25,7 @@
             {
                 "device_id": "ac_1",
                 "device_type": "air_conditioner",
+                "simulated_or_real": "simulated",
                 "grid_controller_id": "gc_1"
             }
         ]

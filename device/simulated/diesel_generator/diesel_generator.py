@@ -14,7 +14,7 @@
 """
     Implementation of the Diesel Generator device.
 """
-from device.power_source import PowerSource
+from device.base.power_source import PowerSource
 import logging
 import pprint
 

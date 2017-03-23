@@ -49,8 +49,10 @@ class Supervisor:
         # build the devices: first grid_controllers, then generators, then euds
         for section in device_sections:
             for dc in config["devices"][section]:
+                # is the simulated or real
+                simulated_or_real = dc.get("simulated_or_real", "simulated")
                 # get the device class from it's device_type
-                DeviceClass = device_class_loader.get_device_class_from_name("device.{}".format(dc["device_type"]))
+                DeviceClass = device_class_loader.get_device_class_from_name("device.{}.{}".format(simulated_or_real, dc["device_type"]))
                 self.add_device(DeviceClass=DeviceClass, config=dc)
 
     def process_supervisor_events(self):

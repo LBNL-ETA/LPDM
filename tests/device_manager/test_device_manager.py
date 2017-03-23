@@ -1,7 +1,7 @@
 import unittest
-from device.grid_controller.device_manager import DeviceManager
-from device.grid_controller.device_manager import DeviceItem
-from device.eud import Eud
+from device.simulated.grid_controller.device_manager import DeviceManager
+from device.simulated.grid_controller.device_manager import DeviceItem
+from device.simulated.eud import Eud
 
 class TestDeviceManager(unittest.TestCase):
     def setUp(self):

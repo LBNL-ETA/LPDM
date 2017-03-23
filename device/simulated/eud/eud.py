@@ -14,7 +14,7 @@
 """
     Implementation of a general EUD device
 """
-from device.device import Device
+from device.base.device import Device
 import logging
 
 class Eud(Device):

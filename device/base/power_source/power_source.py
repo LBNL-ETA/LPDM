@@ -14,7 +14,7 @@
 """
     Base class for power sources (diesel generator, battery, pv, ...)
 """
-from device.device import Device
+from device.base.device import Device
 from abc import ABCMeta, abstractmethod
 import logging
 

@@ -1,4 +1,4 @@
-from device.lpdm_exception import LpdmBaseException
+from device.base.lpdm_exception import LpdmBaseException
 
 class LpdmBatteryCannotCharge(LpdmBaseException):
     """An attempt was made to charge the battery before its ok_to_charge flag was set to True"""

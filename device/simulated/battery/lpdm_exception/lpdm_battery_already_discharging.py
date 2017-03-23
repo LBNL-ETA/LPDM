@@ -1,4 +1,4 @@
-from device.lpdm_exception import LpdmBaseException
+from device.base.lpdm_exception import LpdmBaseException
 
 class LpdmBatteryAlreadyDischarging(LpdmBaseException):
     """Attempt to start battery discharge when already discharging"""

@@ -1,4 +1,4 @@
-from device.lpdm_exception import LpdmBaseException
+from device.base.lpdm_exception import LpdmBaseException
 
 class LpdmBatteryChargeWhileDischarging(LpdmBaseException):
     """Attempted to charge battery while there is a load on it"""

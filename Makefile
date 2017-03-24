@@ -33,5 +33,19 @@ run:
 	--ip ${CONTAINER_IP} \
 	${IMG_NAME}
 
+run_scenario:
+	echo "run scenario file: ${SCENARIO_FILE}"
+	docker run -it --rm --name=${CONTAINER_NAME} \
+	-v ${CURDIR}:/LPDM \
+	--net=${NETWORK_NAME} \
+	--ip ${CONTAINER_IP} \
+	${IMG_NAME} \
+	python run_scenarios.py ${SCENARIO_FILE}
+
 test:
+	docker run -it --rm --name=${CONTAINER_NAME} \
+	-v ${CURDIR}:/LPDM \
+	--net=${NETWORK_NAME} \
+	--ip ${CONTAINER_IP} \
+	${IMG_NAME} \
 	python -m unittest discover

@@ -1,7 +1,8 @@
 FROM python:2.7
 
-RUN pip install requests psycopg2
+COPY requirements.txt /tmp/
+RUN pip install --requirement /tmp/requirements.txt
 
 RUN mkdir /LPDM
 WORKDIR /LPDM
-CMD ["python", "run_simulation.py"]
+CMD ["python", "run_scenarios.py"]

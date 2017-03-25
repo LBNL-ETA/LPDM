@@ -31,11 +31,12 @@ class Scheduler(object):
 
     def get_next_scheduled_task(self, time_seconds):
         """Get the next scheduled task given a time in seconds"""
+        # calculate the current day number
         day = int(time_seconds / SECS_IN_DAY)
+        # calculate the number of seconds that have elapsed since midnight
         secs = time_seconds % SECS_IN_DAY
 
-        print "days {}, secs {}".format(day, secs)
-
+        # find the next scheduled event
         found_item = None
         for item in self.scheduled_items:
             if item.day == day and item.time > secs:
@@ -48,6 +49,8 @@ class Scheduler(object):
                 found_item = item
                 break
 
+        # if an event hasn't been found then we are past the last defined schedule
+        # so repeat the last full day's schedule
         if found_item is None:
             # pull the next scheduled item from the last day's scheduled tasks
             last_day = None

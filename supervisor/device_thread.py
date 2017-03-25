@@ -29,7 +29,7 @@ class DeviceThread(threading.Thread):
         the_event = None
         # loop until a kill event is received
         while not isinstance(the_event, LpdmKillEvent):
-            self.logger.debug("wait for the next event...")        
+            self.logger.debug("wait for the next event...")
             the_event = self.queue.get()
             self.logger.debug('device has waken up')
             is_error = False
@@ -40,7 +40,7 @@ class DeviceThread(threading.Thread):
                     self.init_device()
                 else:
                     if the_event:
-                        self.device.process_event(the_event)
+                        self.device.process_supervisor_event(the_event)
                 self.logger.debug("task finished")
                 self.queue.task_done()
             except Exception as e:
@@ -52,7 +52,7 @@ class DeviceThread(threading.Thread):
                 self.logger.error("\n".join(tb))
                 self.supervisor_queue.put(LpdmRunTimeErrorEvent("\n".join(tb)))
                 self.queue.task_done()
-                
+
             if not is_error:
                 with open("/tmp/success", "a") as f:
                     f.write(str(the_event) + "\n")

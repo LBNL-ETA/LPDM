@@ -200,8 +200,8 @@ class Device(NotificationReceiver, NotificationSender):
         "Sets a 'scenario' for the device. Given a scenario in JSON format, sets various parameters to specific values"
         for key in scenario.keys():
             setattr(self, "_" + key, scenario[key])
-            
-    def process_event(self, the_event):
+
+    def process_supervisor_event(self, the_event):
         if isinstance(the_event, LpdmTtieEvent):
             self._logger.debug("found lpdm ttie event {}".format(the_event))
             self.on_time_change(the_event.value)

@@ -23,6 +23,10 @@ import json
 from notification import NotificationReceiver, NotificationSender
 from simulation_logger import message_formatter
 
+from supervisor.lpdm_event import LpdmTtieEvent, LpdmPowerEvent, LpdmPriceEvent, LpdmKillEvent, \
+    LpdmConnectDeviceEvent, LpdmAssignGridControllerEvent, LpdmRunTimeErrorEvent, \
+    LpdmCapacityEvent
+
 class Device(NotificationReceiver, NotificationSender):
     """
         Base class for TuG system components.
@@ -196,4 +200,45 @@ class Device(NotificationReceiver, NotificationSender):
         "Sets a 'scenario' for the device. Given a scenario in JSON format, sets various parameters to specific values"
         for key in scenario.keys():
             setattr(self, "_" + key, scenario[key])
+            
+    def process_event(self, the_event):
+        if isinstance(the_event, LpdmTtieEvent):
+            self._logger.debug("found lpdm ttie event {}".format(the_event))
+            self.on_time_change(the_event.value)
+        elif isinstance(the_event, LpdmPowerEvent):
+            self._logger.debug("found lpdm power event {}".format(the_event))
+            self.on_power_change(
+                source_device_id=the_event.source_device_id,
+                target_device_id=the_event.target_device_id,
+                time=the_event.time,
+                new_power=the_event.value
+            )
+        elif isinstance(the_event, LpdmPriceEvent):
+            self._logger.debug("found lpdm price event {}".format(the_event))
+            self.on_price_change(
+                source_device_id=the_event.source_device_id,
+                target_device_id=the_event.target_device_id,
+                time=the_event.time,
+                new_price=the_event.value
+            )
+        elif isinstance(the_event, LpdmCapacityEvent):
+            self._logger.debug("found lpdm capacity event {}".format(the_event))
+            self.on_capacity_change(
+                source_device_id=the_event.source_device_id,
+                target_device_id=the_event.target_device_id,
+                time=the_event.time,
+                value=the_event.value
+            )
+        elif isinstance(the_event, LpdmConnectDeviceEvent):
+            self._logger.debug("found lpdm connect device event {}".format(the_event))
+            self.add_device(the_event.device_id, the_event.DeviceClass)
+        elif isinstance(the_event, LpdmAssignGridControllerEvent):
+            self._logger.debug("found lpdm connect device event {}".format(the_event))
+            self.assign_grid_controller(the_event.grid_controller_id)
+        elif isinstance(the_event, LpdmKillEvent):
+            self.finish()
+            self._logger.debug("found a ldpm kill event {}".format(the_event))
+        else:
+            self._logger.error("event type not found {}".format(the_event))
+        self._logger.debug("task finished")
 

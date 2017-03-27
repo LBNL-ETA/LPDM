@@ -132,30 +132,25 @@ class TestScheduler(unittest.TestCase):
 
         task = scheduler.get_next_scheduled_task(0)
         # should be something coming up at 8:00
-        self.assertEqual(task.day, 0)
-        self.assertEqual(task.time, 8 * 3600)
+        self.assertEqual(task.ttie, 8 * 3600)
 
         # try and grab the next scheduled task at 18:00
         # should be the event at 20:00
         task = scheduler.get_next_scheduled_task(18 * 3600)
-        self.assertEqual(task.day, 0)
-        self.assertEqual(task.time, 20 * 3600)
+        self.assertEqual(task.ttie, 20 * 3600)
 
         # get the first task of the next day (day #1, 3:00)
         task = scheduler.get_next_scheduled_task(24 * 3600)
-        self.assertEqual(task.day, 1)
-        self.assertEqual(task.time, 3 * 3600)
+        self.assertEqual(task.ttie, 3600 * 24 + 3 * 3600)
 
         # get a task at a time period after the last explicitly scheduled task
         # this would be 1 minute after the last task
         # should be repeating the last day's schedule
         task = scheduler.get_next_scheduled_task(24 * 3600 + 15 * 3600 + 60)
-        self.assertEqual(task.day, 1)
-        self.assertEqual(task.time, 3 * 3600)
+        self.assertEqual(task.ttie, 24 * 3600 * 2 + 3 * 3600)
         # and this would be 15 days after the last scheduled task
         task = scheduler.get_next_scheduled_task(15 * 24 * 3600)
-        self.assertEqual(task.day, 1)
-        self.assertEqual(task.time, 3 * 3600)
+        self.assertEqual(task.ttie, 24 * 3600 * 15 + 3 * 3600)
 
 
 if __name__ == "__main__":

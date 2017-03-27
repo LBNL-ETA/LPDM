@@ -1,6 +1,9 @@
 from last_day_time import LastDayTime
 from schedule_item import ScheduleItem
 from lpdm_exception import LpdmScheduleInvalid
+from lpdm_task import LpdmTask
+import logging
+from simulation_logger import message_formatter
 
 SECS_IN_DAY = (24 * 60 * 60)
 class Scheduler(object):
@@ -10,6 +13,7 @@ class Scheduler(object):
         self.last_day_time = LastDayTime()
         self.scheduled_items = []
         self.last_item_index = None
+        self._logger = logging.getLogger('lpdm')
 
     def set_schedule(self, schedule):
         self.schedule = schedule
@@ -28,6 +32,7 @@ class Scheduler(object):
                     self.scheduled_items.append(ScheduleItem(self.last_day_time, *schedule_item))
             elif type(schedule_item) is dict:
                 self.scheduled_items.append(ScheduleItem(self.last_day_time, **schedule_item))
+        self._logger.debug(message_formatter.build_message(message="built schedule {}".format(self.scheduled_items), device_id="scheduler"))
 
     def get_next_scheduled_task(self, time_seconds):
         """Get the next scheduled task given a time in seconds"""
@@ -49,6 +54,8 @@ class Scheduler(object):
                 found_item = item
                 break
 
+        self._logger.debug(message_formatter.build_message(message="found_item = {}".format(found_item), device_id="scheduler"))
+
         # if an event hasn't been found then we are past the last defined schedule
         # so repeat the last full day's schedule
         if found_item is None:
@@ -64,12 +71,18 @@ class Scheduler(object):
                     break
                 last_day_items.insert(0, item)
 
-            if secs < last_day_items[0].time or secs > last_day_items[-1].time:
+            if secs < last_day_items[0].time or secs >= last_day_items[-1].time:
                 found_item = last_day_items[0]
             else:
                 for item in last_day_items:
+                    found_item = item
                     if item.time > secs:
-                        found_item = item
                         break
 
-        return found_item
+        if not found_item is None:
+            ttie = (day * SECS_IN_DAY) + found_item.time
+            if ttie <= time_seconds:
+                ttie += SECS_IN_DAY
+            return LpdmTask(ttie, found_item.value)
+        else:
+            return None

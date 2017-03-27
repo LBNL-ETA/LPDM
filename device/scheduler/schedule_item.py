@@ -26,10 +26,10 @@ class ScheduleItem:
             secs = int((time * 3600) % (24 * 3600))
         elif time_unit == 'minute':
             # convert minutes to seconds
-            days = int(time / 60 / 24)
-            secs = int((time * 60) % (24 * 3600))
+            days = int(time / 1440)
+            secs = (time % 1440) * 60
         elif time_unit == 'second':
-            days = int(time / 3600 / 24)
+            days = int(time / (3600 * 24))
             secs = time % (3600 * 24)
         else:
             raise Exception("Unable to convert time units ({}, {}, {})".format(
@@ -37,10 +37,11 @@ class ScheduleItem:
             ))
 
         # calculate the day that the schedule should run on
-        if secs < self.last_day_time.time and days == 0:
-            days = days + self.last_day_time.day + 1
-        else:
-            days = days + self.last_day_time.day
+        if time_unit != "day":
+            if secs < self.last_day_time.time and days == 0:
+                days = days + self.last_day_time.day + 1
+            else:
+                days = days + self.last_day_time.day
         # update the last calculated day
         self.last_day_time.day = days
         self.last_day_time.time = secs

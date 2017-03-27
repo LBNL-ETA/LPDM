@@ -101,6 +101,8 @@ class PgHandler(logging.Handler):
                 insert into {0}.sim_log ({1}) values ({2})
             """.format(self.schema, ", ".join(names), ", ".join(['%s' for n in names]))
             params = [self.sim_run_id]
+            if len(db_fields["message"]) >= 200:
+                db_fields["message"] = db_fields["message"][:199]
             params.extend([db_fields[key] if db_fields[key] != 'None' else None for key in db_fields.keys()])
             self.cursor.execute(query, params)
             self.conn.commit()

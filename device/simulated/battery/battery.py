@@ -105,8 +105,11 @@ class Battery(PowerSource):
 
     def add_load(self, new_load):
         """Add load on to the battery. should only happen when discharging is enabled"""
-        if not self._can_discharge:
+        if new_load > 0 and not self._can_discharge:
             raise LpdmBatteryNotDischarging()
+        if new_load < 0 and not self._can_charge:
+            raise Exception("Battery is not set to charge")
+
         self._logger.debug(
             self.build_message(
                 message="Added load to the battery ({})".format(new_load)

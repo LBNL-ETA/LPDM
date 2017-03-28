@@ -15,6 +15,7 @@
     Implementation of a general EUD device
 """
 from device.base.device import Device
+from device.scheduler import Scheduler
 import logging
 
 class Eud(Device):
@@ -51,8 +52,8 @@ class Eud(Device):
 
         # _schedule_array is the raw schedule passed in
         # _dail_y_schedule is the parsed schedule used by the device to schedule events
-        self._schedule_array = config["schedule"] if type(config) is dict and config.has_key("schedule") else None
-        self._daily_schedule = self.parse_schedule(self._schedule_array) if self._schedule_array else None
+        self._scheduler = None
+        self._schedule_array = config.get("schedule", None)
 
         self._power_level = 0.0
 
@@ -62,6 +63,16 @@ class Eud(Device):
         # load a set of attribute values if a 'scenario' key is present
         if type(config) is dict and 'scenario' in config.keys():
             self.set_scenario(config['scenario'])
+
+    def init(self):
+        self.setup_schedule()
+        self.calculate_next_ttie()
+
+    def setup_schedule(self):
+        """Setup the schedule if there is one"""
+        if type(self._schedule_array) is list:
+            self._scheduler = Scheduler(self._schedule_array)
+            self._scheduler.parse_schedule()
 
     def status(self):
         return {
@@ -77,7 +88,6 @@ class Eud(Device):
         self._ttie = None
         self._next_event = None
         self._events = []
-        self._daily_schedule = self.parse_schedule(self._schedule_array) if self._schedule_array else None
 
         # turn on/off the device based on the updated schedule
         should_be_in_operation = self.should_be_in_operation()
@@ -109,15 +119,16 @@ class Eud(Device):
                 self.turn_off()
         return
 
-    def current_schedule_value(self):
-        current_time_of_day_seconds = self.time_of_day_seconds()
-        res = None
-        for schedule_pt in self._daily_schedule:
-            if schedule_pt["time_of_day_seconds"] <= current_time_of_day_seconds:
-                res = schedule_pt["operation"]
-        if not res:
-            res = self._daily_schedule[-1]["operation"]
-        return res
+    # def current_schedule_value(self):
+        # """Is the device scheduled to be on?"""
+        # current_time_of_day_seconds = self.time_of_day_seconds()
+        # res = None
+        # for schedule_pt in self._daily_schedule:
+            # if schedule_pt["time_of_day_seconds"] <= current_time_of_day_seconds:
+                # res = schedule_pt["operation"]
+        # if not res:
+            # res = self._daily_schedule[-1]["operation"]
+        # return res
 
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
@@ -132,9 +143,10 @@ class Eud(Device):
                         value=new_price
                     )
                 )
-            if self.current_schedule_value():
-                self.set_power_level()
-            return
+            # TODO: fix this part, which turns on the device if it is scheduled to be on
+            # if self.current_schedule_value():
+                # self.set_power_level()
+            # return
 
     def on_time_change(self, new_time):
         "Receives message when a time change has occured"
@@ -189,37 +201,30 @@ class Eud(Device):
 
     def process_event(self):
         if (self._next_event and self._time == self._ttie):
-            if self._in_operation and self._next_event["operation"] == 0:
+            if self._in_operation and self._next_event.value == "off":
                 self.turn_off()
                 self.broadcast_new_power(0.0, target_device_id=self._grid_controller_id)
-            elif not self._in_operation and self._next_event["operation"] == 1:
+            elif not self._in_operation and self._next_event.value == "on":
                 self.set_power_level()
 
             self.calculate_next_ttie()
 
     def calculate_next_ttie(self):
-        "Override the base class function"
-        if type(self._daily_schedule) is list:
-            current_time_of_day_seconds = self.time_of_day_seconds()
-            new_ttie = None
-            next_event = None
-            for item in self._daily_schedule:
-                if item['time_of_day_seconds'] > current_time_of_day_seconds:
-                    new_ttie = int(self._time / (24 * 60 * 60)) * (24 * 60 * 60) + item['time_of_day_seconds']
-                    next_event = item
-                    break
+        """get the next scheduled task from the schedule and find the next ttie"""
+        # need to have a schedule set up
+        if self._scheduler:
+            next_task = self._scheduler.get_next_scheduled_task(self._time)
 
-            if not new_ttie:
-                for item in self._daily_schedule:
-                    if item['time_of_day_seconds'] > 0:
-                        new_ttie = int(self._time / (24.0 * 60.0 * 60.0)) * (24 * 60 * 60) + (24 * 60 * 60) + item['time_of_day_seconds']
-                        next_event = item
-                        break
-
-            if new_ttie != self._ttie:
-                self._next_event = next_event
-                self._ttie = new_ttie
-                self.broadcast_new_ttie(new_ttie)
+            if next_task and (self._next_event is None or self._ttie != next_task.ttie or self._next_event.value != next_task.value):
+                self._logger.info(
+                    self.build_message(
+                        message="schedule event {}".format(next_task),
+                        tag="scheduled_event"
+                    )
+                )
+                self._next_event = next_task
+                self._ttie = next_task.ttie
+                self.broadcast_new_ttie(self._ttie)
 
     def parse_schedule(self, schedule):
         if type(schedule) is list:

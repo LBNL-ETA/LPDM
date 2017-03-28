@@ -189,11 +189,20 @@ class GridController(Device):
                     message="Price change received (new_price = {}, source_device_id = {}, target_device_id = {})".format(new_price, source_device_id, target_device_id)
                 )
             )
+
+            if self._battery:
+                # update the battery charge and status
+                self._battery.update_state_of_charge()
+                self._battery.update_status()
+
             # set the price for the device
             self.power_source_manager.set_price(source_device_id, new_price)
             self.power_source_manager.optimize_load()
             for p in self.power_source_manager.get_changed_power_sources():
-                self.broadcast_new_power(p.load, p.device_id)
+                if p.DeviceClass is Battery:
+                    self._battery.add_load(p.load)
+                else:
+                    self.broadcast_new_power(p.load, p.device_id)
             # calculate the new gc price
             if self.calculate_gc_price():
                 # send the new price to the devices if changed
@@ -222,9 +231,18 @@ class GridController(Device):
             )
         )
         self.power_source_manager.set_capacity(source_device_id, value)
+
+        if self._battery:
+            # update the battery charge and status
+            self._battery.update_state_of_charge()
+            self._battery.update_status()
+
         self.power_source_manager.optimize_load()
         for p in self.power_source_manager.get_changed_power_sources():
-            self.broadcast_new_power(p.load, p.device_id)
+            if p.DeviceClass is Battery:
+                self._battery.add_load(p.load)
+            else:
+                self.broadcast_new_power(p.load, p.device_id)
         self.power_source_manager.reset_changed()
 
     def add_device(self, new_device_id, DeviceClass):

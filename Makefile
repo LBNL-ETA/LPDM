@@ -49,3 +49,14 @@ test:
 	--ip ${CONTAINER_IP} \
 	${IMG_NAME} \
 	python -m unittest discover
+
+test_file:
+	echo "run test file: ${TEST_FILE}"
+	docker run -it --rm --name=${CONTAINER_NAME} \
+	-v ${CURDIR}:/LPDM \
+	--net=${NETWORK_NAME} \
+	--ip ${CONTAINER_IP} \
+	-e "PYTHONPATH=/LPDM" \
+	${IMG_NAME} \
+	python ${TEST_FILE}
+

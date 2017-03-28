@@ -207,9 +207,12 @@ class PowerSourceManager(object):
                             ps.set_load(remaining_load)
                         remaining_load = 0
 
+        diff = abs(starting_load - self.total_load())
         if remaining_load != 0:
             raise Exception ("Error optimizing the load.")
-        elif starting_load != self.total_load():
+        elif diff > 1e-7:
+            # compare the difference being below some threshhold instead of equality
+            self.logger.debug(self.build_message(message="starting load = {}, total_load = {}, equal ? {}".format(starting_load, self.total_load(), abs(starting_load - self.total_load()))))
             raise Exception("starting/ending loads do not match {} != {}".format(starting_load, self.total_load()))
 
     def get_available_power_sources(self):

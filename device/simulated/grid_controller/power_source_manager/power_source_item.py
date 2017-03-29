@@ -1,12 +1,13 @@
 import logging
 
 class PowerSourceItem:
-    def __init__(self, device_id, DeviceClass, capacity=None, load=None, price=None):
+    def __init__(self, device_id, DeviceClass, device_instance=None):
         self.device_id = device_id
         self.DeviceClass = DeviceClass
         self.capacity = None
         self.load = 0.0
         self.price = None
+        self.device_instance = device_instance
 
         self.capacity_changed = False
         self.load_changed = False
@@ -21,6 +22,10 @@ class PowerSourceItem:
             self.load,
             self.price
         )
+
+    def update_status(self):
+        if not self.device_instance is None:
+            self.device_instance.update_status()
 
     def is_configured(self):
         """Is this power source configured? ie has capacity and price been set?"""
@@ -58,6 +63,9 @@ class PowerSourceItem:
         if load != self.load:
             self.load_changed = True
         self.load = load
+        # if there's an actual device instance connected then set that load as well
+        if self.device_instance:
+            self.device_instance.set_load(load)
 
     def set_capacity(self, capacity):
         """
@@ -69,6 +77,10 @@ class PowerSourceItem:
             self.capacity = capacity
         # if self.load > self.capacity:
             # raise Exception("Load > capacity ({} > {})".format(self.load, self.capacity))
+
+    def has_changed(self):
+        """Has this power source been changed"""
+        return self.capacity_changed or self.load_changed
 
     def reset_changed(self):
         """Set the load/capacity changed flags to False"""

@@ -9,6 +9,8 @@ class PowerSourceManager(object):
         self.power_sources = []
         self.logger = logging.getLogger("lpdm")
         self._device_id = "power_source_manager"
+        self._load = 0.0
+        self._capacity = 0.0
 
     def build_message(self, message="", tag="", value=""):
         """Build the log message string"""
@@ -24,7 +26,7 @@ class PowerSourceManager(object):
         """Return the number of power sources connected"""
         return len(self.power_sources)
 
-    def add(self, device_id, DeviceClass):
+    def add(self, device_id, DeviceClass, device_instance=None):
         """Register a power source"""
         # make sure the type of object added is a power source
         if not issubclass(DeviceClass, PowerSource):
@@ -33,7 +35,7 @@ class PowerSourceManager(object):
         # make sure a device with the same id does not exist
         found = filter(lambda d: d.device_id == device_id, self.power_sources)
         if len(found) == 0:
-            self.power_sources.append(PowerSourceItem(device_id, DeviceClass))
+            self.power_sources.append(PowerSourceItem(device_id, DeviceClass, device_instance))
         else:
             raise Exception("The device_id already exists {}".format(device_id))
 
@@ -42,6 +44,7 @@ class PowerSourceManager(object):
         d = self.get(device_id)
         # if d.load <= capacity:
         d.set_capacity(capacity)
+        self._capacity += capacity
         # else:
             # raise Exception(
                 # "Attempt to set the capacity for a power source that is less than the load ({} > {})".format(d.load, capacity)
@@ -79,109 +82,126 @@ class PowerSourceManager(object):
 
     def total_capacity(self):
         """calculate the total capacity for all power sources"""
-        return sum(d.capacity for d in self.power_sources if d.is_available())
+        # return sum(d.capacity for d in self.power_sources if d.is_available())
+        return self._capacity
 
     def total_load(self):
         """calculate the total load on all the power sources"""
-        return sum(d.load for d in self.power_sources)
+        # return sum(d.load for d in self.power_sources)
+        return self._load
 
     def output_capacity(self):
         """Calculate the output capacity (total_load / total_capaacity)"""
-        total_capacity = self.total_capacity()
-        total_load = self.total_load()
-        return total_load / total_capacity if total_capacity else None
+        # total_capacity = self.total_capacity()
+        # total_load = self.total_load()
+        # return total_load / total_capacity if total_capacity else None
+        return self._load / self._capacity if self._capacity else None
 
     def can_handle_load(self, new_load):
         """Is there enough capacity to handle the load?"""
-        return (self.total_load() + new_load) <= self.total_capacity()
+        return (self._load + new_load) <= self.total_capacity()
 
     def has_available_power_sources(self):
         """Are there powersources configured and available for use?"""
         return True if len([p for p in self.power_sources if p.is_available()]) else False
 
     def add_load(self, new_load):
-        """"""
-        # exit immediately if adding no load
-        if new_load == 0:
-            return True
+        """
+        Add load to the various power sources
+        """
+        self._load += new_load
+        # # exit immediately if adding no load
+        # if new_load == 0:
+            # return True
 
-        success = False
-        # check if there is enough capacity between all devices to handle the load
-        # if removing power then always ok
-        if new_load < 0 or self.can_handle_load(new_load):
-            # there is capacity available to handle the load
-            power_sources = self.get_available_power_sources()
-            if new_load > 0:
-                # if adding power then sort by the cheapest price
-                power_sources.sort(lambda a, b: cmp(a.price, b.price))
-            else:
-                # if removing power then sort by the highest price
-                # remove load from the most expensive first
-                power_sources.sort(lambda a, b: cmp(b.price, a.price))
+        # success = False
+        # # check if there is enough capacity between all devices to handle the load
+        # # if removing power then always ok
+        # if new_load < 0 or self.can_handle_load(new_load):
+            # # there is capacity available to handle the load
+            # power_sources = self.get_available_power_sources()
+            # if new_load > 0:
+                # # if adding power then sort by the cheapest price
+                # power_sources.sort(lambda a, b: cmp(a.price, b.price))
+            # else:
+                # # if removing power then sort by the highest price
+                # # remove load from the most expensive first
+                # power_sources.sort(lambda a, b: cmp(b.price, a.price))
 
-            for power_source in power_sources:
-                # get the power available
-                available = power_source.capacity - power_source.load
-                if available < new_load:
-                    # requesting to add more power than is available
-                    # split up between power sources
-                    power_source.add_load(available)
-                    new_load -= available
-                else:
-                    power_source.add_load(new_load)
-                    new_load = 0
-                    success=True
-                    break
-        return success
+            # for power_source in power_sources:
+                # # get the power available
+                # available = power_source.capacity - power_source.load
+                # if available < new_load:
+                    # # requesting to add more power than is available
+                    # # split up between power sources
+                    # power_source.add_load(available)
+                    # new_load -= available
+                # else:
+                    # power_source.add_load(new_load)
+                    # new_load = 0
+                    # success=True
+                    # break
+        # return success
 
     def remove_load(self, new_load):
         """Remove load from the system"""
-        # exit immediately if adding no load
-        if new_load == 0:
-            return True
-        elif new_load > 0:
-            return self.add_load(new_load)
-        elif abs(new_load) > self.total_load():
-            # trying to remove more load than is actually there
-            raise Exception("Trying to remove more load than is on the system.")
+        self.add_load(-1 * new_load)
+        # # exit immediately if adding no load
+        # if new_load == 0:
+            # return True
+        # elif new_load > 0:
+            # return self.add_load(new_load)
+        # elif abs(new_load) > self._load:
+            # # trying to remove more load than is actually there
+            # raise Exception("Trying to remove more load than is on the system.")
 
-        success = False
-        # check if there is enough capacity between all devices to handle the load
-        # if removing power then always ok
-        # there is capacity available to handle the load
-        power_sources = self.get_available_power_sources()
-        # if removing power then sort by the highest price
-        # remove load from the most expensive first
-        power_sources.sort(lambda a, b: cmp(b.price, a.price))
+        # success = False
+        # # check if there is enough capacity between all devices to handle the load
+        # # if removing power then always ok
+        # # there is capacity available to handle the load
+        # power_sources = self.get_available_power_sources()
+        # # if removing power then sort by the highest price
+        # # remove load from the most expensive first
+        # power_sources.sort(lambda a, b: cmp(b.price, a.price))
 
-        for power_source in [p for p in power_sources if p.load > 0]:
-            # get the power available
-            available = power_source.capacity - power_source.load
-            if abs(new_load) > power_source.load:
-                # removing more load than is on this power source
-                new_load += power_source.load
-                power_source.set_load(0.0)
-            else:
-                power_source.add_load(new_load)
-                new_load = 0
-                success=True
-                break
-        return success
+        # for power_source in [p for p in power_sources if p.load > 0]:
+            # # get the power available
+            # available = power_source.capacity - power_source.load
+            # if abs(new_load) > power_source.load:
+                # # removing more load than is on this power source
+                # new_load += power_source.load
+                # power_source.set_load(0.0)
+            # else:
+                # power_source.add_load(new_load)
+                # new_load = 0
+                # success=True
+                # break
+        # return success
+
+    def update_rechargeable_items(self):
+        """Update the status of rechargeable items"""
+        for p in self.power_sources:
+            if p.DeviceClass is Battery and p.device_instance:
+                # update the battery (direct connect)
+                p.device_instance.update_status()
 
     def optimize_load(self):
         """
         Check that the loads are optimally distributed among the power sources.
         Move load from the more expensive power sources to the cheaper ones.
         """
-        remaining_load = self.total_load()
+        # update the status of rechargeable itmes
+        self.update_rechargeable_items()
+        # get the current total load on the system
+        original_load = self._load
+        # add the new load
+        remaining_load = original_load
         starting_load = remaining_load
-        if remaining_load == 0:
-            # no need to do anything if there's no load
-            return
+        # if original_load == 0 and remaining_load == 0:
+            # # no need to do anything if there's no load
+            # return
 
-        # power_sources = self.get_available_power_sources()
-        # # sort by the cheapest price
-        # power_sources.sort(lambda a, b: cmp(a.price, b.price))
+        # get the power sources and sort by the cheapest price
         power_sources = [p for p in self.power_sources if p.is_configured()]
         power_sources = sorted(power_sources, lambda a, b: cmp(a.price, b.price))
         for ps in power_sources:
@@ -207,13 +227,14 @@ class PowerSourceManager(object):
                             ps.set_load(remaining_load)
                         remaining_load = 0
 
-        diff = abs(starting_load - self.total_load())
+        diff = abs(starting_load - self._load)
         if remaining_load != 0:
             raise Exception ("Error optimizing the load.")
         elif diff > 1e-7:
             # compare the difference being below some threshhold instead of equality
-            self.logger.debug(self.build_message(message="starting load = {}, total_load = {}, equal ? {}".format(starting_load, self.total_load(), abs(starting_load - self.total_load()))))
-            raise Exception("starting/ending loads do not match {} != {}".format(starting_load, self.total_load()))
+            self.logger.debug(self.build_message(message="starting load = {}, total_load = {}, equal ? {}".format(starting_load, self._load, abs(starting_load - self._load))))
+            raise Exception("starting/ending loads do not match {} != {}".format(starting_load, self._load))
+        return True
 
     def get_available_power_sources(self):
         """get the power sources that have a non-zero capacity"""

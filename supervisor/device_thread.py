@@ -5,6 +5,7 @@ import traceback
 from lpdm_event import LpdmTtieEvent, LpdmPowerEvent, LpdmPriceEvent, LpdmInitEvent, LpdmKillEvent, \
     LpdmConnectDeviceEvent, LpdmAssignGridControllerEvent, LpdmRunTimeErrorEvent, \
     LpdmCapacityEvent
+from simulation_logger import message_formatter
 
 class DeviceThread(threading.Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, verbose=None,
@@ -20,8 +21,17 @@ class DeviceThread(threading.Thread):
         self.supervisor_queue = supervisor_queue
         self.device = None
 
-        # self.logger = logging.getLogger("lpdm")
-        self.logger = logging.LoggerAdapter(logging.getLogger("lpdm"), {"sim_seconds": "", "device_id": "device_thread"})
+        self.logger = logging.getLogger("lpdm")
+
+    def build_message(self, message="", tag="", value=""):
+        """Build the log message string"""
+        return message_formatter.build_message(
+            message=message,
+            tag=tag,
+            value=value,
+            time_seconds=None,
+            device_id="device_thread"
+        )
 
     def run(self):
         self.logger.debug("run the device thread for device id {}".format(self.device_id))
@@ -57,12 +67,14 @@ class DeviceThread(threading.Thread):
                         new_price=the_event.value
                     )
                 elif isinstance(the_event, LpdmCapacityEvent):
-                    self.logger.debug("found lpdm capacity event {}".format(the_event))
+                    self.logger.debug(
+                        self.build_message("calling on_capacity_change {}".format(the_event))
+                    )
                     self.device.on_capacity_change(
-                        source_device_id=the_event.source_device_id,
-                        target_device_id=the_event.target_device_id,
-                        time=the_event.time,
-                        value=the_event.value
+                        the_event.source_device_id,
+                        the_event.target_device_id,
+                        the_event.time,
+                        the_event.value
                     )
                 elif isinstance(the_event, LpdmConnectDeviceEvent):
                     self.logger.debug("found lpdm connect device event {}".format(the_event))

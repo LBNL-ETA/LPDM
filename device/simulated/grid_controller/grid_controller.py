@@ -153,6 +153,8 @@ class GridController(Device):
                     self.broadcast_new_power(0.0, d.device_id)
             else:
                 # power has changed, either positive or negative
+                p = self.device_manager.get(source_device_id)
+                p_original = p.load
                 self.power_source_manager.add_load(p_diff)
                 result_success = self.power_source_manager.optimize_load()
                 self._logger.debug(
@@ -173,13 +175,14 @@ class GridController(Device):
                     for p in self.power_source_manager.get_changed_power_sources():
                         # broadcast the messages to the power sources that have changed
                         if p.DeviceClass is Battery:
-                            # self._battery.add_load(p.load)
                             pass
                         else:
                             self.broadcast_new_power(p.load, p.device_id)
                 else:
                     # unable to provide the requested power
                     # TODO: if can't provide power, shutdown ? or restore to previous load?
+                    # take the load out of the power source manager
+                    self.power_source_manager.add_load(-1 * (p_diff + p_original))
                     self.device_manager.set_load(source_device_id, 0.0)
                     self.broadcast_new_power(0.0, source_device_id)
         self.power_source_manager.reset_changed()
@@ -245,10 +248,17 @@ class GridController(Device):
         self.power_source_manager.optimize_load()
         for p in self.power_source_manager.get_changed_power_sources():
             if p.DeviceClass is Battery:
-                self._battery.add_load(p.load)
+                pass
             else:
                 self.broadcast_new_power(p.load, p.device_id)
         self.power_source_manager.reset_changed()
+
+        # notify any euds of capacity changes
+        # the eud checks to see if it should be in operation
+        # turns itself on if necessary
+        if self._time > 0:
+            for d in self.device_manager.devices():
+                self.broadcast_new_capacity(self.power_source_manager.total_capacity(), d.device_id)
 
     def add_device(self, new_device_id, DeviceClass):
         "Add a device to the list devices connected to the grid controller"

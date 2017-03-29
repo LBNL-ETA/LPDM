@@ -54,6 +54,7 @@ class Eud(Device):
         # _dail_y_schedule is the parsed schedule used by the device to schedule events
         self._scheduler = None
         self._schedule_array = config.get("schedule", None)
+        self._current_event = None
 
         self._power_level = 0.0
 
@@ -101,15 +102,8 @@ class Eud(Device):
 
     def should_be_in_operation(self):
         """determine if the device should be operating when a refresh event occurs"""
+        return self._current_event and self._current_event.value == "on"
 
-        current_time_of_day_seconds = self.time_of_day_seconds()
-        operating = False
-        for item in self._daily_schedule:
-            if  item['time_of_day_seconds'] > current_time_of_day_seconds:
-                break
-            else:
-                operating = True if item['operation'] == 1 else False
-        return operating
 
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
@@ -117,7 +111,19 @@ class Eud(Device):
             if new_power == 0 and self._in_operation:
                 self._time = time
                 self.turn_off()
-        return
+
+    def on_capacity_change(self, source_device_id, target_device_id, time, value):
+        """A device has changed its capacity, check if the eud should be in operation"""
+        self._time = time
+        if not self._in_operation and self.should_be_in_operation():
+            self._logger.debug(
+                self.build_message(
+                    message="eud should be on",
+                    tag="capacity_change_on",
+                    value=1
+                )
+            )
+            self.turn_on()
 
     # def current_schedule_value(self):
         # """Is the device scheduled to be on?"""
@@ -206,6 +212,7 @@ class Eud(Device):
                 self.broadcast_new_power(0.0, target_device_id=self._grid_controller_id)
             elif not self._in_operation and self._next_event.value == "on":
                 self.set_power_level()
+            self._current_event = self._next_event
 
             self.calculate_next_ttie()
 

@@ -1,0 +1,66 @@
+{
+    "run_time_days": 7,
+    "log_to_postgres": 1,
+    "console_log_level": 20,
+    "file_log_level": 20,
+    "pg_log_level": 10,
+    "devices": {
+        "grid_controllers": [
+            {
+                "device_id": "gc_1",
+                "device_type": "grid_controller",
+                "battery": {
+                    "device_id": "battery_1",
+                    "device_type": "battery",
+                    "capacity": 1000.0
+                }
+            }
+        ],
+        "power_sources": [
+            {
+                "device_id": "dg_1",
+                "grid_controller_id": "gc_1",
+                "device_type": "diesel_generator",
+                "fuel_tank_capacity": 1.0
+            },
+            {
+                "device_id": "pv_1",
+                "grid_controller_id": "gc_1",
+                "device_type": "pv"
+            }
+        ],
+        "euds": [
+            {
+                "device_id": "eud_1",
+                "device_type": "air_conditioner",
+                "grid_controller_id": "gc_1",
+                "max_power_output": 1000.0,
+                "price_dim": 0.3,
+                "price_off": 0.7,
+                "schedule": [
+                    [6, "on"], [8, "off"], [18, "on"], [0, "off"]
+                ]
+            },
+            {
+                "device_id": "eud_2",
+                "device_type": "eud",
+                "grid_controller_id": "gc_1",
+                "max_power_output": 1000.0,
+                "price_dim": 0.3,
+                "price_off": 0.7,
+                "schedule": [
+                    [6, "on"], [8, "off"], [18, "on"], [0, "off"]
+                ]
+            },
+            {
+                "device_id": "eud_3",
+                "device_type": "eud",
+                "grid_controller_id": "gc_1",
+                "max_power_output": 1000.0,
+                "price_dim": 0.3,
+                "price_off": 0.7,
+                "schedule": [[0, "on", "day"]]
+            }
+        ]
+    }
+}

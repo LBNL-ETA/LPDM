@@ -54,8 +54,6 @@ class Scheduler(object):
                 found_item = item
                 break
 
-        self._logger.debug(message_formatter.build_message(message="found_item = {}".format(found_item), device_id="scheduler"))
-
         # if an event hasn't been found then we are past the last defined schedule
         # so repeat the last full day's schedule
         if found_item is None:

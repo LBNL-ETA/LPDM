@@ -57,10 +57,12 @@ class Device(NotificationReceiver, NotificationSender):
         self._in_operation = False
         self._ttie = None
         self._next_event = None
+        self._current_capacity = None
 
         self._broadcast_new_price_callback = config["broadcast_new_price"] if type(config) is dict and  "broadcast_new_price" in config.keys() and callable(config["broadcast_new_price"]) else None
         self._broadcast_new_power_callback = config["broadcast_new_power"] if type(config) is dict and "broadcast_new_power" in config.keys() and callable(config["broadcast_new_power"]) else None
         self._broadcast_new_ttie_callback = config["broadcast_new_ttie"] if type(config) is dict and "broadcast_new_ttie" in config.keys() and callable(config["broadcast_new_ttie"]) else None
+        self._broadcast_new_capacity_callback = config["broadcast_new_capacity"] if type(config) is dict and "broadcast_new_capacity" in config.keys() and callable(config["broadcast_new_capacity"]) else None
 
         # Setup logging
         self._logger = logging.getLogger("lpdm")
@@ -155,6 +157,25 @@ class Device(NotificationReceiver, NotificationSender):
         else:
             raise Exception("broadcast_new_power has not been set for this device!")
         return
+
+    def broadcast_new_capacity(self, value=None, target_device_id=None, debug_level=logging.DEBUG):
+        "Broadcast the new capacity value if a callback has been setup, otherwise raise an exception."
+        if callable(self._broadcast_new_capacity_callback):
+            self._logger.debug(
+                self.build_message(
+                    message="Broadcast new capacity {} from {}".format(value, self._device_name),
+                    tag="broadcast_capacity",
+                    value=value if not value is None else self._current_capacity
+                )
+            )
+            self._broadcast_new_capacity_callback(
+                self._device_id,
+                target_device_id if not target_device_id is None else self._grid_controller_id,
+                self._time,
+                self._current_capacity if value is None else value
+            )
+        else:
+            raise Exception("broadcast_new_capacity has not been set for this device!")
 
     def broadcast_new_ttie(self, new_ttie, debug_level=logging.DEBUG):
         "Broadcast the new TTIE if a callback has been setup, otherwise raise an exception."

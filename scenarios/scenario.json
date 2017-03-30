@@ -33,7 +33,7 @@
                 "max_power_output": 100.0,
                 "price_dim": 0.3,
                 "price_off": 0.7,
-                "schedule": [["0300", 1], ["2300", 0]]
+                "schedule": [[3, "on"], [23, "off"]]
             },
             {
                 "device_id": "eud_2",
@@ -43,7 +43,7 @@
                 "max_power_output": 100.0,
                 "price_dim": 0.3,
                 "price_off": 0.7,
-                "schedule": [["0300", 1], ["2300", 0]]
+                "schedule": [[3, "on"], [23, "off"]]
             }
         ]
     }

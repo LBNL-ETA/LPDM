@@ -1,6 +1,6 @@
 {
     "run_time_days": 7,
-    "log_to_postgres": 0,
+    "log_to_postgres": 1,
     "console_log_level": 20,
     "file_log_level": 10,
     "pg_log_level": 10,
@@ -13,10 +13,9 @@
         ],
         "power_sources": [
             {
-                "device_id": "dg_1",
+                "device_id": "pv_1",
                 "grid_controller_id": "gc_1",
-                "device_type": "diesel_generator",
-                "fuel_tank_capacity": 100.0
+                "device_type": "pv"
             }
         ],
         "euds": [
@@ -24,7 +23,7 @@
                 "device_id": "fx_1",
                 "device_type": "fixed_consumption",
                 "grid_controller_id": "gc_1",
-                "power_output": 100.0
+                "max_power_output": 35.0
             }
         ]
     }

@@ -27,6 +27,7 @@ class Supervisor:
         self.config = None
         self.max_ttie = None,
         self._device_id = "supervisor"
+        self._time = 0
 
     def build_message(self, message="", tag="", value=""):
         """Build the log message string"""
@@ -34,7 +35,7 @@ class Supervisor:
             message=message,
             tag=tag,
             value=value,
-            time_seconds=None,
+            time_seconds=self._time,
             device_id=self._device_id
         )
 
@@ -90,6 +91,7 @@ class Supervisor:
         next_ttie = self.ttie_event_manager.get()
         if next_ttie:
             if next_ttie.value < self.max_ttie:
+                self._time = next_ttie.value
                 # get the device thread and put the event in the queue
                 t = self.device_thread_manager.get(next_ttie.target_device_id)
                 t.queue.put(next_ttie)
@@ -129,7 +131,7 @@ class Supervisor:
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             tb = traceback.format_exception(exc_type, exc_value, exc_traceback)
-            self.logger.error("\n".join(tb))
+            self.logger.error(self.build_message("\n".join(tb)))
         finally:
             # kill all threads
             self.device_thread_manager.kill_all()

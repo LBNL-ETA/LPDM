@@ -11,6 +11,13 @@ class PowerSourceManager(object):
         self._device_id = "power_source_manager"
         self._load = 0.0
         self._capacity = 0.0
+        self._time = 0
+
+    def __repr__(self):
+        return "Load->{}, Capacity->{}".format(
+            self._load,
+            self._capacity
+        )
 
     def build_message(self, message="", tag="", value=""):
         """Build the log message string"""
@@ -18,9 +25,17 @@ class PowerSourceManager(object):
             message=message,
             tag=tag,
             value=value,
-            time_seconds=None,
+            time_seconds=self._time,
             device_id=self._device_id
         )
+
+    def set_time(self, new_time):
+        self._time = new_time
+
+    def shutdown(self):
+        """remove load from all power sources"""
+        [p.set_load(0.0) for p in self.power_sources]
+        self._load = 0.0
 
     def count(self):
         """Return the number of power sources connected"""
@@ -121,6 +136,7 @@ class PowerSourceManager(object):
         Check that the loads are optimally distributed among the power sources.
         Move load from the more expensive power sources to the cheaper ones.
         """
+        self.logger.debug(self.build_message(message=self, tag="before"))
         # update the status of rechargeable itmes
         self.update_rechargeable_items()
         # get the current total load on the system
@@ -169,6 +185,7 @@ class PowerSourceManager(object):
             # compare the difference being below some threshhold instead of equality
             self.logger.debug(self.build_message(message="starting load = {}, total_load = {}, equal ? {}".format(starting_load, self._load, abs(starting_load - self._load))))
             raise Exception("starting/ending loads do not match {} != {}".format(starting_load, self._load))
+        self.logger.debug(self.build_message(message=self, tag="after"))
         return True
 
     def get_available_power_sources(self):

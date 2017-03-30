@@ -21,6 +21,7 @@ from device.base.power_source import PowerSource
 from device.base.device import Device
 from device.simulated.battery import Battery
 from common.device_class_loader import DeviceClassLoader
+from device.scheduler import LpdmEvent
 import logging
 
 class GridController(Device):
@@ -69,10 +70,9 @@ class GridController(Device):
         # set up class loader
         self._device_class_loader = DeviceClassLoader()
 
-        self._events = []
-
     def init(self):
         """Initialize the grid controller"""
+        self.power_source_manager.set_time(self._time)
         self.set_price_logic()
         self.init_battery()
 
@@ -112,6 +112,7 @@ class GridController(Device):
         If from an EUD then it's a change in it's power consumption.
         """
         self._time = time
+        self.power_source_manager.set_time(self._time)
         if self._battery:
             self._battery.set_time(time)
 
@@ -157,15 +158,6 @@ class GridController(Device):
                 p_original = p.load
                 self.power_source_manager.add_load(p_diff)
                 result_success = self.power_source_manager.optimize_load()
-                self._logger.debug(
-                    self.build_message(
-                        message="optimize load {} == {}".format(p_diff, result_success)
-                    )
-                )
-                # if p_diff > 0:
-                    # result_success = self.power_source_manager.add_load(p_diff)
-                # else:
-                    # result_success = self.power_source_manager.remove_load(p_diff)
 
                 if result_success:
                     # adding/removing load was successfull
@@ -192,6 +184,7 @@ class GridController(Device):
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
         self._time = time
+        self.power_source_manager.set_time(self._time)
         if not self._static_price:
             self._logger.debug(
                 self.build_message(
@@ -220,6 +213,7 @@ class GridController(Device):
     def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"
         self._time = new_time
+        self.power_source_manager.set_time(self._time)
         if self._battery:
             self._battery.set_time(new_time)
 
@@ -232,6 +226,7 @@ class GridController(Device):
     def on_capacity_change(self, source_device_id, target_device_id, time, value):
         """A device registers its capacity to the grid controller it's registered to"""
         self._time = time
+        self.power_source_manager.set_time(self._time)
         self._logger.debug(
             self.build_message(
                 message="received capacity change {} -> {}".format(source_device_id, value),
@@ -245,20 +240,43 @@ class GridController(Device):
             # update the battery charge and status
             self._battery.update_status()
 
-        self.power_source_manager.optimize_load()
-        for p in self.power_source_manager.get_changed_power_sources():
-            if p.DeviceClass is Battery:
-                pass
-            else:
-                self.broadcast_new_power(p.load, p.device_id)
-        self.power_source_manager.reset_changed()
+        result = self.power_source_manager.optimize_load()
+        if result:
+            for p in self.power_source_manager.get_changed_power_sources():
+                if p.DeviceClass is Battery:
+                    pass
+                else:
+                    self.broadcast_new_power(p.load, p.device_id)
+            self.power_source_manager.reset_changed()
 
-        # notify any euds of capacity changes
-        # the eud checks to see if it should be in operation
-        # turns itself on if necessary
-        if self._time > 0:
+            # notify any euds of capacity changes
+            # the eud checks to see if it should be in operation
+            # turns itself on if necessary
+            if self._time > 0:
+                for d in self.device_manager.devices():
+                    self.broadcast_new_capacity(self.power_source_manager.total_capacity(), d.device_id)
+        else:
+            # load exceeds capacity after the new capacity is applied
+            self._logger.debug(
+                self.build_message(
+                    message="Load exceeds capacity ({} > {})".format(
+                        self.power_source_manager.total_load(),
+                        self.power_source_manager.total_capacity()
+                    )
+                )
+            )
+            self.power_source_manager.shutdown()
+            self.device_manager.shutdown()
+            # notify all changed power sources
+            for p in self.power_source_manager.get_changed_power_sources():
+                if p.DeviceClass is Battery:
+                    pass
+                else:
+                    self.broadcast_new_power(p.load, p.device_id)
+            self.power_source_manager.reset_changed()
+            # notify all devices of change in load -> 0
             for d in self.device_manager.devices():
-                self.broadcast_new_capacity(self.power_source_manager.total_capacity(), d.device_id)
+                self.broadcast_new_power(0.0, d.device_id)
 
     def add_device(self, new_device_id, DeviceClass):
         "Add a device to the list devices connected to the grid controller"
@@ -325,8 +343,8 @@ class GridController(Device):
         set_power_sources_called = False
 
         for event in self._events:
-            if event["time"] <= self._time:
-                if event["operation"] == "emit_initial_price":
+            if event.ttie <= self._time:
+                if event.value == "emit_initial_price":
                     self.send_price_change_to_devices()
                     remove_items.append(event)
 
@@ -347,14 +365,18 @@ class GridController(Device):
 
     def set_initial_price_event(self):
         """Let all other devices know of the initial price of energy"""
-        self._events.append({"time": 0, "operation": "emit_initial_price"})
+        new_event = LpdmEvent(0, "emit_initial_price")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == "emit_initial_price", self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 
     def calculate_next_ttie(self):
         "calculate the next TTIE - look through the pending events for the one that will happen first"
         ttie = None
         for event in self._events:
-            if ttie == None or event["time"] < ttie:
-                ttie = event["time"]
+            if ttie == None or event.ttie < ttie:
+                ttie = event.ttie
 
         if ttie != None and ttie != self._ttie:
             self._ttie = ttie

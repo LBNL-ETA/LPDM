@@ -16,6 +16,7 @@
 """
 
 from device.base.power_source import PowerSource
+from device.scheduler import LpdmEvent
 import logging
 from lpdm_exception import LpdmMissingPowerSourceManager, LpdmBatteryDischargeWhileCharging, \
         LpdmBatteryNotDischarging, LpdmBatteryAlreadyDischarging, LpdmBatteryCannotDischarge, \
@@ -76,7 +77,6 @@ class Battery(PowerSource):
         self._can_charge = False
         self._is_charging = False
         self._can_discharge = False
-        self._events = []
 
     def init(self):
         """no need to do any initialization for the battery"""
@@ -363,8 +363,8 @@ class Battery(PowerSource):
         """Process any events that need to be processed"""
         remove_items = []
         for event in self._events:
-            if event["time"] <= self._time:
-                if event["operation"] == "battery_status":
+            if event.ttie <= self._time:
+                if event.value == "battery_status":
                     # self.update_status()
                     self.power_source_manager.optimize_load()
                     remove_items.append(event)
@@ -372,15 +372,18 @@ class Battery(PowerSource):
         # remove the processed events from the list
         for event in remove_items:
             self._events.remove(event)
-        return
 
     def schedule_next_events(self):
         """Set up any events that needs to be processed in the future"""
-        items = filter(lambda e: e["operation"] == "battery_status", self._events)
+        items = filter(lambda e: e.value == "battery_status", self._events)
         if len(items) == 0:
             self.set_next_battery_update_event()
 
     def set_next_battery_update_event(self):
         "If the battery is on update its state of charge every X number of seconds"
-        self._events.append({"time": self._time + self._check_soc_rate, "operation": "battery_status"})
+        new_event = LpdmEvent(self._time + self._check_soc_rate, "battery_status")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == "battery_status", self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 

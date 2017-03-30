@@ -16,6 +16,7 @@
 """
 
 from device.base.device import Device
+from device.scheduler import LpdmEvent
 import os
 import json
 import logging
@@ -34,7 +35,7 @@ class AirConditioner(Device):
 
                 keys:
                     "device_name" (string): Name of the device
-                    "max_power_use" (float): the maximum power output of the device
+                    "max_power_output" (float): the maximum power output of the device
                     "current_temperature" (float): the current temperature inside the device
                     "current_set_point (float)": the initial set point
                     "temperature_max_delta" (float): the maximum amount that the temperature can increase by for every reassessment
@@ -58,7 +59,7 @@ class AirConditioner(Device):
         self._device_name = config.get("device_name", "air_conditioner")
 
         # maximim power output, default to 500 W if no value given
-        self._max_power_use = config.get("max_power_use", 500.0)
+        self._max_power_output = config.get("max_power_output", 500.0)
 
         # set the nominal price to be price of first hour of generation
         self._nominal_price = None
@@ -105,8 +106,6 @@ class AirConditioner(Device):
         self._heat_gain_rate = None
         self._max_c_delta = 10.0 #the maximum temeprature the ECU can handle in 1 hr
         self._compressor_max_c_per_kwh = 1.0 * (3000.0 / self._volume_m3) / 1000.0
-
-        self._events = []
 
     def init(self):
         """Setup the air conditioner prior to use"""
@@ -187,20 +186,6 @@ class AirConditioner(Device):
         with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), self._temperature_file_name), 'r') as content_file:
             self._temperature_hourly_profile = json.loads(content_file.read())
 
-    def turn_on(self):
-        "Turn on the device"
-        self._logger.debug(
-            self.build_message(message="{} turned on".format(self._device_name), tag="on/off", value=1)
-        )
-        self._in_operation = True
-
-    def turn_off(self):
-        "Turn off the device"
-        self._logger.debug(
-            self.build_message(message="{} turned off".format(self._device_name), tag="on/off", value=0)
-        )
-        self._in_operation = False
-
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
         if target_device_id == self._device_id:
@@ -233,8 +218,8 @@ class AirConditioner(Device):
         # loop through the current events
         remove_items = []
         for event in self._events:
-            if event["time"] <= self._time:
-                events_occurred[event["operation"]] = True
+            if event.ttie <= self._time:
+                events_occurred[event.value] = True
                 remove_items.append(event)
 
         # execute the found events in order
@@ -265,9 +250,13 @@ class AirConditioner(Device):
         so once the first price shows up start keeping track of the prices, then
         an hour later calculate the avg.
         """
-        self._events.append({"time": self._time + 60.0 * 60.0, "operation": "set_nominal_price"})
         self._nominal_price_list = []
         self._nominal_price_calc_running = True
+        new_event = LpdmEvent(self._time + 60.0 * 60.0, "set_nominal_price")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == new_event.value, self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 
     def calculate_nominal_price(self):
         if not self._nominal_price_calc_running:
@@ -293,25 +282,29 @@ class AirConditioner(Device):
 
     def set_setpoint_range_event(self):
         """changes the set_point_low and set_point_high values based on the set_point_schedule (hour of day)"""
-        found_events = filter(lambda x: x["operation"] == "set_point_range", self._events)
-        if not len(found_events):
             # create a new event to execute in 60 minutes(?) if an event hasn't yet been scheduled
-            self._events.append({"time": self._time + 60.0 * 60.0, "operation": "set_point_range"})
+        new_event = LpdmEvent(self._time + 60 * 60.0, "set_point_range")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == new_event.value, self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 
     def set_hourly_price_calculation_event(self):
         "set the next event to calculate the avg hourly prices"
-        found_events = filter(lambda x: x["operation"] == "hourly_price_calculation", self._events)
-        if not len(found_events):
-            # create a new event to execute in 1 hour if an event hasn't yet been scheduled
-            self._events.append({"time": self._time + 60.0 * 60.0, "operation": "hourly_price_calculation"})
+        new_event = LpdmEvent(self._time + 60 * 60.0, "hourly_price_calculation")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == new_event.value, self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
             self._hourly_price_list = []
 
     def set_reasses_setpoint_event(self):
         "set the next event to calculate the set point"
-        found_events = filter(lambda x: x["operation"] == "reasses_setpoint", self._events)
-        if not len(found_events):
-            # create a new event to execute in 10 minutes(?) if an event hasn't yet been scheduled
-            self._events.append({"time": self._time + self._setpoint_reassesment_interval, "operation": "reasses_setpoint"})
+        new_event = LpdmEvent(self._time + self._setpoint_reassesment_interval, "reasses_setpoint")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == new_event.value, self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 
     def calculate_hourly_price(self):
         """This should be called every hour to calculate the previous hour's average fuel price"""
@@ -413,7 +406,7 @@ class AirConditioner(Device):
         """
         if self._time > self._last_temperature_update_time:
             if self.is_on():
-                energy_used = self._max_power_use * (self._time - self._last_temperature_update_time) / 3600.0
+                energy_used = self._max_power_output * (self._time - self._last_temperature_update_time) / 3600.0
                 delta_c = self._compressor_max_c_per_kwh * energy_used
                 self._current_temperature -= delta_c
 
@@ -446,12 +439,10 @@ class AirConditioner(Device):
                 # if the current temperature is above the set point and compressor is off, turn it on
                 self.sum_energy_used(0.0)
                 self.turn_on()
-                self.broadcast_new_power(self._max_power_use, target_device_id=self._grid_controller_id)
             elif (delta < 0 or self.out_of_fuel()) and self.is_on():
                 # if current temperature is below the set point and compressor is on, turn it off
-                self.sum_energy_used(self._max_power_use)
+                self.sum_energy_used(self._max_power_output)
                 self.turn_off()
-                self.broadcast_new_power(0.0, target_device_id=self._grid_controller_id)
 
     def sum_energy_used(self, power_level):
         self._total_energy_use += power_level * (self._time - self._last_total_energy_update_time) / (1000 * 3600)
@@ -459,10 +450,11 @@ class AirConditioner(Device):
 
     def schedule_next_outdoor_temperature_change(self):
         """schedule the next temperature update (in one hour)"""
-        # first search for existing events
-        search_events = [event for event in self._events if event["operation"] == "update_outdoor_temperature"]
-        if not len(search_events):
-            self._events.append({"time": self._time + self._temperature_update_interval, "operation": "update_outdoor_temperature"})
+        new_event = LpdmEvent(self._time + self._temperature_update_interval, "update_outdoor_temperature")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == new_event.value, self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 
     def process_outdoor_temperature_change(self):
         """Update the current outdoor temperature"""
@@ -487,10 +479,10 @@ class AirConditioner(Device):
         want the ECU to be able to handle a 10C change in temperature
         """
         kwh_per_c = self._kj_per_m3_c * self._volume_m3 / 3600.0
-        max_c_per_hr = self._max_power_use / 1000.0 / kwh_per_c * self._cop
+        max_c_per_hr = self._max_power_output / 1000.0 / kwh_per_c * self._cop
         self._heat_gain_rate = self._max_c_delta / max_c_per_hr
 
     def finish(self):
         "at the end of the simulation calculate the final total energy used"
         if self.is_on():
-            self.sum_energy_used(self._max_power_use)
+            self.sum_energy_used(self._max_power_output)

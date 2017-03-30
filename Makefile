@@ -31,6 +31,7 @@ run:
 	-v ${CURDIR}:/LPDM \
 	--net=${NETWORK_NAME} \
 	--ip ${CONTAINER_IP} \
+	-e "PYTHONPATH=/LPDM" \
 	${IMG_NAME}
 
 run_scenario:
@@ -39,6 +40,7 @@ run_scenario:
 	-v ${CURDIR}:/LPDM \
 	--net=${NETWORK_NAME} \
 	--ip ${CONTAINER_IP} \
+	-e "PYTHONPATH=/LPDM" \
 	${IMG_NAME} \
 	python run_scenarios.py ${SCENARIO_FILE}
 
@@ -47,6 +49,7 @@ test:
 	-v ${CURDIR}:/LPDM \
 	--net=${NETWORK_NAME} \
 	--ip ${CONTAINER_IP} \
+	-e "PYTHONPATH=/LPDM" \
 	${IMG_NAME} \
 	python -m unittest discover
 

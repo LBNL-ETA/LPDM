@@ -48,7 +48,6 @@ class DeviceThread(threading.Thread):
                 else:
                     if the_event:
                         self.device.process_supervisor_event(the_event)
-                self.logger.debug("task finished")
                 self.queue.task_done()
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()

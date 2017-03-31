@@ -75,6 +75,7 @@ class GridController(Device):
         self.power_source_manager.set_time(self._time)
         self.set_price_logic()
         self.init_battery()
+        self.calculate_next_ttie()
 
     def init_battery(self):
         """Setup the battery"""
@@ -118,7 +119,7 @@ class GridController(Device):
 
         self._logger.debug(
             self.build_message(
-                message="Power change, source_device_id = {}, target_device_id = {}".format(source_device_id, target_device_id),
+                message="Power change, source_device_id = {}, new_power = {}".format(source_device_id, new_power),
                 tag="power",
                 value=new_power
             )
@@ -155,6 +156,7 @@ class GridController(Device):
             else:
                 # power has changed, either positive or negative
                 p = self.device_manager.get(source_device_id)
+                self._logger.debug(self.build_message(message="old load = {}, new load = {}, p_diff = {}".format(device.load, new_power, p_diff)))
                 p_original = p.load
                 self.power_source_manager.add_load(p_diff)
                 result_success = self.power_source_manager.optimize_load()
@@ -235,11 +237,6 @@ class GridController(Device):
             )
         )
         self.power_source_manager.set_capacity(source_device_id, value)
-
-        if self._battery:
-            # update the battery charge and status
-            self._battery.update_status()
-
         result = self.power_source_manager.optimize_load()
         if result:
             for p in self.power_source_manager.get_changed_power_sources():
@@ -374,9 +371,11 @@ class GridController(Device):
     def calculate_next_ttie(self):
         "calculate the next TTIE - look through the pending events for the one that will happen first"
         ttie = None
+        the_event = None
         for event in self._events:
             if ttie == None or event.ttie < ttie:
                 ttie = event.ttie
+                the_event = event
 
         if ttie != None and ttie != self._ttie:
             self._ttie = ttie

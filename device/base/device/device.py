@@ -138,13 +138,13 @@ class Device(NotificationReceiver, NotificationSender):
         found_event = None
         # search through the non-scheduled events first
         for event in self._events:
-            if found_event is None or event.ttie < found_event.ttie:
+            if (event.ttie > self._time) and (found_event is None or (event.ttie < found_event.ttie)):
                 found_event = event
 
         # check the scheduler for upcoming events
         if self._scheduler:
             sched_event = self._scheduler.get_next_scheduled_task(self._time)
-            if sched_event and (found_event is None or sched_event.ttie < found_event.ttie):
+            if sched_event and sched_event.ttie > self._time and (found_event is None or sched_event.ttie < found_event.ttie):
                 # assign the vent with the lower ttie
                 found_event = sched_event
 

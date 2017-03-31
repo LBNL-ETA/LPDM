@@ -155,10 +155,6 @@ class DieselGenerator(PowerSource):
         for event in next_refuels:
             self._events.remove(event)
 
-    def set_power_level(self):
-        """Override the base class method"""
-        pass
-
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured (W)"
 
@@ -176,8 +172,7 @@ class DieselGenerator(PowerSource):
                 raise Exception("Attempt to set load on a power source that has no capacity available.")
             elif new_power > 0 and not self.is_on() and self._fuel_level > 0:
                 # If the generator is not in operation the turn it on
-                self.turn_on()
-                self.set_power(new_power)
+                self.turn_on(new_power)
                 # calculate the new electricity price
                 self.calculate_electricity_price()
                 # set to re calculate a new price
@@ -188,18 +183,16 @@ class DieselGenerator(PowerSource):
             elif new_power > 0 and self.is_on() and self._fuel_level > 0:
                 # power has changed when already in operation
                 # store the new power value for the hourly usage calculation
-                self.set_power(new_power)
+                self.set_power_level(new_power)
                 self.log_power_change(time, new_power)
                 self.calculate_electricity_price()
             elif new_power > 0 and self._fuel_level <= 0:
                 if self.is_on():
                     self.turn_off()
-                    self.set_power(0.0)
                 self.broadcast_new_power(0.0, target_device_id=self._grid_controller_id)
             elif new_power <= 0 and self.is_on():
                 # Shutoff power
                 self.turn_off()
-                self.set_power(0.0)
                 self.log_power_change(time, 0.0)
 
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
@@ -212,17 +205,6 @@ class DieselGenerator(PowerSource):
         self.process_events()
         self.calculate_next_ttie()
         return
-
-    def set_power(self, power):
-        """Set the power level for the device"""
-        self._power_level = power
-        self._logger.debug(
-            self.build_message(
-                message="Set new power level",
-                tag="power",
-                value=self._power_level
-            )
-        )
 
     def set_next_hourly_consumption_calculation_event(self):
         "Setup the next event for the calculation of the hourly consumption"

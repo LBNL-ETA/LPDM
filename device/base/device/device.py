@@ -59,6 +59,10 @@ class Device(NotificationReceiver, NotificationSender):
         self._grid_controller_id = config.get("grid_controller_id", None)
         self._max_power_output = config.get("max_power_output", 0.0)
 
+        # keep track of the total energy used
+        self._sum_kwh = 0.0
+        self._last_sum_kwh_update_time = 0
+
         # _schedule_array is the raw schedule passed in
         # _dail_y_schedule is the parsed schedule used by the device to schedule events
         self._scheduler = None
@@ -109,7 +113,8 @@ class Device(NotificationReceiver, NotificationSender):
 
     def finish(self):
         "Gets called at the end of the simulation"
-        pass
+        self.set_power_level(0.0)
+        self.write_calcs()
 
     def uuid(self):
         return self._uuid;
@@ -220,18 +225,19 @@ class Device(NotificationReceiver, NotificationSender):
     def get_ttie(self):
         return self._ttie
 
-    def turn_on(self):
+    def turn_on(self, power_level=None):
         "Turn on the device"
         if not self._in_operation:
             self._logger.info(self.build_message(message="turn on device", tag="on/off", value=1))
             self._in_operation = True
-            self.set_power_level()
+            power_level = power_level if not power_level is None else self.calculate_power_level()
+            self.set_power_level(power_level)
             self.broadcast_new_power(self._power_level, target_device_id=self._grid_controller_id)
 
     def turn_off(self):
         "Turn off the device"
         if self._in_operation:
-            self._power_level = 0.0
+            self.set_power_level(0.0)
             self._in_operation = False
             self.broadcast_new_power(self._power_level, target_device_id=self._grid_controller_id)
             self._logger.info(self.build_message(message="turn off device", tag="on/off", value=0))
@@ -250,9 +256,16 @@ class Device(NotificationReceiver, NotificationSender):
         """determine if the device should be operating when a refresh event occurs"""
         return self._current_event and self._current_event.value == "on"
 
-    def set_power_level(self):
+    def calculate_power_level(self):
+        """calculate how much power the device should be using, would be the max unless variable power output"""
+        return self._max_power_output
+
+    def set_power_level(self, new_power):
         """Set the power output of the device"""
-        self._power_level = self._max_power_output
+        if self._power_level != new_power:
+            # self._power_level = self._max_power_output
+            self.sum_kwh()
+            self._power_level = new_power
 
     def refresh(self):
         "Refresh the eud. For a basic eud this means resetting the operation schedule."
@@ -314,3 +327,17 @@ class Device(NotificationReceiver, NotificationSender):
             self._logger.error("event type not found {}".format(the_event))
         self._logger.debug("task finished")
 
+    def sum_kwh(self):
+        """Keep a running total of the energy used by the device"""
+        time_diff = self._time - self._last_sum_kwh_update_time
+        if time_diff > 0 and self._power_level:
+            self._sum_kwh += self._power_level * (time_diff / 3600.0)
+        self._last_sum_kwh_update_time = self._time
+
+    def write_calcs(self):
+        """Write any calculations to the database"""
+        self._logger.info(self.build_message(
+            message="sum kwh",
+            tag="sum_kwh",
+            value=self._sum_kwh
+        ))

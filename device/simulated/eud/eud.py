@@ -169,45 +169,12 @@ class Eud(Device):
                 # self._ttie = next_task.ttie
                 # self.broadcast_new_ttie(self._ttie)
 
-    def parse_schedule(self, schedule):
-        if type(schedule) is list:
-            return self.load_array_schedule(schedule)
-
-    def load_array_schedule(self, schedule):
-        if type(schedule) is list:
-            parsed_schedule = []
-            for (task_time, task_operation) in schedule:
-                task_operation = int(task_operation)
-                if len(task_time) != 4 or task_operation not in (0,1):
-                    raise Exception("Invalid schedule definition ({0}, {1})".format(task_time, task_operation))
-                parsed_schedule.append({"time_of_day_seconds": (int(task_time[0:2]) * 60 * 60 + int(task_time[2:]) * 60), "operation": task_operation})
-            return parsed_schedule
-
-
     # eud specific methods
-    def set_power_level(self):
-        "Set the power level for the eud (W).  If the energy consumption has changed then broadcast the new power usage."
-
-        new_power = self.calculate_new_power_level()
-
-        if new_power != self._power_level:
-            self._power_level = new_power
-
-            if self._power_level == 0 and self._in_operation:
-                self.turn_off()
-
-            elif self._power_level > 0 and not self._in_operation:
-                self.turn_on()
-            else:
-                self.adjust_hardware_power()
-
-            self.broadcast_new_power(new_power, target_device_id=self._grid_controller_id)
-
     def adjust_hardware_power(self):
         "Override this method to tell the hardware to adjust its power output"
         return None
 
-    def calculate_new_power_level(self):
+    def calculate_power_level(self):
         "Set the power level of the eud"
         if self._static_price:
             return self._max_power_output

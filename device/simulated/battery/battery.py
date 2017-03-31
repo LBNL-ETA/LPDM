@@ -69,7 +69,6 @@ class Battery(PowerSource):
 
         self.power_source_manager = None
 
-        self._load = 0.0
         self._current_capacity = None
         self._battery_on_time = None
         self._last_update_time = self._time
@@ -93,7 +92,7 @@ class Battery(PowerSource):
 
     def get_load(self):
         """Get the current load on the battery"""
-        return self._load
+        return self._power_level
 
     def set_load(self, new_load):
         """Set the load of the battery"""
@@ -102,13 +101,13 @@ class Battery(PowerSource):
                 raise LpdmBatteryCannotDischarge()
         elif new_load < 0:
             raise Exception("Battery will set its own load when recharging")
-        if new_load != self._load:
-            self._load = new_load
+        if new_load != self._power_level:
+            self._power_level = new_load
             self._logger.info(
                 self.build_message(
-                    message="Set load to {}".format(self._load),
+                    message="Set load to {}".format(self._power_level),
                     tag="power",
-                    value=self._load
+                    value=self._power_level
                 )
             )
 
@@ -124,7 +123,7 @@ class Battery(PowerSource):
                 message="Added load to the battery ({})".format(new_load)
             )
         )
-        self._load += new_load
+        self._power_level += new_load
 
     def set_time(self, new_time):
         """Set the time"""
@@ -163,9 +162,9 @@ class Battery(PowerSource):
         # update the charge on the device
         self.update_state_of_charge()
 
-        if self.is_discharging():
+        if self._can_discharge:
             # if battery is discharging
-            # if self.power_source_manager.total_load() - self._load > 0:
+            # if self.power_source_manager.total_load() - self._power_level > 0:
                 # is there other load besides from this device?
             if self.power_source_manager.output_capacity() > 0.70 and self._current_soc < 0.65:
                 # stop discharging and do nothing
@@ -174,16 +173,17 @@ class Battery(PowerSource):
                 # stop discharging and start charging
                 self.disable_discharge()
                 self.enable_charge()
-                self.start_charging()
+                # self.start_charging()
             # else:
                 # # stop discharging if there is no other load on the system
                 # self.disable_discharge()
-        elif self.is_charging():
+        elif self._can_charge:
             # battery is charging
             if self._current_soc >= self._max_soc \
             or (self.power_source_manager.output_capacity() < 0.3 and self._current_soc > 0.65):
                 # stop discharging dn do nothing
-                self.stop_charging()
+                if self.is_charging():
+                    self.stop_charging()
                 self.disable_charge()
                 if not self._can_discharge and self.power_source_manager.output_capacity() < 0.3 and self._current_soc > 0.65:
                     # start to discharge the battery
@@ -205,7 +205,7 @@ class Battery(PowerSource):
 
     def is_discharging(self):
         """Is the battery discharging?"""
-        return self._can_discharge and self._load > 0
+        return self._can_discharge and self._power_level > 0
 
     def is_charging(self):
         """Is the battery charging?"""
@@ -268,10 +268,10 @@ class Battery(PowerSource):
                     (self._capacity * self._current_soc)
                     + (self.charge_rate() * (self._time - self._last_update_time) / 3600.0)
                 ) / (self._capacity)
-            elif self._can_discharge and self._load > 0:
+            elif self._can_discharge and self._power_level > 0:
                 self._current_soc = (
                     (self._capacity * self._current_soc)
-                    - (self._load * (self._time - self._last_update_time) / 3600.0)
+                    - (self._power_level * (self._time - self._last_update_time) / 3600.0)
                 ) / (self._capacity)
 
             self._last_update_time = self._time
@@ -300,7 +300,7 @@ class Battery(PowerSource):
         if not self._can_charge:
             # raise an exception if there's an attempt to stop discharging if it isn't actually discharging
             raise LpdmBatteryNotDischarging()
-        elif self._load != 00:
+        elif self._power_level != 0:
             raise Exception("Can't disable charge while there is a load on the device.")
 
         self._logger.debug(
@@ -322,14 +322,14 @@ class Battery(PowerSource):
         if self._can_charge and not self._can_discharge:
             self._logger.info(
                 self.build_message(
-                    message="charge",
+                    message="charge at soc {}".format(self._current_soc),
                     tag="charge",
                     value="1"
                 )
             )
             # set the load to the charge rate
             # negative because energy is flowing into the device
-            # self._load = -self.charge_rate()
+            # self._power_level = -self.charge_rate()
             # set the power source manager capacity for the device
             # self.power_source_manager.set_capacity(self._device_id, 0.0)
             self._is_charging = True

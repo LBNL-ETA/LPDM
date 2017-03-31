@@ -516,7 +516,7 @@ class AirConditioner(Device):
             # this should be 0
             self.sum_energy_used(self._power_level)
             previous_power_level = self._power_level
-            self.set_power_level()
+            self.set_power_level(self.calculate_power_level())
             if previous_power_level != self._power_level:
                 self.broadcast_new_power(self._power_level, target_device_id=self._grid_controller_id)
         else:
@@ -526,7 +526,7 @@ class AirConditioner(Device):
         self._compressor_is_on = False
         if self._power_level != 0.0:
             self.sum_energy_used(self._power_level)
-            self._power_level = 0.0
+            self.set_power_level(0.0)
             self.broadcast_new_power(self._power_level, target_device_id=self._grid_controller_id)
 
     def sum_energy_used(self, power_level):
@@ -569,5 +569,6 @@ class AirConditioner(Device):
 
     def finish(self):
         "at the end of the simulation calculate the final total energy used"
+        Device.finish(self)
         if self.is_on():
             self.sum_energy_used(self._max_power_output)

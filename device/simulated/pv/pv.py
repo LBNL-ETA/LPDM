@@ -102,7 +102,7 @@ class Pv(PowerSource):
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
         self._time = time
-        self._power_level = new_power
+        self.set_power_level(new_power)
         self._logger.debug(
             self.build_message(
                 message="Update power output {}".format(new_power),

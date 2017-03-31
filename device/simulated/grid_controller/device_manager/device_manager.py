@@ -4,7 +4,7 @@ from device_item import DeviceItem
 class DeviceManager(object):
     def __init__(self):
         self.device_list = []
-        self.logger = logging.LoggerAdapter(logging.getLogger("lpdm"), {"sim_seconds": "", "device_id": "dm"})
+        self.logger = logging.getLogger("lpdm")
 
     def count(self):
         """Return the number of devices connected"""
@@ -14,6 +14,10 @@ class DeviceManager(object):
         """Generator function for iterating through devices"""
         for d in self.device_list:
             yield d
+
+    def shutdown(self):
+        """remove load from all power sources"""
+        [p.set_load(0.0) for p in self.device_list]
 
     def add(self, device_id, DeviceClass):
         """Register a device"""
@@ -37,7 +41,6 @@ class DeviceManager(object):
     def get(self, device_id):
         """Get the info for a device by its ID"""
         found = filter(lambda d: d.device_id == device_id, self.device_list)
-        self.logger.debug("message: found device {}".format(found))
         if len(found) == 1:
             return found[0]
         else:

@@ -21,6 +21,7 @@ from device.base.power_source import PowerSource
 from device.base.device import Device
 from device.simulated.battery import Battery
 from common.device_class_loader import DeviceClassLoader
+from device.scheduler import LpdmEvent
 import logging
 
 class GridController(Device):
@@ -69,10 +70,9 @@ class GridController(Device):
         # set up class loader
         self._device_class_loader = DeviceClassLoader()
 
-        self._events = []
-
     def init(self):
         """Initialize the grid controller"""
+        self.power_source_manager.set_time(self._time)
         self.set_price_logic()
         self.init_battery()
 
@@ -82,7 +82,7 @@ class GridController(Device):
             # initialize the battery
             self._battery = Battery(self.battery_config)
             # add it to the power source manager, set its price and capacity
-            self.power_source_manager.add(self._battery._device_id, Battery)
+            self.power_source_manager.add(self._battery._device_id, Battery, self._battery)
             self.power_source_manager.set_capacity(self._battery._device_id, self._battery._capacity)
             self.power_source_manager.set_price(self._battery._device_id, self._battery._price)
             # setup the shared objects for events and power sources
@@ -112,6 +112,9 @@ class GridController(Device):
         If from an EUD then it's a change in it's power consumption.
         """
         self._time = time
+        self.power_source_manager.set_time(self._time)
+        if self._battery:
+            self._battery.set_time(time)
 
         self._logger.debug(
             self.build_message(
@@ -135,11 +138,6 @@ class GridController(Device):
             # calculate the change in power for the source device
             p_diff = new_power - device.load
 
-            if self._battery:
-                # update the battery charge and status
-                self._battery.update_state_of_charge()
-                self._battery.update_status()
-
             if p_diff == 0:
                 # no change in power for the device
                 self._logger.debug(
@@ -156,10 +154,10 @@ class GridController(Device):
                     self.broadcast_new_power(0.0, d.device_id)
             else:
                 # power has changed, either positive or negative
-                if p_diff > 0:
-                    result_success = self.power_source_manager.add_load(p_diff)
-                else:
-                    result_success = self.power_source_manager.remove_load(p_diff)
+                p = self.device_manager.get(source_device_id)
+                p_original = p.load
+                self.power_source_manager.add_load(p_diff)
+                result_success = self.power_source_manager.optimize_load()
 
                 if result_success:
                     # adding/removing load was successfull
@@ -169,31 +167,43 @@ class GridController(Device):
                     for p in self.power_source_manager.get_changed_power_sources():
                         # broadcast the messages to the power sources that have changed
                         if p.DeviceClass is Battery:
-                            self._battery.add_load(p.load)
+                            pass
                         else:
                             self.broadcast_new_power(p.load, p.device_id)
                 else:
                     # unable to provide the requested power
                     # TODO: if can't provide power, shutdown ? or restore to previous load?
+                    # take the load out of the power source manager
+                    self.power_source_manager.add_load(-1 * (p_diff + p_original))
                     self.device_manager.set_load(source_device_id, 0.0)
                     self.broadcast_new_power(0.0, source_device_id)
+        self.power_source_manager.reset_changed()
         # self.schedule_next_events()
         self.calculate_next_ttie()
 
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
         self._time = time
+        self.power_source_manager.set_time(self._time)
         if not self._static_price:
             self._logger.debug(
                 self.build_message(
                     message="Price change received (new_price = {}, source_device_id = {}, target_device_id = {})".format(new_price, source_device_id, target_device_id)
                 )
             )
+
+            if self._battery:
+                # update the battery charge and status
+                self._battery.set_time(time)
+
             # set the price for the device
             self.power_source_manager.set_price(source_device_id, new_price)
             self.power_source_manager.optimize_load()
             for p in self.power_source_manager.get_changed_power_sources():
-                self.broadcast_new_power(p.load, p.device_id)
+                if p.DeviceClass is Battery:
+                    pass
+                else:
+                    self.broadcast_new_power(p.load, p.device_id)
             # calculate the new gc price
             if self.calculate_gc_price():
                 # send the new price to the devices if changed
@@ -203,17 +213,20 @@ class GridController(Device):
     def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"
         self._time = new_time
+        self.power_source_manager.set_time(self._time)
         if self._battery:
             self._battery.set_time(new_time)
 
         self.process_events()
         self.schedule_next_events()
         self.calculate_next_ttie()
+        self.power_source_manager.reset_changed()
         return
 
     def on_capacity_change(self, source_device_id, target_device_id, time, value):
         """A device registers its capacity to the grid controller it's registered to"""
         self._time = time
+        self.power_source_manager.set_time(self._time)
         self._logger.debug(
             self.build_message(
                 message="received capacity change {} -> {}".format(source_device_id, value),
@@ -222,10 +235,48 @@ class GridController(Device):
             )
         )
         self.power_source_manager.set_capacity(source_device_id, value)
-        self.power_source_manager.optimize_load()
-        for p in self.power_source_manager.get_changed_power_sources():
-            self.broadcast_new_power(p.load, p.device_id)
-        self.power_source_manager.reset_changed()
+
+        if self._battery:
+            # update the battery charge and status
+            self._battery.update_status()
+
+        result = self.power_source_manager.optimize_load()
+        if result:
+            for p in self.power_source_manager.get_changed_power_sources():
+                if p.DeviceClass is Battery:
+                    pass
+                else:
+                    self.broadcast_new_power(p.load, p.device_id)
+            self.power_source_manager.reset_changed()
+
+            # notify any euds of capacity changes
+            # the eud checks to see if it should be in operation
+            # turns itself on if necessary
+            if self._time > 0:
+                for d in self.device_manager.devices():
+                    self.broadcast_new_capacity(self.power_source_manager.total_capacity(), d.device_id)
+        else:
+            # load exceeds capacity after the new capacity is applied
+            self._logger.debug(
+                self.build_message(
+                    message="Load exceeds capacity ({} > {})".format(
+                        self.power_source_manager.total_load(),
+                        self.power_source_manager.total_capacity()
+                    )
+                )
+            )
+            self.power_source_manager.shutdown()
+            self.device_manager.shutdown()
+            # notify all changed power sources
+            for p in self.power_source_manager.get_changed_power_sources():
+                if p.DeviceClass is Battery:
+                    pass
+                else:
+                    self.broadcast_new_power(p.load, p.device_id)
+            self.power_source_manager.reset_changed()
+            # notify all devices of change in load -> 0
+            for d in self.device_manager.devices():
+                self.broadcast_new_power(0.0, d.device_id)
 
     def add_device(self, new_device_id, DeviceClass):
         "Add a device to the list devices connected to the grid controller"
@@ -292,8 +343,8 @@ class GridController(Device):
         set_power_sources_called = False
 
         for event in self._events:
-            if event["time"] <= self._time:
-                if event["operation"] == "emit_initial_price":
+            if event.ttie <= self._time:
+                if event.value == "emit_initial_price":
                     self.send_price_change_to_devices()
                     remove_items.append(event)
 
@@ -304,7 +355,7 @@ class GridController(Device):
         # if there's a battery then process its events
         if self._battery:
             self._battery.process_events()
-            self.power_source_manager.optimize_load()
+            # self.power_source_manager.optimize_load()
 
     def schedule_next_events(self):
         "Schedule upcoming events if necessary"
@@ -314,14 +365,18 @@ class GridController(Device):
 
     def set_initial_price_event(self):
         """Let all other devices know of the initial price of energy"""
-        self._events.append({"time": 0, "operation": "emit_initial_price"})
+        new_event = LpdmEvent(0, "emit_initial_price")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == "emit_initial_price", self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 
     def calculate_next_ttie(self):
         "calculate the next TTIE - look through the pending events for the one that will happen first"
         ttie = None
         for event in self._events:
-            if ttie == None or event["time"] < ttie:
-                ttie = event["time"]
+            if ttie == None or event.ttie < ttie:
+                ttie = event.ttie
 
         if ttie != None and ttie != self._ttie:
             self._ttie = ttie

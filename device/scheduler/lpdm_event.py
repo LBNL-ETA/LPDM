@@ -1,5 +1,5 @@
 
-class LpdmTask(object):
+class LpdmEvent(object):
     def __init__(self, ttie, value):
         self.ttie = ttie
         self.value = value

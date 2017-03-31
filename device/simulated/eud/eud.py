@@ -15,7 +15,6 @@
     Implementation of a general EUD device
 """
 from device.base.device import Device
-from device.scheduler import Scheduler
 import logging
 
 class Eud(Device):
@@ -26,10 +25,6 @@ class Eud(Device):
         self._device_type = "eud"
         # set the properties for an end-use device
         self._device_name = config.get("device_name", "EUD")
-
-        # max power - set default to 100 watts unless different value provided in configuration
-        # operate at max_power_output unless price > 'price_dim'
-        self._max_power_output = config.get("max_power_output", 100.0)
 
         # the price (c/kWh) at which to begin dimming down the power
         # when price > 'price_dim_start' and price < 'price_dim_end', linearly dim down to power level (%) set at 'power_level_low' of power at 'price_dim_end'
@@ -50,11 +45,6 @@ class Eud(Device):
         # the low operating power level
         self._power_level_low = config.get("power_level_low", 20.0)
 
-        # _schedule_array is the raw schedule passed in
-        # _dail_y_schedule is the parsed schedule used by the device to schedule events
-        self._scheduler = None
-        self._schedule_array = config.get("schedule", None)
-
         self._power_level = 0.0
 
         # set the units
@@ -63,16 +53,6 @@ class Eud(Device):
         # load a set of attribute values if a 'scenario' key is present
         if type(config) is dict and 'scenario' in config.keys():
             self.set_scenario(config['scenario'])
-
-    def init(self):
-        self.setup_schedule()
-        self.calculate_next_ttie()
-
-    def setup_schedule(self):
-        """Setup the schedule if there is one"""
-        if type(self._schedule_array) is list:
-            self._scheduler = Scheduler(self._schedule_array)
-            self._scheduler.parse_schedule()
 
     def status(self):
         return {
@@ -83,41 +63,25 @@ class Eud(Device):
             "fuel_price": self._price
         }
 
-    def refresh(self):
-        "Refresh the eud. For a basic eud this means resetting the operation schedule."
-        self._ttie = None
-        self._next_event = None
-        self._events = []
-
-        # turn on/off the device based on the updated schedule
-        should_be_in_operation = self.should_be_in_operation()
-
-        if should_be_in_operation and not self._in_operation:
-            self.turn_on()
-        elif not should_be_in_operation and self._in_operation:
-            self.turn_off()
-
-        self.calculate_next_ttie()
-
-    def should_be_in_operation(self):
-        """determine if the device should be operating when a refresh event occurs"""
-
-        current_time_of_day_seconds = self.time_of_day_seconds()
-        operating = False
-        for item in self._daily_schedule:
-            if  item['time_of_day_seconds'] > current_time_of_day_seconds:
-                break
-            else:
-                operating = True if item['operation'] == 1 else False
-        return operating
-
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
         if target_device_id == self._device_id:
             if new_power == 0 and self._in_operation:
                 self._time = time
                 self.turn_off()
-        return
+
+    def on_capacity_change(self, source_device_id, target_device_id, time, value):
+        """A device has changed its capacity, check if the eud should be in operation"""
+        self._time = time
+        if not self._in_operation and self.should_be_in_operation():
+            self._logger.debug(
+                self.build_message(
+                    message="eud should be on",
+                    tag="capacity_change_on",
+                    value=1
+                )
+            )
+            self.turn_on()
 
     # def current_schedule_value(self):
         # """Is the device scheduled to be on?"""
@@ -165,66 +129,45 @@ class Eud(Device):
             self._time = time
             self.turn_off()
 
-    def turn_on(self):
-        "Turn on the device"
-        if not self._in_operation:
-            self._in_operation = True
-            self._logger.info(
-                self.build_message(
-                    message="turn on eud",
-                    tag="on/off",
-                    value=1
-                )
-            )
-            self.set_power_level()
-
-    def turn_off(self):
-        "Turn off the device"
-
-        if self._in_operation:
-            self._power_level = 0.0
-            self._in_operation = False
-            self._logger.info(
-                self.build_message(
-                    message="turn off eud",
-                    tag="on/off",
-                    value=0
-                )
-            )
-            self._logger.info(
-                self.build_message(
-                    message="Power level {}".format(self._power_level),
-                    tag="power",
-                    value=self._power_level
-                )
-            )
-
     def process_event(self):
-        if (self._next_event and self._time == self._ttie):
-            if self._in_operation and self._next_event.value == "off":
-                self.turn_off()
-                self.broadcast_new_power(0.0, target_device_id=self._grid_controller_id)
-            elif not self._in_operation and self._next_event.value == "on":
-                self.set_power_level()
+        "Process any events that need to be processed"
+        remove_items = []
+        for event in self._events:
+            if event.ttie <= self._time:
+                if event.value == "off" and self._in_operation:
+                    self.turn_off()
+                    self.broadcast_new_power(0.0, target_device_id=self._grid_controller_id)
+                    remove_items.append(event)
+                    self._current_event = event
+                elif event.value == "on" and not self._in_operation:
+                    self.turn_on()
+                    remove_items.append(event)
+                    self._current_event = event
 
-            self.calculate_next_ttie()
+        # remove the processed events from the list
+        if len(remove_items):
+            for event in remove_items:
+                self._events.remove(event)
 
-    def calculate_next_ttie(self):
-        """get the next scheduled task from the schedule and find the next ttie"""
-        # need to have a schedule set up
-        if self._scheduler:
-            next_task = self._scheduler.get_next_scheduled_task(self._time)
+        self.calculate_next_ttie()
 
-            if next_task and (self._next_event is None or self._ttie != next_task.ttie or self._next_event.value != next_task.value):
-                self._logger.info(
-                    self.build_message(
-                        message="schedule event {}".format(next_task),
-                        tag="scheduled_event"
-                    )
-                )
-                self._next_event = next_task
-                self._ttie = next_task.ttie
-                self.broadcast_new_ttie(self._ttie)
+
+    # def calculate_next_ttie(self):
+        # """get the next scheduled task from the schedule and find the next ttie"""
+        # # need to have a schedule set up
+        # if self._scheduler:
+            # next_task = self._scheduler.get_next_scheduled_task(self._time)
+
+            # if next_task and (self._next_event is None or self._ttie != next_task.ttie or self._next_event.value != next_task.value):
+                # self._logger.info(
+                    # self.build_message(
+                        # message="schedule event {}".format(next_task),
+                        # tag="scheduled_event"
+                    # )
+                # )
+                # self._next_event = next_task
+                # self._ttie = next_task.ttie
+                # self.broadcast_new_ttie(self._ttie)
 
     def parse_schedule(self, schedule):
         if type(schedule) is list:

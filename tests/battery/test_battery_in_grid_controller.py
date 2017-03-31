@@ -15,7 +15,7 @@ class TestBatteryInGridController(unittest.TestCase):
             "price": 0.0,
             "min_soc": 0.2,
             "max_soc": 0.8,
-            "max_charge_rate": 1000.0,
+            "max_charge_rate": 100.0,
             "check_soc_rate": 300,
             "current_soc": 1.0
         }
@@ -88,6 +88,7 @@ class TestBatteryInGridController(unittest.TestCase):
         eud_1 = self.gc.device_manager.get("eud_1")
         self.gc.on_power_change('eud_1', 'gc_1', 0, 100.0)
         self.assertEqual(self.gc.power_source_manager.total_load(), 100)
+        self.assertEqual(eud_1.load, 100.0)
 
         # the battery should be set to discharge
         self.assertTrue(self.gc._battery._can_discharge)
@@ -111,10 +112,13 @@ class TestBatteryInGridController(unittest.TestCase):
         # move forward in time to finish battery charge
         # battery should be finished charging
         # so load should just be the 100 W eud
-        self.gc._battery.set_time(self.gc._battery._time + 60.0 * 55.0)
-        self.gc._battery.process_events()
-        self.assertEqual(dg.load, 100)
+        # self.gc._battery.set_time(self.gc._battery._time + 60.0 * 55.0)
+        # self.gc._battery.process_events()
+        self.gc.on_time_change(self.gc._time + 60.0 * 55.0)
+        bt = self.gc.power_source_manager.get("bt_1")
+        self.assertEqual(bt.load, 100)
         self.assertEqual(self.gc.power_source_manager.total_load(), 100)
+
 
 if __name__ == "__main__":
     unittest.main()

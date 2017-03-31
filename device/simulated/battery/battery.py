@@ -16,6 +16,7 @@
 """
 
 from device.base.power_source import PowerSource
+from device.scheduler import LpdmEvent
 import logging
 from lpdm_exception import LpdmMissingPowerSourceManager, LpdmBatteryDischargeWhileCharging, \
         LpdmBatteryNotDischarging, LpdmBatteryAlreadyDischarging, LpdmBatteryCannotDischarge, \
@@ -74,8 +75,8 @@ class Battery(PowerSource):
         self._last_update_time = self._time
         self._charge_start_time = None
         self._can_charge = False
+        self._is_charging = False
         self._can_discharge = False
-        self._events = []
 
     def init(self):
         """no need to do any initialization for the battery"""
@@ -101,12 +102,23 @@ class Battery(PowerSource):
                 raise LpdmBatteryCannotDischarge()
         elif new_load < 0:
             raise Exception("Battery will set its own load when recharging")
-        self._load = new_load
+        if new_load != self._load:
+            self._load = new_load
+            self._logger.info(
+                self.build_message(
+                    message="Set load to {}".format(self._load),
+                    tag="power",
+                    value=self._load
+                )
+            )
 
     def add_load(self, new_load):
         """Add load on to the battery. should only happen when discharging is enabled"""
-        if not self._can_discharge:
+        if new_load > 0 and not self._can_discharge:
             raise LpdmBatteryNotDischarging()
+        if new_load < 0 and not self._can_charge:
+            raise Exception("Battery is not set to charge")
+
         self._logger.debug(
             self.build_message(
                 message="Added load to the battery ({})".format(new_load)
@@ -148,7 +160,10 @@ class Battery(PowerSource):
         if self.power_source_manager is None:
             raise LpdmMissingPowerSourceManager()
 
-        if self._load > 0:
+        # update the charge on the device
+        self.update_state_of_charge()
+
+        if self.is_discharging():
             # if battery is discharging
             # if self.power_source_manager.total_load() - self._load > 0:
                 # is there other load besides from this device?
@@ -163,13 +178,16 @@ class Battery(PowerSource):
             # else:
                 # # stop discharging if there is no other load on the system
                 # self.disable_discharge()
-        elif self._load < 0:
+        elif self.is_charging():
             # battery is charging
             if self._current_soc >= self._max_soc \
             or (self.power_source_manager.output_capacity() < 0.3 and self._current_soc > 0.65):
                 # stop discharging dn do nothing
                 self.stop_charging()
                 self.disable_charge()
+                if not self._can_discharge and self.power_source_manager.output_capacity() < 0.3 and self._current_soc > 0.65:
+                    # start to discharge the battery
+                    self.enable_discharge()
         else:
             # Neither - not charging and not discharging (load == 0)
             # if self.power_source_manager.total_load() > 0 \
@@ -191,7 +209,7 @@ class Battery(PowerSource):
 
     def is_charging(self):
         """Is the battery charging?"""
-        return self._can_charge and self._load < 0
+        return self._is_charging
 
     def enable_discharge(self):
         """
@@ -221,6 +239,9 @@ class Battery(PowerSource):
             # raise an exception if there's an attempt to stop discharging if it isn't actually discharging
             raise LpdmBatteryNotDischarging()
 
+        # if self.is_discharging():
+            # self.stop_discharging()
+
         self._logger.debug(
             self.build_message(
                 message="Disable discharge (soc = {})".format(self._current_soc),
@@ -231,12 +252,13 @@ class Battery(PowerSource):
         self._can_discharge = False
         self.power_source_manager.set_capacity(self._device_id, 0.0)
 
-    def stop_discharging(self):
-        """Stop discharging the battery"""
-        if self.is_discharging():
-            d = self.power_source_manager.get(self._device_id)
-            d.load = 0.0
-            self._load = 0.0
+    # def stop_discharging(self):
+        # """Stop discharging the battery"""
+        # print "stop discharring {}".format(self.is_discharging())
+        # if self.is_discharging():
+            # # set the load on the battery to zero
+            # # also set the load in the power source manager to zero
+            # self.power_source_manager.set_load(self._device_id, 0.0)
 
     def update_state_of_charge(self):
         """Update the state of charge"""
@@ -269,7 +291,6 @@ class Battery(PowerSource):
                 )
             )
             self._can_charge = True
-            self.power_source_manager.set_capacity(self._device_id, 0.0)
 
     def disable_charge(self):
         """
@@ -279,6 +300,8 @@ class Battery(PowerSource):
         if not self._can_charge:
             # raise an exception if there's an attempt to stop discharging if it isn't actually discharging
             raise LpdmBatteryNotDischarging()
+        elif self._load != 00:
+            raise Exception("Can't disable charge while there is a load on the device.")
 
         self._logger.debug(
             self.build_message(
@@ -288,7 +311,6 @@ class Battery(PowerSource):
             )
         )
         self._can_charge = False
-        self.power_source_manager.set_capacity(self._device_id, 0.0)
 
     def start_charging(self):
         """
@@ -297,7 +319,7 @@ class Battery(PowerSource):
             set the capacity to 0
             add the load to the power source manager
         """
-        if self._can_charge and not self._can_discharge and self._load >= 0:
+        if self._can_charge and not self._can_discharge:
             self._logger.info(
                 self.build_message(
                     message="charge",
@@ -307,12 +329,12 @@ class Battery(PowerSource):
             )
             # set the load to the charge rate
             # negative because energy is flowing into the device
-            self._load = -self.charge_rate()
+            # self._load = -self.charge_rate()
             # set the power source manager capacity for the device
             # self.power_source_manager.set_capacity(self._device_id, 0.0)
-            self.power_source_manager.add_load(-1 * self._load)
+            self._is_charging = True
+            self.power_source_manager.add_load(self.charge_rate())
         else:
-            self.log_message("battery is not able to charge, check parameters")
             raise Exception("battery is not able to charge, check parameters")
 
     def stop_charging(self):
@@ -325,8 +347,8 @@ class Battery(PowerSource):
                     value="0"
                 )
             )
-            self.power_source_manager.remove_load(self._load)
-            self._load = 0.0
+            self._is_charging = False
+            self.power_source_manager.remove_load(self.charge_rate())
 
     def shutdown(self):
         """Shutdown the battery"""
@@ -334,16 +356,17 @@ class Battery(PowerSource):
         self.update_state_of_charge()
         # stop all activity
         self.stop_charging()
-        self.stop_discharging()
+        # self.stop_discharging()
+        self.disable_discharge()
 
     def process_events(self):
         """Process any events that need to be processed"""
         remove_items = []
         for event in self._events:
-            if event["time"] <= self._time:
-                if event["operation"] == "battery_status":
-                    self.update_state_of_charge()
-                    self.update_status()
+            if event.ttie <= self._time:
+                if event.value == "battery_status":
+                    # self.update_status()
+                    self.power_source_manager.optimize_load()
                     remove_items.append(event)
 
         # remove the processed events from the list
@@ -352,11 +375,15 @@ class Battery(PowerSource):
 
     def schedule_next_events(self):
         """Set up any events that needs to be processed in the future"""
-        items = filter(lambda e: e["operation"] == "battery_status", self._events)
+        items = filter(lambda e: e.value == "battery_status", self._events)
         if len(items) == 0:
             self.set_next_battery_update_event()
 
     def set_next_battery_update_event(self):
         "If the battery is on update its state of charge every X number of seconds"
-        self._events.append({"time": self._time + self._check_soc_rate, "operation": "battery_status"})
+        new_event = LpdmEvent(self._time + self._check_soc_rate, "battery_status")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == "battery_status", self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 

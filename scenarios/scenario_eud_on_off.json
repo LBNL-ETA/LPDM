@@ -2,7 +2,7 @@
     "run_time_days": 7,
     "log_to_postgres": 1,
     "console_log_level": 20,
-    "file_log_level": 10,
+    "file_log_level": 20,
     "pg_log_level": 10,
     "devices": {
         "grid_controllers": [
@@ -20,10 +20,13 @@
         ],
         "euds": [
             {
-                "device_id": "fx_1",
-                "device_type": "fixed_consumption",
+                "device_id": "eud_1",
+                "device_type": "eud",
                 "grid_controller_id": "gc_1",
-                "max_power_output": 35.0
+                "max_power_output": 35.0,
+                "schedule": [
+                    [3, "on"], [18, "off"]
+                ]
             }
         ]
     }

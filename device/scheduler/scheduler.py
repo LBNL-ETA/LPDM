@@ -1,7 +1,7 @@
 from last_day_time import LastDayTime
 from schedule_item import ScheduleItem
 from lpdm_exception import LpdmScheduleInvalid
-from lpdm_task import LpdmTask
+from lpdm_event import LpdmEvent
 import logging
 from simulation_logger import message_formatter
 
@@ -54,8 +54,6 @@ class Scheduler(object):
                 found_item = item
                 break
 
-        self._logger.debug(message_formatter.build_message(message="found_item = {}".format(found_item), device_id="scheduler"))
-
         # if an event hasn't been found then we are past the last defined schedule
         # so repeat the last full day's schedule
         if found_item is None:
@@ -83,6 +81,6 @@ class Scheduler(object):
             ttie = (day * SECS_IN_DAY) + found_item.time
             if ttie <= time_seconds:
                 ttie += SECS_IN_DAY
-            return LpdmTask(ttie, found_item.value)
+            return LpdmEvent(ttie, found_item.value)
         else:
             return None

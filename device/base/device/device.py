@@ -22,6 +22,9 @@ import datetime
 import json
 from notification import NotificationReceiver, NotificationSender
 from simulation_logger import message_formatter
+# getting an error when trying to import using the absolute path (device.scheduler)
+# so used a relative path import
+from ...scheduler import Scheduler
 
 from supervisor.lpdm_event import LpdmTtieEvent, LpdmPowerEvent, LpdmPriceEvent, LpdmKillEvent, \
     LpdmConnectDeviceEvent, LpdmAssignGridControllerEvent, LpdmRunTimeErrorEvent, \
@@ -54,17 +57,26 @@ class Device(NotificationReceiver, NotificationSender):
         self._price = config.get("price", 0.0)
         self._static_price = config.get("static_price", False)
         self._grid_controller_id = config.get("grid_controller_id", None)
+        self._max_power_output = config.get("max_power_output", 0.0)
+
+        # _schedule_array is the raw schedule passed in
+        # _dail_y_schedule is the parsed schedule used by the device to schedule events
+        self._scheduler = None
+        self._schedule_array = config.get("schedule", None)
+        self._events = []
+        self._current_event = None
 
         self._power_level = 0.0
         self._time = 0
         self._units = None
         self._in_operation = False
         self._ttie = None
-        self._next_event = None
+        self._current_capacity = None
 
         self._broadcast_new_price_callback = config["broadcast_new_price"] if type(config) is dict and  "broadcast_new_price" in config.keys() and callable(config["broadcast_new_price"]) else None
         self._broadcast_new_power_callback = config["broadcast_new_power"] if type(config) is dict and "broadcast_new_power" in config.keys() and callable(config["broadcast_new_power"]) else None
         self._broadcast_new_ttie_callback = config["broadcast_new_ttie"] if type(config) is dict and "broadcast_new_ttie" in config.keys() and callable(config["broadcast_new_ttie"]) else None
+        self._broadcast_new_capacity_callback = config["broadcast_new_capacity"] if type(config) is dict and "broadcast_new_capacity" in config.keys() and callable(config["broadcast_new_capacity"]) else None
 
         # Setup logging
         self._logger = logging.getLogger("lpdm")
@@ -75,11 +87,18 @@ class Device(NotificationReceiver, NotificationSender):
 
     def init(self):
         """Run any initialization functions for the device"""
+        self.setup_schedule()
         self.calculate_next_ttie()
 
     def __repr__(self):
         "Default string representation of an object, prints out all attributes and values"
         return ", ".join(["{0} = {1}".format(key, getattr(self,key)) for key in self.__dict__.keys() if not callable(getattr(self, key))])
+
+    def setup_schedule(self):
+        """Setup the schedule if there is one"""
+        if type(self._schedule_array) is list:
+            self._scheduler = Scheduler(self._schedule_array)
+            self._scheduler.parse_schedule()
 
     def assign_grid_controller(self, grid_controller_id):
         """set the grid controller for the device"""
@@ -116,19 +135,26 @@ class Device(NotificationReceiver, NotificationSender):
 
     def calculate_next_ttie(self):
         "calculate the next TTIE - look through the pending events for the one that will happen first"
-        ttie = None
-        the_event = None
+        found_event = None
+        # search through the non-scheduled events first
         for event in self._events:
-            if ttie == None or event["time"] < ttie:
-                ttie = event["time"]
-                the_event = event
+            if found_event is None or event.ttie < found_event.ttie:
+                found_event = event
 
-        if ttie != None and ttie != self._ttie:
+        # check the scheduler for upcoming events
+        if self._scheduler:
+            sched_event = self._scheduler.get_next_scheduled_task(self._time)
+            if sched_event and (found_event is None or sched_event.ttie < found_event.ttie):
+                # assign the vent with the lower ttie
+                found_event = sched_event
+
+        if not found_event is None and (self._ttie is None or self._ttie < found_event.ttie):
             self._logger.debug(
-                self.build_message(message="the next event found is {} at time {}".format(the_event, ttie))
+                self.build_message(message="the next event found is {}".format(found_event))
             )
-            self.broadcast_new_ttie(ttie)
-            self._ttie = ttie
+            self._events.append(found_event)
+            self.broadcast_new_ttie(found_event.ttie)
+            self._ttie = found_event.ttie
 
     def broadcast_new_price(self, new_price, target_device_id='all', debug_level=logging.DEBUG):
         "Broadcast a new price if a callback has been setup, otherwise raise an exception."
@@ -160,6 +186,25 @@ class Device(NotificationReceiver, NotificationSender):
             raise Exception("broadcast_new_power has not been set for this device!")
         return
 
+    def broadcast_new_capacity(self, value=None, target_device_id=None, debug_level=logging.DEBUG):
+        "Broadcast the new capacity value if a callback has been setup, otherwise raise an exception."
+        if callable(self._broadcast_new_capacity_callback):
+            self._logger.debug(
+                self.build_message(
+                    message="Broadcast new capacity {} from {}".format(value, self._device_name),
+                    tag="broadcast_capacity",
+                    value=value if not value is None else self._current_capacity
+                )
+            )
+            self._broadcast_new_capacity_callback(
+                self._device_id,
+                target_device_id if not target_device_id is None else self._grid_controller_id,
+                self._time,
+                self._current_capacity if value is None else value
+            )
+        else:
+            raise Exception("broadcast_new_capacity has not been set for this device!")
+
     def broadcast_new_ttie(self, new_ttie, debug_level=logging.DEBUG):
         "Broadcast the new TTIE if a callback has been setup, otherwise raise an exception."
         if callable(self._broadcast_new_ttie_callback):
@@ -177,24 +222,51 @@ class Device(NotificationReceiver, NotificationSender):
 
     def turn_on(self):
         "Turn on the device"
-        self._logger.info(
-            self.build_message(message="{} turned on".format(self._device_name), tag="on/off", value=1)
-        )
-        self._in_operation = True
+        if not self._in_operation:
+            self._logger.info(self.build_message(message="turn on device", tag="on/off", value=1))
+            self._in_operation = True
+            self.set_power_level()
+            self.broadcast_new_power(self._power_level, target_device_id=self._grid_controller_id)
 
     def turn_off(self):
         "Turn off the device"
-        self._logger.info(
-            self.build_message(message="{} turned off".format(self._device_name), tag="on/off", value=0)
-        )
-        self._in_operation = False
+        if self._in_operation:
+            self._power_level = 0.0
+            self._in_operation = False
+            self.broadcast_new_power(self._power_level, target_device_id=self._grid_controller_id)
+            self._logger.info(self.build_message(message="turn off device", tag="on/off", value=0))
+            self._logger.info(
+                self.build_message(
+                    message="Power level {}".format(self._power_level),
+                    tag="power",
+                    value=self._power_level
+                )
+            )
 
     def is_on(self):
         return self._in_operation
 
+    def should_be_in_operation(self):
+        """determine if the device should be operating when a refresh event occurs"""
+        return self._current_event and self._current_event.value == "on"
+
+    def set_power_level(self):
+        """Set the power output of the device"""
+        self._power_level = self._max_power_output
+
     def refresh(self):
-        "Override to define operation for a device when a parameter has been reset and the device needs to be refreshed"
-        return None
+        "Refresh the eud. For a basic eud this means resetting the operation schedule."
+        self._ttie = None
+        self._events = []
+
+        # turn on/off the device based on the updated schedule
+        should_be_in_operation = self.should_be_in_operation()
+        if should_be_in_operation and not self._in_operation:
+            self.turn_on()
+        elif not should_be_in_operation and self._in_operation:
+            self.turn_off()
+
+        self.calculate_next_ttie()
 
     def set_scenario(self, scenario):
         "Sets a 'scenario' for the device. Given a scenario in JSON format, sets various parameters to specific values"

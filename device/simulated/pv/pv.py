@@ -17,6 +17,7 @@ Implementation of a PV module
 
 import os
 from device.base.power_source import PowerSource
+from device.scheduler import LpdmEvent
 import pprint
 
 class Pv(PowerSource):
@@ -70,7 +71,11 @@ class Pv(PowerSource):
 
     def set_update_capacity_event(self):
         """Set the next event for updating the pv capacity"""
-        self._events.append({"time": self._time + self._capacity_update_interval, "operation": "update_capacity"})
+        new_event = LpdmEvent(self._time + self._capacity_update_interval, "update_capacity")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == "update_capacity", self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 
     def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"
@@ -82,16 +87,17 @@ class Pv(PowerSource):
         "Process any events that need to be processed"
         remove_items = []
         for event in self._events:
-            if event["time"] <= self._time:
-                if event["operation"] == "update_capacity":
+            if event.ttie <= self._time:
+                if event.value == "update_capacity":
                     self.set_capacity()
-                    self.set_update_capacity_event()
                     remove_items.append(event)
 
         # remove the processed events from the list
         if len(remove_items):
             for event in remove_items:
                 self._events.remove(event)
+
+        self.set_update_capacity_event()
 
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
@@ -104,7 +110,6 @@ class Pv(PowerSource):
                 value=self._power_level
             )
         )
-        return
 
     def on_price_change(self, new_price):
         "Receives message when a price change has occured"

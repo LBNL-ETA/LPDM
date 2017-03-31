@@ -15,6 +15,7 @@
     Implementation of the Diesel Generator device.
 """
 from device.base.power_source import PowerSource
+from device.scheduler import LpdmEvent
 import logging
 import pprint
 
@@ -99,7 +100,6 @@ class DieselGenerator(PowerSource):
         self._consumption_24hr = [] # keeps track of the last 24 hours of diesel consumption by hour
 
         self._last_fuel_status_time = 0
-        self._events = []
 
         self._target_refuel_time_secs = None
         self._base_refuel_time_secs = 0
@@ -149,11 +149,15 @@ class DieselGenerator(PowerSource):
         "Remove events that need to be recalculated when the device status is refreshed.  For the diesel generator this is just the refuel event."
         next_refuels = []
         for event in self._events:
-            if event['operation'] == 'refuel':
+            if event.value == 'refuel':
                 next_refuels.append(event)
 
         for event in next_refuels:
             self._events.remove(event)
+
+    def set_power_level(self):
+        """Override the base class method"""
+        pass
 
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured (W)"
@@ -222,33 +226,54 @@ class DieselGenerator(PowerSource):
 
     def set_next_hourly_consumption_calculation_event(self):
         "Setup the next event for the calculation of the hourly consumption"
-        self._events.append({"time": self._time + 60 * 60, "operation": "hourly_consumption"})
-        return
+        new_event = LpdmEvent(self._time + 60 * 60, "hourly_consumption")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == "hourly_consumption", self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 
     def set_next_price_change_event(self):
         "Setup the next event for a price change"
-        self._events.append({"time": self._time + self._price_reassess_time, "operation": "price"})
-        return
+        new_event = LpdmEvent(self._time + self._price_reassess_time, "price")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == "price", self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 
     def set_next_reasses_fuel_change_event(self):
         "Setup the next event for reassessing the fuel level"
         if self._time == 0:
-            self._events.append({"time": self._time + 60 * 60 * 24, "operation": "reasses_fuel"})
+            new_event = LpdmEvent(self._time + 60 * 60 * 24, "reasses_fuel")
         else:
-            self._events.append({"time": self._time + 60 * 60 * 6, "operation": "reasses_fuel"})
+            new_event = LpdmEvent(self._time + 60 * 60 * 6, "reasses_fuel")
 
-        return
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == "reasses_fuel", self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 
     def set_initial_price_event(self):
         """Let all other devices know of the initial price of energy"""
-        self._events.append({"time": 0, "operation": "emit_initial_price"})
+        new_event = LpdmEvent(0, "emit_initial_price")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == "emit_initial_price", self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 
     def set_initial_capacity_event(self):
         """Let all other devices know of the initial price of energy"""
-        self._events.append({"time": 0, "operation": "emit_initial_capacity"})
+        new_event = LpdmEvent(0, "emit_initial_capacity")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == "emit_initial_capacity", self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 
     def set_next_refuel_event(self):
-        self._events.append({"time": self._time + self._days_to_refuel * 3600.0 * 24.0, "operation": "refuel"})
+        new_event = LpdmEvent(self._time + self._days_to_refuel * 3600.0 * 24.0, "refuel")
+        # check if the event is already there
+        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == "refuel", self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
 
     def log_power_change(self, time, power):
         "Store the changes in power usage"
@@ -258,30 +283,30 @@ class DieselGenerator(PowerSource):
         "Process any events that need to be processed"
         remove_items = []
         for event in self._events:
-            if event["time"] <= self._time:
-                if event["operation"] == "price":
+            if event.ttie <= self._time:
+                if event.value == "price":
                     if self.is_on():
                         self.update_fuel_level()
                         self.calculate_electricity_price()
 
                     self.set_next_price_change_event()
                     remove_items.append(event)
-                elif event["operation"] == "hourly_consumption":
+                elif event.value == "hourly_consumption":
                     self.calculate_hourly_consumption(is_initial_event=True)
                     self.set_next_hourly_consumption_calculation_event()
                     remove_items.append(event)
-                elif event["operation"] == "reasses_fuel":
+                elif event.value == "reasses_fuel":
                     self.reasses_fuel()
                     self.set_next_reasses_fuel_change_event()
                     remove_items.append(event)
-                elif event["operation"] == "refuel":
+                elif event.value == "refuel":
                     self.refuel()
                     self.set_next_refuel_event()
                     remove_items.append(event)
-                elif event["operation"] == "emit_initial_price":
+                elif event.value == "emit_initial_price":
                     self.calculate_electricity_price()
                     remove_items.append(event)
-                elif event["operation"] == "emit_initial_capacity":
+                elif event.value == "emit_initial_capacity":
                     self.broadcast_new_capacity()
                     remove_items.append(event)
 
@@ -289,8 +314,6 @@ class DieselGenerator(PowerSource):
         if len(remove_items):
             for event in remove_items:
                 self._events.remove(event)
-
-        return
 
     def update_fuel_level(self):
         "Update the fuel level"

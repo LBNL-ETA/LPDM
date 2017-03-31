@@ -68,6 +68,7 @@ class Supervisor:
                     or isinstance(the_event, LpdmCapacityEvent):
                 # power or price event: call the thread and pass along the event
                 # get the target thread and put the event in the queue
+                # self.logger.debug(self.build_message("supervisor event {}".format(the_event)))
                 t = self.device_thread_manager.get(the_event.target_device_id)
                 t.queue.put(the_event)
                 t.queue.join()
@@ -91,7 +92,13 @@ class Supervisor:
         next_ttie = self.ttie_event_manager.get()
         if next_ttie:
             if next_ttie.value < self.max_ttie:
+                if next_ttie.value < self._time:
+                    self.logger.error(
+                        self.build_message("current time is {}, but trying to execute event {}".format(self._time, next_ttie))
+                    )
+                    raise Exception("TTIE events out of order.")
                 self._time = next_ttie.value
+                # self.logger.debug(self.build_message("ttie {}".format(next_ttie)))
                 # get the device thread and put the event in the queue
                 t = self.device_thread_manager.get(next_ttie.target_device_id)
                 t.queue.put(next_ttie)

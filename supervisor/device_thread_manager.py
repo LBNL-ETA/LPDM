@@ -5,13 +5,23 @@ from device_thread import DeviceThread
 from device.simulated.grid_controller import GridController
 from device.base.power_source import PowerSource
 from device.simulated.eud import Eud
+from simulation_logger import message_formatter
 
 class DeviceThreadManager(object):
     def __init__(self, supervisor_queue):
-        # self.logger = logging.getLogger("lpdm")
-        self.logger = logging.LoggerAdapter(logging.getLogger("lpdm"), {"sim_seconds": "", "device_id": "device_thread_manager"})
+        self.logger = logging.getLogger("lpdm")
         self.supervisor_queue = supervisor_queue
         self.threads = []
+
+    def build_message(self, message="", tag="", value=""):
+        """Build the log message string"""
+        return message_formatter.build_message(
+            message=message,
+            tag=tag,
+            value=value,
+            time_seconds=None,
+            device_id="device_thread_mgr"
+        )
 
     def add(self, DeviceClass, device_config):
         """store a thread and linking device_id"""
@@ -33,7 +43,7 @@ class DeviceThreadManager(object):
         )
         # keep track of the thread along with its metadata
         self.threads.append(t)
-        self.logger.debug("added device class {}".format(DeviceClass))
+        self.logger.debug(self.build_message("added device class {}".format(DeviceClass)))
 
     def get(self, device_id):
         """Get a "managed thread" by a device_id"""
@@ -51,11 +61,11 @@ class DeviceThreadManager(object):
         # start all of the device threads
         # wait for each one to finish initializing
         for t in self.threads:
-            self.logger.debug("starting thread {}".format(t.device_id))
+            self.logger.debug(self.build_message("starting thread {}".format(t.device_id)))
             t.queue.put(LpdmInitEvent())
             t.start()
             t.queue.join()
-        self.logger.debug("finished starting threads")
+        self.logger.debug(self.build_message("finished starting threads"))
 
     def connect_devices(self):
         """
@@ -114,16 +124,13 @@ class DeviceThreadManager(object):
 
     def kill_all(self):
         """Gracefully kill all device threads"""
-        self.logger.debug("kill all threads")
+        self.logger.debug(self.build_message("kill all threads"))
         # send a kill event to each thread
         for t in self.threads:
-            self.logger.debug('kill thread {}'.format(t.name))
+            self.logger.debug(self.build_message('kill thread {}'.format(t.name)))
             t.queue.put(LpdmKillEvent())
             t.queue.join()
-        self.logger.debug("finished killing threads")
 
     def wait_for_all(self):
         """Wait for all threads (call join method for each thread)"""
-        self.logger.debug("wait for all threads")
         [t.join() for t in self.threads]
-        self.logger.debug("finished waiting for threads")

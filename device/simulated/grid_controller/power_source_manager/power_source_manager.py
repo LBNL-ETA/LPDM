@@ -70,7 +70,7 @@ class PowerSourceManager(object):
     def set_load(self, device_id, load):
         """set the load for a specific power source"""
         d = self.get(device_id)
-        if not d.is_available():
+        if load > 0 and not d.is_available():
             raise Exception("The power source {} has not been configured".format(device_id))
 
         if load <= d.capacity:

@@ -145,9 +145,9 @@ class Device(NotificationReceiver, NotificationSender):
                 found_event = sched_event
 
         if not found_event is None and (self._ttie is None or self._ttie < found_event.ttie):
-            self._logger.debug(
-                self.build_message(message="the next event found is {}".format(found_event))
-            )
+            # self._logger.debug(
+                # self.build_message(message="the next event found is {}".format(found_event))
+            # )
             self._events.append(found_event)
             self.broadcast_new_ttie(found_event.ttie)
             self._ttie = found_event.ttie

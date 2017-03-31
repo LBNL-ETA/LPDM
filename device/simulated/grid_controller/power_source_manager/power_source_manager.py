@@ -122,7 +122,7 @@ class PowerSourceManager(object):
 
     def remove_load(self, new_load):
         """Remove load from the system"""
-        self.add_load(-1 * new_load)
+        self.add_load(-1.0 * new_load)
 
     def update_rechargeable_items(self):
         """Update the status of rechargeable items"""
@@ -136,14 +136,16 @@ class PowerSourceManager(object):
         Check that the loads are optimally distributed among the power sources.
         Move load from the more expensive power sources to the cheaper ones.
         """
-        self.logger.debug(self.build_message(message=self, tag="before"))
+        # self.logger.debug(self.build_message(message="optimize_load (load = {}, cap = {})".format(self._load, self._capacity), tag="optimize_before"))
         # update the status of rechargeable itmes
         self.update_rechargeable_items()
+        # self.logger.debug(self.build_message(message="optimize_load-2 (load = {}, cap = {})".format(self._load, self._capacity), tag="optimize_before"))
         # get the current total load on the system
         original_load = self._load
         # add the new load
         remaining_load = original_load
         starting_load = remaining_load
+        # self.logger.debug(self.build_message("begin optimizing load {}".format(remaining_load)))
         # if original_load == 0 and remaining_load == 0:
             # # no need to do anything if there's no load
             # return
@@ -160,22 +162,25 @@ class PowerSourceManager(object):
                 # there is power available for this device and power left to distribute
                 if not ps.is_available():
                     if ps.load > 0:
+                        # self.logger.debug(self.build_message(message="set load for {} to {}".format(ps, 0)))
                         ps.set_load(0.0)
                 else:
                     if remaining_load > ps.capacity:
                         # can't put all the remaining load on this power source
                         # set to 100% and try the next power source
                         if ps.load != ps.capacity:
+                            # self.logger.debug(self.build_message(message="set load for {} to {}".format(ps, ps.capacity)))
                             ps.set_load(ps.capacity)
                         remaining_load -= ps.capacity
                     else:
                         # this power source can handle all of the remaining load
+                        # self.logger.debug(self.build_message(message="set load for {} to {}".format(ps, remaining_load)))
                         if ps.load != remaining_load:
                             ps.set_load(remaining_load)
                         remaining_load = 0
 
         diff = abs(starting_load - self._load)
-        if remaining_load != 0:
+        if remaining_load > 1e-7:
             self.logger.debug(
                 self.build_message(
                     message="Unable to handle the load, total_load = {}, total_capacity = {}".format(self.total_load(), self.total_capacity()))
@@ -185,7 +190,7 @@ class PowerSourceManager(object):
             # compare the difference being below some threshhold instead of equality
             self.logger.debug(self.build_message(message="starting load = {}, total_load = {}, equal ? {}".format(starting_load, self._load, abs(starting_load - self._load))))
             raise Exception("starting/ending loads do not match {} != {}".format(starting_load, self._load))
-        self.logger.debug(self.build_message(message=self, tag="after"))
+        # self.logger.debug(self.build_message(message="optimize_load (load = {}, cap = P{})".format(self._load, self._capacity), tag="optimize_after"))
         return True
 
     def get_available_power_sources(self):

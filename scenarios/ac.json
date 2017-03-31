@@ -9,7 +9,10 @@
             {
                 "device_id": "gc_1",
                 "simulated_or_real": "simulated",
-                "device_type": "grid_controller"
+                "device_type": "grid_controller",
+                "battery": {
+                    "device_id": "bt_1"
+                }
             }
         ],
         "power_sources": [
@@ -26,7 +29,10 @@
                 "device_id": "ac_1",
                 "device_type": "air_conditioner",
                 "simulated_or_real": "simulated",
-                "grid_controller_id": "gc_1"
+                "grid_controller_id": "gc_1",
+                "schedule": [
+                    [8, "on"], [14, "off"]
+                ]
             }
         ]
     }

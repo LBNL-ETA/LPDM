@@ -77,6 +77,9 @@ class Battery(PowerSource):
         self._is_charging = False
         self._can_discharge = False
 
+        self._sum_charge_kwh = 0
+        self._last_charge_update_time = 0
+
     def init(self):
         """no need to do any initialization for the battery"""
         self.update_status()
@@ -102,7 +105,7 @@ class Battery(PowerSource):
         elif new_load < 0:
             raise Exception("Battery will set its own load when recharging")
         if new_load != self._power_level:
-            self._power_level = new_load
+            self.set_power_level(new_load)
             self._logger.info(
                 self.build_message(
                     message="Set load to {}".format(self._power_level),
@@ -123,7 +126,7 @@ class Battery(PowerSource):
                 message="Added load to the battery ({})".format(new_load)
             )
         )
-        self._power_level += new_load
+        self.set_power_level(self._power_level + new_load)
 
     def set_time(self, new_time):
         """Set the time"""
@@ -340,6 +343,8 @@ class Battery(PowerSource):
     def stop_charging(self):
         """stop the battery from charging"""
         if self.is_charging():
+            # update the charge sum total
+            self.sum_charge_kwh()
             self._logger.info(
                 self.build_message(
                     message="charge",
@@ -387,3 +392,18 @@ class Battery(PowerSource):
         if len(found_items) == 0:
             self._events.append(new_event)
 
+    def sum_charge_kwh(self):
+        """Keep a running total of the energy used for charging"""
+        time_diff = self._time - self._last_charge_update_time
+        power_level = self.charge_rate() if self._is_charging else 0
+        if time_diff > 0 and power_level > 0:
+            self._sum_charge_kwh += power_level * (time_diff / 3600.0)
+        self._last_charge_update_time = self._time
+
+    def write_calcs(self):
+        PowerSource.write_calcs(self)
+        self._logger.info(self.build_message(
+            message="sum charge_kwh",
+            tag="sum_charge_kwh",
+            value=self._sum_charge_kwh
+        ))

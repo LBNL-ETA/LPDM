@@ -151,6 +151,7 @@ class GridController(Device):
                     self.build_message("No power sources available, unable to set load for {}".format(source_device_id))
                 )
                 # let all the devices know there is no more power available
+                self.shutdown()
                 for d in self.device_manager.device_list:
                     self.broadcast_new_power(0.0, d.device_id)
             else:
@@ -159,19 +160,9 @@ class GridController(Device):
                 self._logger.debug(self.build_message(message="old load = {}, new load = {}, p_diff = {}".format(device.load, new_power, p_diff)))
                 p_original = p.load
                 self.power_source_manager.add_load(p_diff)
-                result_success = self.power_source_manager.optimize_load()
-
-                if result_success:
-                    # adding/removing load was successfull
-                    # set the load for the requesting device
+                if self.power_source_update():
+                    # successfully added the load
                     self.device_manager.set_load(source_device_id, new_power)
-                    # let any changed power sources know that it needs to change its power output
-                    for p in self.power_source_manager.get_changed_power_sources():
-                        # broadcast the messages to the power sources that have changed
-                        if p.DeviceClass is Battery:
-                            pass
-                        else:
-                            self.broadcast_new_power(p.load, p.device_id)
                 else:
                     # unable to provide the requested power
                     # TODO: if can't provide power, shutdown ? or restore to previous load?
@@ -179,38 +170,65 @@ class GridController(Device):
                     self.power_source_manager.add_load(-1 * (p_diff + p_original))
                     self.device_manager.set_load(source_device_id, 0.0)
                     self.broadcast_new_power(0.0, source_device_id)
+
         self.power_source_manager.reset_changed()
         # self.schedule_next_events()
         self.calculate_next_ttie()
+
+    def power_source_update(self):
+        """Update the power source manager."""
+        result_success = self.power_source_manager.optimize_load()
+        if not result_success and self._battery._is_charging:
+            # if can't add the load and the battery is charging, stop charging and try again
+            self._battery.stop_charging()
+            result_success = self.power_source_manager.optimize_load()
+
+        if result_success:
+            # check if the battery needs to be charged, charge if available
+            if self._battery._can_charge and not self._battery._is_charging:
+                if self.power_source_manager.can_handle_load(self._battery.charge_rate()):
+                    self._battery.start_charging()
+                    result_success = self.power_source_manager.optimize_load()
+                    if not result_success:
+                        self._logger.error(self.build_message("Unable to charge battery."))
+                        self.stop_charging()
+                        self.power_source_manager.optimize_load()
+
+            # let any changed power sources know that it needs to change its power output
+            for p in self.power_source_manager.get_changed_power_sources():
+                # broadcast the messages to the power sources that have changed
+                if p.DeviceClass is Battery:
+                    pass
+                else:
+                    self.broadcast_new_power(p.load, p.device_id)
+        return result_success
 
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
         self._time = time
         self.power_source_manager.set_time(self._time)
+        if self._battery:
+            # update the battery charge and status
+            self._battery.set_time(time)
         if not self._static_price:
             self._logger.debug(
                 self.build_message(
                     message="Price change received (new_price = {}, source_device_id = {}, target_device_id = {})".format(new_price, source_device_id, target_device_id)
                 )
             )
-
-            if self._battery:
-                # update the battery charge and status
-                self._battery.set_time(time)
-
             # set the price for the device
             self.power_source_manager.set_price(source_device_id, new_price)
-            self.power_source_manager.optimize_load()
-            for p in self.power_source_manager.get_changed_power_sources():
-                if p.DeviceClass is Battery:
-                    pass
-                else:
-                    self.broadcast_new_power(p.load, p.device_id)
-            # calculate the new gc price
-            if self.calculate_gc_price():
-                # send the new price to the devices if changed
-                self.send_price_change_to_devices()
-            self.power_source_manager.reset_changed()
+            if self.power_source_update():
+                # calculate the new gc price
+                if self.calculate_gc_price():
+                    # send the new price to the devices if changed
+                    self.send_price_change_to_devices()
+                self.power_source_manager.reset_changed()
+            else:
+                # Error occured during load optimization
+                # shut down everything
+                self._logger.error(self.build_message("optimize_load error during price change"))
+                self.shutdown()
 
     def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"
@@ -237,22 +255,15 @@ class GridController(Device):
             )
         )
         self.power_source_manager.set_capacity(source_device_id, value)
-        result = self.power_source_manager.optimize_load()
-        if result:
-            for p in self.power_source_manager.get_changed_power_sources():
-                if p.DeviceClass is Battery:
-                    pass
-                else:
-                    self.broadcast_new_power(p.load, p.device_id)
+        if self.power_source_update():
             self.power_source_manager.reset_changed()
-
             # notify any euds of capacity changes
             # the eud checks to see if it should be in operation
             # turns itself on if necessary
             if self._time > 0:
                 for d in self.device_manager.devices():
                     self.broadcast_new_capacity(self.power_source_manager.total_capacity(), d.device_id)
-                    
+
             if self.calculate_gc_price():
                 # send the new price to the devices if changed
                 self.send_price_change_to_devices()
@@ -266,18 +277,7 @@ class GridController(Device):
                     )
                 )
             )
-            self.power_source_manager.shutdown()
-            self.device_manager.shutdown()
-            # notify all changed power sources
-            for p in self.power_source_manager.get_changed_power_sources():
-                if p.DeviceClass is Battery:
-                    pass
-                else:
-                    self.broadcast_new_power(p.load, p.device_id)
-            self.power_source_manager.reset_changed()
-            # notify all devices of change in load -> 0
-            for d in self.device_manager.devices():
-                self.broadcast_new_power(0.0, d.device_id)
+            self.shutdown()
 
     def add_device(self, new_device_id, DeviceClass):
         "Add a device to the list devices connected to the grid controller"
@@ -322,20 +322,11 @@ class GridController(Device):
                 value="1"
             )
         )
-        self._total_load = 0.0
-        # set all device power outputs to zero
+        # self.power_source_manager.shutdown()
+        self.device_manager.shutdown()
+        # notify all devices of change in load -> 0
         for d in self.device_manager.devices():
             self.broadcast_new_power(0.0, d.device_id)
-            d.load = 0.0
-
-        # set the power output of the power sources to zero
-        # since a battery is connected directly to the GC it needs to be handled differently
-        for p in self.power_source_manager.get():
-            if isinstance(p.DeviceClass, Battery):
-                self._battery.shutdown()
-            else:
-                self.broadcast_new_power(0.0, p.device_id)
-                p.load = 0.0
 
     def process_events(self):
         "Process any events that need to be processed"
@@ -384,3 +375,8 @@ class GridController(Device):
         if ttie != None and ttie != self._ttie:
             self._ttie = ttie
             self.broadcast_new_ttie(ttie)
+
+    def finish(self):
+        """Call finish on the battery also"""
+        Device.finish(self)
+        self._battery.finish()

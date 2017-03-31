@@ -308,22 +308,11 @@ class AirConditioner(Device):
 
     def schedule_next_events(self):
         "Schedule upcoming events if necessary"
+        Device.schedule_next_events(self)
         # set the event for the hourly price calculation and setpoint reassesment
         self.set_setpoint_range_event()
         self.set_reasses_setpoint_event()
         self.schedule_next_outdoor_temperature_change()
-        self.set_next_on_off_event()
-
-    def set_next_on_off_event(self):
-        """If there's a schedule, find the next on/off event"""
-        # check if there's already one scheduled
-        found = filter(lambda d: d.value in ['on', 'off'], self._events)
-        if len(found) == 0:
-            sched_event = self._scheduler.get_next_scheduled_task(self._time)
-            self._events.append(sched_event)
-            self._logger.debug(self.build_message(message="set next on/off event {}".format(sched_event)))
-
-
 
     def set_setpoint_range_event(self):
         """changes the set_point_low and set_point_high values based on the set_point_schedule (hour of day)"""

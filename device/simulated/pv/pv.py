@@ -62,7 +62,9 @@ class Pv(PowerSource):
         self.make_available()
         self.set_update_capacity_event()
         self.broadcast_new_price(self._price, target_device_id=self._grid_controller_id)
+        self.schedule_next_events()
         self.calculate_next_ttie()
+        self.broadcast_new_ttie(self._ttie)
 
     def make_available(self):
         """Make the power source available, ie set its capacity to a non-zero value"""
@@ -81,6 +83,7 @@ class Pv(PowerSource):
         "Receives message when time for an 'initial event' change has occured"
         self._time = new_time
         self.process_events()
+        self.schedule_next_events()
         self.calculate_next_ttie()
 
     def process_events(self):

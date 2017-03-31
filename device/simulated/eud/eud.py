@@ -116,8 +116,8 @@ class Eud(Device):
         "Receives message when a time change has occured"
         self._time = new_time
         self.process_event()
+        self.schedule_next_events()
         self.calculate_next_ttie()
-        return
 
     def force_on(self, time):
         if not self._in_operation:
@@ -148,9 +148,6 @@ class Eud(Device):
         if len(remove_items):
             for event in remove_items:
                 self._events.remove(event)
-
-        self.calculate_next_ttie()
-
 
     # def calculate_next_ttie(self):
         # """get the next scheduled task from the schedule and find the next ttie"""

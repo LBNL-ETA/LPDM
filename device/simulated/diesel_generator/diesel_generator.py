@@ -121,6 +121,7 @@ class DieselGenerator(PowerSource):
         self.set_next_refuel_event()
         self.calculate_electricity_price()
         self.make_available()
+        self.schedule_next_events()
         self.calculate_next_ttie()
 
     def status(self):
@@ -143,6 +144,7 @@ class DieselGenerator(PowerSource):
         self.update_fuel_level()
         self.calculate_electricity_price()
         self.reasses_fuel()
+        self.schedule_next_events()
         self.calculate_next_ttie()
 
     def remove_refresh_events(self):
@@ -177,6 +179,7 @@ class DieselGenerator(PowerSource):
                 self.calculate_electricity_price()
                 # set to re calculate a new price
                 self.set_next_price_change_event()
+                self.schedule_next_events()
                 self.calculate_next_ttie()
                 # store the new power consumption for the hourly usage calculations
                 self.log_power_change(time, new_power)
@@ -203,8 +206,8 @@ class DieselGenerator(PowerSource):
         "Receives message when time for an 'initial event' change has occured"
         self._time = new_time
         self.process_events()
+        self.schedule_next_events()
         self.calculate_next_ttie()
-        return
 
     def set_next_hourly_consumption_calculation_event(self):
         "Setup the next event for the calculation of the hourly consumption"

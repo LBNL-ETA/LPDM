@@ -77,6 +77,8 @@ class Device(NotificationReceiver, NotificationSender):
         self._ttie = None
         self._current_capacity = None
 
+        self._is_initialized = False
+
         self._broadcast_new_price_callback = config["broadcast_new_price"] if type(config) is dict and  "broadcast_new_price" in config.keys() and callable(config["broadcast_new_price"]) else None
         self._broadcast_new_power_callback = config["broadcast_new_power"] if type(config) is dict and "broadcast_new_power" in config.keys() and callable(config["broadcast_new_power"]) else None
         self._broadcast_new_ttie_callback = config["broadcast_new_ttie"] if type(config) is dict and "broadcast_new_ttie" in config.keys() and callable(config["broadcast_new_ttie"]) else None
@@ -92,7 +94,11 @@ class Device(NotificationReceiver, NotificationSender):
     def init(self):
         """Run any initialization functions for the device"""
         self.setup_schedule()
+        self.schedule_next_events()
         self.calculate_next_ttie()
+
+    def set_initialized(self, initialized=True):
+        self._is_initialized = initialized
 
     def __repr__(self):
         "Default string representation of an object, prints out all attributes and values"
@@ -138,26 +144,28 @@ class Device(NotificationReceiver, NotificationSender):
             device_id = self._device_id
         )
 
+    def schedule_next_events(self):
+        if self._scheduler:
+            self.set_next_scheduled_event()
+
+    def set_next_scheduled_event(self):
+        """If there's a schedule, find the next on/off event"""
+        # check if there's already one scheduled
+        found = filter(lambda d: d.value in ['on', 'off'], self._events)
+        if len(found) == 0:
+            sched_event = self._scheduler.get_next_scheduled_task(self._time if self._is_initialized else self._time - 1)
+            self._events.append(sched_event)
+            self._logger.debug(self.build_message(message="set next on/off event {}".format(sched_event)))
+
     def calculate_next_ttie(self):
         "calculate the next TTIE - look through the pending events for the one that will happen first"
         found_event = None
         # search through the non-scheduled events first
         for event in self._events:
-            if (event.ttie > self._time) and (found_event is None or (event.ttie < found_event.ttie)):
+            if (event.ttie > self._time or (found_event is None and not self._is_initialized)) and (found_event is None or (event.ttie < found_event.ttie)):
                 found_event = event
 
-        # check the scheduler for upcoming events
-        if self._scheduler:
-            sched_event = self._scheduler.get_next_scheduled_task(self._time)
-            if sched_event and sched_event.ttie > self._time and (found_event is None or sched_event.ttie < found_event.ttie):
-                # assign the vent with the lower ttie
-                found_event = sched_event
-
         if not found_event is None and (self._ttie is None or self._ttie < found_event.ttie):
-            # self._logger.debug(
-                # self.build_message(message="the next event found is {}".format(found_event))
-            # )
-            self._events.append(found_event)
             self.broadcast_new_ttie(found_event.ttie)
             self._ttie = found_event.ttie
 
@@ -279,6 +287,7 @@ class Device(NotificationReceiver, NotificationSender):
         elif not should_be_in_operation and self._in_operation:
             self.turn_off()
 
+        self.schedule_next_events()
         self.calculate_next_ttie()
 
     def set_scenario(self, scenario):

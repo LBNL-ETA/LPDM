@@ -28,7 +28,7 @@ class UtilityMeter(PowerSource):
 
         Attributes:
             _device_name: Name of the device
-            
+
 
     """
     def __init__(self, config = None):
@@ -52,10 +52,6 @@ class UtilityMeter(PowerSource):
         self._capacity = config.get("capacity", 2000.0)
         self._power_price = config.get("power_price", 0.01)
 
-        
-        self._scheduler = None
-        self._schedule_array = config.get("schedule", None)
-        
         #Just keeping this for reporting purposes.
         self._start_hour_consumption = 0 # time when the last consumption calculation occured
         self._consumption_activity = []    #track the consumption changes for the hour
@@ -71,6 +67,7 @@ class UtilityMeter(PowerSource):
         self.setup_schedule()
         self.make_unavailable()
         self.calculate_electricity_price()
+        self.schedule_next_events()
         self.calculate_next_ttie()
 
     def setup_schedule(self):
@@ -86,7 +83,7 @@ class UtilityMeter(PowerSource):
             "power_price": self.power_price,
             "power_level": self._power_level,
             "output_capcity": self.current_output_capacity()
-        }    
+        }
 
     def refresh(self):
         "Refresh the utility meter. Currently this means resetting the operation schedule."
@@ -95,6 +92,7 @@ class UtilityMeter(PowerSource):
         self._events = []
 
         self.setup_schedule()
+        self.schedule_next_events()
         self.calculate_next_ttie()
 
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
@@ -113,10 +111,11 @@ class UtilityMeter(PowerSource):
                 # if the device has its capacity set to zero then not available, raise an excpetion unless the new power is also zero
                 raise Exception("Attempt to set load on a power source that has no capacity available.")
             else:
-                self.set_power(new_power)
+                self.set_power_level(new_power)
                 self.log_power_change(time, new_power)
+                self.schedule_next_events()
                 self.calculate_next_ttie()
-            
+
 
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
@@ -126,31 +125,15 @@ class UtilityMeter(PowerSource):
         "Receives message when time for an 'initial event' change has occured"
         self._time = new_time
         self.process_events()
-        return
-    
-    def set_power_level(self):
-        """Override the base class method"""
-        pass
-
-    def set_power(self, power):
-        """Set the power level for the device"""
-        self._power_level = power
-        self._logger.debug(
-            self.build_message(
-                message="Set new power level",
-                tag="power",
-                value=self._power_level
-            )
-        )
 
     def log_power_change(self, time, power):
         "Store the changes in power usage"
         self._consumption_activity.append({"time": time, "power": power})
 
-    def calculate_electricity_price(self):        
-        "Calculate a new electricity price ($/W-sec).  Starting as a static price"        
+    def calculate_electricity_price(self):
+        "Calculate a new electricity price ($/W-sec).  Starting as a static price"
         self.broadcast_new_price(self.get_price(), target_device_id=self._grid_controller_id)
-        
+
     def calculate_capacity(self):
         "Calculate a new capacity.  Starting with configured capacity when on and 0 when off"
         self.broadcast_new_capacity(self.get_capacity(), target_device_id=self._grid_controller_id)
@@ -158,7 +141,7 @@ class UtilityMeter(PowerSource):
     def get_price(self):
         "Get the current power price"
         return self._power_price
-    
+
     def get_capacity(self):
         return self._capacity
 
@@ -212,13 +195,13 @@ class UtilityMeter(PowerSource):
     def current_output_capacity(self):
         "Gets the current output capacity (%)"
         return 100.0 * self._power_level / self._current_capacity
-    
+
     def process_events(self):
         remove_items = []
         for event in self._events:
             if event.ttie <= self._time:
-                if event.value == "off" and self._current_capacity > 0:                    
-                    self.make_unavailable()                    
+                if event.value == "off" and self._current_capacity > 0:
+                    self.make_unavailable()
                 elif event.value == "on" and self._current_capacity == 0:
                     self.make_available()
                 elif event.value == "emit_initial_price":
@@ -226,9 +209,10 @@ class UtilityMeter(PowerSource):
                 elif event.value == "emit_initial_capacity":
                     self.calculate_capacity()
                 remove_items.append(event)
-                
-                
+
+
         for event in remove_items:
             self._events.remove(event)
-        self.calculate_next_ttie()               
+        self.schedule_next_events()
+        self.calculate_next_ttie()
         self.calculate_hourly_consumption()

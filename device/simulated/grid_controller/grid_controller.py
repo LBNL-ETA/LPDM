@@ -252,6 +252,10 @@ class GridController(Device):
             if self._time > 0:
                 for d in self.device_manager.devices():
                     self.broadcast_new_capacity(self.power_source_manager.total_capacity(), d.device_id)
+                    
+            if self.calculate_gc_price():
+                # send the new price to the devices if changed
+                self.send_price_change_to_devices()
         else:
             # load exceeds capacity after the new capacity is applied
             self._logger.debug(

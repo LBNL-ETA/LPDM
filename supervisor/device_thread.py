@@ -45,43 +45,10 @@ class DeviceThread(threading.Thread):
                 if isinstance(the_event, LpdmInitEvent):
                     self.logger.debug(self.build_message("found an init event {}".format(the_event)))
                     self.init_device()
-                elif isinstance(the_event, LpdmTtieEvent):
-                    self.device.on_time_change(the_event.value)
-                elif isinstance(the_event, LpdmPowerEvent):
-                    self.logger.debug(self.build_message("found lpdm power event {}".format(the_event)))
-                    self.device.on_power_change(
-                        source_device_id=the_event.source_device_id,
-                        target_device_id=the_event.target_device_id,
-                        time=the_event.time,
-                        new_power=the_event.value
-                    )
-                elif isinstance(the_event, LpdmPriceEvent):
-                    self.logger.debug(self.build_message("found lpdm price event {}".format(the_event)))
-                    self.device.on_price_change(
-                        source_device_id=the_event.source_device_id,
-                        target_device_id=the_event.target_device_id,
-                        time=the_event.time,
-                        new_price=the_event.value
-                    )
-                elif isinstance(the_event, LpdmCapacityEvent):
-                    self.logger.debug(self.build_message("found lpdm capacity event {}".format(the_event)))
-                    self.device.on_capacity_change(
-                        the_event.source_device_id,
-                        the_event.target_device_id,
-                        the_event.time,
-                        the_event.value
-                    )
-                elif isinstance(the_event, LpdmConnectDeviceEvent):
-                    self.logger.debug(self.build_message("found lpdm connect device event {}".format(the_event)))
-                    self.device.add_device(the_event.device_id, the_event.DeviceClass)
-                elif isinstance(the_event, LpdmAssignGridControllerEvent):
-                    self.logger.debug(self.build_message("found lpdm assign grid controller event {}".format(the_event)))
-                    self.device.assign_grid_controller(the_event.grid_controller_id)
-                elif isinstance(the_event, LpdmKillEvent):
-                    self.logger.debug(self.build_message("found lpdm kill event {}".format(the_event)))
-                    self.device.finish()
                 else:
-                    self.logger.error(self.build_message("event type not found {}".format(the_event)))
+                    if the_event:
+                        self.device.process_supervisor_event(the_event)
+                self.logger.debug("task finished")
                 self.queue.task_done()
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -89,7 +56,6 @@ class DeviceThread(threading.Thread):
                 self.logger.error("\n".join(tb))
                 self.supervisor_queue.put(LpdmRunTimeErrorEvent("\n".join(tb)))
                 self.queue.task_done()
-
 
     def init_device(self):
         """initialize the device"""

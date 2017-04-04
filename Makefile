@@ -36,13 +36,14 @@ run:
 
 run_scenario:
 	echo "run scenario file: ${SCENARIO_FILE}"
-	docker run -it --rm --name=${CONTAINER_NAME} \
-	-v ${CURDIR}:/LPDM \
-	--net=${NETWORK_NAME} \
-	--ip ${CONTAINER_IP} \
-	-e "PYTHONPATH=/LPDM" \
-	${IMG_NAME} \
-	python run_scenarios.py ${SCENARIO_FILE}
+	docker run -i --rm --name=${CONTAINER_NAME} \
+		-v ${CURDIR}:/LPDM \
+		--net=${NETWORK_NAME} \
+		--ip ${CONTAINER_IP} \
+		-e "PYTHONPATH=/LPDM" \
+		-e "CONNECTION_ID=${CONNECTION_ID}" \
+		${IMG_NAME} \
+		python run_scenarios.py ${SCENARIO_FILE}
 
 test:
 	docker run -it --rm --name=${CONTAINER_NAME} \

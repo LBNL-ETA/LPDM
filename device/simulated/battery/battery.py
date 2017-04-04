@@ -405,5 +405,5 @@ class Battery(PowerSource):
         self._logger.info(self.build_message(
             message="sum charge_kwh",
             tag="sum_charge_kwh",
-            value=self._sum_charge_kwh
+            value=self._sum_charge_kwh / 1000.0
         ))

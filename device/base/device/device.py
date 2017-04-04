@@ -274,6 +274,11 @@ class Device(NotificationReceiver, NotificationSender):
             # self._power_level = self._max_power_output
             self.sum_kwh()
             self._power_level = new_power
+            self._logger.debug(self.build_message(
+                message="set power level",
+                tag="set_power_level",
+                value=new_power
+            ))
 
     def refresh(self):
         "Refresh the eud. For a basic eud this means resetting the operation schedule."
@@ -348,5 +353,5 @@ class Device(NotificationReceiver, NotificationSender):
         self._logger.info(self.build_message(
             message="sum kwh",
             tag="sum_kwh",
-            value=self._sum_kwh
+            value=self._sum_kwh / 1000.0
         ))

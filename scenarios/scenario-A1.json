@@ -18,15 +18,21 @@
         ],
         "power_sources": [
             {
-                "device_id": "dg_1",
-                "grid_controller_id": "gc_1",
-                "device_type": "diesel_generator",
-                "fuel_tank_capacity": 1.0
-            },
-            {
                 "device_id": "pv_1",
                 "grid_controller_id": "gc_1",
                 "device_type": "pv"
+            },
+            {
+                "device_id": "utility_meter_1",
+                "grid_controller_id": "gc_1",
+                "device_type": "utility_meter",
+                "capacity": 2000.0,
+                "static_price": false,
+                "power_price": 0.05,
+                "schedule": [
+                    [0, "on"],
+                    [20, "off"]
+                ]
             }
         ],
         "euds": [
@@ -38,7 +44,7 @@
                 "price_dim": 0.3,
                 "price_off": 0.7,
                 "schedule": [
-                    [6, "on"], [8, "off"], [18, "on"], [0, "off"]
+                    [0, "off"], [6, "on"], [8, "off"], [18, "on"]
                 ]
             },
             {
@@ -49,7 +55,7 @@
                 "price_dim": 0.3,
                 "price_off": 0.7,
                 "schedule": [
-                    [6, "on"], [8, "off"], [18, "on"], [0, "off"]
+                    [0, "off"], [6, "on"], [8, "off"], [18, "on"]
                 ]
             },
             {

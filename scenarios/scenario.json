@@ -46,5 +46,16 @@
                 "schedule": [[3, "on"], [23, "off"]]
             }
         ]
+    },
+    "output": {
+        "sum": [
+            {
+                "device_id": "eud_1",
+                "tag": "power",
+                "options": {
+                    "last_value": true
+                }
+            }
+        ]
     }
 }

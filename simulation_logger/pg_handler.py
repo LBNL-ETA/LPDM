@@ -1,3 +1,4 @@
+import os
 import re
 import logging
 import psycopg2
@@ -54,6 +55,7 @@ class PgHandler(logging.Handler):
             create table {}.sim_run (
                 id serial primary key,
                 time_stamp timestamp default now(),
+                connection_id text,
                 config json
             )
         """.format(schema_name))
@@ -86,7 +88,11 @@ class PgHandler(logging.Handler):
         Setup the simulation in the database.
         Insert a new record into the sim_run table and get the id field.
         """
-        self.cursor.execute("insert into {}.sim_run (time_stamp) values (now()) returning id".format(self.schema))
+        connection_id = os.environ.get("CONNECTION_ID", None)
+        self.cursor.execute(
+            "insert into {}.sim_run (time_stamp, connection_id) values (now(), %s) returning id".format(self.schema),
+            [connection_id]
+        )
         row = self.cursor.fetchone()
         self.sim_run_id = row[0]
         self.conn.commit()

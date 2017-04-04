@@ -65,6 +65,11 @@ class Eud(Device):
 
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
         "Receives messages when a power change has occured"
+        self._logger.debug(self.build_message(
+            message="on_power_change",
+            tag="receive_power",
+            value=new_power
+        ))
         if target_device_id == self._device_id:
             if new_power == 0 and self._in_operation:
                 self._time = time
@@ -134,13 +139,14 @@ class Eud(Device):
         remove_items = []
         for event in self._events:
             if event.ttie <= self._time:
-                if event.value == "off" and self._in_operation:
-                    self.turn_off()
-                    self.broadcast_new_power(0.0, target_device_id=self._grid_controller_id)
+                if event.value == "off":
+                    if self._in_operation:
+                        self.turn_off()
                     remove_items.append(event)
                     self._current_event = event
                 elif event.value == "on" and not self._in_operation:
-                    self.turn_on()
+                    if not self._in_operation:
+                        self.turn_on()
                     remove_items.append(event)
                     self._current_event = event
 

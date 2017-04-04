@@ -61,6 +61,22 @@ class PowerSourceManager(object):
             diff = capacity - d.capacity if not d.capacity is None else capacity
             d.set_capacity(capacity)
             self._capacity += diff
+            if abs(self._capacity) < 1e-7:
+                self._capacity = 0
+            self.logger.debug(
+                self.build_message(
+                    message="set capacity from {}".format(device_id),
+                    tag="set_capacity".format(device_id),
+                    value=capacity
+                )
+            )
+            self.logger.debug(
+                self.build_message(
+                    message="total capacity",
+                    tag="total_capacity",
+                    value=self._capacity
+                )
+            )
 
     def set_price(self, device_id, price):
         """set the price of electricity for a power source"""
@@ -191,6 +207,20 @@ class PowerSourceManager(object):
             self.logger.debug(self.build_message(message="starting load = {}, total_load = {}, equal ? {}".format(starting_load, self._load, abs(starting_load - self._load))))
             raise Exception("starting/ending loads do not match {} != {}".format(starting_load, self._load))
         # self.logger.debug(self.build_message(message="optimize_load (load = {}, cap = P{})".format(self._load, self._capacity), tag="optimize_after"))
+        self.logger.debug(
+            self.build_message(
+                message="total load",
+                tag="total_load",
+                value=self.total_load()
+            )
+        )
+        # self.logger.debug(
+            # self.build_message(
+                # message="total capacity",
+                # tag="total_capacity",
+                # value=self.total_capacity()
+            # )
+        # )
         return True
 
     def get_available_power_sources(self):

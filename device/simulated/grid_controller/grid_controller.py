@@ -120,7 +120,7 @@ class GridController(Device):
         self._logger.debug(
             self.build_message(
                 message="Power change, source_device_id = {}, new_power = {}".format(source_device_id, new_power),
-                tag="power",
+                tag="receive_power",
                 value=new_power
             )
         )
@@ -152,8 +152,9 @@ class GridController(Device):
                 )
                 # let all the devices know there is no more power available
                 self.shutdown()
-                for d in self.device_manager.device_list:
-                    self.broadcast_new_power(0.0, d.device_id)
+                self.broadcast_new_power(0.0, source_device_id)
+                # for d in self.device_manager.device_list:
+                    # self.broadcast_new_power(0.0, d.device_id)
             else:
                 # power has changed, either positive or negative
                 p = self.device_manager.get(source_device_id)
@@ -178,14 +179,14 @@ class GridController(Device):
     def power_source_update(self):
         """Update the power source manager."""
         result_success = self.power_source_manager.optimize_load()
-        if not result_success and self._battery._is_charging:
+        if not result_success and self._battery and self._battery._is_charging:
             # if can't add the load and the battery is charging, stop charging and try again
             self._battery.stop_charging()
             result_success = self.power_source_manager.optimize_load()
 
         if result_success:
             # check if the battery needs to be charged, charge if available
-            if self._battery._can_charge and not self._battery._is_charging:
+            if self._battery and self._battery._can_charge and not self._battery._is_charging:
                 if self.power_source_manager.can_handle_load(self._battery.charge_rate()):
                     self._battery.start_charging()
                     result_success = self.power_source_manager.optimize_load()
@@ -260,9 +261,8 @@ class GridController(Device):
             # notify any euds of capacity changes
             # the eud checks to see if it should be in operation
             # turns itself on if necessary
-            if self._time > 0:
-                for d in self.device_manager.devices():
-                    self.broadcast_new_capacity(self.power_source_manager.total_capacity(), d.device_id)
+            for d in self.device_manager.devices():
+                self.broadcast_new_capacity(self.power_source_manager.total_capacity(), d.device_id)
 
             if self.calculate_gc_price():
                 # send the new price to the devices if changed
@@ -274,7 +274,9 @@ class GridController(Device):
                     message="Load exceeds capacity ({} > {})".format(
                         self.power_source_manager.total_load(),
                         self.power_source_manager.total_capacity()
-                    )
+                    ),
+                    tag="load_gt_cap",
+                    value=1
                 )
             )
             self.shutdown()
@@ -323,10 +325,13 @@ class GridController(Device):
             )
         )
         # self.power_source_manager.shutdown()
-        self.device_manager.shutdown()
+        # self.device_manager.shutdown()
         # notify all devices of change in load -> 0
         for d in self.device_manager.devices():
-            self.broadcast_new_power(0.0, d.device_id)
+            if d.load:
+                self.power_source_manager.remove_load(d.load)
+                d.set_load(0.0)
+                self.broadcast_new_power(0.0, d.device_id)
 
     def process_events(self):
         "Process any events that need to be processed"
@@ -379,4 +384,5 @@ class GridController(Device):
     def finish(self):
         """Call finish on the battery also"""
         Device.finish(self)
-        self._battery.finish()
+        if self._battery:
+            self._battery.finish()

@@ -108,10 +108,12 @@ class Eud(Device):
                 self._logger.debug(
                     self.build_message(
                         message="new price",
-                        tag="price",
+                        tag="receive_price",
                         value=new_price
                     )
                 )
+                self.adjust_power_output()
+                # if the device is in operation, check any dimming calculations to adjust power if needed
             # TODO: fix this part, which turns on the device if it is scheduled to be on
             # if self.current_schedule_value():
                 # self.set_power_level()
@@ -154,6 +156,15 @@ class Eud(Device):
         if len(remove_items):
             for event in remove_items:
                 self._events.remove(event)
+
+    def adjust_power_output(self):
+        """Adjust the power output of the device, if necessary (ie price has changed and need to adjust power output)"""
+        if self._in_operation:
+            new_power = self.calculate_power_level()
+            if self._power_level != new_power:
+                self.set_power_level(new_power)
+                self.broadcast_new_power(self._power_level, target_device_id=self._grid_controller_id)
+
 
     # def calculate_next_ttie(self):
         # """get the next scheduled task from the schedule and find the next ttie"""

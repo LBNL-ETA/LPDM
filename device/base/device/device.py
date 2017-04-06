@@ -1,3 +1,4 @@
+from lpdm_event.lpdm_init_event import LpdmInitEvent
 
 
 ################################################################################################################################
@@ -156,6 +157,9 @@ class Device(NotificationReceiver, NotificationSender):
             self._events.append(found_event)
             self.broadcast_new_ttie(found_event.ttie)
             self._ttie = found_event.ttie
+            
+        if found_event is None:
+            self.broadcast_new_ttie(1e100)
 
     def broadcast_new_price(self, new_price, target_device_id='all', debug_level=logging.DEBUG):
         "Broadcast a new price if a callback has been setup, otherwise raise an exception."
@@ -278,6 +282,8 @@ class Device(NotificationReceiver, NotificationSender):
         if isinstance(the_event, LpdmTtieEvent):
             self._logger.debug("found lpdm ttie event {}".format(the_event))
             self.on_time_change(the_event.value)
+        elif isinstance(the_event, LpdmInitEvent):
+            self.init()
         elif isinstance(the_event, LpdmPowerEvent):
             self._logger.debug("found lpdm power event {}".format(the_event))
             self.on_power_change(

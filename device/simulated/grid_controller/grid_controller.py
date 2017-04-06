@@ -75,6 +75,7 @@ class GridController(Device):
         self.power_source_manager.set_time(self._time)
         self.set_price_logic()
         self.init_battery()
+        self.calculate_next_ttie()
 
     def init_battery(self):
         """Setup the battery"""
@@ -377,7 +378,7 @@ class GridController(Device):
 
     def calculate_next_ttie(self):
         "calculate the next TTIE - look through the pending events for the one that will happen first"
-        ttie = None
+        ttie = None        
         for event in self._events:
             if ttie == None or event.ttie < ttie:
                 ttie = event.ttie
@@ -385,3 +386,6 @@ class GridController(Device):
         if ttie != None and ttie != self._ttie:
             self._ttie = ttie
             self.broadcast_new_ttie(ttie)
+        
+        if ttie is None:
+            self.broadcast_new_ttie(1e100)

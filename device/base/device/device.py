@@ -26,7 +26,8 @@ from simulation_logger import message_formatter
 # so used a relative path import
 from ...scheduler import Scheduler
 
-from supervisor.lpdm_event import LpdmTtieEvent, LpdmPowerEvent, LpdmPriceEvent, LpdmKillEvent, \
+
+from lpdm_event import LpdmTtieEvent, LpdmPowerEvent, LpdmPriceEvent, LpdmKillEvent, \
     LpdmConnectDeviceEvent, LpdmAssignGridControllerEvent, LpdmRunTimeErrorEvent, \
     LpdmCapacityEvent
 

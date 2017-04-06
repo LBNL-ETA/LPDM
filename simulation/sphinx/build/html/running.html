@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Running Simulations &mdash; LPDM 1.0.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="LPDM 1.0.0 documentation" href="index.html"/>
+        <link rel="next" title="Simulation Configuration" href="simulation.html"/>
+        <link rel="prev" title="LPDM Installation" href="install.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> LPDM
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">LPDM Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Running Simulations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#setting-up-the-docker-environment">Setting up the Docker Environment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-the-docker-network">Creating the Docker Network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#starting-the-postgresql-database">Starting the PostgreSQL Database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#logging-to-postgresql">Logging to PostgreSQL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Running Simulations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulation Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="devices.html">Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device_base.html">Device Base Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diesel_generator.html">Diesel Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="grid_controller.html">Grid Controller</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eud.html">End-Use Device</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">LPDM</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Running Simulations</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/running.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="running-simulations">
+<h1>Running Simulations<a class="headerlink" href="#running-simulations" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="setting-up-the-docker-environment">
+<h2>Setting up the Docker Environment<a class="headerlink" href="#setting-up-the-docker-environment" title="Permalink to this headline">¶</a></h2>
+<p>The Dockerfile in the root of the LPDM repository will setup the image for running
+simulations.  The Makefile in the root of the LPDM repository provides the docker commands
+needed to run a simulation.</p>
+<div class="section" id="creating-the-docker-network">
+<h3>Creating the Docker Network<a class="headerlink" href="#creating-the-docker-network" title="Permalink to this headline">¶</a></h3>
+<p>Prior to running any simulations, first run the following command from the root directory of the LPDM repository:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">create</span> <span class="n">network</span>
+</pre></div>
+</div>
+<p>This will run the <code class="docutils literal"><span class="pre">docker</span> <span class="pre">network</span> <span class="pre">create</span></code> command to setup the network for the docker containers.
+Since the optional PostgreSQL database (used for logging) is run inside a separate docker container, creating
+a custom network with static IP addresses will faciliate communication between the two containers.</p>
+</div>
+<div class="section" id="starting-the-postgresql-database">
+<h3>Starting the PostgreSQL Database<a class="headerlink" href="#starting-the-postgresql-database" title="Permalink to this headline">¶</a></h3>
+<p>The docker_postgres folder contains a Makefile, which has the Docker commands needed to
+start the database container, some scripts needed for the Postgres image, and a folder named <strong>postgres_data</strong>,
+which is setup as a shared volume with the container in order to persist the database when the
+container is finished running.</p>
+<p>From inside the docker_postgres folder run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">run</span>
+</pre></div>
+</div>
+<p>This will start the PostgreSQL docker container as a daemon process.</p>
+</div>
+<div class="section" id="logging-to-postgresql">
+<h3>Logging to PostgreSQL<a class="headerlink" href="#logging-to-postgresql" title="Permalink to this headline">¶</a></h3>
+<p>To enable logging to PostgreSQL first start the database container with the steps outlined above.</p>
+<p>The LPDM repository containers a folder named <strong>simulation_logger</strong> which contains the code for
+setting up the various logging mechanisims: 1) console, 2) file, and 3) database.  To enabled the
+database logging feature see the pg.cfg file and set the <strong>enabled</strong> property to 1.  If the
+Makefile is used to start the containers, the other properties should not need to be changed.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">There is currently not an interface set up to view the PostgreSQL log output, so the only
+way to look at it is with a PostgreSQL client.  The Makefile command for starting the PostgreSQL
+container will map the container&#8217;s database port (5432) to port (5437) on your local machine.</p>
+</div>
+</div>
+<div class="section" id="id1">
+<h3>Running Simulations<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Before running any simulations the docker image must first be built:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">build_image</span>
+</pre></div>
+</div>
+<p>This will run the <code class="docutils literal"><span class="pre">docker</span> <span class="pre">build</span></code> command to create the image outlined in the Dockerfile.</p>
+<p>Once the image is built, run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">run</span>
+</pre></div>
+</div>
+<p>This will run the <code class="docutils literal"><span class="pre">docker</span> <span class="pre">run</span></code> command and execute the default command specified in the Dockerfile.
+Once the simulation has finished running the container should automatically exit.</p>
+<p>The log files for the simulations can be found in the <strong>logs</strong> folder.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="simulation.html" class="btn btn-neutral float-right" title="Simulation Configuration" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="install.html" class="btn btn-neutral" title="LPDM Installation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, LBL.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

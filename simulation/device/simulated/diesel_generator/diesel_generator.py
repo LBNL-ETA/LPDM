@@ -17,7 +17,6 @@
 from device.base.power_source import PowerSource
 from device.scheduler import LpdmEvent
 import logging
-import pprint
 
 class DieselGenerator(PowerSource):
     """

@@ -11,14 +11,6 @@ function getScenarioFile(socket){
         // return the list of scenario files and their contents as json
      console.log('get scenario files from /simulation/scenarios')
      let scenario_folder = '/simulation/scenarios';
-     fs.readdir(scenario_folder, (err, files) => {
-         console.log('readdir');
-         console.log(err);
-         console.log(files);
-         files.forEach(file => {
-                 console.log(file);
-         });
-     });
      glob("/simulation/scenarios/*.json", {}, function (er, files) {
          console.log('found scenario files');
          console.log(er);

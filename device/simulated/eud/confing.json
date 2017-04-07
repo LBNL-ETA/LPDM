@@ -1,9 +1,0 @@
-{
-    "device_name": "eud",
-    "max_power_output": 100.0,
-    "price_dim_start": 0.3,
-    "price_dim_end": 0.7,
-    "price_off": 0.9,
-    "power_level_low": 20.0,
-    "schedule_array": []
-}

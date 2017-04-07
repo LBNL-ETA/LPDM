@@ -1,0 +1,10 @@
+li {
+    border: 1px black solid;
+    padding: 4px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.data_grid {
+    height: 600px
+}

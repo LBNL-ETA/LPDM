@@ -1,8 +1,0 @@
-{
-    "device_type": "utility_meter",
-    "device_name": "utility_meter",
-    "capacity": 2000.0,
-    "static_price": false,
-    "current_fuel_price": null,
-    "schedule": []
-}

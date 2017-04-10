@@ -9,10 +9,7 @@
             {
                 "device_id": "gc_1",
                 "simulated_or_real": "simulated",
-                "device_type": "grid_controller",
-                "battery": {
-                    "device_id": "bt_1"
-                }
+                "device_type": "grid_controller"
             }
         ],
         "power_sources": [

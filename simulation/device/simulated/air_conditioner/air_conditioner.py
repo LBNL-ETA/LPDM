@@ -55,7 +55,6 @@ class AirConditioner(Device):
         Device.__init__(self, config)
 
         self._device_type = "air_conditioner"
-        self._device_name = config["device_name"] if type(config) is dict and "device_name" in config.keys() else "air_conditioner"
         self._device_name = config.get("device_name", "air_conditioner")
 
         # maximim power output, default to 500 W if no value given

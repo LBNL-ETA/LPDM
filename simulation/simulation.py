@@ -17,7 +17,7 @@ import pprint
 import random
 import json
 import logging
-from supervisor import Supervisor
+from supervisor.supervisor import Supervisor
 from simulation_logger import SimulationLogger
 
 class Simulation(object):

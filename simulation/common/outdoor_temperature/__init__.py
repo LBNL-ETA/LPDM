@@ -1,0 +1,1 @@
+from outdoor_temperature import OutdoorTemperature

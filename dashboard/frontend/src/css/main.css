@@ -1,9 +1,11 @@
-li {
-    border: 1px black solid;
-    padding: 4px;
-    margin-right: 10px;
+.lpdm_list li {
+    /*padding: 4px;*/
+    /*margin-right: 10px;*/
     cursor: pointer;
+    list-style-type: none;
 }
+
+.lpdm_list
 
 .data_grid {
     height: 600px

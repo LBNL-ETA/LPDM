@@ -18,16 +18,26 @@ function runSimulation(socket, scenario_file){
         console.log('create temp file');
         console.log(scenario_file);
         jsonfile.writeFile('/simulation/scenarios/node_tmp.json', scenario_file, function (err) {
-            console.error(err);
+            if (err) {
+                console.error(err);
+                socket.emit("simulation_run_error", err);
+                return
+            }
+            scenario_file = 'node_tmp.json';
+            spawnSimulation(socket, scenario_file);
         });
-        scenario_file = 'node_tmp.json';
     }
+    else {
+        spawnSimulation(socket, scenario_file);
+    }
+}
+
+function spawnSimulation(socket, scenario_file){
     var last_id = {value: null, closed: false};
 
-    scenario_file = "scenarios/scenario-A1.json"
     let connection_id = uuid();
     const spawn = require('child_process').spawn;
-    const ls = spawn(`python`, ['simulation.py'], {env: {CONNECTION_ID: connection_id, SCENARIO_FILE: scenario_file}, cwd: '/simulation' });
+    const ls = spawn(`python`, ['run_scenarios.py', scenario_file], {env: {CONNECTION_ID: connection_id, SCENARIO_FILE: scenario_file}, cwd: '/simulation' });
     //ls = spawn( 'ls', [ '-lh', '/usr'  ]  );
 
     let process_running = true;

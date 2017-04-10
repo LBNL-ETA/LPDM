@@ -33,7 +33,14 @@
                 url: "/home",
                 controller: 'homeController',
                 controllerAs: 'ctrl'
-            });
+            })
+            .state("scenarios", {
+                templateUrl: "views/scenarios/scenarios.template.html",
+                url: "/scenarios",
+                controller: 'scenariosController',
+                controllerAs: 'ctrl'
+            })
+            ;
     }
 
 })();

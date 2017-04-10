@@ -31,8 +31,15 @@
         <script src="js/moment.factory.js"></script>
         <script src="js/components/lpdm_plot/lpdm_plot.component.js"></script>
         <script src="views/home/home.controller.js"></script>
+        <script src="views/scenarios/scenarios.controller.js"></script>
     </head>
     <body ng-app="lpdmApp">
+        <md-toolbar class="md-warn" md-scroll-shring="true">
+            <div class="md-toolbar-tools">
+                <md-button class="md-accent md-hue-2 md-raised" ui-sref="scenarios">Scenarios</md-button>
+                <md-button ui-sref="simulations">Results</md-button>
+            </div>
+        </md-toolbar>
         <div ui-view></div>
     </body>
 </html>

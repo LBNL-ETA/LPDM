@@ -1,7 +1,7 @@
 class SetPoint(object):
     def __init__(self, current_set_point=None, set_point_low=None, set_point_high=None,
             price_range_low=None, price_range_high=None, setpoint_schedule=None,
-            price=None, setpoint_factor=None):
+            price=None, setpoint_factor=None, setpoint_min=None, setpoint_max=None):
         self.current_set_point = current_set_point
         self.set_point_low = set_point_low
         self.set_point_high = set_point_high
@@ -11,6 +11,8 @@ class SetPoint(object):
 
         self.price = None
         self.setpoint_factor = setpoint_factor
+        self.setpoint_min = setpoint_min
+        self.setpoint_max = setpoint_max
 
     def __repr__(self):
         return "setpoints: {}/{}, current = {}".format(
@@ -32,6 +34,12 @@ class SetPoint(object):
 
     def set_setpoint_factor(self, new_value):
         self.setpoint_factor = new_value
+
+    def set_setpoint_min(self, new_value):
+        self.setpoint_min = new_value
+
+    def set_setpoint_max(self, new_value):
+        self.setpoint_max = new_value
 
     def set_setpoint_range(self, hour_of_day):
         """Change the set point range (low/high) according to the current hour of the day"""
@@ -64,6 +72,12 @@ class SetPoint(object):
         else:
             # price < price_range_low
             new_setpoint = self.set_point_low
+
+        # adjust the setpoint for min/max limits if necessary
+        if new_setpoint < self.setpoint_min:
+            new_setpoint = self.setpoint_min
+        elif new_setpoint > self.setpoint_max:
+            new_setpoint = self.setpoint_max
 
         if new_setpoint != self.current_set_point:
             self.current_set_point = new_setpoint

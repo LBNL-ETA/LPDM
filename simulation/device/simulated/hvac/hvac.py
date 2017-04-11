@@ -23,6 +23,7 @@ import logging
 from set_point import SetPoint
 from operation_status import OperationStatus
 from common.outdoor_temperature import OutdoorTemperature
+from common.flex_lab import FlexLab
 
 class Hvac(Device):
     def __init__(self, config):
@@ -73,16 +74,25 @@ class Hvac(Device):
         self._setpoint_reassesment_interval = config.get("setpoint_reassesment_interval", 60.0 * 10.0) # 10 mins.
         self._cop = config.get("cop", 3.0)
         self._set_point_factor = config.get("set_point_factor", 0.05)
+        # set minimum and maximum temperatures for the calculated set points
+        self._set_point_min = config.get("set_point_min", 50.0)
+        self._set_point_max = config.get("set_point_max", 90.0)
 
+        # setup the set points for cooling
         self._sp_cool = SetPoint()
         self._sp_cool.set_setpoint_factor(self._set_point_factor)
+        self._sp_cool.set_setpoint_min(self.set_point_min)
+        self._sp_cool.set_setpoint_max(self.set_point_max)
         self._sp_cool.set_point_low = config.get("cool_set_point_low", 21.0)
         self._sp_cool.set_point_high = config.get("cool_set_point_high", 25.0)
         self._sp_cool.price_range_low = config.get("cool_price_range_low", 0.2)
         self._sp_cool.price_range_high = config.get("cool_price_range_high", 0.7)
 
+        # setup the set points for heating
         self._sp_heat = SetPoint()
         self._sp_heat.set_setpoint_factor(self._set_point_factor)
+        self._sp_heat.set_setpoint_min(self.set_point_min)
+        self._sp_heat.set_setpoint_max(self.set_point_max)
         self._sp_heat.set_point_low = config.get("heat_set_point_low", 16.0)
         self._sp_heat.set_point_high = config.get("heat_set_point_high", 20.0)
         self._sp_heat.price_range_low = config.get("heat_price_range_low", 0.2)
@@ -123,19 +133,30 @@ class Hvac(Device):
         # keeps track of the hvac state
         self._operation_status = OperationStatus.OFF
 
-        # keep track of the compressor operation on/off
-        self._compressor_is_on = False
+        # setup the flex lab communication if needed
+        self._flex_lab = None
+        if self.is_real_device():
+            flex_config = config.get("flex_lab", None)
+            if not flex_config is None:
+                # this is a 'real' device so enable flex lab communication
+                self._flex_lab = FlexLab(flex_config)
 
     def init(self):
         """Setup the air conditioner prior to use"""
-        self.setup_schedule()
-        self.set_initial_setpoints()
-        self.compute_heat_gain_rate()
-        self.load_temperature_profile()
-        self.process_outdoor_temperature_change()
-        self.reasses_setpoint()
-        self.schedule_next_events()
-        self.calculate_next_ttie()
+        if self.is_real_device():
+            self._flex_lab.init()
+            self._flex_lab.set_time(self._time)
+            self.set_initial_setpoints()
+            self.reasses_setpoint()
+        else:
+            self.setup_schedule()
+            self.set_initial_setpoints()
+            self.compute_heat_gain_rate()
+            self.load_temperature_profile()
+            self.process_outdoor_temperature_change()
+            self.reasses_setpoint()
+            self.schedule_next_events()
+            self.calculate_next_ttie()
 
     def log_status(self):
         """Log the current status"""
@@ -257,10 +278,20 @@ class Hvac(Device):
 
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
+        self._time = time
         self.set_new_fuel_price(new_price)
-        self.adjust_internal_temperature()
-        self.reasses_setpoint()
-        self.control_operation()
+        if self.is_real_device():
+            (cooling_changed, heating_changed) = self.reasses_setpoint()
+            if self._flex_lab:
+                self._flex_lab.set_time(self._time)
+                if cooling_changed:
+                    self._flex_lab.post_value(self._sp_cool.current_set_point)
+                if heating_changed():
+                    self._flex_lab.post_value(self._sp_heat.current_set_point)
+        else:
+            self.adjust_internal_temperature()
+            self.reasses_setpoint()
+            self.control_operation()
 
     def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"
@@ -420,13 +451,9 @@ class Hvac(Device):
 
     def set_new_fuel_price(self, new_price):
         """Set a new fuel price"""
-        self._logger.debug(
-            self.build_message(
-                message="fuel_price",
-                tag="fuel_price",
-                value=new_price
-            )
-        )
+        self._logger.debug(self.build_message(
+            message="fuel_price", tag="fuel_price", value=new_price
+        ))
         self._price = new_price
         self._sp_heat.set_price(new_price)
         self._sp_cool.set_price(new_price)
@@ -455,21 +482,31 @@ class Hvac(Device):
 
     def reasses_setpoint(self):
         """determine where the setpoint is between low/high for cooling and heating"""
+        cooling_changed = self.reasses_setpoint_cooling()
+        heating_changed = self.reasses_setpoint_heating()
+        return (cooling_changed, heating_changed)
 
+    def reasses_setpoint_cooling(self):
+        """Update the cooling setpoint"""
+        changed = False
         if self._sp_cool.reasses_setpoint():
             # cooling setpoint has changed
             self._logger.debug(self.build_message(
-                message="cooling setpoint changed",
-                tag="cool_setpoint",
-                value=self._sp_cool.current_set_point
+                message="cooling setpoint changed", tag="cool_setpoint", value=self._sp_cool.current_set_point
             ))
+            changed = True
+        return changed
+
+    def reasses_setpoint_heating(self):
+        """Update the heating setpoint"""
+        changed = False
         if self._sp_heat.reasses_setpoint():
             # heating setpoint has changed
             self._logger.debug(self.build_message(
-                message="heating setpoint changed",
-                tag="heat_setpoint",
-                value=self._sp_heat.current_set_point
+                message="heating setpoint changed", tag="heat_setpoint", value=self._sp_heat.current_set_point
             ))
+            changed = True
+        return changed
 
     def adjust_internal_temperature(self):
         """

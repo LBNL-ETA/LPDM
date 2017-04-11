@@ -18,9 +18,9 @@ Implementation of a PV module
 import os
 from device.base.power_source import PowerSource
 from device.scheduler import LpdmEvent
-import pprint
+from common.smap_tools import SmapQuery
 
-class Pv(PowerSource):
+class Pv(PowerSource, SmapQuery):
     """
         Device implementation of a PV module.
 
@@ -47,11 +47,16 @@ class Pv(PowerSource):
         """
         # call the super constructor
         PowerSource.__init__(self, config)
+        # Mixin for smap requests
+        # config must have a 'smap' section for the device,
+        # and 'enabled' must be set to True
+        SmapQuery.__init__(self, config.get("smap", {}))
 
         self._device_type = "pv"
         self._device_name = config.get("device_name", "pv")
         self._pv_file_name = config.get("pv_file_name", "pv_data.csv")
         self._capacity_update_interval = config.get("capacity_update_interval", 15.0 * 60.0)
+        self._read_data_from_smap = config.get("read_data_from_smap", False)
         self._price = 0.0
 
         self._power_profile = None
@@ -130,6 +135,40 @@ class Pv(PowerSource):
 
     def set_capacity(self):
         """set the capacity of the pv at the current time"""
+        if self._smap_enabled:
+            self.set_capacity_from_smap()
+        else:
+            self.set_capacity_from_file()
+
+    def set_capacity_from_smap(self):
+        """Get the capacity values from smap"""
+        if not self._smap_enabled:
+            raise Exception("Call to set capacity values from sMAP, but sMAP disabled")
+        # get the new capacity value from the smap stream
+        uuid, ts, new_capacity = self.download_most_recent_point(
+            self._smap["capacity"]["smap_root"],
+            self._smap["capacity"]["stream"]
+        )
+
+        self._logger.debug(self.build_message(
+            message="received capaacity from smap",
+            tag="smap_capacity",
+            value=new_capacity
+        ))
+        if self._current_capacity != new_capacity:
+            # broadcast new capacity if it has changed
+            self._current_capacity = new_capacity
+            self.broadcast_new_capacity()
+            self._logger.debug(
+                self.build_message(
+                    message="setting pv capcity to {}".format(self._current_capacity),
+                    tag="capacity",
+                    value=self._current_capacity
+                )
+            )
+
+    def set_capacity_from_file(self):
+        """Get the capacity values from a file"""
         time_of_day_secs = self.time_of_day_seconds()
         found_time = None
         for item in self._power_profile:

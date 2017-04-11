@@ -58,6 +58,7 @@ class Device(NotificationReceiver, NotificationSender):
         self._static_price = config.get("static_price", False)
         self._grid_controller_id = config.get("grid_controller_id", None)
         self._max_power_output = config.get("max_power_output", 0.0)
+        self._is_real_device = config.get("is_real_device", False)
 
         # keep track of the total energy used
         self._sum_kwh = 0.0
@@ -355,3 +356,7 @@ class Device(NotificationReceiver, NotificationSender):
             tag="sum_kwh",
             value=self._sum_kwh / 1000.0
         ))
+
+    def is_real_device(self):
+        """Is the device real or simulated?"""
+        return self._is_real_device

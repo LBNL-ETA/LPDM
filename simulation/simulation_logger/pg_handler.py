@@ -27,11 +27,26 @@ class PgHandler(logging.Handler):
                     user=self.config["pg_user"],
                     password=self.config["pg_pass"]
                 )
+            self.conn.autocommit = True
             self.cursor = self.conn.cursor()
 
-            if self.config.has_key("pg_schema") and self.config["pg_schema"] and self.config["pg_schema"] != "public":
-                self.set_schema(self.config["pg_schema"])
-        self.set_run_id()
+            # if self.config.get("clean", False):
+            # self.remove_tables("public")
+            if not self.schema_has_tables(self.schema):
+                self.build_tables("public")
+            # if self.config.has_key("pg_schema") and self.config["pg_schema"] and self.config["pg_schema"] != "public":
+                # self.set_schema(self.config["pg_schema"])
+            self.set_run_id()
+
+    def schema_has_tables(self, schema_name):
+        """Check if a schema has the required tables for the simulation"""
+        try:
+            self.cursor.execute("select * from {}.sim_log limit 1".format(schema_name))
+            self.cursor.execute("select * from {}.sim_device limit 1".format(schema_name))
+            self.cursor.execute("select * from {}.sim_run limit 1".format(schema_name))
+            return True
+        except:
+            return False
 
     def set_schema(self, schema_name):
         """set the schema to write the logs to. Create it if it doesn't exist"""
@@ -51,27 +66,45 @@ class PgHandler(logging.Handler):
     def create_schema(self, schema_name):
         """create a schema and all of the tables for the simulation"""
         self.cursor.execute("create schema {}".format(schema_name))
-        self.cursor.execute("""
-            create table {}.sim_run (
+        self.build_tables(self, schema_name)
+
+    def build_tables(self, schema_name="public"):
+        """Build the tables needed for the simuluations for a specified schema name"""
+        query = """
+            create table public.sim_run (
                 id serial primary key,
                 time_stamp timestamp default now(),
                 connection_id text,
                 config json
             )
-        """.format(schema_name))
+        """.format(schema_name)
+        self.cursor.execute(query)
+
+        # try:
+            # self.cursor.execute("""
+                # create table {}.sim_run (
+                    # id serial primary key,
+                    # time_stamp timestamp default now(),
+                    # connection_id text,
+                    # config json
+                # )
+            # """.format(schema_name))
+        # except psycopg2.Error as e:
+            # print "psycopg2 error: {} - {}".format(e.pgcode, e.pgerror)
+
         self.cursor.execute("""
-            create table {0}.sim_device (
+            create table public.sim_device (
                 id serial primary key,
-                run_id int references {0}.sim_run (id) not null,
+                run_id int references public.sim_run (id) not null,
                 device_class varchar(20) not null,
                 device_id varchar(20) not null,
                 unique (run_id, device_id)
             )
         """.format(schema_name))
         self.cursor.execute("""
-            create table {0}.sim_log (
+            create table public.sim_log (
                 id serial primary key,
-                run_id int references {0}.sim_run (id) not null,
+                run_id int references public.sim_run (id) not null,
                 sim_device_id int references sim_device (id),
                 device varchar(20),
                 message varchar(200),
@@ -81,6 +114,18 @@ class PgHandler(logging.Handler):
                 time_string text
             )
         """.format(schema_name))
+
+    def remove_tables(self, schema_name="public"):
+        """Remove all the simulation tables from the db"""
+        queries = []
+        queries.append("drop table {}.sim_log".format(schema_name))
+        queries.append("drop table {}.sim_device".format(schema_name))
+        queries.append("drop table {}.sim_run".format(schema_name))
+        for query in queries:
+            try:
+                self.cursor.execute(query)
+            except:
+                pass
         self.conn.commit()
 
     def set_run_id(self):

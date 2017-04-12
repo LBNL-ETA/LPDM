@@ -9,7 +9,7 @@ function sendSimulationRuns(socket){
     pool.connect(function(err, client, done) {
         let query = `
             select id, to_char(time_stamp, 'YYYY-MM-DD HH24:MI') as time_stamp
-            from mikey2.sim_run order by time_stamp desc
+            from public.sim_run order by time_stamp desc
         `;
 
         client.query(query, null, function(err, result) {

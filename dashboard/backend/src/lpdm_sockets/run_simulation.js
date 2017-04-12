@@ -64,7 +64,7 @@ function sendSimulationRun(socket, connection_id){
     pool.connect(function(err, client, done) {
         let query = `
             select id, to_char(time_stamp, 'YYYY-MM-DD HH24:MI') as time_stamp
-            from mikey2.sim_run
+            from public.sim_run
             where connection_id = $1
         `;
 
@@ -95,7 +95,7 @@ function querySimulationData(socket, id, last_id, connection_id, process_running
         if (id) {
             query = `
                 select run_id, id, device, message, tag, value, time_value, time_string
-                from mikey2.sim_log as l
+                from public.sim_log as l
                 where run_id = $1
                 and device is not null
                 and tag is not null
@@ -106,8 +106,8 @@ function querySimulationData(socket, id, last_id, connection_id, process_running
         else {
             query = `
                 select l.run_id, l.id, l.device, l.message, l.tag, l.value, l.time_value, l.time_string
-                from mikey2.sim_log l
-                join mikey2.sim_run r on l.run_id = r.id
+                from public.sim_log l
+                join public.sim_run r on l.run_id = r.id
                 where r.connection_id = $1
                 and l.device is not null
                 and l.tag is not null

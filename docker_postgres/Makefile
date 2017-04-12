@@ -28,3 +28,8 @@ stop:
 remove:
 	docker rm ${CONTAINER_NAME}
 
+clean:
+	docker stop ${CONTAINER_NAME}
+	docker rm ${CONTAINER_NAME}
+	rm -rf postgres_data/
+

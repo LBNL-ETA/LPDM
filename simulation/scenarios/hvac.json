@@ -8,7 +8,6 @@
         "grid_controllers": [
             {
                 "device_id": "gc_1",
-                "simulated_or_real": "simulated",
                 "device_type": "grid_controller"
             }
         ],
@@ -17,7 +16,6 @@
                 "device_id": "dg_1",
                 "grid_controller_id": "gc_1",
                 "device_type": "diesel_generator",
-                "simulated_or_real": "simulated",
                 "fuel_tank_capacity": 10.0
             }
         ],
@@ -25,10 +23,16 @@
             {
                 "device_id": "hvac_1",
                 "device_type": "hvac",
-                "simulated_or_real": "simulated",
                 "grid_controller_id": "gc_1",
-                "cool_max_power_output": 2000,
-                "heat_max_power_output": 2000,
+                "is_real_device": true,
+                "cool_set_point_low": 21.0,
+                "cool_set_point_high": 25.0,
+                "cool_price_range_low": 0.2,
+                "cool_price_range_high": 0.7,
+                "heat_set_point_low": 16.0,
+                "heat_set_point_high": 20.0,
+                "heat_price_range_low": 0.2,
+                "heat_price_range_high": 0.7,
                 "schedule": [
                     [0, "on", "day"]
                 ]

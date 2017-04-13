@@ -37,6 +37,9 @@ class Eud(Device):
         # the price ($/kWh) at which to turn off the power completeley
         self._price_off = config.get("price_off", 0.9)
 
+        # fixed power output: no interpolation  of power output based on price
+        self._constant_power_output = config.get("constant_power_output", False)
+
         # the max operating power level (%)
         # self._power_level_max = float(config["power_level_max"]) if type(config) is dict and "power_level_max" in config.keys() else 100.0
         self._power_level_max = 100.0
@@ -190,7 +193,7 @@ class Eud(Device):
 
     def calculate_power_level(self):
         "Set the power level of the eud"
-        if self._static_price:
+        if self._static_price or self._constant_power_output:
             return self._max_power_output
         else:
             if self._price <= self._price_dim_start:

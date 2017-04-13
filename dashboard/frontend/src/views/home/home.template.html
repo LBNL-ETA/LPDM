@@ -164,7 +164,7 @@
                 <!--</md-button>-->
                 <h2 flex md-truncate>{{tag_view.device.name}} - {{tag_view.tag.name}}</h2>
 
-                <md-button class="md-icon-button">
+                <md-button class="md-icon-button" ng-click="ctrl.toggleTagView(tag_view.device, tag_view.tag)">
                     <md-icon md-font-icon="fa-close" class="fa fa-lg"></md-icon>
                 </md-button>
             </div>

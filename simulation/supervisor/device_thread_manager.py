@@ -92,7 +92,8 @@ class DeviceThreadManager(object):
                 LpdmConnectDeviceEvent(
                     device_id=dg.device_config["device_id"],
                     device_type=dg.device_config["device_type"],
-                    DeviceClass=dg.DeviceClass
+                    DeviceClass=dg.DeviceClass,
+                    uuid=dg.device_config.get("uuid", None)
                 )
             )
             # wait for the event to finish
@@ -110,7 +111,8 @@ class DeviceThreadManager(object):
                 LpdmConnectDeviceEvent(
                     device_id=eud.device_config["device_id"],
                     device_type=eud.device_config["device_type"],
-                    DeviceClass=eud.DeviceClass
+                    DeviceClass=eud.DeviceClass,
+                    uuid=eud.device_config.get("uuid", None)
                 )
             )
             # wait for the event to finish

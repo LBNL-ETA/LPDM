@@ -19,12 +19,12 @@ class DeviceManager(object):
         """remove load from all power sources"""
         [p.set_load(0.0) for p in self.device_list]
 
-    def add(self, device_id, DeviceClass):
+    def add(self, device_id, DeviceClass, uuid):
         """Register a device"""
         # make sure a device with the same id does not exist
         found = filter(lambda d: d.device_id == device_id, self.device_list)
         if len(found) == 0:
-            self.device_list.append(DeviceItem(device_id, DeviceClass))
+            self.device_list.append(DeviceItem(device_id, DeviceClass, uuid))
             self.logger.debug("message: registered a device {} - {}".format(device_id, DeviceClass))
         else:
             raise Exception("The device_id already exists {}".format(device_id))

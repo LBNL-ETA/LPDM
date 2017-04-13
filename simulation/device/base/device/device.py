@@ -331,7 +331,7 @@ class Device(NotificationReceiver, NotificationSender):
             )
         elif isinstance(the_event, LpdmConnectDeviceEvent):
             self._logger.debug("found lpdm connect device event {}".format(the_event))
-            self.add_device(the_event.device_id, the_event.DeviceClass)
+            self.add_device(the_event.device_id, the_event.DeviceClass, the_event.uuid)
         elif isinstance(the_event, LpdmAssignGridControllerEvent):
             self._logger.debug("found lpdm connect device event {}".format(the_event))
             self.assign_grid_controller(the_event.grid_controller_id)

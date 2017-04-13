@@ -281,18 +281,21 @@ class GridController(Device):
             )
             self.shutdown()
 
-    def add_device(self, new_device_id, DeviceClass):
+    def add_device(self, new_device_id, DeviceClass, uuid):
         "Add a device to the list devices connected to the grid controller"
         if issubclass(DeviceClass, PowerSource):
             self._logger.info(
-                self.build_message(message="connected a power source to the gc {} - {}".format(new_device_id, DeviceClass))
+                self.build_message(
+                    message="connected a power source to the gc {} - {} - {}".format(new_device_id, DeviceClass, uuid))
             )
             self.power_source_manager.add(new_device_id, DeviceClass)
         else:
+            self._logger.debug(self.build_message(message="uuid for {}".format(new_device_id), tag="uuid", value=uuid))
             self._logger.info(
-                self.build_message(message="connected a device to the gc {} - {}".format(new_device_id, DeviceClass))
+                self.build_message(
+                    message="connected a device to the gc {} - {}, - {}".format(new_device_id, DeviceClass, uuid))
             )
-            self.device_manager.add(new_device_id, DeviceClass)
+            self.device_manager.add(new_device_id, DeviceClass, uuid)
 
     def calculate_gc_price(self):
         """Calculate the price grid controller's price"""
@@ -316,14 +319,23 @@ class GridController(Device):
             self.broadcast_new_price(self._gc_price, d.device_id)
 
     def shutdown(self):
+        """
+        Shutdown devices until load no longer exceeds capacity.
+        Start shutting down devices with the higher uuid until load <= capacity
+        """
+        self._logger.info(self.build_message(message="Shutdown", tag="shutdown", value="1"))
+        sorted_devices = sorted(self.device_manager.device_list, lambda a, b: cmp(b.uuid, a.uuid))
+        for d in sorted_devices:
+            if d.load:
+                self.power_source_manager.remove_load(d.load)
+                d.set_load(0.0)
+                self.broadcast_new_power(0.0, d.device_id)
+                if self.power_source_manager.total_load() <= self.power_source_manager.total_capacity():
+                    break
+
+    def shutdown_all(self):
         """Shutdown the grid, set all loads to zero, notify all devices"""
-        self._logger.info(
-            self.build_message(
-                message="Shutdown",
-                tag="shutdown",
-                value="1"
-            )
-        )
+        self._logger.info(self.build_message(message="Shutdown All", tag="shutdown_all", value="1"))
         # self.power_source_manager.shutdown()
         # self.device_manager.shutdown()
         # notify all devices of change in load -> 0

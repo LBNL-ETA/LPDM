@@ -19,11 +19,13 @@
         "power_sources": [
             {
                 "device_id": "pv_1",
+                "uuid": 1,
                 "grid_controller_id": "gc_1",
                 "device_type": "pv"
             },
             {
                 "device_id": "utility_meter_1",
+                "uuid": 2,
                 "grid_controller_id": "gc_1",
                 "device_type": "utility_meter",
                 "capacity": 2000.0,
@@ -31,13 +33,14 @@
                 "power_price": 0.05,
                 "schedule": [
                     [0, "on"],
-                    [20, "off"]
+                    [23, "off"]
                 ]
             }
         ],
         "euds": [
             {
                 "device_id": "eud_1",
+                "uuid": 1,
                 "device_type": "air_conditioner",
                 "grid_controller_id": "gc_1",
                 "max_power_output": 1000.0,
@@ -49,6 +52,7 @@
             },
             {
                 "device_id": "eud_2",
+                "uuid": 2,
                 "device_type": "eud",
                 "grid_controller_id": "gc_1",
                 "max_power_output": 1000.0,
@@ -59,13 +63,13 @@
                 ]
             },
             {
-                "device_id": "eud_3",
+                "device_id": "fx_1",
+                "uuid": 3,
                 "device_type": "eud",
                 "grid_controller_id": "gc_1",
                 "max_power_output": 1000.0,
-                "price_dim": 0.3,
-                "price_off": 0.7,
-                "schedule": [[0, "on", "day"]]
+                "constant_power_output": true,
+                "schedule": [[0, "off"], [6, "on"], [8, "off"], [18, "on"]]
             }
         ]
     }

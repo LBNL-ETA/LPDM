@@ -14,6 +14,7 @@
      function lpdmPlotController($scope, $element, $attrs, $timeout, moment){
          var ctrl = this;
          var container = $element.find("div.plot_container");
+         $scope.states = ['AL', 'CA', 'WA', 'OR', 'UT'];
 
          // watch the data source for changes
          $scope.$watch(

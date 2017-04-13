@@ -115,6 +115,7 @@
         ctrl.selectSimulationScenario = selectSimulationScenario;
         ctrl.runScenario = runScenario;
         ctrl.selectSimulationRun = selectSimulationRun;
+        ctrl.tagIsSelected = tagIsSelected;
         //ctrl.getSimulationData = getSimulationData;
         ctrl.show_results = false;
 
@@ -179,6 +180,10 @@
         socket.on('simulation_runs', receiveSimulationRuns);
         socket.emit('get_simulation_runs');
 
+        socket.on('remove_sim_run_success', removeSimulationRunSuccess);
+        socket.on('remove_sim_run_error', removeSimulationRunError);
+        ctrl.removeSimulationRun = removeSimulationRun;
+
 
         ctrl.initialized = true;
 
@@ -223,6 +228,12 @@
                 ctrl.sim_run_list.splice(0, 0, data);
                 ctrl.selected_run = data;
             }
+        }
+
+        function tagIsSelected(device, tag){
+            // is the device/tag selected?
+            // if so there is a TagView object with device & tag properties
+            return ctrl.selected_tag_views.findIndex((item) => item.device == device && item.tag == tag) >= 0
         }
 
         function toggleTagView(device, tag){
@@ -279,6 +290,30 @@
                 //}
             //);
         }
+
+        function removeSimulationRun(sim_run){
+            // remove simulation runs from the database
+            console.log('remove simulation run', sim_run);
+            socket.emit('remove_sim_run', sim_run);
+        }
+
+        function removeSimulationRunSuccess(sim_run){
+            console.log('successfully removed run ', sim_run);
+            if (sim_run == 'all'){
+                ctrl.sim_run_list.splice(0, ctrl.sim_run_list.length);
+            }
+            else {
+                let index = ctrl.sim_run_list.findIndex((d) => d.id == sim_run);
+                if (index >= 0) {
+                    ctrl.sim_run_list.splice(index, 1);
+                }
+            }
+        }
+
+        function removeSimulationRunError(err){
+            console.log('simulation run error', err);
+        }
+
 
         //function getSimulationData(sim_run){
             //ctrl.sim_run = sim_run;

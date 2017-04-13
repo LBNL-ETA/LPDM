@@ -14,14 +14,20 @@
             </div>
         </md-toolbar>
         <md-card-content>
-            <md-input-container>
-                <ul class="lpdm_list">
-                    <li ng-repeat="sr in ctrl.scenario_list" ng-click="ctrl.selectSimulationScenario(sr)">{{sr.file_name}}</li>
-                </ul>
-            </md-input-container>
+            <ul class="lpdm_list">
+                <li
+                    ng-repeat="sr in ctrl.scenario_list"
+                    ng-class="sr == ctrl.scenario ? 'selected' : ''"
+                    ng-click="ctrl.selectSimulationScenario(sr)">
+                    {{sr.file_name}}
+                </li>
+            </ul>
         </md-card-content>
         <md-card-actions layout="row" layout-align="end center">
-            <md-button class="md-accent md-raised" ng-click="ctrl.runScenario(ctrl.scenario)">Run Scenario</md-button>
+            <md-button
+                class="md-accent md-raised"
+                ng-click="ctrl.runScenario(ctrl.scenario)"
+                ng-disabled="!ctrl.scenario">Run Scenario</md-button>
         </md-card-actions>
     </md-card>
     <md-card flex="20">
@@ -61,37 +67,50 @@
     </md-card>
 </md-content>
 
-<md-content layout-padding>
-    <md-progress-linear class="md-accent" md-mode="determinate" value="{{ctrl.progress}}"></md-progress-linear>
-</md-content>
+<!--<md-content layout-padding>-->
+    <!--<md-progress-linear class="md-accent" md-mode="determinate" value="{{ctrl.progress}}"></md-progress-linear>-->
+<!--</md-content>-->
 
 <md-content layout="row">
     <md-card flex="20">
         <md-toolbar layout="row" class="md-primary">
             <div class="md-toolbar-tools">
-                <span>Simulation Runs</span>
+                <section flex>Simulation Runs</section>
+                <section>
+                    <md-button class="md-icon-button md-primary-2" ng-click="ctrl.removeSimulationRun('all')">
+                        <md-icon
+                            md-font-icon="fa-trash"
+                            class="fa fa-lg"
+                            >
+                        </md-icon>
+                    </md-button>
+                </section>
             </div>
         </md-toolbar>
         <md-input-container>
             <ul class="lpdm_list">
-                <li ng-repeat="sr in ctrl.sim_run_list" ng-click="ctrl.loadSimulationRun(sr)" layout="row">
-                    <div flex layout-align="center center" layout-padding>
+                <li
+                layout="row"
+                ng-repeat="sr in ctrl.sim_run_list"
+                ng-click="ctrl.loadSimulationRun(sr)"
+                ng-class="sr == ctrl.sim_run ? 'selected' : ''">
+                    <section style="padding-top:6px">
                         {{sr.time_stamp}}: Run #{{sr.id}}
-                    </div>
-                    <div layout-align="end center">
-                        <!--<md-button class="md-fab md-mini md-accent">-->
+                    </section>
+
+                    <span flex></span>
+
+                    <section>
+                        <!--<md-button class="md-icon-button md-primary-2">-->
                             <!--<md-icon md-font-icon="fa-cloud-download" class="fa fa-lg"></md-icon>-->
                         <!--</md-button>-->
-                        <!--<md-button class="md-fab md-mini md-danger">-->
-                            <!--<md-icon md-font-icon="fa-trash" class="fa fa-lg"></md-icon>-->
-                        <!--</md-button>-->
-                        <md-button class="md-icon-button md-accent">
-                            <md-icon md-font-icon="fa-cloud-download" class="fa fa-lg"></md-icon>
+                        <md-button
+                            class="md-icon-button md-primary-2"
+                            ng-click="ctrl.removeSimulationRun(sr.id)" >
+                            <md-icon md-font-icon="fa-trash" class="fa fa-lg">
+                            </md-icon>
                         </md-button>
-                        <md-button class="md-icon-button md-accent">
-                            <md-icon md-font-icon="fa-trash" class="fa fa-lg"></md-icon>
-                        </md-button>
-                    </div>
+                    </section>
                 </li>
             </ul>
         </md-input-container>
@@ -148,8 +167,13 @@
                 <span>{{device.name}}</span>
             </div>
         </md-toolbar>
-        <ul>
-            <li ng-repeat="tag in device.tags" ng-click="ctrl.toggleTagView(device, tag)">{{tag.name}}</li>
+        <ul class="lpdm_list">
+            <li
+                ng-repeat="tag in device.tags"
+                ng-class="ctrl.tagIsSelected(device, tag) ? 'selected' : ''"
+                ng-click="ctrl.toggleTagView(device, tag)">
+                {{tag.name}}
+            </li>
         </ul>
     </md-card>
 </md-content>

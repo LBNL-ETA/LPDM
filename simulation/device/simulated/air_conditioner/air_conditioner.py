@@ -104,7 +104,7 @@ class AirConditioner(Device):
         self._last_temperature_update_time = 0.0 # the time the last internal temperature update occured
         self._heat_gain_rate = None
         self._max_c_delta = 10.0 #the maximum temeprature the ECU can handle in 1 hr
-        self._compressor_max_c_per_kwh = 1.0 * (3000.0 / self._volume_m3) / 1000.0
+        self._compressor_max_c_per_kwh = 100.0 * (3000.0 / self._volume_m3) / 1000.0
 
         # keep track of the compressor operation on/off
         self._compressor_is_on = False
@@ -264,7 +264,7 @@ class AirConditioner(Device):
             if len(found):
                 self._current_event = found[0]
 
-        if events_occurred["reasses_setpoint"] or events_occurred["update_outdoor_temperature"]:
+        if events_occurred["reasses_setpoint"] or events_occurred["update_outdoor_temperature"] or events_occurred["on"]:
             self.adjust_internal_temperature()
             if events_occurred["reasses_setpoint"]:
                 self.reasses_setpoint()
@@ -380,21 +380,20 @@ class AirConditioner(Device):
         if type(schedule_item) is list and len(schedule_item) == 3:
             self._set_point_low = schedule_item[1]
             self._set_point_high = schedule_item[2]
-            # self._logger.debug(
-                # self.build_message(
-                    # message="change set point range",
-                    # tag="set_point_low",
-                    # value=self._set_point_low
-                # )
-            # )
-            # self._logger.debug(
-                # self.build_message(
-                    # message="change set point range",
-                    # tag="set_point_high",
-                    # value=self._set_point_high
-                # )
-            # )
-
+            self._logger.debug(
+                self.build_message(
+                    message="change set point range",
+                    tag="set_point_low",
+                    value=self._set_point_low
+                )
+            )
+            self._logger.debug(
+                self.build_message(
+                    message="change set point range",
+                    tag="set_point_high",
+                    value=self._set_point_high
+                )
+            )
         else:
             self._logger.error(
                 self.build_message(
@@ -443,6 +442,11 @@ class AirConditioner(Device):
                 energy_used = self._max_power_output * (self._time - self._last_temperature_update_time) / 3600.0
                 delta_c = self._compressor_max_c_per_kwh * energy_used
                 self._current_temperature -= delta_c
+                self._logger.debug(self.build_message(
+                    message="compressor adjustment",
+                    tag="comp_delta_t",
+                    value=delta_c
+                ))
 
             if not self._current_outdoor_temperature is None:
                 # difference between indoor and outdoor temp
@@ -452,13 +456,13 @@ class AirConditioner(Device):
                 # calculate how much of that heat gets into the tent
                 c_change = delta_indoor_outdoor * self._heat_gain_rate * scale
                 self._current_temperature += c_change
-                # self._logger.debug(
-                    # self.build_message(
-                        # message="Internal temperature",
-                        # tag="internal_temperature",
-                        # value=self._current_temperature
-                    # )
-                # )
+                self._logger.debug(
+                    self.build_message(
+                        message="Internal temperature",
+                        tag="internal_temperature",
+                        value=self._current_temperature
+                    )
+                )
                 self._last_temperature_update_time = self._time
 
     def control_compressor_operation(self):
@@ -469,11 +473,16 @@ class AirConditioner(Device):
             return
 
         delta = self._current_temperature - self._current_set_point
+        self._logger.debug(self.build_message(
+            message="calculate delta",
+            tag="delta_t",
+            value=delta
+        ))
         if abs(delta) > self._temperature_max_delta:
-            if delta > 0 and not self._compressor_is_on and not self.out_of_fuel():
+            if delta > 0 and not self._compressor_is_on:
                 # if the current temperature is above the set point and compressor is off, turn it on
                 self.turn_on_compressor()
-            elif (delta < 0 or self.out_of_fuel()) and self._compressor_is_on:
+            elif delta < 0 and self._compressor_is_on:
                 # if current temperature is below the set point and compressor is on, turn it off
                 self.turn_off_compressor()
 
@@ -486,20 +495,20 @@ class AirConditioner(Device):
     def turn_off(self):
         "Turn off the device"
         if self._in_operation:
-            self.turn_off_compressor()
+            if self._compressor_is_on:
+                self.turn_off_compressor()
             self._in_operation = False
             self._logger.info(self.build_message(message="turn off device", tag="on/off", value=0))
-            self._logger.info(
-                self.build_message(
-                    message="Power level {}".format(self._power_level),
-                    tag="power",
-                    value=self._power_level
-                )
-            )
+            self._logger.info(self.build_message(
+                message="Power level {}".format(self._power_level), tag="power", value=self._power_level
+            ))
 
     def turn_on_compressor(self):
         """Turn on the compressor"""
         if self._in_operation:
+            self._logger.debug(self.build_message(
+                message="compressor_on", tag="compressor_on_off", value=1
+            ))
             self._compressor_is_on = True
             # this should be 0
             self.sum_energy_used(self._power_level)
@@ -512,6 +521,9 @@ class AirConditioner(Device):
 
     def turn_off_compressor(self):
         self._compressor_is_on = False
+        self._logger.debug(self.build_message(
+            message="compressor_on", tag="compressor_on_off", value=0
+        ))
         if self._power_level != 0.0:
             self.sum_energy_used(self._power_level)
             self.set_power_level(0.0)

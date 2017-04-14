@@ -9,6 +9,7 @@
             {
                 "device_id": "gc_1",
                 "device_type": "grid_controller",
+                "price_logic_class": "AveragePriceLogic",
                 "battery": {
                     "device_id": "battery_1",
                     "device_type": "battery",

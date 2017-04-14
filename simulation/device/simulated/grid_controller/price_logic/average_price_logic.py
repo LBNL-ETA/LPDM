@@ -13,5 +13,15 @@ class AveragePriceLogic(object):
         """Calculate the average price for all power sources"""
         # get the power sources that have a capacity > 0
         available = self.power_source_manager.get_available_power_sources()
-        # return the averge price of those devices if there are any
-        return float(sum(d.price for d in available)) / len(available) if len(available) else None
+        if len(available):
+            available.sort(lambda a, b: cmp(a.price, b.price))
+            total = 0.0
+            n = 0
+            for p in available:
+                if p.load > 0:
+                    total += p.price
+                    n += 1
+            # return the averge price of those devices if there are any
+            return total/n if n else available[0]
+        else:
+            return None

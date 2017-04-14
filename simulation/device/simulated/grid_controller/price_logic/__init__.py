@@ -1,1 +1,2 @@
 from average_price_logic import AveragePriceLogic
+from weighted_average_price_logic import WeightedAveragePriceLogic

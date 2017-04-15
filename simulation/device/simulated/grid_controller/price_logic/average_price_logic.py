@@ -22,6 +22,6 @@ class AveragePriceLogic(object):
                     total += p.price
                     n += 1
             # return the averge price of those devices if there are any
-            return total/n if n else available[0]
+            return total/n if n else available[0].price
         else:
             return None

@@ -152,19 +152,12 @@ class PowerSourceManager(object):
         Check that the loads are optimally distributed among the power sources.
         Move load from the more expensive power sources to the cheaper ones.
         """
-        # self.logger.debug(self.build_message(message="optimize_load (load = {}, cap = {})".format(self._load, self._capacity), tag="optimize_before"))
         # update the status of rechargeable itmes
         self.update_rechargeable_items()
-        # self.logger.debug(self.build_message(message="optimize_load-2 (load = {}, cap = {})".format(self._load, self._capacity), tag="optimize_before"))
         # get the current total load on the system
-        original_load = self._load
         # add the new load
-        remaining_load = original_load
+        remaining_load = self._load
         starting_load = remaining_load
-        # self.logger.debug(self.build_message("begin optimizing load {}".format(remaining_load)))
-        # if original_load == 0 and remaining_load == 0:
-            # # no need to do anything if there's no load
-            # return
 
         # get the power sources and sort by the cheapest price
         power_sources = [p for p in self.power_sources if p.is_configured()]

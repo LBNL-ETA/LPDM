@@ -68,6 +68,9 @@ class Device(NotificationReceiver, NotificationSender):
         # _dail_y_schedule is the parsed schedule used by the device to schedule events
         self._scheduler = None
         self._schedule_array = config.get("schedule", None)
+        # setup the price scheduler
+        self._price_scheduler = None
+        self._price_schedule_array = config.get("price_schedule", None)
         self._events = []
         self._current_event = None
 
@@ -106,10 +109,22 @@ class Device(NotificationReceiver, NotificationSender):
         return ", ".join(["{0} = {1}".format(key, getattr(self,key)) for key in self.__dict__.keys() if not callable(getattr(self, key))])
 
     def setup_schedule(self):
-        """Setup the schedule if there is one"""
+        """Setup the on/off and price schedules"""
+        self.setup_on_off_schedule()
+        self.setup_price_schedule()
+
+    def setup_on_off_schedule(self):
+        """Setup the on/off schedule if one has been defined"""
         if type(self._schedule_array) is list:
             self._scheduler = Scheduler(self._schedule_array)
             self._scheduler.parse_schedule()
+
+    def setup_price_schedule(self):
+        """Setup the price schedule if one has been defined"""
+        if type(self._price_schedule_array) is list:
+            self._price_scheduler = Scheduler(self._price_schedule_array)
+            self._price_scheduler.set_task_name("price")
+            self._price_scheduler.parse_schedule()
 
     def assign_grid_controller(self, grid_controller_id):
         """set the grid controller for the device"""
@@ -147,9 +162,11 @@ class Device(NotificationReceiver, NotificationSender):
 
     def schedule_next_events(self):
         if self._scheduler:
-            self.set_next_scheduled_event()
+            self.set_next_scheduled_on_off_event()
+        if self._price_scheduler:
+            self.set_next_scheduled_price_event()
 
-    def set_next_scheduled_event(self):
+    def set_next_scheduled_on_off_event(self):
         """If there's a schedule, find the next on/off event"""
         # check if there's already one scheduled
         found = filter(lambda d: d.value in ['on', 'off'], self._events)
@@ -157,6 +174,24 @@ class Device(NotificationReceiver, NotificationSender):
             sched_event = self._scheduler.get_next_scheduled_task(self._time if self._is_initialized else self._time - 1)
             self._events.append(sched_event)
             self._logger.debug(self.build_message(message="set next on/off event {}".format(sched_event)))
+
+    def set_next_scheduled_price_event(self):
+        """If there's a schedule, find the next price event"""
+        # check if there's already one scheduled
+        found = filter(lambda d: d.name == "price", self._events)
+        if len(found) == 0:
+            sched_event = self._price_scheduler.get_next_scheduled_task(self._time if self._is_initialized else self._time - 1)
+            self._events.append(sched_event)
+            self._logger.debug(self.build_message(
+                message="set next price event {}".format(sched_event),
+                tag="next_price_event",
+                value=sched_event.ttie))
+
+    def set_price(self, new_price):
+        """set the energy current price"""
+        if self._price != new_price:
+            self._price = new_price
+            self.broadcast_new_price(self._price, self._grid_controller_id)
 
     def calculate_next_ttie(self):
         "calculate the next TTIE - look through the pending events for the one that will happen first"

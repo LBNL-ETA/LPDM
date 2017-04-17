@@ -70,12 +70,6 @@ class UtilityMeter(PowerSource):
         self.schedule_next_events()
         self.calculate_next_ttie()
 
-    def setup_schedule(self):
-        """Setup the schedule if there is one"""
-        if type(self._schedule_array) is list:
-            self._scheduler = Scheduler(self._schedule_array)
-            self._scheduler.parse_schedule()
-
     def status(self):
         return {
             "type": "utility_meter",
@@ -204,12 +198,13 @@ class UtilityMeter(PowerSource):
                     self.make_unavailable()
                 elif event.value == "on" and self._current_capacity == 0:
                     self.make_available()
+                elif event.name == "price":
+                    self.set_price(event.value)
                 elif event.value == "emit_initial_price":
                     self.calculate_electricity_price()
                 elif event.value == "emit_initial_capacity":
                     self.calculate_capacity()
                 remove_items.append(event)
-
 
         for event in remove_items:
             self._events.remove(event)

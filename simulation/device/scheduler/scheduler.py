@@ -13,10 +13,15 @@ class Scheduler(object):
         self.last_day_time = LastDayTime()
         self.scheduled_items = []
         self.last_item_index = None
+        self.task_name = None
         self._logger = logging.getLogger('lpdm')
 
     def set_schedule(self, schedule):
         self.schedule = schedule
+
+    def set_task_name(self, task_name):
+        """Set the names for all scheduled tasks"""
+        self.task_name = task_name
 
     def parse_schedule(self):
         """parse the schedule"""
@@ -81,6 +86,6 @@ class Scheduler(object):
             ttie = (day * SECS_IN_DAY) + found_item.time
             if ttie <= time_seconds:
                 ttie += SECS_IN_DAY
-            return LpdmEvent(ttie, found_item.value)
+            return LpdmEvent(ttie, found_item.value, self.task_name)
         else:
             return None

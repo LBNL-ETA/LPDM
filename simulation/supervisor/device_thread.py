@@ -2,9 +2,7 @@ import threading
 import logging
 import sys
 import traceback
-from lpdm_event import LpdmTtieEvent, LpdmPowerEvent, LpdmPriceEvent, LpdmInitEvent, LpdmKillEvent, \
-    LpdmConnectDeviceEvent, LpdmAssignGridControllerEvent, LpdmRunTimeErrorEvent, \
-    LpdmCapacityEvent
+from lpdm_event import LpdmInitEvent, LpdmKillEvent, LpdmRunTimeErrorEvent, LpdmBaseEvent
 from simulation_logger import message_formatter
 
 class DeviceThread(threading.Thread):
@@ -58,37 +56,20 @@ class DeviceThread(threading.Thread):
 
     def init_device(self):
         """initialize the device"""
-        self.add_callbacks_to_config(self.device_config)
+        # add the supervisor callback to the config dictionary
+        self.add_supervisor_callback(self.device_config)
         self.device = self.DeviceClass(self.device_config)
         self.device.init()
         self.device.set_initialized(True)
 
-    def add_callbacks_to_config(self, config):
-        """add the callback functions for power, price, ttie to the device configuration"""
-        config["broadcast_new_power"] = self.callback_new_power
-        config["broadcast_new_price"] = self.callback_new_price
-        config["broadcast_new_ttie"] = self.callback_new_ttie
-        config["broadcast_new_capacity"] = self.callback_new_capacity
+    def add_supervisor_callback(self, config):
+        config["broadcast"] = self.supervisor_callback
 
-    def callback_new_power(self, source_device_id, target_device_id, time_value, value):
-        """broadcast a power change"""
-        self.supervisor_queue.put(
-            LpdmPowerEvent(source_device_id, target_device_id, time_value, value)
-        )
-
-    def callback_new_price(self, source_device_id, target_device_id, time_value, value):
-        """broadcast  price change"""
-        self.supervisor_queue.put(
-            LpdmPriceEvent(source_device_id, target_device_id, time_value, value)
-        )
-
-    def callback_new_ttie(self, device_id, value):
-        """register a new ttie for a device"""
-        self.supervisor_queue.put(LpdmTtieEvent(target_device_id=device_id, value=value))
-
-    def callback_new_capacity(self, source_device_id, target_device_id, time_value, value):
-        """register a new capacity for a device"""
-        self.supervisor_queue.put(
-            LpdmCapacityEvent(source_device_id, target_device_id, time_value, value)
-        )
-
+    def supervisor_callback(self, broadcast_message):
+        """Broadcast a message from a device to the supervisor/other devices"""
+        # put the message in the supervisor's queue
+        if not isinstance(broadcast_message, LpdmBaseEvent):
+            raise Exception(
+                "Attempt to pass a non BroadcastMessage object to the supervisor ({})".format(broadcast_message)
+            )
+        self.supervisor_queue.put(broadcast_message)

@@ -117,7 +117,6 @@ class AirConditioner(Device):
         self.load_temperature_profile()
         self.schedule_next_events()
         self.calculate_next_ttie()
-        self._logger.debug(self.build_message("initial events = {}".format(self._events)))
 
     def default_setpoint_schedule(self):
         """generate a default setpoint schedule if none has been passed"""

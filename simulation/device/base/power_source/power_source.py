@@ -16,7 +16,6 @@
 """
 from device.base.device import Device
 from abc import ABCMeta, abstractmethod
-import logging
 
 class PowerSource(Device):
     def __init__(self, config = {}):

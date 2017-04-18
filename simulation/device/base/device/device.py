@@ -375,8 +375,7 @@ class Device(NotificationReceiver, NotificationSender):
             self.finish()
             self._logger.debug("found a ldpm kill event {}".format(the_event))
         else:
-            self._logger.error("event type not found {}".format(the_event))
-        self._logger.debug("task finished")
+            self._logger.info("event type not found {}".format(the_event))
 
     def sum_kwh(self):
         """Keep a running total of the energy used by the device"""

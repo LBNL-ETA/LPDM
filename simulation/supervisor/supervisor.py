@@ -6,7 +6,8 @@ import logging
 import pprint
 from ttie_event_manager import TtieEventManager
 from event_manager import EventManager
-from lpdm_event import LpdmPowerEvent, LpdmPriceEvent, LpdmTtieEvent, LpdmCapacityEvent, LpdmRunTimeErrorEvent
+from lpdm_event import LpdmPowerEvent, LpdmPriceEvent, LpdmTtieEvent, LpdmCapacityEvent, LpdmRunTimeErrorEvent, \
+        LpdmBuyMaxPowerEvent, LpdmBuyPowerPriceEvent, LpdmBuyPowerEvent
 from device_thread_manager import DeviceThreadManager
 from device_thread import DeviceThread
 from common.device_class_loader import DeviceClassLoader
@@ -64,8 +65,11 @@ class Supervisor:
                 # new ttie event: add it to the ttie event list
                 self.ttie_event_manager.add(the_event)
             elif isinstance(the_event, LpdmPowerEvent) \
-                    or isinstance(the_event, LpdmPriceEvent) \
-                    or isinstance(the_event, LpdmCapacityEvent):
+                or isinstance(the_event, LpdmPriceEvent) \
+                or isinstance(the_event, LpdmCapacityEvent) \
+                or isinstance(the_event, LpdmBuyMaxPowerEvent) \
+                or isinstance(the_event, LpdmBuyPowerEvent) \
+                or isinstance(the_event, LpdmBuyPowerPriceEvent):
                 # power or price event: call the thread and pass along the event
                 # get the target thread and put the event in the queue
                 # self.logger.debug(self.build_message("supervisor event {}".format(the_event)))

@@ -17,11 +17,14 @@
 
 from device_manager import DeviceManager
 from power_source_manager import PowerSourceManager
+from power_buyer_manager import PowerBuyerManager
 from device.base.power_source import PowerSource
+from device.base.power_source_buyer import PowerSourceBuyer
 from device.base.device import Device
 from device.simulated.battery import Battery
 from common.device_class_loader import DeviceClassLoader
 from device.scheduler import LpdmEvent
+from supervisor.lpdm_event import LpdmBuyPowerPriceEvent, LpdmBuyMaxPowerEvent, LpdmBuyPowerEvent
 import logging
 
 class GridController(Device):
@@ -66,6 +69,7 @@ class GridController(Device):
         # setup the managers for devices and power sources
         self.device_manager = DeviceManager()
         self.power_source_manager = PowerSourceManager()
+        self.power_buyer_manager = PowerBuyerManager()
 
         # set up class loader
         self._device_class_loader = DeviceClassLoader()
@@ -158,7 +162,6 @@ class GridController(Device):
             else:
                 # power has changed, either positive or negative
                 p = self.device_manager.get(source_device_id)
-                self._logger.debug(self.build_message(message="old load = {}, new load = {}, p_diff = {}".format(device.load, new_power, p_diff)))
                 p_original = p.load
                 self.power_source_manager.add_load(p_diff)
                 if self.power_source_update():
@@ -172,6 +175,8 @@ class GridController(Device):
                     self.device_manager.set_load(source_device_id, 0.0)
                     self.broadcast_new_power(0.0, source_device_id)
 
+        self.calculate_gc_price()
+        self.update_power_purchases()
         self.power_source_manager.reset_changed()
         # self.schedule_next_events()
         self.calculate_next_ttie()
@@ -207,29 +212,34 @@ class GridController(Device):
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
         self._time = time
-        self.power_source_manager.set_time(self._time)
-        if self._battery:
-            # update the battery charge and status
-            self._battery.set_time(time)
-        if not self._static_price:
-            self._logger.debug(
-                self.build_message(
-                    message="Price change received (new_price = {}, source_device_id = {}, target_device_id = {})".format(new_price, source_device_id, target_device_id)
+        # check that the price change is from a device supplying power
+        # ignore price changes from all other devices
+        if self.power_source_manager.get(source_device_id):
+            # a power source has changed its price
+            self.power_source_manager.set_time(self._time)
+            if self._battery:
+                # update the battery charge and status
+                self._battery.set_time(time)
+            if not self._static_price:
+                self._logger.debug(
+                    self.build_message(
+                        message="Price change received (new_price = {}, source_device_id = {}, target_device_id = {})".format(new_price, source_device_id, target_device_id)
+                    )
                 )
-            )
-            # set the price for the device
-            self.power_source_manager.set_price(source_device_id, new_price)
-            if self.power_source_update():
-                # calculate the new gc price
-                if self.calculate_gc_price():
-                    # send the new price to the devices if changed
-                    self.send_price_change_to_devices()
-                self.power_source_manager.reset_changed()
-            else:
-                # Error occured during load optimization
-                # shut down everything
-                self._logger.error(self.build_message("optimize_load error during price change"))
-                self.shutdown()
+                # set the price for the device
+                self.power_source_manager.set_price(source_device_id, new_price)
+                if self.power_source_update():
+                    # calculate the new gc price
+                    if self.calculate_gc_price():
+                        # send the new price to the devices if changed
+                        self.send_price_change_to_devices()
+                    self.power_source_manager.reset_changed()
+                    self.update_power_purchases()
+                else:
+                    # Error occured during load optimization
+                    # shut down everything
+                    self._logger.error(self.build_message("optimize_load error during price change"))
+                    self.shutdown()
 
     def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"
@@ -247,7 +257,6 @@ class GridController(Device):
     def on_capacity_change(self, source_device_id, target_device_id, time, value):
         """A device registers its capacity to the grid controller it's registered to"""
         self._time = time
-        self.power_source_manager.set_time(self._time)
         self._logger.debug(
             self.build_message(
                 message="received capacity change {} -> {}".format(source_device_id, value),
@@ -255,41 +264,55 @@ class GridController(Device):
                 value=value
             )
         )
-        self.power_source_manager.set_capacity(source_device_id, value)
-        if self.power_source_update():
-            self.power_source_manager.reset_changed()
-            # notify any euds of capacity changes
-            # the eud checks to see if it should be in operation
-            # turns itself on if necessary
-            for d in self.device_manager.devices():
-                self.broadcast_new_capacity(self.power_source_manager.total_capacity(), d.device_id)
+        if self.power_source_manager.get(source_device_id):
+            # handle capacity changes from suppliers of power
+            self.power_source_manager.set_time(self._time)
+            self.power_source_manager.set_capacity(source_device_id, value)
+            if self.power_source_update():
+                self.power_source_manager.reset_changed()
+                # notify any euds of capacity changes
+                # the eud checks to see if it should be in operation
+                # turns itself on if necessary
+                for d in self.device_manager.devices():
+                    self.broadcast_new_capacity(self.power_source_manager.total_capacity(), d.device_id)
 
-            if self.calculate_gc_price():
-                # send the new price to the devices if changed
-                self.send_price_change_to_devices()
-        else:
-            # load exceeds capacity after the new capacity is applied
-            self._logger.debug(
-                self.build_message(
-                    message="Load exceeds capacity ({} > {})".format(
-                        self.power_source_manager.total_load(),
-                        self.power_source_manager.total_capacity()
-                    ),
-                    tag="load_gt_cap",
-                    value=1
+                if self.calculate_gc_price():
+                    # send the new price to the devices if changed
+                    self.send_price_change_to_devices()
+
+                self.update_power_purchases()
+            else:
+                # load exceeds capacity after the new capacity is applied
+                self._logger.debug(
+                    self.build_message(
+                        message="Load exceeds capacity ({} > {})".format(
+                            self.power_source_manager.total_load(),
+                            self.power_source_manager.total_capacity()
+                        ),
+                        tag="load_gt_cap",
+                        value=1
+                    )
                 )
-            )
-            self.shutdown()
+                self.shutdown()
 
     def add_device(self, new_device_id, DeviceClass, uuid):
         "Add a device to the list devices connected to the grid controller"
-        if issubclass(DeviceClass, PowerSource):
+        if issubclass(DeviceClass, PowerSourceBuyer):
+            # add power buyers
+            self._logger.info(
+                self.build_message(
+                    message="connected a power buyer to the gc {} - {} - {}".format(new_device_id, DeviceClass, uuid))
+            )
+            self.power_buyer_manager.add(new_device_id, DeviceClass)
+        elif issubclass(DeviceClass, PowerSource):
+            # add power sources
             self._logger.info(
                 self.build_message(
                     message="connected a power source to the gc {} - {} - {}".format(new_device_id, DeviceClass, uuid))
             )
             self.power_source_manager.add(new_device_id, DeviceClass)
         else:
+            # add regular devices
             self._logger.debug(self.build_message(message="uuid for {}".format(new_device_id), tag="uuid", value=uuid))
             self._logger.info(
                 self.build_message(
@@ -302,6 +325,14 @@ class GridController(Device):
         price_has_changed = False
         previous_price = self._gc_price
         self._gc_price = self._price_logic.get_price()
+        if previous_price != self._gc_price:
+            self._logger.debug(
+                self.build_message(
+                    message="price changed",
+                    tag="price",
+                    value=self._gc_price
+                )
+            )
         # return boolean indicating if price has changed
         return previous_price != self._gc_price
 
@@ -316,7 +347,8 @@ class GridController(Device):
         )
         # send the new price to the non-power-sources
         for d in self.device_manager.devices():
-            self.broadcast_new_price(self._gc_price, d.device_id)
+            if not self._gc_price is None:
+                self.broadcast_new_price(self._gc_price, d.device_id)
 
     def shutdown(self):
         """
@@ -392,6 +424,155 @@ class GridController(Device):
         if ttie != None and ttie != self._ttie:
             self._ttie = ttie
             self.broadcast_new_ttie(ttie)
+
+    def process_supervisor_event(self, the_event):
+        """Override the device base class"""
+        self._time = the_event.time
+        if isinstance(the_event, LpdmBuyMaxPowerEvent):
+            # A power buyer is informing the GC of the max amount of power it can buy
+            # self._logger.debug(
+                # self.build_message(
+                    # message="buy power max event received {}".format(the_event),
+                    # tag="buy_max_power",
+                    # value=the_event.value
+                # )
+            # )
+            self.on_buy_max_power_change(the_event)
+        elif isinstance(the_event, LpdmBuyPowerPriceEvent):
+            # a power buyer is informing the GC of the buy price threshold
+            # self._logger.debug(
+                # self.build_message(
+                    # message="buy power price event received {}".format(the_event),
+                    # tag="buy_power_price",
+                    # value=the_event.value
+                # )
+            # )
+            self.on_buy_power_price_change(the_event)
+        else:
+            # divert all other events to the base class
+            Device.process_supervisor_event(self, the_event)
+
+    def on_buy_power_price_change(self, the_event):
+        """a power buyer has changed its buy price threshold"""
+        self._time = the_event.time
+        self.power_buyer_manager.set_time(self._time)
+        # set the threshold for buying power for a power buyer
+        if self.set_buy_price_threshold(the_event.source_device_id, the_event.value):
+            self.update_power_purchases()
+
+    def set_buy_price_threshold(self, device_id, value):
+        """Set the buy price threshold for a power buyer"""
+        device = self.power_buyer_manager.get(device_id)
+        if device:
+            device.price_threshold = value
+            self._logger.debug(self.build_message(
+                message="set price threshold for device {}".format(device_id),
+                tag="buy_price_threshold",
+                value=value
+            ))
+            return True
+        else:
+            return False
+
+    def on_buy_max_power_change(self, the_event):
+        """a power buyer has changed the max amount of power it can purchase"""
+        self._time = the_event.time
+        self.power_buyer_manager.set_time(self._time)
+        if self.set_buy_max_power(the_event.source_device_id, the_event.value):
+            self.update_power_purchases()
+
+    def set_buy_max_power(self, device_id, value):
+        """Set the max amount of power a power source can purchase"""
+        device = self.power_buyer_manager.get(device_id)
+        if device:
+            device.capacity = value
+            self._logger.debug(self.build_message(
+                message="set buy max power for device {}".format(device_id),
+                tag="buy_max_power",
+                value=value
+            ))
+            return True
+        else:
+            return False
+
+    def update_power_purchases(self):
+        """Update power purchases"""
+        # update the power sources first
+        # TODO: check if a power_source_update is needed before doing anything
+        # self.power_source_update()
+        # calculate how much power is available for selling
+        available_power = self.power_source_manager.total_capacity() - self.power_source_manager.total_load()
+        if available_power < 1e-7:
+            # no power available
+            return
+
+        # keep track of all the power buyers to send power change message
+        updated_buyers = []
+        # go thorugh each power buyer
+        for p in self.power_buyer_manager.get_available_power_sources():
+            self._logger.debug(self.build_message(
+                message="check power source price_thresh-> {}, current_price -> {}".format(p.price_threshold, self._gc_price),
+                tag="check_power_source",
+                value=0
+            ))
+            if self._gc_price <= p.price_threshold:
+                # price is below the threshold so ok to buy power
+                # calculate the max amount of power that can be bought by the device
+                max_power = p.capacity - p.load
+                if max_power >= 1e-7:
+                    # power buy is able to buy more power
+                    if max_power > available_power:
+                        # not enough available power to buy 100%
+                        # purchase what is available
+                        power_buy = available_power
+                        available_power = 0
+                    else:
+                        power_buy = max_power
+                        available_power -= power_buy
+
+                    self.power_source_manager.add_load(power_buy)
+                    if self.power_source_update():
+                        # successfully added the load
+                        p.set_load(power_buy)
+                        updated_buyers.append(p)
+                    else:
+                        # unable to provide the requested power
+                        # TODO: if can't provide power, shutdown ? or restore to previous load?
+                        self.power_source_manager.add_load(-1 * power_buy)
+                        self.power_source_update()
+                        self._logger.debug(self.build_message(
+                            message="failed to buy power for device {}".format(p.device_id),
+                            tag="buy_power_fail",
+                            value=0
+                        ))
+            else:
+                # price is above the threshold
+                if p.load > 0:
+                    # if power is currently being purchased shut it off
+                    self.power_source_manager.remove_load(p.load)
+                    self.power_source_update()
+                    p.set_load(0.0)
+                    updated_buyers.append(p)
+
+        # send messages to the buyer
+        for p in updated_buyers:
+            self.broadcast_buy_power(p.device_id, p.load)
+        self.power_source_manager.reset_changed()
+
+    def broadcast_buy_power(self, target_device_id, value):
+        """tell a power buyer how much it can purchase at the moment"""
+        if callable(self._broadcast_callback):
+            self._logger.debug(
+                self.build_message(
+                    message="Broadcast power buy {} to {}".format(value, target_device_id),
+                    tag="broadcast_power_buy",
+                    value=value
+                )
+            )
+            self._broadcast_callback(LpdmBuyPowerEvent(self._device_id, target_device_id, self._time, value))
+        else:
+            raise Exception("broadcast_new_power has not been set for this device!")
+
 
     def finish(self):
         """Call finish on the battery also"""

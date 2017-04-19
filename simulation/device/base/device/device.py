@@ -54,7 +54,7 @@ class Device(NotificationReceiver, NotificationSender):
         self._device_name = config.get("device_name", "device")
         self._device_type = config.get("device_type")
         self._uuid = config.get("uuid", None)
-        self._price = config.get("price", 0.0)
+        self._price = config.get("price", 0.1)
         self._static_price = config.get("static_price", False)
         self._grid_controller_id = config.get("grid_controller_id", None)
         self._max_power_output = config.get("max_power_output", 0.0)

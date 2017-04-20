@@ -388,6 +388,9 @@ class GridController(Device):
                 if event.value == "emit_initial_price":
                     self.send_price_change_to_devices()
                     remove_items.append(event)
+                elif event.value == "battery_status":
+                    self.power_source_update()
+                    remove_items.append(event)
 
         # remove the processed events from the list
         for event in remove_items:

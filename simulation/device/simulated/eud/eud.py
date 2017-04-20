@@ -125,7 +125,7 @@ class Eud(Device):
     def on_time_change(self, new_time):
         "Receives message when a time change has occured"
         self._time = new_time
-        self.process_event()
+        self.process_events()
         self.schedule_next_events()
         self.calculate_next_ttie()
 
@@ -139,8 +139,10 @@ class Eud(Device):
             self._time = time
             self.turn_off()
 
-    def process_event(self):
+    def process_events(self):
         "Process any events that need to be processed"
+        Device.process_events(self)
+
         remove_items = []
         for event in self._events:
             if event.ttie <= self._time:

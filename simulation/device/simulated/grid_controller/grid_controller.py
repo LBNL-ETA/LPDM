@@ -326,6 +326,7 @@ class GridController(Device):
         previous_price = self._gc_price
         self._gc_price = self._price_logic.get_price()
         if previous_price != self._gc_price:
+            self._hourly_price_list.append(self._gc_price)
             self._logger.debug(
                 self.build_message(
                     message="price changed",
@@ -379,6 +380,7 @@ class GridController(Device):
 
     def process_events(self):
         "Process any events that need to be processed"
+        Device.process_events(self)
 
         remove_items = []
         set_power_sources_called = False
@@ -403,6 +405,7 @@ class GridController(Device):
 
     def schedule_next_events(self):
         "Schedule upcoming events if necessary"
+        Device.schedule_next_events(self)
         if self._battery:
             # the battery shares the same event array as the gc
             self._battery.schedule_next_events()

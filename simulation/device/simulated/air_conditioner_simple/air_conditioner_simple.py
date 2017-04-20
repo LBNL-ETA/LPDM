@@ -153,6 +153,7 @@ class AirConditionerSimple(Device):
 
     def process_events(self):
         "Process any events that need to be processed"
+        Device.process_events(self)
         events_occurred = {
             "reasses_setpoint": False,
             "update_outdoor_temperature": False,

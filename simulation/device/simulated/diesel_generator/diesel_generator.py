@@ -265,6 +265,7 @@ class DieselGenerator(PowerSource):
 
     def process_events(self):
         "Process any events that need to be processed"
+        PowerSource.process_events(self)
         remove_items = []
         for event in self._events:
             if event.ttie <= self._time:

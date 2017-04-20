@@ -65,10 +65,6 @@ class AirConditioner(Device):
         self._nominal_price_calc_running = False
         self._nominal_price_list = []
 
-        # hourly average price tracking
-        self._hourly_prices = []
-        self._hourly_price_list = []
-
         self._current_temperature = config.get("current_temperature", 25.0)
         self._current_set_point = None
         self._temperature_max_delta = config.get("temperature_max_delta", 0.5)
@@ -222,10 +218,11 @@ class AirConditioner(Device):
 
     def process_events(self):
         "Process any events that need to be processed"
+        # run the base class events first
+        Device.process_events(self)
 
         events_occurred = {
             "set_nominal_price": False,
-            "hourly_price_calculation": False,
             "set_point_range": False,
             "reasses_setpoint": False,
             "update_outdoor_temperature": False,
@@ -243,9 +240,6 @@ class AirConditioner(Device):
         # execute the found events in order
         if events_occurred["set_nominal_price"]:
             self.calculate_nominal_price()
-
-        if events_occurred["hourly_price_calculation"]:
-            self.calculate_hourly_price()
 
         if events_occurred["set_point_range"]:
             self.set_setpoint_range()
@@ -321,15 +315,6 @@ class AirConditioner(Device):
         if len(found_items) == 0:
             self._events.append(new_event)
 
-    def set_hourly_price_calculation_event(self):
-        "set the next event to calculate the avg hourly prices"
-        new_event = LpdmEvent(self._time + 60 * 60.0, "hourly_price_calculation")
-        # check if the event is already there
-        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == new_event.value, self._events)
-        if len(found_items) == 0:
-            self._events.append(new_event)
-            self._hourly_price_list = []
-
     def set_reasses_setpoint_event(self):
         "set the next event to calculate the set point"
         new_event = LpdmEvent(self._time + self._setpoint_reassesment_interval, "reasses_setpoint")
@@ -337,27 +322,6 @@ class AirConditioner(Device):
         found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == new_event.value, self._events)
         if len(found_items) == 0:
             self._events.append(new_event)
-
-    def calculate_hourly_price(self):
-        """This should be called every hour to calculate the previous hour's average fuel price"""
-        hour_avg = None
-        if len(self._hourly_price_list):
-            hour_avg = sum(self._hourly_price_list) / float(len(self._hourly_price_list))
-        elif self._price is not None:
-            hour_avg = self._price
-        self._logger.debug(
-            self.build_message(
-                message="hourly price",
-                tag="hourly_price",
-                value=hour_avg
-            )
-        )
-
-        self._hourly_prices.append(hour_avg)
-        if len(self._hourly_prices) > 24:
-            # remove the oldest item if more than 24 hours worth of data
-            self._hourly_prices.pop(0)
-        self._hourly_price_list = []
 
     def set_new_fuel_price(self, new_price):
         """Set a new fuel price"""

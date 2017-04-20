@@ -191,6 +191,7 @@ class UtilityMeter(PowerSource):
         return 100.0 * self._power_level / self._current_capacity
 
     def process_events(self):
+        PowerSource.process_events(self)
         remove_items = []
         for event in self._events:
             if event.ttie <= self._time:

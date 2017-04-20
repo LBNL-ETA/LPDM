@@ -24,7 +24,7 @@ from notification import NotificationReceiver, NotificationSender
 from simulation_logger import message_formatter
 # getting an error when trying to import using the absolute path (device.scheduler)
 # so used a relative path import
-from ...scheduler import Scheduler
+from ...scheduler import Scheduler, LpdmEvent
 
 from supervisor.lpdm_event import LpdmTtieEvent, LpdmPowerEvent, LpdmPriceEvent, LpdmKillEvent, \
     LpdmConnectDeviceEvent, LpdmAssignGridControllerEvent, LpdmRunTimeErrorEvent, \
@@ -73,6 +73,12 @@ class Device(NotificationReceiver, NotificationSender):
         self._price_schedule_array = config.get("price_schedule", None)
         self._events = []
         self._current_event = None
+
+        # hourly average price tracking
+        # stores the last 24 average values
+        self._hourly_prices = []
+        # stores the price changes in the past hour
+        self._hourly_price_list = []
 
         self._power_level = 0.0
         self._time = 0
@@ -125,6 +131,15 @@ class Device(NotificationReceiver, NotificationSender):
             self._price_scheduler.set_task_name("price")
             self._price_scheduler.parse_schedule()
 
+    def set_hourly_price_calculation_event(self):
+        "set the next event to calculate the avg hourly prices"
+        new_event = LpdmEvent(self._time + 60 * 60.0, "hourly_price_calculation")
+        # check if the event is already there
+        found_items = filter(lambda d: d.value == new_event.value, self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
+            self._hourly_price_list = []
+
     def assign_grid_controller(self, grid_controller_id):
         """set the grid controller for the device"""
         self._logger.info(
@@ -143,9 +158,6 @@ class Device(NotificationReceiver, NotificationSender):
     def device_name(self):
         return self._device_name
 
-    def out_of_fuel(self):
-        return self._price > 1e5
-
     def status(self):
         return None
 
@@ -160,6 +172,7 @@ class Device(NotificationReceiver, NotificationSender):
         )
 
     def schedule_next_events(self):
+        self.set_hourly_price_calculation_event()
         if self._scheduler:
             self.set_next_scheduled_on_off_event()
         if self._price_scheduler:
@@ -190,6 +203,7 @@ class Device(NotificationReceiver, NotificationSender):
         """set the energy current price"""
         if self._price != new_price:
             self._price = new_price
+            self._hourly_price_list.append(new_price)
             self.broadcast_new_price(self._price, self._grid_controller_id)
 
     def calculate_next_ttie(self):
@@ -337,6 +351,17 @@ class Device(NotificationReceiver, NotificationSender):
         for key in scenario.keys():
             setattr(self, "_" + key, scenario[key])
 
+    def process_events(self):
+        """Process any base class events"""
+        remove_items = []
+        for event in self._events:
+            if self._time >= event.ttie and event.value == "hourly_price_calculation":
+                self.calculate_hourly_price()
+                remove_items.append(event)
+        # remove the processed events from the list
+        for event in remove_items:
+            self._events.remove(event)
+
     def process_supervisor_event(self, the_event):
         if isinstance(the_event, LpdmTtieEvent):
             self._logger.debug("found lpdm ttie event {}".format(the_event))
@@ -395,3 +420,22 @@ class Device(NotificationReceiver, NotificationSender):
     def is_real_device(self):
         """Is the device real or simulated?"""
         return self._is_real_device
+
+    def calculate_hourly_price(self):
+        """This should be called every hour to calculate the previous hour's average fuel price"""
+        hour_avg = None
+        if len(self._hourly_price_list):
+            hour_avg = sum(self._hourly_price_list) / float(len(self._hourly_price_list))
+        elif self._price is not None:
+            hour_avg = self._price
+        self._logger.debug(self.build_message(
+                message="hourly price",
+                tag="hourly_price",
+                value=hour_avg
+            ))
+
+        self._hourly_prices.append(hour_avg)
+        if len(self._hourly_prices) > 24:
+            # remove the oldest item if more than 24 hours worth of data
+            self._hourly_prices.pop(0)
+        self._hourly_price_list = []

@@ -77,8 +77,8 @@ class Hvac(Device):
         # setup the set points for cooling
         self._sp_cool = SetPoint()
         self._sp_cool.set_setpoint_factor(self._set_point_factor)
-        self._sp_cool.set_setpoint_min(self.set_point_min)
-        self._sp_cool.set_setpoint_max(self.set_point_max)
+        self._sp_cool.set_setpoint_min(self._set_point_min)
+        self._sp_cool.set_setpoint_max(self._set_point_max)
         self._sp_cool.set_point_low = config.get("cool_set_point_low", 21.0)
         self._sp_cool.set_point_high = config.get("cool_set_point_high", 25.0)
         self._sp_cool.price_range_low = config.get("cool_price_range_low", 0.2)
@@ -87,8 +87,8 @@ class Hvac(Device):
         # setup the set points for heating
         self._sp_heat = SetPoint()
         self._sp_heat.set_setpoint_factor(self._set_point_factor)
-        self._sp_heat.set_setpoint_min(self.set_point_min)
-        self._sp_heat.set_setpoint_max(self.set_point_max)
+        self._sp_heat.set_setpoint_min(self._set_point_min)
+        self._sp_heat.set_setpoint_max(self._set_point_max)
         self._sp_heat.set_point_low = config.get("heat_set_point_low", 16.0)
         self._sp_heat.set_point_high = config.get("heat_set_point_high", 20.0)
         self._sp_heat.price_range_low = config.get("heat_price_range_low", 0.2)

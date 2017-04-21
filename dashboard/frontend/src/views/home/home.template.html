@@ -169,10 +169,21 @@
         </md-toolbar>
         <ul class="lpdm_list">
             <li
+                layout="row"
                 ng-repeat="tag in device.tags"
                 ng-class="ctrl.tagIsSelected(device, tag) ? 'selected' : ''"
                 ng-click="ctrl.toggleTagView(device, tag)">
-                {{tag.name}}
+                <section style="padding-top:8px">
+                    {{tag.name}}
+                </section>
+                <span flex></span>
+                <section>
+                    <md-button
+                        class="md-icon-button md-mini"
+                        ng-href="download_tag/{{ctrl.sim_run.id}}/{{device.name}}/{{tag.name}}">
+                        <md-icon md-font-icon="fa-download" class="fa fa-lg"></md-icon>
+                    </md-button>
+                </section>
             </li>
         </ul>
     </md-card>

@@ -227,6 +227,7 @@
             else {
                 ctrl.sim_run_list.splice(0, 0, data);
                 ctrl.selected_run = data;
+                ctrl.sim_run = data;
             }
         }
 

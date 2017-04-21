@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 var cmd = require('node-cmd');
 
 var index = require('./routes/index');
+var download_tag = require('./routes/download_tag');
 //var users = require('./routes/users');
 //var simulation = require('./routes/simulation');
 //var simulation_data = require('./routes/simulation_data');
@@ -38,6 +39,7 @@ app.use(require('node-sass-middleware')({
 }));
 app.use(express.static('/frontend/src'));
 app.use('/lib', express.static('/frontend/node_modules'));
+app.use('/download_tag', download_tag);
 
 // setup the handlers for the api
 //app.use('/', index);

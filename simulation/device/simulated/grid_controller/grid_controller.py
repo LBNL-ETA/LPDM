@@ -63,7 +63,6 @@ class GridController(Device):
         self._battery = None
         self.battery_config = config.get("battery", None)
 
-        self._gc_price = 0.0
         self._total_load = 0.0
 
         # setup the managers for devices and power sources
@@ -175,8 +174,9 @@ class GridController(Device):
                     self.device_manager.set_load(source_device_id, 0.0)
                     self.broadcast_new_power(0.0, source_device_id)
 
-        self.calculate_gc_price()
         self.update_power_purchases()
+        if self.calculate_gc_price():
+            self.send_price_change_to_devices()
         self.power_source_manager.reset_changed()
         # self.schedule_next_events()
         self.calculate_next_ttie()
@@ -249,6 +249,8 @@ class GridController(Device):
             self._battery.set_time(new_time)
 
         self.process_events()
+        if self.calculate_gc_price():
+            self.send_price_change_to_devices()
         self.schedule_next_events()
         self.calculate_next_ttie()
         self.power_source_manager.reset_changed()
@@ -322,34 +324,27 @@ class GridController(Device):
 
     def calculate_gc_price(self):
         """Calculate the price grid controller's price"""
-        price_has_changed = False
-        previous_price = self._gc_price
-        self._gc_price = self._price_logic.get_price()
-        if previous_price != self._gc_price and not self._gc_price is None:
-            self._hourly_price_list.append(self._gc_price)
-            self._logger.debug(
-                self.build_message(
-                    message="price changed",
-                    tag="price",
-                    value=self._gc_price
-                )
-            )
-        # return boolean indicating if price has changed
-        return previous_price != self._gc_price
+        new_price = self._price_logic.get_price()
+        if new_price != self._price and not new_price is None:
+            self._logger.debug(self.build_message(message="price changed", tag="price", value=self._price))
+            self.set_price(new_price)
+            return True
+        else:
+            return False
 
     def send_price_change_to_devices(self):
         "Sends a change in price notification to the connected devices"
         self._logger.debug(
             self.build_message(
-                message="send price change to all devices (new_price = {})".format(self._gc_price),
+                message="send price change to all devices (new_price = {})".format(self._price),
                 tag="send_price_change",
                 value="1"
             )
         )
         # send the new price to the non-power-sources
         for d in self.device_manager.devices():
-            if not self._gc_price is None:
-                self.broadcast_new_price(self._gc_price, d.device_id)
+            if not self._price is None:
+                self.broadcast_new_price(self._price, d.device_id)
 
     def shutdown(self):
         """
@@ -517,11 +512,11 @@ class GridController(Device):
         # go thorugh each power buyer
         for p in self.power_buyer_manager.get_available_power_sources():
             self._logger.debug(self.build_message(
-                message="check power source price_thresh-> {}, current_price -> {}".format(p.price_threshold, self._gc_price),
+                message="check power source price_thresh-> {}, current_price -> {}".format(p.price_threshold, self._price),
                 tag="check_power_source",
                 value=0
             ))
-            if self._gc_price <= p.price_threshold:
+            if self._price <= p.price_threshold:
                 # price is below the threshold so ok to buy power
                 # calculate the max amount of power that can be bought by the device
                 max_power = p.capacity - p.load

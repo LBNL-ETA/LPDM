@@ -107,7 +107,6 @@ class Eud(Device):
         if not self._static_price:
             self._time = time
             if new_price != self._price:
-                self._price = new_price
                 self._logger.debug(
                     self.build_message(
                         message="new price",
@@ -115,6 +114,7 @@ class Eud(Device):
                         value=new_price
                     )
                 )
+                self.set_price(new_price)
                 self.adjust_power_output()
                 # if the device is in operation, check any dimming calculations to adjust power if needed
             # TODO: fix this part, which turns on the device if it is scheduled to be on

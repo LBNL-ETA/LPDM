@@ -81,7 +81,17 @@ class FixedConsumption(Device):
 
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
-        pass
+        if not self._static_price:
+            self._time = time
+            if new_price != self._price:
+                self._logger.debug(
+                    self.build_message(
+                        message="new price",
+                        tag="receive_price",
+                        value=new_price
+                    )
+                )
+                self.set_price(new_price)
 
     def on_time_change(self, new_time):
         "Receives message when a time change has occured"

@@ -194,7 +194,17 @@ class AirConditioner(Device):
 
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
-        self.set_new_fuel_price(new_price)
+        if not self._static_price:
+            self._time = time
+            if new_price != self._price:
+                self._logger.debug(
+                    self.build_message(
+                        message="new price",
+                        tag="receive_price",
+                        value=new_price
+                    )
+                )
+                self.set_price(new_price)
 
     def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"
@@ -322,19 +332,6 @@ class AirConditioner(Device):
         found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == new_event.value, self._events)
         if len(found_items) == 0:
             self._events.append(new_event)
-
-    def set_new_fuel_price(self, new_price):
-        """Set a new fuel price"""
-        self._logger.debug(
-            self.build_message(
-                message="fuel_price",
-                tag="fuel_price",
-                value=new_price
-            )
-        )
-        self._price = new_price
-        # if self._price < 1e5:
-            # self.log_plot_value("fuel_price", self._price)
 
     def set_setpoint_range(self):
         """change the set_point_low and set_point_high parameter for the current hour"""

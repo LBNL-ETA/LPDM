@@ -201,10 +201,12 @@ class Device(NotificationReceiver, NotificationSender):
 
     def set_price(self, new_price):
         """set the energy current price"""
-        if self._price != new_price:
+        if self._price != new_price and not new_price is None:
             self._price = new_price
             self._hourly_price_list.append(new_price)
-            self.broadcast_new_price(self._price, self._grid_controller_id)
+            # send a message to the grid controller if there is one assigned
+            if not self._grid_controller_id is None:
+                self.broadcast_new_price(self._price, self._grid_controller_id)
 
     def calculate_next_ttie(self):
         "calculate the next TTIE - look through the pending events for the one that will happen first"
@@ -426,7 +428,17 @@ class Device(NotificationReceiver, NotificationSender):
         hour_avg = None
         if len(self._hourly_price_list):
             hour_avg = sum(self._hourly_price_list) / float(len(self._hourly_price_list))
+            self._logger.debug(self.build_message(
+                message="houlry price list ({}): {}".format(len(self._hourly_price_list), self._hourly_price_list),
+                tag="hourly_price_list",
+                value=1
+            ))
         elif self._price is not None:
+            self._logger.debug(self.build_message(
+                message="houlry price list ({}): {}".format(len(self._hourly_price_list), self._hourly_price_list),
+                tag="hourly_price_list",
+                value=1
+            ))
             hour_avg = self._price
         self._logger.debug(self.build_message(
                 message="hourly price",

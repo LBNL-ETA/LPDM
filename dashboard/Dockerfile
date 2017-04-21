@@ -1,7 +1,9 @@
 FROM node:7.8
 
 # install python and libraries for running simulations
-RUN apt-get update && apt-get install -y python2.7 python-pip python-dev
+RUN apt-get update && apt-get install -y python2.7 python-dev python-setuptools
+# apt-get python-pip won't install paramiko, so using easy_install
+RUN easy_install pip
 
 # install the simulation requirements
 COPY requirements.txt /tmp/

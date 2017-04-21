@@ -54,8 +54,9 @@ class Pv(PowerSource, SmapQuery):
 
         self._device_type = "pv"
         self._device_name = config.get("device_name", "pv")
+        self._capacity =  config.get("capacity", 4000.0)
         self._pv_file_name = config.get("pv_file_name", "pv_data.csv")
-        self._capacity_update_interval = config.get("capacity_update_interval", 15.0 * 60.0)
+        self._capacity_update_interval = config.get("capacity_update_interval", 10.0 * 60.0)
         self._read_data_from_smap = config.get("read_data_from_smap", False)
         self._price = 0.0
 
@@ -93,7 +94,6 @@ class Pv(PowerSource, SmapQuery):
 
     def process_events(self):
         "Process any events that need to be processed"
-        PowerSource.process_events(self)
         remove_items = []
         for event in self._events:
             if event.ttie <= self._time:
@@ -125,14 +125,16 @@ class Pv(PowerSource, SmapQuery):
         return
 
     def load_power_profile(self):
-        "Load the power profile for each 15-minute period of the day"
+        "Load the power profile for each 10-minute period of the day"
 
         self._power_profile = []
-        for line in open(os.path.join(os.path.dirname(os.path.realpath(__file__)), self._pv_file_name)):
-            parts = line.strip().split(',')
-            time_parts = parts[0].split(':')
-            time_secs = (int(time_parts[0]) * 60 * 60) + (int(time_parts[1]) * 60) + int(time_parts[2])
-            self._power_profile.append({"time": time_secs, "power": float(parts[1])})
+        for raw_line in open(os.path.join(os.path.dirname(os.path.realpath(__file__)), self._pv_file_name)):
+            for line in raw_line.split("\r"):
+                parts = line.strip().split(',')
+                if len(parts) == 2 and parts[0].strip():
+                    time_parts = parts[0].split(':')
+                    time_secs = (int(time_parts[0]) * 60 * 60) + (int(time_parts[1]) * 60) + int(time_parts[2])
+                    self._power_profile.append({"time": time_secs, "production": float(parts[1])})
 
     def set_capacity(self):
         """set the capacity of the pv at the current time"""
@@ -178,7 +180,7 @@ class Pv(PowerSource, SmapQuery):
             found_time = item
 
         if found_time:
-            self._current_capacity = found_time["power"]
+            self._current_capacity = found_time["production"] * self._capacity
             self.broadcast_new_capacity()
             self._logger.debug(
                 self.build_message(
@@ -203,6 +205,6 @@ class Pv(PowerSource, SmapQuery):
                 break
 
         if found_time:
-            return found_time["power"]
+            return found_time["production"]
         else:
             raise Exception("An error occured getting the pv power output")

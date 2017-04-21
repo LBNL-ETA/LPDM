@@ -325,7 +325,7 @@ class GridController(Device):
         price_has_changed = False
         previous_price = self._gc_price
         self._gc_price = self._price_logic.get_price()
-        if previous_price != self._gc_price:
+        if previous_price != self._gc_price and not self._gc_price is None:
             self._hourly_price_list.append(self._gc_price)
             self._logger.debug(
                 self.build_message(

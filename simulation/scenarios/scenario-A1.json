@@ -13,7 +13,8 @@
                 "battery": {
                     "device_id": "battery_1",
                     "device_type": "battery",
-                    "capacity": 1000.0
+                    "capacity": 1000.0,
+                    "status_logic_class_name": "LogicB"
                 }
             }
         ],

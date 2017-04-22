@@ -25,7 +25,6 @@ from simulation_logger import message_formatter
 # getting an error when trying to import using the absolute path (device.scheduler)
 # so used a relative path import
 from ...scheduler import Scheduler, LpdmEvent
-
 from supervisor.lpdm_event import LpdmTtieEvent, LpdmPowerEvent, LpdmPriceEvent, LpdmKillEvent, \
     LpdmConnectDeviceEvent, LpdmAssignGridControllerEvent, LpdmRunTimeErrorEvent, \
     LpdmCapacityEvent
@@ -428,17 +427,7 @@ class Device(NotificationReceiver, NotificationSender):
         hour_avg = None
         if len(self._hourly_price_list):
             hour_avg = sum(self._hourly_price_list) / float(len(self._hourly_price_list))
-            self._logger.debug(self.build_message(
-                message="houlry price list ({}): {}".format(len(self._hourly_price_list), self._hourly_price_list),
-                tag="hourly_price_list",
-                value=1
-            ))
         elif self._price is not None:
-            self._logger.debug(self.build_message(
-                message="houlry price list ({}): {}".format(len(self._hourly_price_list), self._hourly_price_list),
-                tag="hourly_price_list",
-                value=1
-            ))
             hour_avg = self._price
         self._logger.debug(self.build_message(
                 message="hourly price",

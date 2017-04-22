@@ -92,6 +92,7 @@ class GridController(Device):
             # setup the shared objects for events and power sources
             self._battery.set_event_list(self._events)
             self._battery.set_power_source_manager(self.power_source_manager)
+            self._battery.set_price_history(self._hourly_prices)
             self._battery.init()
             self._logger.info(self.build_message(message="Initialized the battery."))
 

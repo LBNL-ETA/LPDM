@@ -224,18 +224,18 @@ class GridController(Device):
         self.power_source_manager.reset_changed()
         return
 
-    def on_capacity_change(self, source_device_id, target_device_id, time, value):
+    def on_capacity_change(self, source_device_id, target_device_id, time, capacity):
         """A device registers its capacity to the grid controller it's registered to"""
         self._time = time
         self.power_source_manager.set_time(self._time)
         self._logger.debug(
             self.build_message(
-                message="received capacity change {} -> {}".format(source_device_id, value),
+                message="received capacity change {} -> {}".format(source_device_id, capacity),
                 tag="receive_capacity",
-                value=value
+                value=capacity
             )
         )
-        self.power_source_manager.set_capacity(source_device_id, value)
+        self.power_source_manager.set_capacity(source_device_id, capacity)
 
         if self._battery:
             # update the battery charge and status

@@ -21,6 +21,20 @@
 				"capacity": 2000.0,
 				"static_price": false,
 				"power_price": 0.05,
+				"smap" : {
+							"dr" : {
+										"smap_root": "http://chomp.lbl.gov/",
+										"stream": "/DemandResponse"
+							},
+							"capacity" : {
+										"smap_root": "http://chomp.lbl.gov/",
+										"stream": "/2017/CBERD/Utility/Capacity"														
+							},
+							"price" : {
+										"smap_root": "http://chomp.lbl.gov/",
+										"stream": "/2017/CBERD/Utility/Price"														
+							}
+						},
 				"schedule": [
 					[8, "on"],
 					[20, "off"]

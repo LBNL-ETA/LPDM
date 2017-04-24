@@ -15,7 +15,7 @@ import re
 import logging
 import traceback
 import ConfigParser
-from pg_handler import PgHandler
+#from pg_handler import PgHandler
 
 class SimulationLogger:
     """
@@ -107,19 +107,19 @@ class SimulationLogger:
                 config = ConfigParser.ConfigParser()
                 config.read(pg_config)
 
-                if self.log_to_postgres:
-                    config = {
-                        "pg_host": config.get("postgres", "host"),
-                        "pg_port": config.get("postgres", "port"),
-                        "pg_dbname": config.get("postgres", "dbname"),
-                        "pg_user": config.get("postgres", "user"),
-                        "pg_pass": config.get("postgres", "pass"),
-                        "pg_schema": config.get("postgres", "schema")
-                    }
-                    db_handler = PgHandler(config)
-                    db_handler.connect()
-                    db_handler.setLevel(self.pg_log_level)
-                    self.logger.addHandler(db_handler)
+#                 if self.log_to_postgres:
+#                     config = {
+#                         "pg_host": config.get("postgres", "host"),
+#                         "pg_port": config.get("postgres", "port"),
+#                         "pg_dbname": config.get("postgres", "dbname"),
+#                         "pg_user": config.get("postgres", "user"),
+#                         "pg_pass": config.get("postgres", "pass"),
+#                         "pg_schema": config.get("postgres", "schema")
+#                     }
+#                     db_handler = PgHandler(config)
+#                     db_handler.connect()
+#                     db_handler.setLevel(self.pg_log_level)
+#                     self.logger.addHandler(db_handler)
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 tb = traceback.format_exception(exc_type, exc_value, exc_traceback)

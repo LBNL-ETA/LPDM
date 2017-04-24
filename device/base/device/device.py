@@ -306,7 +306,7 @@ class Device(NotificationReceiver, NotificationSender):
                 source_device_id=the_event.source_device_id,
                 target_device_id=the_event.target_device_id,
                 time=the_event.time,
-                value=the_event.value
+                capacity=the_event.value
             )
         elif isinstance(the_event, LpdmConnectDeviceEvent):
             self._logger.debug("found lpdm connect device event {}".format(the_event))

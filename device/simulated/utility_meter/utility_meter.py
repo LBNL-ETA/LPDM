@@ -17,6 +17,8 @@
 from device.base.power_source import PowerSource
 from device.scheduler import Scheduler
 
+from common.smap_tools import download_most_recent_point
+
 class UtilityMeter(PowerSource):
     """
         Device implementation of a utility meter.
@@ -52,9 +54,11 @@ class UtilityMeter(PowerSource):
         self._capacity = config.get("capacity", 2000.0)
         self._power_price = config.get("power_price", 0.01)
 
+        self._smap_info = config.get("smap", None)
         
         self._scheduler = None
         self._schedule_array = config.get("schedule", None)
+        self._dr_level = 0
         
         #Just keeping this for reporting purposes.
         self._start_hour_consumption = 0 # time when the last consumption calculation occured
@@ -72,6 +76,14 @@ class UtilityMeter(PowerSource):
         self.make_unavailable()
         self.calculate_electricity_price()
         self.calculate_next_ttie()
+        
+    def check_dr(self):
+        if self._smap_info:
+                dr_stream_info = self._smap_info.get("dr", None)
+                if dr_stream_info:
+                    _, _, self._dr_level = download_most_recent_point(dr_stream_info["smap_root"], dr_stream_info["stream"])
+            
+        return self._dr_level
 
     def setup_schedule(self):
         """Setup the schedule if there is one"""
@@ -124,7 +136,9 @@ class UtilityMeter(PowerSource):
 
     def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"
-        self._time = new_time
+        self._time = new_time        
+        self.calculate_electricity_price()
+        self.calculate_capacity()
         self.process_events()
         return
     
@@ -148,18 +162,37 @@ class UtilityMeter(PowerSource):
         self._consumption_activity.append({"time": time, "power": power})
 
     def calculate_electricity_price(self):        
-        "Calculate a new electricity price ($/W-sec).  Starting as a static price"        
-        self.broadcast_new_price(self.get_price(), target_device_id=self._grid_controller_id)
+        "Calculate a new electricity price ($/W-sec).  Starting as a static price"
+        dr = self.check_dr()
+#         if dr is None:
+#             print "ERROR GETTING DR"
+#         else:
+#             print "*" * 12
+#             print str(dr)
+#             print "*" * 12
+        price = self.get_price()
+        price = price * (1 + dr)   
+        self.broadcast_new_price(price, target_device_id=self._grid_controller_id)
         
     def calculate_capacity(self):
         "Calculate a new capacity.  Starting with configured capacity when on and 0 when off"
         self.broadcast_new_capacity(self.get_capacity(), target_device_id=self._grid_controller_id)
 
     def get_price(self):
-        "Get the current power price"
+        "Get the current power price"    
+        if self._smap_info:
+                price_stream_info = self._smap_info.get("price", None)
+                if price_stream_info:
+                    _, _, self._power_price = download_most_recent_point(price_stream_info["smap_root"], price_stream_info["stream"])
+            
         return self._power_price
     
     def get_capacity(self):
+        if self._smap_info:
+            capacity_stream_info = self._smap_info.get("capacity", None)
+            if capacity_stream_info:
+                _, _, self._capacity = download_most_recent_point(capacity_stream_info["smap_root"], capacity_stream_info["stream"])
+        
         return self._capacity
 
     def calculate_hourly_consumption(self, is_initial_event=False):

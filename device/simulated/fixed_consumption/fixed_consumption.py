@@ -66,7 +66,7 @@ class FixedConsumption(Device):
                 self._time = time
                 self.turn_off()
 
-    def on_capacity_change(self, source_device_id, target_device_id, time, value):
+    def on_capacity_change(self, source_device_id, target_device_id, time, capacity):
         """A device has changed its capacity, check if the eud should be in operation"""
         self._time = time
         if not self._in_operation and self.should_be_in_operation():

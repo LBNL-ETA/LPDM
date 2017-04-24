@@ -21,10 +21,10 @@ class LogicA(object):
             # if battery is discharging
             # if self.di.power_source_manager.total_load() - self.di._power_level > 0:
                 # is there other load besides from this device?
-            if self.di.power_source_manager.output_capacity() > 0.70 and self.di._current_soc < 0.65:
-                # stop discharging and do nothing
-                self.di.disable_discharge()
-            elif self.di._current_soc < self.di._min_soc:
+            # if self.di.power_source_manager.output_capacity() > 0.70 and self.di._current_soc < 0.65:
+                # # stop discharging and do nothing
+                # self.di.disable_discharge()
+            if self.di._current_soc < self.di._min_soc:
                 # stop discharging and start charging
                 self.di.disable_discharge()
                 self.di.enable_charge()
@@ -34,18 +34,14 @@ class LogicA(object):
                 # self.di.disable_discharge()
         elif self.di._can_charge:
             # battery is charging
-            if self.di._current_soc >= self.di._max_soc \
-            or (self.di.power_source_manager.output_capacity() < 0.3 and self.di._current_soc > 0.65):
+            if self.di._current_soc >= self.di._max_soc:
                 # stop discharging dn do nothing
                 if self.di.is_charging():
                     self.di.stop_charging()
                 self.di.disable_charge()
-                if not self.di._can_discharge and self.di.power_source_manager.output_capacity() < 0.3 and self.di._current_soc > 0.65:
-                    # start to discharge the battery
-                    self.di.enable_discharge()
-        else:
-            # Neither - not charging and not discharging (load == 0)
-            # if self.di.power_source_manager.total_load() > 0 \
-            if not self.di._can_discharge and self.di.power_source_manager.output_capacity() < 0.3 and self.di._current_soc > 0.65:
-                # start to discharge the battery
                 self.di.enable_discharge()
+        else:
+            if self.di._current_soc >= self.di._max_soc:
+                self.di.enable_discharge()
+            elif self.di._current_soc < self.di._min_soc:
+                self.di.enable_charge()

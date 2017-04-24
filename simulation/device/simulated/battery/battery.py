@@ -241,6 +241,7 @@ class Battery(PowerSource):
     def update_state_of_charge(self):
         """Update the state of charge"""
         if self._time - self._last_update_time > self._min_soc_refresh_rate:
+            previous = self._current_soc
             if self.is_charging():
                 self._current_soc = (
                     (self._capacity * self._current_soc)
@@ -252,6 +253,9 @@ class Battery(PowerSource):
                     - (self._power_level * (self._time - self._last_update_time) / 3600.0)
                 ) / (self._capacity)
 
+            if self._current_soc != previous:
+                # log when the value changes
+                self._logger.debug(self.build_message(message="soc", tag="soc", value=self._current_soc))
             self._last_update_time = self._time
 
     def enable_charge(self):

@@ -17,7 +17,7 @@
 from device.base.power_source import PowerSource
 from device.scheduler import Scheduler
 
-from common.smap_tools import download_most_recent_point
+from common.smap_tools.smap_tools import download_most_recent_point
 
 class UtilityMeter(PowerSource):
     """

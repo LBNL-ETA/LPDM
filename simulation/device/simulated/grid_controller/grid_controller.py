@@ -24,7 +24,7 @@ from device.base.device import Device
 from device.simulated.battery import Battery
 from common.device_class_loader import DeviceClassLoader
 from device.scheduler import LpdmEvent
-from supervisor.lpdm_event import LpdmBuyPowerPriceEvent, LpdmBuyMaxPowerEvent, LpdmBuyPowerEvent
+from lpdm_event import LpdmBuyPowerPriceEvent, LpdmBuyMaxPowerEvent, LpdmBuyPowerEvent
 import logging
 
 class GridController(Device):

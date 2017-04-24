@@ -13,7 +13,7 @@
 
 from device.simulated.utility_meter import UtilityMeter
 from device.base.power_source_buyer import PowerSourceBuyer
-from supervisor.lpdm_event import LpdmBuyPowerPriceEvent, LpdmBuyMaxPowerEvent, LpdmBuyPowerEvent
+from lpdm_event import LpdmBuyPowerPriceEvent, LpdmBuyMaxPowerEvent, LpdmBuyPowerEvent
 
 class UtilityMeterBuyer(UtilityMeter, PowerSourceBuyer):
     """

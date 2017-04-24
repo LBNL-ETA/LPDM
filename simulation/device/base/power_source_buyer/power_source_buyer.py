@@ -10,7 +10,7 @@
 # If you have questions about your rights to use or distribute this software, please contact
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 ################################################################################################################################
-from supervisor.lpdm_event import LpdmBuyPowerPriceEvent
+from lpdm_event import LpdmBuyPowerPriceEvent
 from device.base.power_source import PowerSource
 
 class PowerSourceBuyer(object):

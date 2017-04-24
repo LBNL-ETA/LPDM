@@ -77,8 +77,15 @@ class GridController(Device):
         """Initialize the grid controller"""
         self.power_source_manager.set_time(self._time)
         self.set_price_logic()
+        self.set_initial_price()
         self.init_battery()
         self.calculate_next_ttie()
+
+    def set_initial_price(self):
+        """Set an initial price"""
+        if not self._price is None:
+            self._hourly_prices.append(self._price)
+            self.send_price_change_to_devices()
 
     def init_battery(self):
         """Setup the battery"""
@@ -193,6 +200,7 @@ class GridController(Device):
         if result_success:
             # check if the battery needs to be charged, charge if available
             if self._battery and self._battery._can_charge and not self._battery._is_charging:
+                self._logger.debug(self.build_message(message="battery_can_charge", tag="bat_can_charge", value=1))
                 if self.power_source_manager.can_handle_load(self._battery.charge_rate()):
                     self._battery.start_charging()
                     result_success = self.power_source_manager.optimize_load()

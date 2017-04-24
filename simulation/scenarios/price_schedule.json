@@ -1,0 +1,55 @@
+{
+    "run_time_days": 7,
+    "log_to_postgres": 1,
+    "console_log_level": 20,
+    "file_log_level": 20,
+    "pg_log_level": 10,
+    "devices": {
+        "grid_controllers": [
+            {
+                "device_id": "gc_1",
+                "device_type": "grid_controller",
+                "price_logic_class": "AveragePriceLogic"
+            }
+        ],
+        "power_sources": [
+            {
+                "device_id": "dg_1",
+                "uuid": 1,
+                "grid_controller_id": "gc_1",
+                "device_type": "diesel_generator"
+            },
+            {
+                "device_id": "utility_meter_1",
+                "uuid": 2,
+                "grid_controller_id": "gc_1",
+                "device_type": "utility_meter",
+                "capacity": 2000.0,
+                "static_price": false,
+                "power_price": 0.05,
+                "schedule": [
+                    [0, "on"], [23, "off"]
+                ],
+                "price_schedule": [
+                    [0, 0.10], [12, 0.05], [16, 0.10], [18, 0.15], [22, 0.10]
+                ]
+            }
+        ],
+        "euds": [
+            {
+                "device_id": "eud_1",
+                "uuid": 1,
+                "device_type": "air_conditioner",
+                "grid_controller_id": "gc_1",
+                "max_power_output": 1000.0,
+                "price_dim_start": 0.10,
+                "price_dim_end": 0.12,
+                "price_off": 0.15,
+                "schedule": [
+                    [6, "on"], [18, "off"]
+                ]
+            }
+        ]
+    }
+}
+

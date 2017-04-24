@@ -1,0 +1,248 @@
+<!--<md-toolbar class="md-warn" md-scroll-shring="true">-->
+    <!--<div class="md-toolbar-tools">-->
+        <!--<md-button class="md-icon-button" ng-click="ctrl.showNav()">-->
+            <!--<md-icon md-font-icon="fa-navicon" class="fa fa-lg"></md-icon>-->
+        <!--</md-button>-->
+    <!--</div>-->
+<!--</md-toolbar>-->
+
+<md-content layout="row">
+    <md-card flex="20">
+        <md-toolbar layout="row" class="md-primary">
+            <div class="md-toolbar-tools">
+                <span>Simulation Runs</span>
+            </div>
+        </md-toolbar>
+        <md-card-content>
+            <ul class="lpdm_list">
+                <li
+                    ng-repeat="sr in ctrl.scenario_list"
+                    ng-class="sr == ctrl.scenario ? 'selected' : ''"
+                    ng-click="ctrl.selectSimulationScenario(sr)">
+                    {{sr.file_name}}
+                </li>
+            </ul>
+        </md-card-content>
+        <md-card-actions layout="row" layout-align="end center">
+            <md-button
+                class="md-accent md-raised"
+                ng-click="ctrl.runScenario(ctrl.scenario)"
+                ng-disabled="!ctrl.scenario">Run Scenario</md-button>
+        </md-card-actions>
+    </md-card>
+    <md-card flex="20">
+        <md-toolbar layout="row" class="md-primary">
+            <div class="md-toolbar-tools">
+                <span>Simulation Options</span>
+            </div>
+        </md-toolbar>
+
+        <div layout="row" flex layout-padding ng-repeat="(the_key, the_value) in ctrl.scenario.content">
+            <md-input-container flex ng-if="the_key != 'devices'">
+                <label>{{ the_key }}</label>
+                <input ng-model="ctrl.scenario.content[the_key]">
+            </md-input-container>
+        </div>
+    </md-card>
+    <md-card flex="20">
+        <md-toolbar layout="row" class="md-primary">
+            <div class="md-toolbar-tools">
+                <span>Grid Controllers</span>
+            </div>
+        </md-toolbar>
+    </md-card>
+    <md-card flex="20">
+        <md-toolbar layout="row" class="md-primary">
+            <div class="md-toolbar-tools">
+                <span>Power Sources</span>
+            </div>
+        </md-toolbar>
+    </md-card>
+    <md-card flex="20">
+        <md-toolbar layout="row" class="md-primary">
+            <div class="md-toolbar-tools">
+                <span>EUD's</span>
+            </div>
+        </md-toolbar>
+    </md-card>
+</md-content>
+
+<!--<md-content layout-padding>-->
+    <!--<md-progress-linear class="md-accent" md-mode="determinate" value="{{ctrl.progress}}"></md-progress-linear>-->
+<!--</md-content>-->
+
+<md-content layout="row">
+    <md-card flex="20">
+        <md-toolbar layout="row" class="md-primary">
+            <div class="md-toolbar-tools">
+                <section flex>Simulation Runs</section>
+                <section>
+                    <md-button class="md-icon-button md-primary-2" ng-click="ctrl.removeSimulationRun('all')">
+                        <md-icon
+                            md-font-icon="fa-trash"
+                            class="fa fa-lg"
+                            >
+                        </md-icon>
+                    </md-button>
+                </section>
+            </div>
+        </md-toolbar>
+        <md-input-container>
+            <ul class="lpdm_list">
+                <li
+                layout="row"
+                ng-repeat="sr in ctrl.sim_run_list"
+                ng-click="ctrl.loadSimulationRun(sr)"
+                ng-class="sr == ctrl.sim_run ? 'selected' : ''">
+                    <section style="padding-top:6px">
+                        {{sr.time_stamp}}: Run #{{sr.id}}
+                    </section>
+
+                    <span flex></span>
+
+                    <section>
+                        <!--<md-button class="md-icon-button md-primary-2">-->
+                            <!--<md-icon md-font-icon="fa-cloud-download" class="fa fa-lg"></md-icon>-->
+                        <!--</md-button>-->
+                        <md-button
+                            class="md-icon-button md-primary-2"
+                            ng-click="ctrl.removeSimulationRun(sr.id)" >
+                            <md-icon md-font-icon="fa-trash" class="fa fa-lg">
+                            </md-icon>
+                        </md-button>
+                    </section>
+                </li>
+            </ul>
+        </md-input-container>
+    </md-card>
+
+    <md-card flex="80">
+        <md-toolbar layout="row" class="md-primary">
+            <div class="md-toolbar-tools">
+                <span>Devices and Parameters</span>
+            </div>
+        </md-toolbar>
+        <div ui-grid="ctrl.data_grid" class="data_grid" style="color:black"></div>
+        <!--<md-input-container>-->
+            <!--<table>-->
+                <!--<thead>-->
+                    <!--<tr>-->
+                        <!--<th>Time</th>-->
+                        <!--<th>Time</th>-->
+                        <!--<th>Device</th>-->
+                        <!--<th>Tag</th>-->
+                        <!--<th>Value</th>-->
+                        <!--<th>Message</th>-->
+                    <!--</tr>-->
+                <!--</thead>-->
+                <!--<tbody>-->
+                    <!--<tr ng-repeat="item in ctrl.simulation_data">-->
+                        <!--<td ng-bind="item.time_string"></td>-->
+                        <!--<td ng-bind="item.time_value"></td>-->
+                        <!--<td ng-bind="item.device"></td>-->
+                        <!--<td ng-bind="item.tag"></td>-->
+                        <!--<td ng-bind="item.value"></td>-->
+                        <!--<td ng-bind="item.message"></td>-->
+                    <!--</tr>-->
+                <!--</tbody>-->
+            <!--</table>-->
+        <!--</md-input-container>-->
+    </md-card>
+
+</md-content>
+
+<md-content layout="row" layout-wrap>
+    <!--<md-card flex>-->
+        <!--<md-toolbar layout="row" class="md-primary">-->
+            <!--<div class="md-toolbar-tools">-->
+                <!--<span>Output</span>-->
+            <!--</div>-->
+        <!--</md-toolbar>-->
+        <!--<md-input-container>-->
+        <!--</md-input-container>-->
+    <!--</md-card>-->
+    <md-card flex="20" ng-repeat="device in ctrl.sim_data.devices">
+        <md-toolbar layout="row" class="md-primary">
+            <div class="md-toolbar-tools">
+                <span>{{device.name}}</span>
+            </div>
+        </md-toolbar>
+        <ul class="lpdm_list">
+            <li
+                layout="row"
+                ng-repeat="tag in device.tags"
+                ng-class="ctrl.tagIsSelected(device, tag) ? 'selected' : ''"
+                ng-click="ctrl.toggleTagView(device, tag)">
+                <section style="padding-top:8px">
+                    {{tag.name}}
+                </section>
+                <span flex></span>
+                <section>
+                    <md-button
+                        class="md-icon-button md-mini"
+                        ng-href="download_tag/{{ctrl.sim_run.id}}/{{device.name}}/{{tag.name}}">
+                        <md-icon md-font-icon="fa-download" class="fa fa-lg"></md-icon>
+                    </md-button>
+                </section>
+            </li>
+        </ul>
+    </md-card>
+</md-content>
+
+<md-content layout="row" ng-repeat="tag_view in ctrl.selected_tag_views">
+    <md-card flex="100">
+        <md-toolbar layout="row" class="md-primary">
+            <div class="md-toolbar-tools">
+                <!--<span>View - {{tag_view.device.name}} - {{tag_view.tag.name}}</span>-->
+                <!--<md-button class="md-fab md-accent">-->
+                    <!--<md-icon md-font-icon="fa-close" class="fa fa-lg"></md-icon>-->
+                <!--</md-button>-->
+                <h2 flex md-truncate>{{tag_view.device.name}} - {{tag_view.tag.name}}</h2>
+
+                <md-button class="md-icon-button" ng-click="ctrl.toggleTagView(tag_view.device, tag_view.tag)">
+                    <md-icon md-font-icon="fa-close" class="fa fa-lg"></md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <lpdm-plot plot_data="tag_view"></lpdm-plot>
+    </md-card>
+</md-content>
+
+<!--<md-content layout="row">-->
+    <!--<md-sidenav class="md-sidenav-left" md-is-locked-open="ctrl.side_nav_is_open" style="min-height:500px">-->
+        <!--<md-button class="" flex ng-click="ctrl.show_results = !ctrl.show_results">-->
+            <!--Results <i class="fa fa-chevron-right pull-right" style="padding-top:10px"></i>-->
+            <!--</md-button>-->
+        <!--<ul ng-if="ctrl.show_results">-->
+            <!--<li ng-repeat="sr in ctrl.sim_run_list" ng-click="ctrl.selectSimulationRun(sr)">-->
+                <!--{{sr.time_stamp}}-->
+                <!--</li>-->
+            <!--</ul>-->
+        <!--</md-sidenav>-->
+    <!--<div layout-padding flex ng-if="ctrl.sim_run">-->
+        <!--<h1 class="text-center" style="text-align: center;">Scenario - {{ctrl.sim_run.time_stamp}}</h1>-->
+        <!--<md-card flex="25">-->
+            <!--<h3 style="text-align: center">Run Time</h3>-->
+            <!--<md-input-container>-->
+                <!--<label>Time:</label>-->
+                <!--<input type="text" ng-model="ctrl.sim_run.time_stamp" disabled>-->
+                <!--</md-input-container>-->
+            <!--</md-card>-->
+
+        <!--<div layout="row">-->
+            <!--<md-card flex="25" ng-repeat="device in ctrl.sim_info">-->
+                <!--<md-toolbar layout="row" class="md-primary">-->
+                    <!--<div class="md-toolbar-tools">-->
+                        <!--<span>Device: {{device.device}}</span>-->
+                        <!--</div>-->
+                    <!--</md-toolbar>-->
+                <!--<md-input-container>-->
+                    <!--<label>Tags:</label>-->
+                    <!--<ul>-->
+                        <!--<li ng-repeat="t in device.tags" ng-click="ctrl.selectDeviceTag(device, t)">{{t.tag}}</li>-->
+                        <!--</ul>-->
+                    <!--</md-input-container>-->
+                <!--</md-card>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</md-content>-->

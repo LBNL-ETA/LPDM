@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <link rel="stylesheet" href="css/main.css">
+        <link rel="stylesheet" href="/lib/angular-material/angular-material.min.css">
+        <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="/lib/angular-material-data-table/dist/md-data-table.min.css">
+
+        <script src="/lib/jquery/dist/jquery.min.js"></script>
+        <script src="/lib/angular/angular.min.js"></script>
+        <script src="/lib/angular-resource/angular-resource.min.js"></script>
+        <script src="/lib/angular-ui-router/release/angular-ui-router.min.js"></script>
+        <script src="/lib/plotly.js/dist/plotly.min.js"></script>
+        <script src="/lib/angular-animate/angular-animate.min.js"></script>
+        <script src="/lib/angular-aria/angular-aria.min.js"></script>
+        <script src="/lib/angular-messages/angular-messages.min.js"></script>
+        <script src="/lib/angular-material/angular-material.min.js"></script>
+        <script src="/lib/socket.io-client/dist/socket.io.min.js"></script>
+        <script src="/lib/moment/min/moment.min.js"></script>
+
+        <link rel="stylesheet" href="/lib/angular-ui-grid/ui-grid.min.css">
+        <script src="/lib/angular-ui-grid/ui-grid.min.js"></script>
+        <!--<script src="/lib/angular-material-data-table/dist/md-data-table.min.js"></script>-->
+
+        <script src="js/app.js"></script>
+        <script src="js/lpdm.factory.js"></script>
+        <script src="js/socket.factory.js"></script>
+        <script src="js/data_stream.factory.js"></script>
+        <script src="js/moment.factory.js"></script>
+        <script src="js/components/lpdm_plot/lpdm_plot.component.js"></script>
+        <script src="views/home/home.controller.js"></script>
+        <script src="views/scenarios/scenarios.controller.js"></script>
+    </head>
+    <body ng-app="lpdmApp">
+        <md-toolbar class="md-warn" md-scroll-shring="true">
+            <div class="md-toolbar-tools">
+                <md-button class="md-accent md-hue-2 md-raised" ui-sref="scenarios">Scenarios</md-button>
+                <md-button ui-sref="simulations">Results</md-button>
+            </div>
+        </md-toolbar>
+        <div ui-view></div>
+    </body>
+</html>

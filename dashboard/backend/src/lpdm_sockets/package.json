@@ -1,0 +1,4 @@
+{
+    "name": "lpdm_sockets",
+    "main": "./index.js"
+}

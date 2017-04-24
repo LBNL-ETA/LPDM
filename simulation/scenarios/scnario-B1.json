@@ -1,0 +1,82 @@
+{
+    "run_time_days": 1, 
+    "log_to_postgres": 0,
+    "console_log_level": 10,
+    "file_log_level": 10,
+    "pg_log_level": 10,
+    "devices": {
+        "grid_controllers": [
+            {
+                "device_id": "gc_1",
+                "device_type": "grid_controller"
+            }
+        ],
+        "power_sources": [
+            {
+                "device_id": "dg_1",                    
+                "grid_controller_id": "gc_1",
+                "device_type": "diesel_generator",          // We dont need the diesel generator, but I dont think the simulation is currently capable of running without it
+                "fuel_tank_capacity": 1.0                   // Instead we need the utility grid that can shut down for 3 - 4 hours.
+            },
+            {
+             "device_id": "battery_1",
+                "grid_controller_id": "gc_1",
+                "device_type": "battery",
+                "capacity": 1000.0   
+            }
+
+        ],
+        "euds": [
+            {
+                "device_id": "eud_1",
+                "device_type": "air_conditioner",
+                "grid_controller_id": "gc_1",
+                "is_real_device": "0",
+                "max_power_output": 1000.0,
+                "price_dim": 0.3,
+                "price_off": 0.7,
+                "schedule": [["0600", 1],["0800", 0], ["1800", 1], ["0000", 0]]
+            },
+            {
+                "device_id": "eud_2",
+                "device_type": "light",
+                "grid_controller_id": "gc_1",
+                "is_real_device": "0",
+                "max_power_output": 1000.0,
+                "price_dim": 0.3,
+                "price_off": 0.7,
+                "schedule": [["0600", 1],["0800", 0], ["1800", 1], ["0000", 0]]
+            },
+            {
+                "device_id": "eud_3",
+                "device_type": "light",             // This is a stand in for an eud that we want called "fixed consumption" which is running all the time
+                "grid_controller_id": "gc_1",
+                "is_real_device": "0",
+                "max_power_output": 1000.0,
+                "price_dim": 0.3,
+                "price_off": 0.7,
+                "schedule": [["0000", 1]]
+            },
+            {
+                "device_id": "eud_4",
+                "device_type": "laptop",
+                "grid_controller_id": "gc_1",
+                "is_real_device": "0",
+                "max_power_output": 1000.0,
+                "price_dim": 0.3,
+                "price_off": 0.7,
+                "schedule": [["0000", 1]]
+            },
+            {
+                "device_id": "eud_5",
+                "device_type": "refrigerator",
+                "grid_controller_id": "gc_1",
+                "is_real_device": "0",
+                "max_power_output": 1000.0,
+                "price_dim": 0.3,
+                "price_off": 0.7,
+                "schedule": [["0000", 1]]
+            }
+        ]
+    }
+}

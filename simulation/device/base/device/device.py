@@ -204,8 +204,8 @@ class Device(NotificationReceiver, NotificationSender):
             self._price = new_price
             self._hourly_price_list.append(new_price)
             # send a message to the grid controller if there is one assigned
-            if not self._grid_controller_id is None:
-                self.broadcast_new_price(self._price, self._grid_controller_id)
+            # if not self._grid_controller_id is None:
+                # self.broadcast_new_price(self._price, self._grid_controller_id)
 
     def calculate_next_ttie(self):
         "calculate the next TTIE - look through the pending events for the one that will happen first"
@@ -365,10 +365,8 @@ class Device(NotificationReceiver, NotificationSender):
 
     def process_supervisor_event(self, the_event):
         if isinstance(the_event, LpdmTtieEvent):
-            self._logger.debug("found lpdm ttie event {}".format(the_event))
             self.on_time_change(the_event.value)
         elif isinstance(the_event, LpdmPowerEvent):
-            self._logger.debug("found lpdm power event {}".format(the_event))
             self.on_power_change(
                 source_device_id=the_event.source_device_id,
                 target_device_id=the_event.target_device_id,
@@ -376,7 +374,6 @@ class Device(NotificationReceiver, NotificationSender):
                 new_power=the_event.value
             )
         elif isinstance(the_event, LpdmPriceEvent):
-            self._logger.debug("found lpdm price event {}".format(the_event))
             self.on_price_change(
                 source_device_id=the_event.source_device_id,
                 target_device_id=the_event.target_device_id,
@@ -384,7 +381,6 @@ class Device(NotificationReceiver, NotificationSender):
                 new_price=the_event.value
             )
         elif isinstance(the_event, LpdmCapacityEvent):
-            self._logger.debug("found lpdm capacity event {}".format(the_event))
             self.on_capacity_change(
                 source_device_id=the_event.source_device_id,
                 target_device_id=the_event.target_device_id,
@@ -392,16 +388,13 @@ class Device(NotificationReceiver, NotificationSender):
                 value=the_event.value
             )
         elif isinstance(the_event, LpdmConnectDeviceEvent):
-            self._logger.debug("found lpdm connect device event {}".format(the_event))
             self.add_device(the_event.device_id, the_event.DeviceClass, the_event.uuid)
         elif isinstance(the_event, LpdmAssignGridControllerEvent):
-            self._logger.debug("found lpdm connect device event {}".format(the_event))
             self.assign_grid_controller(the_event.grid_controller_id)
         elif isinstance(the_event, LpdmKillEvent):
             self.finish()
-            self._logger.debug("found a ldpm kill event {}".format(the_event))
         else:
-            self._logger.info("event type not found {}".format(the_event))
+            raise Exception("Event {} not found".format(the_event))
 
     def sum_kwh(self):
         """Keep a running total of the energy used by the device"""

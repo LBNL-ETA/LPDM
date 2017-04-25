@@ -201,6 +201,7 @@ class UtilityMeter(PowerSource):
                     self.make_available()
                 elif event.name == "price":
                     self.set_price(event.value)
+                    self.broadcast_new_price(self._price, self._grid_controller_id)
                 elif event.value == "emit_initial_price":
                     self.calculate_electricity_price()
                 elif event.value == "emit_initial_capacity":

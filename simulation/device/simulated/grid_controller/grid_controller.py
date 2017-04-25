@@ -128,13 +128,11 @@ class GridController(Device):
         if self._battery:
             self._battery.set_time(time)
 
-        self._logger.debug(
-            self.build_message(
-                message="Power change, source_device_id = {}, new_power = {}".format(source_device_id, new_power),
-                tag="receive_power",
-                value=new_power
-            )
-        )
+        self._logger.debug(self.build_message(
+            message="Power change, source_device_id = {}, new_power = {}".format(source_device_id, new_power),
+            tag="receive_power",
+            value=new_power
+        ))
 
         # is this a power source or an eud?
         if self.power_source_manager.get(source_device_id):
@@ -257,6 +255,11 @@ class GridController(Device):
         if self._battery:
             self._battery.set_time(new_time)
 
+        self._logger.debug(self.build_message(
+            message="received ttie notice",
+            tag="receive_ttie",
+            value=new_time
+        ))
         self.process_events()
         if self.calculate_gc_price():
             self.send_price_change_to_devices()
@@ -268,13 +271,11 @@ class GridController(Device):
     def on_capacity_change(self, source_device_id, target_device_id, time, value):
         """A device registers its capacity to the grid controller it's registered to"""
         self._time = time
-        self._logger.debug(
-            self.build_message(
-                message="received capacity change {} -> {}".format(source_device_id, value),
-                tag="receive_capacity",
-                value=value
-            )
-        )
+        self._logger.debug(self.build_message(
+            message="received capacity change {} -> {}".format(source_device_id, value),
+            tag="receive_capacity",
+            value=value
+        ))
         if self.power_source_manager.get(source_device_id):
             # handle capacity changes from suppliers of power
             self.power_source_manager.set_time(self._time)

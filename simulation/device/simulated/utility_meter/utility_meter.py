@@ -172,7 +172,9 @@ class UtilityMeter(PowerSource):
 #             print "*" * 12
         price = self.get_price()
         price = price * (1 + dr)   
-        self.broadcast_new_price(price, target_device_id=self._grid_controller_id)
+        #self.broadcast_new_price(price, target_device_id=self._grid_controller_id)
+        self.set_price(price)
+        self.broadcast_new_price(price, self._grid_controller_id)
         
     def calculate_capacity(self):
         "Calculate a new capacity.  Starting with configured capacity when on and 0 when off"

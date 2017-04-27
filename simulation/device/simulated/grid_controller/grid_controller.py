@@ -327,7 +327,7 @@ class GridController(Device):
     def calculate_gc_price(self):
         """Calculate the price grid controller's price"""
         new_price = self._price_logic.get_price()
-        if new_price != self._price and not new_price is None:
+        if new_price is not None: #if new_price != self._price and not new_price is None:
             self._logger.debug(self.build_message(message="price changed", tag="price", value=self._price))
             self.set_price(new_price)
             return True

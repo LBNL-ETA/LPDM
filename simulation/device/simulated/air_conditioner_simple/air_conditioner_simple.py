@@ -124,7 +124,7 @@ class AirConditionerSimple(Device):
 
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
         "Receives message when a price change has occured"
-        if not self._static_price:
+        if not self._static_price and target_device_id == self._device_id:
             self._time = time
             if new_price != self._price:
                 self._logger.debug(
@@ -135,10 +135,11 @@ class AirConditionerSimple(Device):
                     )
                 )
                 self.set_price(new_price)
-                self.adjust_internal_temperature()
-                self.reasses_setpoint()
-                self.precooling_update()
-                self.control_compressor_operation()
+                if self._time > self._last_temperature_update_time:
+                    self.adjust_internal_temperature()
+                    self.reasses_setpoint()
+                    self.precooling_update()
+                    self.control_compressor_operation()
 
     def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"

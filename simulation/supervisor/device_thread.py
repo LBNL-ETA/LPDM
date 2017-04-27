@@ -43,9 +43,8 @@ class DeviceThread(threading.Thread):
                 if isinstance(the_event, LpdmInitEvent):
                     self.logger.debug(self.build_message("found an init event {}".format(the_event)))
                     self.init_device()
-                else:
-                    if the_event:
-                        self.device.process_supervisor_event(the_event)
+                elif not the_event is None:
+                    self.device.process_supervisor_event(the_event)
                 self.queue.task_done()
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()

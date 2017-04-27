@@ -24,8 +24,9 @@ from set_point import SetPoint
 from operation_status import OperationStatus
 from common.outdoor_temperature import OutdoorTemperature
 from common.flex_lab import FlexLab
+from common.smap_tools import SmapQuery
 
-class Hvac(Device):
+class Hvac(Device, SmapQuery):
     def __init__(self, config):
         """
             Args:
@@ -51,6 +52,10 @@ class Hvac(Device):
         """
         # call the super constructor
         Device.__init__(self, config)
+        # Mixin for smap requests
+        # config must have a 'smap' section for the device,
+        # and 'enabled' must be set to True
+        SmapQuery.__init__(self, config.get("smap", {}))
 
         self._device_type = "hvac"
         self._device_name = config.get("device_name", "hvac")
@@ -664,7 +669,57 @@ class Hvac(Device):
 
     def finish(self):
         "at the end of the simulation calculate the final total energy used"
-        Device.finish(self)
-        if self.is_on():
-            self.sum_energy_used(self._max_power_output)
+        if self.is_real_device():
+            self.calculate_energy_used_smap()
+        else:
+            Device.finish(self)
+            if self.is_on():
+                self.sum_energy_used(self._max_power_output)
 
+    def calculate_energy_used_smap(self):
+        """Query smap to calculate the total energy used"""
+        if self.is_real_device():
+            # only works wit a 'real' device
+            if not self._smap_enabled:
+                raise Exception("Call to set compute energy usage from sMAP, but sMAP disabled")
+            # get the new chiller_all value from the smap stream
+            uuid, ts, chiller_all = self.download_most_recent_point(
+                self._smap["chiller_all"]["smap_root"],
+                self._smap["chiller_all"]["stream"]
+            )
+            # get the new chiller_1a value from the smap stream
+            uuid, ts, chiller_1a = self.download_most_recent_point(
+                self._smap["chiller_1a"]["smap_root"],
+                self._smap["chiller_1a"]["stream"]
+            )
+            # get the new chiller_1b value from the smap stream
+            uuid, ts, chiller_1b = self.download_most_recent_point(
+                self._smap["chiller_1b"]["smap_root"],
+                self._smap["chiller_1b"]["stream"]
+            )
+            # get the new ahu_1a value from the smap stream
+            uuid, ts, ahu_1a = self.download_most_recent_point(
+                self._smap["ahu_1a"]["smap_root"],
+                self._smap["ahu_1a"]["stream"]
+            )
+            # get the new ahu_1b value from the smap stream
+            uuid, ts, ahu_1b = self.download_most_recent_point(
+                self._smap["ahu_1b"]["smap_root"],
+                self._smap["ahu_1b"]["stream"]
+            )
+
+            # calculate the power usage
+            pc1a = ahu_1a + (chiller_all * (chiller_1a / (chiller_1a + chiller_1b)))
+            pc1b = ahu_1b + (chiller_all * (chiller_1b / (chiller_1a + chiller_1b)))
+
+            # write the value to the logs
+            self._logger.info(self.build_message(
+                message="sum 1a_kwh",
+                tag="sum_1a_kwh",
+                value=pc1a
+            ))
+            self._logger.info(self.build_message(
+                message="sum 1b_kwh",
+                tag="sum_1b_kwh",
+                value=pc1b
+            ))

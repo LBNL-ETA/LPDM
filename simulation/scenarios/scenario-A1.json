@@ -1,5 +1,5 @@
 {
-    "run_time_days": 7,
+    "run_time_days": 2,
     "log_to_postgres": 1,
     "console_log_level": 20,
     "file_log_level": 20,
@@ -9,12 +9,11 @@
             {
                 "device_id": "gc_1",
                 "device_type": "grid_controller",
-                "price_logic_class": "AveragePriceLogic",
                 "battery": {
                     "device_id": "battery_1",
                     "device_type": "battery",
                     "capacity": 1000.0,
-                    "status_logic_class_name": "LogicB"
+                    "status_logic_class_name": "LogicA"
                 }
             }
         ],
@@ -23,19 +22,20 @@
                 "device_id": "pv_1",
                 "uuid": 1,
                 "grid_controller_id": "gc_1",
-                "device_type": "pv"
+                "device_type": "pv",
+                "capacity": 4000
             },
             {
                 "device_id": "utility_meter_1",
                 "uuid": 2,
                 "grid_controller_id": "gc_1",
                 "device_type": "utility_meter",
-                "capacity": 2000.0,
-                "static_price": false,
-                "power_price": 0.05,
+                "capacity": 10000.0,
                 "schedule": [
-                    [0, "on"],
-                    [23, "off"]
+                    [0, "on"]
+                ],
+                "price_schedule": [
+                    [0, 0.10], [12, 0.05], [16, 0.10], [18, 0.15], [22, 0.10]
                 ]
             }
         ],
@@ -43,13 +43,20 @@
             {
                 "device_id": "eud_1",
                 "uuid": 1,
-                "device_type": "air_conditioner",
+                "device_type": "air_conditioner_simple",
                 "grid_controller_id": "gc_1",
                 "max_power_output": 1000.0,
-                "price_dim": 0.3,
-                "price_off": 0.7,
+                "precooling": {
+                    "enabled": true,
+                    "price_threshold": 0.10
+                },
                 "schedule": [
                     [0, "off"], [6, "on"], [8, "off"], [18, "on"]
+                ],
+                "set_point_schedule": [
+                    {"price": 0.15, "set_point": 25.0},
+                    {"price": 0.10, "set_point": 20.0},
+                    {"price": 0.05, "set_point": 18.0}
                 ]
             },
             {
@@ -57,9 +64,9 @@
                 "uuid": 2,
                 "device_type": "eud",
                 "grid_controller_id": "gc_1",
-                "max_power_output": 1000.0,
-                "price_dim": 0.3,
-                "price_off": 0.7,
+                "max_power_output": 500.0,
+                "price_dim": 0.1,
+                "price_off": 0.2,
                 "schedule": [
                     [0, "off"], [6, "on"], [8, "off"], [18, "on"]
                 ]
@@ -69,9 +76,9 @@
                 "uuid": 3,
                 "device_type": "eud",
                 "grid_controller_id": "gc_1",
-                "max_power_output": 1000.0,
+                "max_power_output": 100.0,
                 "constant_power_output": true,
-                "schedule": [[0, "off"], [6, "on"], [8, "off"], [18, "on"]]
+                "schedule": [[0, "on"]]
             }
         ]
     }

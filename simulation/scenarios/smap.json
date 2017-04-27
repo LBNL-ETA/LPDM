@@ -32,13 +32,44 @@
         ],
         "euds": [
             {
-                "device_id": "eud_1",
-                "device_type": "eud",
+                "device_id": "hvac_1",
+                "device_type": "hvac",
                 "grid_controller_id": "gc_1",
-                "max_power_output": 100.0,
-                "price_dim": 0.3,
-                "price_off": 0.7,
-                "schedule": [[3, "on"], [23, "off"]]
+                "is_real_device": true,
+                "cool_set_point_low": 21.0,
+                "cool_set_point_high": 25.0,
+                "cool_price_range_low": 0.2,
+                "cool_price_range_high": 0.7,
+                "heat_set_point_low": 16.0,
+                "heat_set_point_high": 20.0,
+                "heat_price_range_low": 0.2,
+                "heat_price_range_high": 0.7,
+                "smap" : {
+                    "enabled": true,
+                    "chiller_all" : {
+                        "smap_root": "https://flexstorevh.lbl.gov/",
+                        "stream": "/x1ab_all/Processed Data/X1/X1-El-Chiller"
+                    },
+                    "chiller_1a" : {
+                        "smap_root": "https://flexstorevh.lbl.gov/",
+                        "stream": "/x1ab_all/Processed Data/X1A/1A-Th-Chilled Water_15min"
+                    },
+                    "chiller_1b" : {
+                        "smap_root": "https://flexstorevh.lbl.gov/",
+                        "stream": "/x1ab_all/Processed Data/X1B/1B-Th-Chilled Water_15min"
+                    },
+                    "ahu_1a" : {
+                        "smap_root": "https://flexstorevh.lbl.gov/",
+                        "stream": "/x1ab_all/Processed Data/X1A/1A-El-AHU_15min"
+                    },
+                    "ahu_1b" : {
+                        "smap_root": "https://flexstorevh.lbl.gov/",
+                        "stream": "/x1ab_all/Processed Data/X1B/1B-El-AHU_15min"
+                    }
+                },
+                "schedule": [
+                    [0, "on", "day"]
+                ]
             }
         ]
     }

@@ -22,6 +22,8 @@ from device.base.power_source import PowerSource
 from device.base.power_source_buyer import PowerSourceBuyer
 from device.base.device import Device
 from device.simulated.battery import Battery
+from device.simulated.battery.state_preference import StatePreference
+from device.simulated.utility_meter import UtilityMeter
 from common.device_class_loader import DeviceClassLoader
 from device.scheduler import LpdmEvent
 from supervisor.lpdm_event import LpdmBuyPowerPriceEvent, LpdmBuyMaxPowerEvent, LpdmBuyPowerEvent
@@ -54,6 +56,9 @@ class GridController(Device):
         self._device_name = config.get("device_name", "grid_controller")
         self._capacity = config.get("capacity", 3000.0)
         self._static_price = config.get("static_price", False)
+
+        # keep track of the utility meter's online status
+        self._is_utility_meter_online = False
 
         # setup the logic for calculating the gc's price, default to average price
         self._price_logic_class_name = config.get("price_logic_class", "AveragePriceLogic")
@@ -94,7 +99,7 @@ class GridController(Device):
             self._battery = Battery(self.battery_config)
             # add it to the power source manager, set its price and capacity
             self.power_source_manager.add(self._battery._device_id, Battery, self._battery)
-            self.power_source_manager.set_capacity(self._battery._device_id, self._battery._capacity)
+            self.power_source_manager.set_capacity(self._battery._device_id, 0)
             self.power_source_manager.set_price(self._battery._device_id, self._battery._price)
             # setup the shared objects for events and power sources
             self._battery.set_event_list(self._events)
@@ -134,11 +139,22 @@ class GridController(Device):
             value=new_power
         ))
 
+        price_change = False
+        ps = self.power_source_manager.get(source_device_id)
         # is this a power source or an eud?
-        if self.power_source_manager.get(source_device_id):
+        if ps:
             # if it's a power source, register its new usage
             # TODO: check capacity?
-            self.power_source_manager.set_load(source_device_id, new_power)
+            if ps.load != new_power:
+                self.power_source_manager.set_load(source_device_id, new_power)
+                if ps.DeviceClass is UtilityMeter:
+                    if new_power == 0:
+                        self._is_utility_meter_online = False
+                    else:
+                        self._is_utility_meter_online = True
+                price_change = self.calculate_gc_price()
+                self.power_source_update()
+
         else:
             # this is not a power source so need to add the device's requested power to a power source
             # if add_load returns False, then unable to set power for the device
@@ -189,31 +205,92 @@ class GridController(Device):
 
     def power_source_update(self):
         """Update the power source manager."""
+        # update the battery status
+        if self._battery:
+            self._battery.update_status()
+            self._logger.debug(self.build_message(message="battery_pref", tag="battery_pref", value=self._battery._preference))
+            if not self._battery._can_discharge and self._battery._preference == StatePreference.DISCHARGE:
+                if self._battery._is_charging:
+                    self._battery.stop_charging()
+                    self._battery.disable_charge()
+                # make the battery available for discharge
+                self._battery.enable_discharge()
+            elif self._battery._can_discharge and self._battery._preference != StatePreference.DISCHARGE:
+                # disable the battery if necessary
+                self._battery.disable_discharge()
+        # try to optimize the load between the various power sources
         result_success = self.power_source_manager.optimize_load()
-        if not result_success and self._battery and self._battery._is_charging:
-            # if can't add the load and the battery is charging, stop charging and try again
-            self._battery.stop_charging()
+        initial_success = result_success
+        if not result_success:
+            # couldn't optimize the load, try turning off charging
+            if self._battery and self._battery._is_charging:
+                # if can't add the load and the battery is charging, stop charging and try again
+                self._battery.stop_charging()
+                self._battery.disable_charge()
+                result_success = self.power_source_manager.optimize_load()
+        if not result_success:
+            # still not able to optimize the load
+            # start lowering the power we're selling
+            # calculate the amount of power that we need to reduce so load doesn't exceed capacity
+            p_diff = self.power_source_manager.total_load() - self.power_source_manager.total_capacity()
+            # get the list of devices that are currently purchasing power
+            buyers = self.power_buyer_manager.get_buyers()
+            # loop through each power purchaser and lower the amount of power purchased
+            for buyer in buyers:
+                if p_diff > buyer.load:
+                    # excess load exceeds what this device is buying
+                    p_diff -= buyer.load
+                    self.power_source_manager.add_load(-1 * buyer.load)
+                    buyer.set_load(0.0)
+                else:
+                    # device is buying
+                    new_load = buyer.load - p_diff
+                    p_diff -= new_load
+                    self.power_source_manager.add_load(-1 * new_load)
+                    buyer.set_load(new_load)
+                self.broadcast_buy_power(buyer.device_id, buyer.load)
+                if p_diff < 1e-7:
+                    break
+            result_success = self.power_source_manager.optimize_load()
+        if not result_success:
+            # still not able to optimize the load
+            # start turning off devices until able to proceed
+            sorted_devices = sorted(self.device_manager.device_list, lambda a, b: cmp(b.uuid, a.uuid))
+            for d in sorted_devices:
+                if d.load:
+                    self.power_source_manager.remove_load(d.load)
+                    d.set_load(0.0)
+                    self.broadcast_new_power(0.0, d.device_id)
+                    if self.power_source_manager.total_load() <= self.power_source_manager.total_capacity():
+                        break
             result_success = self.power_source_manager.optimize_load()
 
-        if result_success:
+        if initial_success:
+            # no errors occured on the initial attempt, can try to charge and sell power
             # check if the battery needs to be charged, charge if available
-            if self._battery and self._battery._can_charge and not self._battery._is_charging:
+            if self._battery and not self._battery._is_charging and self._battery._preference == StatePreference.CHARGE:
                 self._logger.debug(self.build_message(message="battery_can_charge", tag="bat_can_charge", value=1))
                 if self.power_source_manager.can_handle_load(self._battery.charge_rate()):
+                    if self._battery._can_discharge:
+                        self._battery.disable_discharge()
+                    self._battery.enable_charge()
                     self._battery.start_charging()
                     result_success = self.power_source_manager.optimize_load()
                     if not result_success:
                         self._logger.error(self.build_message("Unable to charge battery."))
-                        self.stop_charging()
+                        self._battery.stop_charging()
+                        self._battery.disable_charge()
                         self.power_source_manager.optimize_load()
 
-            # let any changed power sources know that it needs to change its power output
-            for p in self.power_source_manager.get_changed_power_sources():
-                # broadcast the messages to the power sources that have changed
-                if p.DeviceClass is Battery:
-                    pass
-                else:
-                    self.broadcast_new_power(p.load, p.device_id)
+        # let any changed power sources know that it needs to change its power output
+        for p in self.power_source_manager.get_changed_power_sources():
+            # broadcast the messages to the power sources that have changed
+            if p.DeviceClass is Battery:
+                pass
+            else:
+                self.broadcast_new_power(p.load, p.device_id)
+
+
         return result_success
 
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
@@ -335,6 +412,10 @@ class GridController(Device):
     def calculate_gc_price(self):
         """Calculate the price grid controller's price"""
         new_price = self._price_logic.get_price()
+        # double the price if utility meter is down
+        if not self._is_utility_meter_online and not new_price is None:
+            new_price *= 2.0
+            # set the new price if it has changed
         if new_price != self._price and not new_price is None:
             self._logger.debug(self.build_message(message="price changed", tag="price", value=self._price))
             self.set_price(new_price)
@@ -396,6 +477,7 @@ class GridController(Device):
                     self.send_price_change_to_devices()
                     remove_items.append(event)
                 elif event.value == "battery_status":
+                    self._logger.debug(self.build_message(message="battery_status event found", tag="bat_stat_found", value=1))
                     self.power_source_update()
                     remove_items.append(event)
 
@@ -583,7 +665,6 @@ class GridController(Device):
             self._broadcast_callback(LpdmBuyPowerEvent(self._device_id, target_device_id, self._time, value))
         else:
             raise Exception("broadcast_new_power has not been set for this device!")
-
 
     def finish(self):
         """Call finish on the battery also"""

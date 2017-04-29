@@ -153,7 +153,7 @@ class PowerSourceManager(object):
         Move load from the more expensive power sources to the cheaper ones.
         """
         # update the status of rechargeable itmes
-        self.update_rechargeable_items()
+        # self.update_rechargeable_items()
         # get the current total load on the system
         # add the new load
         remaining_load = self._load

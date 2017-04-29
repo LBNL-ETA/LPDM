@@ -112,6 +112,10 @@ class PowerBuyerManager(object):
             else:
                 return None
 
+    def get_buyers(self):
+        """Get the devices that are currently purchasing power"""
+        return [p for p in self.power_sources if p.load > 0]
+
     def total_capacity(self):
         """calculate the total capacity for all power sources"""
         # return sum(d.capacity for d in self.power_sources if d.is_available())

@@ -22,6 +22,7 @@ import logging
 from lpdm_exception import LpdmMissingPowerSourceManager, LpdmBatteryDischargeWhileCharging, \
         LpdmBatteryNotDischarging, LpdmBatteryAlreadyDischarging, LpdmBatteryCannotDischarge, \
         LpdmBatteryChargeWhileDischarging, LpdmBatteryAlreadyCharging
+from state_preference import StatePreference
 
 class Battery(PowerSource):
     """
@@ -79,6 +80,8 @@ class Battery(PowerSource):
         self._is_charging = False
         self._can_discharge = False
 
+        self._preference = None
+
         self._sum_charge_kwh = 0
         self._last_charge_update_time = 0
 
@@ -88,9 +91,14 @@ class Battery(PowerSource):
         self._status_logic = None
 
     def init(self):
+        self.set_initial_preference()
         self.set_status_logic()
         self.update_status()
         self.schedule_next_events()
+
+    def set_initial_preference(self):
+        """Set the initial preference state of the battery (does it want to charge/discharge/nothing)"""
+        self._preference = StatePreference.DISCHARGE;
 
     def set_status_logic(self):
         # get the class object from the class name

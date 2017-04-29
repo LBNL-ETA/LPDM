@@ -147,11 +147,6 @@ class GridController(Device):
             # TODO: check capacity?
             if ps.load != new_power:
                 self.power_source_manager.set_load(source_device_id, new_power)
-                if ps.DeviceClass is UtilityMeter:
-                    if new_power == 0:
-                        self._is_utility_meter_online = False
-                    else:
-                        self._is_utility_meter_online = True
                 price_change = self.calculate_gc_price()
                 self.power_source_update()
 
@@ -353,10 +348,26 @@ class GridController(Device):
             tag="receive_capacity",
             value=value
         ))
-        if self.power_source_manager.get(source_device_id):
+        ps = self.power_source_manager.get(source_device_id)
+        if ps:
             # handle capacity changes from suppliers of power
             self.power_source_manager.set_time(self._time)
             self.power_source_manager.set_capacity(source_device_id, value)
+            if ps.DeviceClass is UtilityMeter:
+                if value == 0:
+                    self._is_utility_meter_online = False
+                    self._logger.debug(self.build_message(
+                        message="utility_meter_online",
+                        tag="um_online",
+                        value=0
+                    ))
+                else:
+                    self._is_utility_meter_online = True
+                    self._logger.debug(self.build_message(
+                        message="utility_meter_online",
+                        tag="um_online",
+                        value=1
+                    ))
             if self.power_source_update():
                 self.power_source_manager.reset_changed()
                 # notify any euds of capacity changes
@@ -412,10 +423,17 @@ class GridController(Device):
     def calculate_gc_price(self):
         """Calculate the price grid controller's price"""
         new_price = self._price_logic.get_price()
+        self._logger.debug(self.build_message(
+            message="price changed_before", tag="price_before", value=new_price
+        ))
+
         # double the price if utility meter is down
         if not self._is_utility_meter_online and not new_price is None:
             new_price *= 2.0
             # set the new price if it has changed
+        self._logger.debug(self.build_message(
+            message="price changed_after", tag="price_after", value=new_price
+        ))
         if new_price != self._price and not new_price is None:
             self._logger.debug(self.build_message(message="price changed", tag="price", value=self._price))
             self.set_price(new_price)

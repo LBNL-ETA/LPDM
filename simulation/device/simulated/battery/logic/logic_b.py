@@ -16,7 +16,7 @@ class LogicB(object):
         (price_threshold_discharge, price_threshold_charge) = self.calculate_price_thresholds()
         # compare the current price to the calculated thresholds
         if self.di._current_soc >= 0.5:
-            if self.di._price >= price_threshold_discharge:
+            if self.di._current_soc >= 0.98 or  self.di._price >= price_threshold_discharge:
                 self.di._preference = StatePreference.DISCHARGE
             else:
                 self.di._preference = StatePreference.NOTHING

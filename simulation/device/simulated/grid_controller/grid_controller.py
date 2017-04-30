@@ -63,6 +63,7 @@ class GridController(Device):
         # setup the logic for calculating the gc's price, default to average price
         self._price_logic_class_name = config.get("price_logic_class", "AveragePriceLogic")
         self._price_logic = None
+        self._last_price_change_time = None
 
         # setup the battery if requested
         self._battery = None
@@ -427,18 +428,14 @@ class GridController(Device):
 
     def calculate_gc_price(self):
         """Calculate the price grid controller's price"""
+        if self._last_price_change_time == self._time:
+            return False
         new_price = self._price_logic.get_price()
-        self._logger.debug(self.build_message(
-            message="price changed_before", tag="price_before", value=new_price
-        ))
-
         # double the price if utility meter is down
         if not self._is_utility_meter_online and not new_price is None:
             new_price *= 2.0
+        self._last_price_change_time = self._time
             # set the new price if it has changed
-        self._logger.debug(self.build_message(
-            message="price changed_after", tag="price_after", value=new_price
-        ))
         if new_price != self._price and not new_price is None:
             self._logger.debug(self.build_message(message="price changed", tag="price", value=new_price))
             self.set_price(new_price)

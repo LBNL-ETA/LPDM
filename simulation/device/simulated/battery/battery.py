@@ -273,6 +273,8 @@ class Battery(PowerSource):
                     - (self._power_level * (self._time - self._last_update_time) / 3600.0)
                 ) / (self._capacity)
 
+            # max soc is 1.0
+            self._current_soc = self._current_soc if self._current_soc <= 1.0 else 1.0
             if self._current_soc != previous:
                 # log when the value changes
                 self._logger.debug(self.build_message(message="soc", tag="soc", value=self._current_soc))

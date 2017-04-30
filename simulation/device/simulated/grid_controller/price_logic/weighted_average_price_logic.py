@@ -24,7 +24,7 @@ class WeightedAveragePriceLogic(object):
             power_sources.sort(lambda a, b: cmp(a.price, b.price))
             the_price = 0.0
             for ps in power_sources:
-                if ps.load > 0 and ps.capacity > 0:
+                if ps.load > 0 and ps.capacity > 0 and total_load > 0:
                     the_price += (ps.load / total_load) * ps.price
             if the_price < power_sources[0].price:
                 # price can't be cheaper than the cheapest price

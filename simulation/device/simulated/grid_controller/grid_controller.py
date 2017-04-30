@@ -61,7 +61,7 @@ class GridController(Device):
         self._is_utility_meter_online = False
 
         # setup the logic for calculating the gc's price, default to average price
-        self._price_logic_class_name = config.get("price_logic_class", "AveragePriceLogic")
+        self._price_logic_class_name = config.get("price_logic_class", "WeightedAveragePriceLogic")
         self._price_logic = None
         self._last_price_change_time = None
 

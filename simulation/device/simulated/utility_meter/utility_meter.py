@@ -50,7 +50,7 @@ class UtilityMeter(PowerSource):
 
         # set the properties specific to a utility meter
         self._capacity = config.get("capacity", 2000.0)
-        self._power_price = config.get("power_price", 0.01)
+        self._power_price = config.get("power_price", 0.1)
 
         #Just keeping this for reporting purposes.
         self._start_hour_consumption = 0 # time when the last consumption calculation occured

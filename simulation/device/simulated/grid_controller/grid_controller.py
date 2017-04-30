@@ -120,6 +120,11 @@ class GridController(Device):
             self.build_message("Set price logic class to {}".format(LogicClass))
         )
 
+    def set_battery_price(self, new_price):
+        """Set's the battery's price"""
+        if self._battery:
+            self._battery.set_price(new_price)
+
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
         """
         Notification from a device that a power change has occurred.
@@ -435,8 +440,10 @@ class GridController(Device):
             message="price changed_after", tag="price_after", value=new_price
         ))
         if new_price != self._price and not new_price is None:
-            self._logger.debug(self.build_message(message="price changed", tag="price", value=self._price))
+            self._logger.debug(self.build_message(message="price changed", tag="price", value=new_price))
             self.set_price(new_price)
+            self.set_battery_price(new_price)
+
             return True
         else:
             return False

@@ -121,6 +121,18 @@ class Battery(PowerSource):
         """Set the hourly_price list (shared from the gc)"""
         self._hourly_prices = hourly_prices
 
+    def set_price(self, new_price):
+        """
+        Override the base class to just set the value and do nothing else.
+        Use by the grid controller to mirror its price.
+        """
+        self._logger.debug(self.build_message(
+            message="set battery gc price",
+            tag="gc_price",
+            value=new_price
+        ))
+        self._price = new_price
+
     def get_load(self):
         """Get the current load on the battery"""
         return self._power_level

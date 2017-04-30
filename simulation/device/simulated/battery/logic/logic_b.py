@@ -16,12 +16,12 @@ class LogicB(object):
         (price_threshold_discharge, price_threshold_charge) = self.calculate_price_thresholds()
         # compare the current price to the calculated thresholds
         if self.di._current_soc >= 0.5:
-            if self.di._price < price_threshold_discharge:
+            if self.di._price >= price_threshold_discharge:
                 self.di._preference = StatePreference.DISCHARGE
             else:
                 self.di._preference = StatePreference.NOTHING
         else:
-            if self.di._price < price_threshold_charge:
+            if self.di._price >= price_threshold_charge:
                 self.di._preference = StatePreference.CHARGE
             else:
                 self.di._preference = StatePreference.NOTHING
@@ -46,9 +46,20 @@ class LogicB(object):
 
         else:
             # charge at < 50%
-            soc_ratio = self.di._current_soc / 0.5
+            soc_ratio = (0.5 - self.di._current_soc) / 0.5
             price_adjustment = (self.di._charge_price_threshold - min_24) * soc_ratio
-            price_threshold_discharge += price_adjustment
-            price_threshold_charge += price_adjustment
+            price_threshold_discharge -= price_adjustment
+            price_threshold_charge -= price_adjustment
+
+        self.di._logger.debug(self.di.build_message(
+            message="avg_price {}, discharge = {}, charge = {}, soc = {}".format(
+                avg_24,
+                price_threshold_discharge,
+                price_threshold_charge,
+                self.di._current_soc
+            ),
+            tag="logic",
+            value=1
+        ))
 
         return (price_threshold_discharge, price_threshold_charge)

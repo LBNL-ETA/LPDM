@@ -502,6 +502,9 @@ class GridController(Device):
                     self._logger.debug(self.build_message(message="battery_status event found", tag="bat_stat_found", value=1))
                     self.power_source_update()
                     remove_items.append(event)
+                elif event.value == "log_end_use_device":
+                    self.log_end_use_device()
+                    remove_items.append(event)
 
         # remove the processed events from the list
         for event in remove_items:
@@ -518,6 +521,8 @@ class GridController(Device):
         if self._battery:
             # the battery shares the same event array as the gc
             self._battery.schedule_next_events()
+        # schedule the next end-use load log event
+        self.schedule_next_end_use_log_event()
 
     def set_initial_price_event(self):
         """Let all other devices know of the initial price of energy"""
@@ -687,6 +692,23 @@ class GridController(Device):
             self._broadcast_callback(LpdmBuyPowerEvent(self._device_id, target_device_id, self._time, value))
         else:
             raise Exception("broadcast_new_power has not been set for this device!")
+
+    def log_end_use_device(self):
+        """Log the loads on the connected end-use devices"""
+        for d in self.device_manager.devices():
+            self._logger.debug(self.build_message(message="load for device {}".format(d.device_id),
+                tag="load_{}".format(d.device_id),
+                value=d.load
+            ))
+
+    def schedule_next_end_use_log_event(self):
+        """Schedule the next event for logging the end-use loads"""
+        new_event = LpdmEvent(self._time + 60.0 * 5, "log_end_use_device")
+        # check if the event is already there
+        found_items = filter(lambda d: d.value == "log_end_use_device", self._events)
+        if len(found_items) == 0:
+            self._events.append(new_event)
+
 
     def finish(self):
         """Call finish on the battery also"""

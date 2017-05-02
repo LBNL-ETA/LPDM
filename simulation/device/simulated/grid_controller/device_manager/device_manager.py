@@ -11,9 +11,7 @@ class DeviceManager(object):
         return len(self.device_list)
 
     def devices(self):
-        """Generator function for iterating through devices"""
-        for d in self.device_list:
-            yield d
+        return self.device_list
 
     def shutdown(self):
         """remove load from all power sources"""

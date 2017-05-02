@@ -503,7 +503,7 @@ class GridController(Device):
                     self.power_source_update()
                     remove_items.append(event)
                 elif event.value == "log_end_use_device":
-                    self.log_end_use_device()
+                    self.log_values()
                     remove_items.append(event)
 
         # remove the processed events from the list
@@ -693,12 +693,39 @@ class GridController(Device):
         else:
             raise Exception("broadcast_new_power has not been set for this device!")
 
+    def log_values(self):
+        self.log_end_use_device()
+        if self._battery:
+            self.log_battery_values()
+        # log the price
+        self._logger.debug(self.build_message(message="gc price",
+            tag="price_5min",
+            value=self._price
+        ))
+
+
     def log_end_use_device(self):
         """Log the loads on the connected end-use devices"""
         for d in self.device_manager.devices():
             self._logger.debug(self.build_message(message="load for device {}".format(d.device_id),
                 tag="load_{}".format(d.device_id),
                 value=d.load
+            ))
+
+    def log_battery_values(self):
+        """Log battery load, price and soc"""
+        if self._battery:
+            # log the load on the battery
+            self._logger.debug(self.build_message(
+                message="load for device {}".format(self._battery._device_id),
+                tag="load_{}".format(self._battery._device_id),
+                value=self._battery.get_load()
+            ))
+            # log the battery soc
+            self._logger.debug(self.build_message(
+                message="soc for device {}".format(self._battery._device_id),
+                tag="soc_{}".format(self._battery._device_id),
+                value=self._battery._current_soc
             ))
 
     def schedule_next_end_use_log_event(self):

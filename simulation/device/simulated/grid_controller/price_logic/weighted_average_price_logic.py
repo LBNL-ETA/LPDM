@@ -11,8 +11,9 @@ class WeightedAveragePriceLogic(object):
     Calculates the average price of all available power sources,
     weighted by the fraction of power that the power source supplying
     """
-    def __init__(self, power_source_manager):
+    def __init__(self, power_source_manager, net_meter_logic = True):
         self.power_source_manager = power_source_manager
+        self._net_meter_logic = net_meter_logic
 
     def get_price(self):
         """Calculate the average price for all power sources"""

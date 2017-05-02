@@ -69,6 +69,8 @@ class GridController(Device):
         self._battery = None
         self.battery_config = config.get("battery", None)
 
+        # flag to use net metering logic
+        self._net_meter_logic = config.get("net_meter_logic", True)
         self._total_load = 0.0
 
         # setup the managers for devices and power sources
@@ -116,7 +118,7 @@ class GridController(Device):
             "device.simulated.grid_controller.price_logic", self._price_logic_class_name
         )
         # create the object
-        self._price_logic = LogicClass(self.power_source_manager)
+        self._price_logic = LogicClass(self.power_source_manager, self._net_meter_logic)
         self._logger.info(
             self.build_message("Set price logic class to {}".format(LogicClass))
         )
@@ -285,7 +287,8 @@ class GridController(Device):
                         self.power_source_manager.optimize_load()
 
             p_buyers = self.power_buyer_manager.get()
-            if len(p_buyers) > 0:
+            p_seller = self.power_source_manager.get_utility_meter()
+            if len(p_buyers) > 0 and p_seller and p_seller.load <= 1e-7:
                 # store the amount of power being purchased, if any
                 # set the amounts to 0, reconsider purchasing after loads have been applied
                 p_buyer = p_buyers[0]

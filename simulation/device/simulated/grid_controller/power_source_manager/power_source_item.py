@@ -47,8 +47,6 @@ class PowerSourceItem:
         """Add additional load to the power source"""
         if self.can_handle_load(new_load):
             self.set_load(self.load + new_load)
-            self.logger.debug("message: Add load {}".format(new_load))
-            self.logger.debug("message: Total load {}".format(self.load))
             return True
         else:
             return False

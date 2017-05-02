@@ -1,6 +1,7 @@
 import logging
 from device.base.power_source import PowerSource
 from device.simulated.battery import Battery
+from device.simulated.utility_meter import UtilityMeter
 from power_source_item import PowerSourceItem
 from simulation_logger import message_formatter
 
@@ -60,7 +61,9 @@ class PowerSourceManager(object):
             d = self.get(device_id)
             diff = capacity - d.capacity if not d.capacity is None else capacity
             d.set_capacity(capacity)
-            self._capacity += diff
+            if not d.DeviceClass is UtilityMeter:
+                # don't count the utility meter capacity to the total
+                self._capacity += diff
             if abs(self._capacity) < 1e-7:
                 self._capacity = 0
             self.logger.debug(
@@ -147,6 +150,11 @@ class PowerSourceManager(object):
                 # update the battery (direct connect)
                 p.device_instance.update_status()
 
+    def get_utility_meter(self):
+        """get the utility meter"""
+        found = filter(lambda d: d.DeviceClass is UtilityMeter, self.power_sources)
+        return found[0] if len(found) > 0 else None
+
     def optimize_load(self):
         """
         Check that the loads are optimally distributed among the power sources.
@@ -159,12 +167,15 @@ class PowerSourceManager(object):
         remaining_load = self._load
         starting_load = remaining_load
 
+        utility_meter = self.get_utility_meter()
+        um_orig = utility_meter.load
+        utility_meter.set_load(0.0)
         # get the power sources and sort by the cheapest price
-        power_sources = [p for p in self.power_sources if p.is_configured()]
+        power_sources = [p for p in self.power_sources if p.is_configured() and not p.DeviceClass is UtilityMeter]
         power_sources = sorted(power_sources, lambda a, b: cmp(a.price, b.price))
         for ps in power_sources:
             # how much power is available for the device
-            if remaining_load == 0:
+            if remaining_load <= 1e-7:
                 # no more load left to distribute, remove power
                 ps.set_load(0.0)
             else:
@@ -189,6 +200,13 @@ class PowerSourceManager(object):
                         remaining_load = 0
 
         diff = abs(starting_load - self._load)
+        if remaining_load > 1e-7:
+            # more load remaining, try to put it on the utility meter
+            if utility_meter and utility_meter.capacity > 0:
+                # there is a utility meter present
+                utility_meter.set_load(remaining_load)
+                remaining_load = 0
+
         if remaining_load > 1e-7:
             self.logger.debug(
                 self.build_message(

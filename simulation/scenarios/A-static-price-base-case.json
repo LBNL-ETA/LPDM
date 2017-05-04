@@ -1,5 +1,5 @@
 {
-    "run_time_days": 1,
+    "run_time_days": 2,
     "log_to_postgres": 1,
     "console_log_level": 20,
     "file_log_level": 20,
@@ -13,8 +13,8 @@
                 "battery": {
                     "device_id": "battery_1",
                     "device_type": "battery",
-                    "capacity": 1000.0,
-                    "status_logic_class_name": "LogicA"
+                    "capacity": 2000.0,
+                    "status_logic_class_name": "LogicB"
                 }
             }
         ],
@@ -24,7 +24,8 @@
                 "uuid": 1,
                 "grid_controller_id": "gc_1",
                 "device_type": "pv",
-                "capacity": 4000
+                "capacity": 2000,
+                "price": 0.1
             },
             {
                 "device_id": "utility_meter_1",
@@ -52,26 +53,56 @@
                     "price_threshold": 0.10
                 },
                 "schedule": [
-                    [0, "off"], [6, "on"], [8, "off"], [18, "on"]
+                    [0, "on"]
                 ],
                 "set_point_schedule": [
-                    {"price": 0.15, "set_point": 25.0},
-                    {"price": 0.10, "set_point": 20.0},
-                    {"price": 0.05, "set_point": 18.0}
+                    {"price": 0.10, "set_point": 22.0}
+                    
                 ]   
             },
             {
-                "device_id": "fx_1",
+                "device_id": "eud_2",
                 "uuid": 2,
+                "device_type": "air_conditioner_simple",
+                "grid_controller_id": "gc_1",
+                "max_power_output": 500.0,
+                "precooling": {
+                    "enabled": false,
+                    "price_threshold": 0.10
+                },
+                "schedule": [
+                    [0, "on"]
+                ],
+                "set_point_schedule": [
+                    {"price": 0.10, "set_point": 21.0}
+                ]
+            },
+            {
+                "device_id": "eud_3",
+                "uuid": 3,
                 "device_type": "eud",
                 "grid_controller_id": "gc_1",
                 "max_power_output": 500.0,
-                "constant_power_output": true,
-                "schedule": [[0, "off"], [6, "on"], [8, "off"], [18, "on"]]
+                
+                "schedule": [
+                    [0, "off"], [6, "on"], [8, "off"], [18, "on"]
+                ]
             },
             {
-                "device_id": "fx_2",
-                "uuid": 3,
+                "device_id": "eud_4",
+                "uuid": 4,
+                "device_type": "eud",
+                "grid_controller_id": "gc_1",
+                "max_power_output": 200.0,
+                "constant_power_output": true,
+                "schedule": [
+                    [0, "on"], [7, "off"], [17, "on"], [7, "off"], [17, "on"]
+                ]
+            },
+            
+            {
+                "device_id": "fx_1",
+                "uuid": 5,
                 "device_type": "eud",
                 "grid_controller_id": "gc_1",
                 "max_power_output": 100.0,

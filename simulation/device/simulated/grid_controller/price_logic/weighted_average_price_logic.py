@@ -11,7 +11,7 @@ class WeightedAveragePriceLogic(object):
     Calculates the average price of all available power sources,
     weighted by the fraction of power that the power source supplying
     """
-    def __init__(self, power_source_manager, net_meter_logic = True):
+    def __init__(self, power_source_manager, net_meter_logic):
         self.power_source_manager = power_source_manager
         self._net_meter_logic = net_meter_logic
 
@@ -21,17 +21,23 @@ class WeightedAveragePriceLogic(object):
         denominator = 0.0
         power_sources = self.power_source_manager.get_available_power_sources()
         total_load = self.power_source_manager.total_load()
-        if len(power_sources):
-            power_sources.sort(lambda a, b: cmp(a.price, b.price))
-            the_price = 0.0
-            for ps in power_sources:
-                if ps.load > 0 and ps.capacity > 0 and total_load > 0:
-                    the_price += (ps.load / total_load) * ps.price
-            if the_price < power_sources[0].price:
-                # price can't be cheaper than the cheapest price
-                return power_sources[0].price
-            else:
-                return the_price
-        else:
-            return None
+        utility_meter = self.power_source_manager.get_utility_meter()
 
+        if self._net_meter_logic == True:
+            the_price = utility_meter.price
+            return the_price
+            
+        else:
+            if len(power_sources):
+                power_sources.sort(lambda a, b: cmp(a.price, b.price))
+                the_price = 0.0
+                for ps in power_sources:
+                    if ps.load > 0 and ps.capacity > 0 and total_load > 0:
+                        the_price += (ps.load / total_load) * ps.price
+                if the_price < power_sources[0].price:
+                    # price can't be cheaper than the cheapest price
+                    return power_sources[0].price
+                else:
+                    return the_price
+            else:
+                return None

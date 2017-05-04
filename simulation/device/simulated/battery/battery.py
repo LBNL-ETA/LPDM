@@ -193,9 +193,9 @@ class Battery(PowerSource):
     def update_status(self):
         self._status_logic.update_status()
 
-    def max_charge_rate(self):
+    def set_max_charge_rate(self, new_charge_rate):
         """Max rate that the battery can charge (W)"""
-        return self._max_charge_rate
+        self._max_charge_rate = new_charge_rate
 
     def charge_rate(self):
         "The actual charge rate (W)"

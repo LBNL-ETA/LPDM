@@ -274,25 +274,50 @@ class GridController(Device):
             # check if the battery needs to be charged, charge if available
             if self._battery and not self._battery._is_charging and self._battery._preference == StatePreference.CHARGE:
                 self._logger.debug(self.build_message(message="battery_can_charge", tag="bat_can_charge", value=1))
-                if self.power_source_manager.can_handle_load(self._battery.charge_rate()):
+                excess_power = self.power_source_manager.get_excess_pv_w()
+                self._battery.set_max_charge_rate(excess_power)
+                if excess_power and self.power_source_manager.can_handle_load(self._battery.charge_rate()):
                     if self._battery._can_discharge:
                         self._battery.disable_discharge()
-                    excess_power = self.power_source_manager.get_excess_pv_w()
                     self._logger.debug(self.build_message(
                         message="calculate excess pv power",
                         tag="excess_pv_Power",
                         value=excess_power
                     ))
-                    if excess_power and self._battery.get_max_charge_rate():
-                        self._battery.set_max_charge_rate(excess_power)
-                        self._battery.enable_charge()
-                        self._battery.start_charging()
+                    self._logger.debug(self.build_message(
+                        message="battery charge rate",
+                        tag="bat_charge_rate",
+                        value=self._battery.charge_rate()
+                    ))
+                    self._battery.enable_charge()
+                    self._battery.start_charging()
                     result_success = self.power_source_manager.optimize_load()
                     if not result_success:
                         self._logger.error(self.build_message("Unable to charge battery."))
                         self._battery.stop_charging()
                         self._battery.disable_charge()
                         self.power_source_manager.optimize_load()
+            elif self._battery and self._battery.is_charging():
+                # battery is already charging
+                # calculate a new charge rate from excess pv
+                excess_power = self.power_source_manager.get_excess_pv_w()
+                self._battery.set_max_charge_rate(excess_power)
+                self._logger.debug(self.build_message(
+                    message="calculate excess pv power",
+                    tag="excess_pv_Power",
+                    value=excess_power
+                ))
+                self._logger.debug(self.build_message(
+                    message="battery charge rate",
+                    tag="bat_charge_rate",
+                    value=self._battery.charge_rate()
+                ))
+                result_success = self.power_source_manager.optimize_load()
+                if not result_success:
+                    self._logger.error(self.build_message("Unable to charge battery."))
+                    self._battery.stop_charging()
+                    self._battery.disable_charge()
+                    self.power_source_manager.optimize_load()
 
             p_buyers = self.power_buyer_manager.get()
             p_seller = self.power_source_manager.get_utility_meter()

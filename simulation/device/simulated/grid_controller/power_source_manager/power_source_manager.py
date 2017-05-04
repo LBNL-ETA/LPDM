@@ -1,7 +1,7 @@
 import logging
 from device.base.power_source import PowerSource
 from device.simulated.battery import Battery
-from device.simulated.pv import PV
+from device.simulated.pv import Pv
 from device.simulated.utility_meter import UtilityMeter
 from power_source_item import PowerSourceItem
 from simulation_logger import message_formatter

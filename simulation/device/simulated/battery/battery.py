@@ -197,9 +197,12 @@ class Battery(PowerSource):
         """Max rate that the battery can charge (W)"""
         self._max_charge_rate = new_charge_rate
 
+    def get_max_charge_rate(self):
+        return self._max_charge_rate
+
     def charge_rate(self):
         "The actual charge rate (W)"
-        return self._max_charge_rate * self._roundtrip_eff
+        return self.get_max_charge_rate() * self._roundtrip_eff
 
     def is_discharging(self):
         """Is the battery discharging?"""

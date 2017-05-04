@@ -277,8 +277,16 @@ class GridController(Device):
                 if self.power_source_manager.can_handle_load(self._battery.charge_rate()):
                     if self._battery._can_discharge:
                         self._battery.disable_discharge()
-                    self._battery.enable_charge()
-                    self._battery.start_charging()
+                    excess_power = self.power_source_manager.get_excess_pv_w()
+                    self._logger.debug(self.build_message(
+                        message="calculate excess pv power",
+                        tag="excess_pv_Power",
+                        value=excess_power
+                    ))
+                    if excess_power and self._battery.get_max_charge_rate():
+                        self._battery.set_max_charge_rate(excess_power)
+                        self._battery.enable_charge()
+                        self._battery.start_charging()
                     result_success = self.power_source_manager.optimize_load()
                     if not result_success:
                         self._logger.error(self.build_message("Unable to charge battery."))

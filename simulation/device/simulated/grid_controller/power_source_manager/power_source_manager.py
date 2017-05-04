@@ -1,6 +1,7 @@
 import logging
 from device.base.power_source import PowerSource
 from device.simulated.battery import Battery
+from device.simulated.pv import PV
 from device.simulated.utility_meter import UtilityMeter
 from power_source_item import PowerSourceItem
 from simulation_logger import message_formatter
@@ -154,6 +155,18 @@ class PowerSourceManager(object):
         """get the utility meter"""
         found = filter(lambda d: d.DeviceClass is UtilityMeter, self.power_sources)
         return found[0] if len(found) > 0 else None
+
+    def get_excess_pv_w(self):
+        """
+        Find the PV and calculate how much extra power there is
+        """
+        found = filter(lambda d: d.DeviceClass is Pv, self.power_sources)
+        if len(found):
+            # TODO: consider more than 1 pv?
+            pv = found[0]
+            return pv.capacity - pv.load if pv.capacity > 0 else 0
+        else:
+            return 0
 
     def optimize_load(self):
         """

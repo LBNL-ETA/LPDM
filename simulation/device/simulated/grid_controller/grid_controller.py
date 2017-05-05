@@ -281,7 +281,7 @@ class GridController(Device):
                 self._logger.debug(self.build_message(message="battery_can_charge", tag="bat_can_charge", value=1))
                 excess_power = self.power_source_manager.get_excess_pv_w()
                 self._battery.set_max_charge_rate(excess_power)
-                if excess_power and self.power_source_manager.can_handle_load(self._battery.charge_rate()):
+                if excess_power:
                     if self._battery._can_discharge:
                         self._battery.disable_discharge()
                     self._logger.debug(self.build_message(

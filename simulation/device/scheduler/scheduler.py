@@ -46,8 +46,8 @@ class Scheduler(object):
         # calculate the number of seconds that have elapsed since midnight
         secs = time_seconds % SECS_IN_DAY
 
-        print "get_next_scheduled_task for time {}".format(time_seconds)
-        print "\tday = {}, secs = {}".format(day, secs)
+        # print "get_next_scheduled_task for time {}".format(time_seconds)
+        # print "\tday = {}, secs = {}".format(day, secs)
 
         # find the next scheduled event
         found_item = None

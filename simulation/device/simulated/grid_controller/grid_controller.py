@@ -277,7 +277,7 @@ class GridController(Device):
         if initial_success:
             # no errors occured on the initial attempt, can try to charge and sell power
             # check if the battery needs to be charged, charge if available
-            if self._battery and not self._battery._is_charging and (self._battery._preference == StatePreference.CHARGE or self._price < 0.05):
+            if self._battery and not self._battery._is_charging and self._battery._current_soc < 1.0 and (self._battery._preference == StatePreference.CHARGE or self._price < 0.05):
                 self._logger.debug(self.build_message(message="battery_can_charge", tag="bat_can_charge", value=1))
                 excess_power = self.power_source_manager.get_excess_pv_w()
                 ok_to_charge = False
@@ -313,13 +313,11 @@ class GridController(Device):
                 # battery is already charging
                 # calculate a new charge rate from excess pv
                 excess_power = self.power_source_manager.get_excess_pv_w()
-                p_diff = excess_power - self._battery.get_max_charge_rate()
-                new_charge_rate = self._battery.get_max_charge_rate() + p_diff
-                if new_charge_rate < 1e-7:
+                if excess_power < 1e-7:
                     self._battery.stop_charging()
                     self._battery.disable_charge()
                 else:
-                    self._battery.set_max_charge_rate(new_charge_rate)
+                    self._battery.set_max_charge_rate(excess_power)
                 self._logger.debug(self.build_message(
                     message="calculate excess pv power",
                     tag="excess_pv_Power",
@@ -782,6 +780,10 @@ class GridController(Device):
             tag="load_e_all",
             value=total_device_load
         ))
+        self._logger.debug(self.build_message(message="load difference",
+            tag="load_diff",
+            value=(total_device_load - self.power_source_manager.total_load())
+        ))
         # if abs(total_device_load - self.power_source_manager.total_load()) > 1e-7:
             # raise Exception("loads not equal {}".format(self._time))
 
@@ -799,6 +801,16 @@ class GridController(Device):
                 message="soc for device {}".format(self._battery._device_id),
                 tag="soc_{}".format(self._battery._device_id),
                 value=self._battery._current_soc
+            ))
+            self._logger.debug(self.build_message(
+                message="soc for device {}".format(self._battery._device_id),
+                tag="b_charge",
+                value=(1 if self._battery.is_charging() else 0)
+            ))
+            self._logger.debug(self.build_message(
+                message="charge_rate for device {}".format(self._battery._device_id),
+                tag="b_rate",
+                value=self._battery.charge_rate()
             ))
 
     def schedule_next_end_use_log_event(self):

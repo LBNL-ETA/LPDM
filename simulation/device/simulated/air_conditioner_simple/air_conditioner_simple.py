@@ -360,14 +360,17 @@ class AirConditionerSimple(Device):
             raise Exception("Trying to turn on compressor when not in operation")
 
     def turn_off_compressor(self):
-        self._compressor_is_on = False
-        self._logger.debug(self.build_message(
-            message="compressor_on", tag="compressor_on_off", value=0
-        ))
-        if self._power_level != 0.0:
-            self.sum_energy_used(self._power_level)
-            self.set_power_level(0.0)
-            self.broadcast_new_power(self._power_level, target_device_id=self._grid_controller_id)
+        if ((self._time - self._last_total_energy_update_time)) > 900: 
+       
+            self._compressor_is_on = False
+            self._logger.debug(self.build_message(
+                message="compressor_on", tag="compressor_on_off", value=0
+            ))
+            if self._power_level != 0.0:
+                self.sum_energy_used(self._power_level)
+                self.set_power_level(0.0)
+                self.broadcast_new_power(self._power_level, target_device_id=self._grid_controller_id)
+
 
     def sum_energy_used(self, power_level):
         self._total_energy_use += power_level * (self._time - self._last_total_energy_update_time) / (1000 * 3600)

@@ -173,6 +173,10 @@ class PowerSourceManager(object):
         found = filter(lambda d: d.DeviceClass is UtilityMeter, self.power_sources)
         return found[0] if len(found) > 0 else None
 
+    def is_utility_meter_available(self):
+        p = self.get_utility_meter()
+        return p and p.is_available()
+
     def get_excess_pv_w(self):
         """
         Find the PV and calculate how much extra power there is

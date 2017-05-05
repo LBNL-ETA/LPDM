@@ -277,11 +277,18 @@ class GridController(Device):
         if initial_success:
             # no errors occured on the initial attempt, can try to charge and sell power
             # check if the battery needs to be charged, charge if available
-            if self._battery and not self._battery._is_charging and self._battery._preference == StatePreference.CHARGE:
+            if self._battery and not self._battery._is_charging and (self._battery._preference == StatePreference.CHARGE or self._price < 0.05):
                 self._logger.debug(self.build_message(message="battery_can_charge", tag="bat_can_charge", value=1))
                 excess_power = self.power_source_manager.get_excess_pv_w()
-                self._battery.set_max_charge_rate(excess_power)
-                if excess_power:
+                ok_to_charge = False
+                if excess_power > 1e-7:
+                    self._battery.set_max_charge_rate(excess_power)
+                    ok_to_charge = True
+                elif self.power_source_manager.is_utility_meter_available():
+                    self._battery.reset_charge_rate()
+                    ok_to_charge = True
+
+                if ok_to_charge:
                     if self._battery._can_discharge:
                         self._battery.disable_discharge()
                     self._logger.debug(self.build_message(
@@ -724,6 +731,10 @@ class GridController(Device):
                 tag="cap_{}".format(p.device_id),
                 value=p.capacity
             ))
+            self._logger.debug(self.build_message(message="available for power source {}".format(p.device_id),
+                tag="avl_{}".format(p.device_id),
+                value=(p.capacity - p.load)
+            ))
         self._logger.debug(self.build_message(message="load for power source ALL",
             tag="load_p_all",
             value=self.power_source_manager.total_load()
@@ -731,6 +742,10 @@ class GridController(Device):
         self._logger.debug(self.build_message(message="capacity for power source ALL",
             tag="cap_p_all",
             value=self.power_source_manager.total_capacity()
+        ))
+        self._logger.debug(self.build_message(message="available for power source ALL",
+            tag="avail_p_all",
+            value=(self.power_source_manager.total_capacity() - self.power_source_manager.total_load())
         ))
 
     def log_utility_meters(self):

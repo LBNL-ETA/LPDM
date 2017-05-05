@@ -79,6 +79,7 @@ class Battery(PowerSource):
         self._can_charge = False
         self._is_charging = False
         self._can_discharge = False
+        self._current_charge_rate = self._max_charge_rate
 
         self._preference = None
 
@@ -195,10 +196,13 @@ class Battery(PowerSource):
 
     def set_max_charge_rate(self, new_charge_rate):
         """Max rate that the battery can charge (W)"""
-        self._max_charge_rate = new_charge_rate
+        self._current_charge_rate = new_charge_rate
 
     def get_max_charge_rate(self):
-        return self._max_charge_rate
+        return self._current_charge_rate
+
+    def reset_charge_rate(self):
+        self._current_charge_rate = self._max_charge_rate
 
     def charge_rate(self):
         "The actual charge rate (W)"

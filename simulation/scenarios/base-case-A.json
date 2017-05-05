@@ -24,7 +24,7 @@
                 "uuid": 1,
                 "grid_controller_id": "gc_1",
                 "device_type": "pv",
-                "capacity": 2000
+                "capacity": 3000
             },
             {
                 "device_id": "utility_meter_1",

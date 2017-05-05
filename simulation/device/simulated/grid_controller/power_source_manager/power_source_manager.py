@@ -14,6 +14,8 @@ class PowerSourceManager(object):
         self._load = 0.0
         self._capacity = 0.0
         self._time = 0
+        self._battery_is_charging = False
+        self._battery_charge_rate = 0.0
 
     def __repr__(self):
         return "Load->{}, Capacity->{}".format(
@@ -143,6 +145,21 @@ class PowerSourceManager(object):
     def remove_load(self, new_load):
         """Remove load from the system"""
         self.add_load(-1.0 * new_load)
+
+    def battery_charge_start(self, charge_rate):
+        """Start charging the battery"""
+        self._battery_is_charging = True
+        self._battery_charge_rate = charge_rate
+        found = filter(lambda d: d.DeviceClass is Battery, self.power_sources)
+        if len(found):
+            p = found[0]
+            p.load = -1 * charge_rate
+        else:
+            raise Exception("Unable to find the battery in the PSM")
+
+    def battery_charge_stop(self):
+        """Stop charging the battery"""
+        self._battery_is_charging = False
 
     def update_rechargeable_items(self):
         """Update the status of rechargeable items"""

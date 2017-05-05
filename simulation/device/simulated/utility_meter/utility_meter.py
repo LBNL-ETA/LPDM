@@ -65,9 +65,9 @@ class UtilityMeter(PowerSource):
         """Run any initialization functions for the device"""
         # Setup the next events for the device
         self.setup_schedule()
+        self.schedule_next_events()
         self.make_unavailable()
         self.calculate_electricity_price()
-        self.schedule_next_events()
         self.calculate_next_ttie()
 
     def status(self):
@@ -118,6 +118,14 @@ class UtilityMeter(PowerSource):
     def on_time_change(self, new_time):
         "Receives message when time for an 'initial event' change has occured"
         self._time = new_time
+        self._logger.info(
+            self.build_message(
+                message="time_change",
+                tag="time_change",
+                value=new_time
+            )
+        )
+
         self.process_events()
 
     def log_power_change(self, time, power):

@@ -70,7 +70,7 @@ class GridController(Device):
         self.battery_config = config.get("battery", None)
 
         # flag to use net metering logic
-        self._net_meter_logic = config.get("net_meter_logic", True)
+        self._net_meter_logic = config.get("net_meter_logic", False)
         self._total_load = 0.0
 
         # setup the managers for devices and power sources
@@ -166,6 +166,11 @@ class GridController(Device):
             device = self.device_manager.get(source_device_id)
             # calculate the change in power for the source device
             p_diff = new_power - device.load
+            self._logger.debug(self.build_message(
+                message="power changed for device {} ({} => {})".format(source_device_id, device.load, new_power),
+                tag="pchange",
+                value=new_power
+            ))
 
             if p_diff == 0:
                 # no change in power for the device
@@ -301,7 +306,13 @@ class GridController(Device):
                 # battery is already charging
                 # calculate a new charge rate from excess pv
                 excess_power = self.power_source_manager.get_excess_pv_w()
-                self._battery.set_max_charge_rate(excess_power)
+                p_diff = excess_power - self._battery.get_max_charge_rate()
+                new_charge_rate = self._battery.get_max_charge_rate() + p_diff
+                if new_charge_rate < 1e-7:
+                    self._battery.stop_charging()
+                    self._battery.disable_charge()
+                else:
+                    self._battery.set_max_charge_rate(new_charge_rate)
                 self._logger.debug(self.build_message(
                     message="calculate excess pv power",
                     tag="excess_pv_Power",
@@ -691,6 +702,7 @@ class GridController(Device):
             raise Exception("broadcast_new_power has not been set for this device!")
 
     def log_values(self):
+        self.log_power_sources()
         self.log_end_use_device()
         if self._battery:
             self.log_battery_values()
@@ -701,6 +713,25 @@ class GridController(Device):
         ))
         # log the utility meter values
         self.log_utility_meters()
+
+    def log_power_sources(self):
+        for p in self.power_source_manager.get():
+            self._logger.debug(self.build_message(message="load for power source {}".format(p.device_id),
+                tag="load_{}".format(p.device_id),
+                value=p.load
+            ))
+            self._logger.debug(self.build_message(message="capacity for power source {}".format(p.device_id),
+                tag="cap_{}".format(p.device_id),
+                value=p.capacity
+            ))
+        self._logger.debug(self.build_message(message="load for power source ALL",
+            tag="load_p_all",
+            value=self.power_source_manager.total_load()
+        ))
+        self._logger.debug(self.build_message(message="capacity for power source ALL",
+            tag="cap_p_all",
+            value=self.power_source_manager.total_capacity()
+        ))
 
     def log_utility_meters(self):
         """Log the utility meter buy/sell amounts"""
@@ -729,6 +760,15 @@ class GridController(Device):
                 tag="load_{}".format(d.device_id),
                 value=d.load
             ))
+        total_device_load = self.device_manager.total_load()
+        if self._battery.is_charging():
+            total_device_load += self._battery.charge_rate()
+        self._logger.debug(self.build_message(message="load for end-use ALL",
+            tag="load_e_all",
+            value=total_device_load
+        ))
+        # if abs(total_device_load - self.power_source_manager.total_load()) > 1e-7:
+            # raise Exception("loads not equal {}".format(self._time))
 
     def log_battery_values(self):
         """Log battery load, price and soc"""

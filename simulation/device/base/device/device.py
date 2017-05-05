@@ -239,7 +239,7 @@ class Device(NotificationReceiver, NotificationSender):
         if callable(self._broadcast_callback):
             self._logger.debug(
                 self.build_message(
-                    message="Broadcast new power {} from {}".format(new_power, self._device_name),
+                    message="Broadcast new power {} from {} -> {}".format(new_power, self._device_name, target_device_id),
                     tag="broadcast_power",
                     value=new_power
                 )

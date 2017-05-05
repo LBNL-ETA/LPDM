@@ -202,7 +202,7 @@ class Battery(PowerSource):
 
     def charge_rate(self):
         "The actual charge rate (W)"
-        return self.get_max_charge_rate() * self._roundtrip_eff
+        return self.get_max_charge_rate()
 
     def is_discharging(self):
         """Is the battery discharging?"""
@@ -341,6 +341,7 @@ class Battery(PowerSource):
             # self.power_source_manager.set_capacity(self._device_id, 0.0)
             self._is_charging = True
             self.power_source_manager.add_load(self.charge_rate())
+            # self.power_source_manager.charge_battery_start(self.charge_rate())
         else:
             raise Exception("battery is not able to charge, check parameters")
 
@@ -358,6 +359,7 @@ class Battery(PowerSource):
             )
             self._is_charging = False
             self.power_source_manager.remove_load(self.charge_rate())
+            # self.power_source_manager.charge_battery_stop(self.charge_rate())
 
     def shutdown(self):
         """Shutdown the battery"""

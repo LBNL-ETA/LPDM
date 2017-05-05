@@ -46,11 +46,18 @@ class Scheduler(object):
         # calculate the number of seconds that have elapsed since midnight
         secs = time_seconds % SECS_IN_DAY
 
+        print "get_next_scheduled_task for time {}".format(time_seconds)
+        print "\tday = {}, secs = {}".format(day, secs)
+
         # find the next scheduled event
         found_item = None
         for item in self.scheduled_items:
             if item.day == day and item.time > secs:
                 # if there's a scheduled item for the current day then use it
+                found_item = item
+                break
+            elif item.day == 0 and day == 0 and item.time == 0 and secs == 0:
+                # attempting to get the schedule at t=0
                 found_item = item
                 break
             elif item.day > day:
@@ -59,6 +66,8 @@ class Scheduler(object):
                 found_item = item
                 break
 
+        # print "found item"
+        # print found_item
         # if an event hasn't been found then we are past the last defined schedule
         # so repeat the last full day's schedule
         if found_item is None:
@@ -84,7 +93,7 @@ class Scheduler(object):
 
         if not found_item is None:
             ttie = (day * SECS_IN_DAY) + found_item.time
-            if ttie <= time_seconds:
+            if ttie <= time_seconds and time_seconds > 0:
                 ttie += SECS_IN_DAY
             return LpdmEvent(ttie, found_item.value, self.task_name)
         else:

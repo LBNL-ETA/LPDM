@@ -59,6 +59,7 @@ class Supervisor:
 
     def process_supervisor_events(self):
         """Process events in the supervisor's queue"""
+        self.remove_queue_duplicates()
         while not self.queue.empty():
             the_event = self.queue.get()
             if isinstance(the_event, LpdmTtieEvent):
@@ -79,6 +80,24 @@ class Supervisor:
             elif isinstance(the_event, LpdmRunTimeErrorEvent):
                 # an exception has occured, kill the simulation
                 raise Exception("LpdmRunTimeErrorEvent encountered.")
+
+    def remove_queue_duplicates(self):
+        """
+        Remove duplicate queue events for the same time period.
+        """
+        temp_events = []
+        while not self.queue.empty():
+            current_event = self.queue.get()
+            found = None
+            for temp_event in temp_events:
+                if temp_event == current_event:
+                    found = temp_event
+                    break
+            if found:
+                temp_events.remove(found)
+            temp_events.append(current_event)
+        for temp_event in temp_events:
+            self.queue.put(temp_event)
 
     def add_device(self, DeviceClass, config):
         """

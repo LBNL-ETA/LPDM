@@ -274,9 +274,11 @@ class Battery(PowerSource):
         if self._time - self._last_update_time > self._min_soc_refresh_rate:
             previous = self._current_soc
             if self.is_charging():
+                # update the state of charge for battery charging
+                # there's a loss of 10% default (see self._roundtrip_eff)
                 self._current_soc = (
                     (self._capacity * self._current_soc)
-                    + (self.charge_rate() * (self._time - self._last_update_time) / 3600.0)
+                    + (self.charge_rate() * self._roundtrip_eff * (self._time - self._last_update_time) / 3600.0)
                 ) / (self._capacity)
             elif self._can_discharge and self._power_level > 0:
                 self._current_soc = (

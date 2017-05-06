@@ -282,7 +282,7 @@ class GridController(Device):
                 excess_power = self.power_source_manager.get_excess_pv_w()
                 ok_to_charge = False
                 if excess_power > 1e-7:
-                    if self. self._net_meter_logic:
+                    if self._net_meter_logic:
                         self._battery.set_max_charge_rate(excess_power)
                     ok_to_charge = True
                 elif self.power_source_manager.is_utility_meter_available():

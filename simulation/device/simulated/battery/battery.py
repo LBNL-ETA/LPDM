@@ -82,6 +82,7 @@ class Battery(PowerSource):
         self._current_charge_rate = self._max_charge_rate
 
         self._preference = None
+        x = 0
 
         self._sum_charge_kwh = 0
         self._last_charge_update_time = 0
@@ -196,9 +197,15 @@ class Battery(PowerSource):
 
     def set_max_charge_rate(self, new_charge_rate):
         """Max rate that the battery can charge (W)"""
+        if new_charge_rate > self._max_charge_rate:
+            x = self._max_charge_rate
+
+        else:
+            x = new_charge_rate
+        
         if self.is_charging():
             self.power_source_manager.add_load(-1 * self._current_charge_rate)
-        self._current_charge_rate = new_charge_rate
+        self._current_charge_rate = x
         if self.is_charging():
             self.power_source_manager.add_load(self._current_charge_rate)
 
@@ -274,8 +281,6 @@ class Battery(PowerSource):
         if self._time - self._last_update_time > self._min_soc_refresh_rate:
             previous = self._current_soc
             if self.is_charging():
-                # update the state of charge for battery charging
-                # there's a loss of 10% default (see self._roundtrip_eff)
                 self._current_soc = (
                     (self._capacity * self._current_soc)
                     + (self.charge_rate() * self._roundtrip_eff * (self._time - self._last_update_time) / 3600.0)

@@ -185,7 +185,7 @@ class PowerSourceManager(object):
         if len(found):
             # TODO: consider more than 1 pv?
             pv = found[0]
-            return pv.capacity - pv.load if pv.capacity > 0 else 0
+            return pv.capacity - self.total_load() if pv.capacity > 0 else 0
         else:
             return 0
 

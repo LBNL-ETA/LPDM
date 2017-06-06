@@ -28,6 +28,7 @@ from common.device_class_loader import DeviceClassLoader
 from device.scheduler import LpdmEvent
 from supervisor.lpdm_event import LpdmBuyPowerPriceEvent, LpdmBuyMaxPowerEvent, LpdmBuyPowerEvent
 import logging
+from device.simulated.pv import Pv
 
 class GridController(Device):
     """
@@ -106,6 +107,7 @@ class GridController(Device):
             self.power_source_manager.set_price(self._battery._device_id, self._battery._price)
             # setup the shared objects for events and power sources
             self._battery.set_event_list(self._events)
+#            self._battery.max_charge_rate(self._max_charge_rate)
             self._battery.set_power_source_manager(self.power_source_manager)
             self._battery.set_price_history(self._hourly_prices)
             self._battery.init()
@@ -277,17 +279,20 @@ class GridController(Device):
         if initial_success:
             # no errors occured on the initial attempt, can try to charge and sell power
             # check if the battery needs to be charged, charge if available
-            if self._battery and not self._battery._is_charging and self._battery._current_soc < 1.0 and (self._battery._preference == StatePreference.CHARGE or self._price < 0.05):
+            if self._battery and not self._battery._is_charging and self._battery._current_soc < 1.0 and (self._battery._preference == StatePreference.CHARGE or self._price < 0.10):
                 self._logger.debug(self.build_message(message="battery_can_charge", tag="bat_can_charge", value=1))
-                excess_power = self.power_source_manager.get_excess_pv_w()
+                excess_power = self.power_source_manager.get_excess_pv_w() + self._battery.charge_rate()
+ #               excess_power = self.power_source_manager.pv.capacity - self.power_source_manager.total_load()
                 ok_to_charge = False
-                if excess_power > 1e-7:
+                if self.power_source_manager.is_utility_meter_available():
                     if self._net_meter_logic:
+                        self._battery.reset_charge_rate()
+                        ok_to_charge = True
+
+                    elif excess_power > 1e-7:
                         self._battery.set_max_charge_rate(excess_power)
-                    ok_to_charge = True
-                elif self.power_source_manager.is_utility_meter_available():
-                    self._battery.reset_charge_rate()
-                    ok_to_charge = True
+                        ok_to_charge = True 
+                                 
 
                 if ok_to_charge:
                     if self._battery._can_discharge:
@@ -313,12 +318,22 @@ class GridController(Device):
             elif self._battery and self._battery.is_charging():
                 # battery is already charging
                 # calculate a new charge rate from excess pv
-                excess_power = self.power_source_manager.get_excess_pv_w()
-                if excess_power < 1e-7:
-                    self._battery.stop_charging()
-                    self._battery.disable_charge()
-                else:
-                    self._battery.set_max_charge_rate(excess_power)
+                excess_power = self.power_source_manager.get_excess_pv_w() + self._battery.charge_rate()
+#                excess_power = pv.capacity - self.power_source_manager.total_load()
+                if self.power_source_manager.is_utility_meter_available():
+                    if self._net_meter_logic:
+                        self._battery.reset_charge_rate()
+                        
+
+                    elif excess_power > 1e-7:
+                        self._battery.set_max_charge_rate(excess_power)
+
+                    else:
+                
+                        self._battery.stop_charging()
+                        self._battery.disable_charge()
+
+                
                 self._logger.debug(self.build_message(
                     message="calculate excess pv power",
                     tag="excess_pv_Power",

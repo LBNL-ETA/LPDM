@@ -58,7 +58,7 @@ class Pv(PowerSource, SmapQuery):
         self._pv_file_name = config.get("pv_file_name", "pv_data.csv")
         self._capacity_update_interval = config.get("capacity_update_interval", 10.0 * 60.0)
         self._read_data_from_smap = config.get("read_data_from_smap", False)
-        self._price = 0.0
+        self._price = config.get("price", 0.0)
 
         self._power_profile = None
 

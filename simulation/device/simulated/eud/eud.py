@@ -28,14 +28,14 @@ class Eud(Device):
 
         # the price (c/kWh) at which to begin dimming down the power
         # when price > 'price_dim_start' and price < 'price_dim_end', linearly dim down to power level (%) set at 'power_level_low' of power at 'price_dim_end'
-        self._price_dim_start = config.get("price_dim_start", 0.3)
+        self._price_dim_start = config.get("price_dim_start", 0.1)
 
         # the price ($/kWh) at which to stop dimming the power output
         # when price > price_dim_end and price < price_off, set to power_level_low
-        self._price_dim_end = config.get("price_dim_end", 0.7)
+        self._price_dim_end = config.get("price_dim_end", 0.2)
 
         # the price ($/kWh) at which to turn off the power completeley
-        self._price_off = config.get("price_off", 0.9)
+        self._price_off = config.get("price_off", 0.3)
 
         # fixed power output: no interpolation  of power output based on price
         self._constant_power_output = config.get("constant_power_output", False)

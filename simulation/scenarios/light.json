@@ -1,0 +1,59 @@
+{
+    "run_time_days": 7,
+    "log_to_postgres": 1,
+    "console_log_level": 20,
+    "file_log_level": 20,
+    "pg_log_level": 10,
+    "devices": {
+        "grid_controllers": [
+            {
+                "device_id": "gc_1",
+                "device_type": "grid_controller",
+                "static_price": false
+            }
+        ],
+        "power_sources": [
+            {
+                "device_id": "utility_meter_1",
+                "uuid": 2,
+                "grid_controller_id": "gc_1",
+                "device_type": "utility_meter",
+                "capacity": 5000.0,
+                "schedule": [
+                    [0, "on"]
+                ],
+                "price_schedule": [
+                    [0, 0.1]
+                ]
+            }
+        ],
+        "euds": [
+            {
+                "device_id": "light_1",
+                "uuid": 4,
+                "device_type": "light",
+                "grid_controller_id": "gc_1",
+                "max_power_output": 500.0,
+                "price_dim_start": 0.1,
+                "price_dim_stop": 0.2,
+                "price_off": 0.3,
+                "schedule": [
+                    [0, "off"], [15, "on"], [23, "off"]
+                ]
+            },
+            {
+                "device_id": "fan_1",
+                "uuid": 3,
+                "device_type": "fan",
+                "grid_controller_id": "gc_1",
+                "max_power_output": 200.0,
+                "price_dim_start": 0.1,
+                "price_dim_stop": 0.2,
+                "price_off": 0.3,
+                "schedule": [
+                    [0, "off"], [6, "on"], [15, "off"]
+                ]
+            }
+        ]
+    }
+}

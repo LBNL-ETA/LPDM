@@ -4,7 +4,6 @@ from lpdm_event import LpdmInitEvent, LpdmKillEvent, LpdmConnectDeviceEvent, Lpd
 from device_thread import DeviceThread
 from device.simulated.grid_controller import GridController
 from device.base.power_source import PowerSource
-from device.simulated.eud import Eud
 from simulation_logger import message_formatter
 
 class DeviceThreadManager(object):

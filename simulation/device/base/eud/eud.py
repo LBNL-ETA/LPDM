@@ -218,3 +218,4 @@ class Eud(Device):
         return self._max_power_output * power_level_percent / 100.0
 
 
+

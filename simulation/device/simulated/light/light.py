@@ -141,7 +141,7 @@ class Light(Eud):
 
     def status(self):
 	    return {
-	            "type": "eud",
+	            "type": "light",
 	            "name": self._device_name,
 	            "in_operation": self._in_operation,
 	            "power_level": self._power_level,
@@ -156,6 +156,10 @@ class Light(Eud):
         power_level_percent = self._power_level_max - (self._power_level_max - self._power_level_low) * power_reduction_ratio
         return self._max_power_output * power_level_percent / 100.0
 
+
+
+    #WHAT DOES THIS DO????
+    #??????????????????????????????????????
     def adjust_hardware_power(self):
         """Override this method to tell the hardware to adjust its power output"""
         return None

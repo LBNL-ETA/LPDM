@@ -22,6 +22,8 @@ class Eud(Device):
     def __init__(self, config = None):
         # call the super constructor
         Device.__init__(self, config)
+        self.allocate_received = 0 
+
 
 #abstract methods 
 #__________________________________________________________________________________
@@ -50,6 +52,37 @@ class Eud(Device):
 #___________________________________________________________________________________
     
     # eud messaging functions
+
+    """
+    Once a grid controller has sent an allocate message, the EUD stores the value allocated in a field. 
+    The EUD can consume any amount of power up to the allocate received quantity. 
+
+    """
+
+    def set_allocate_received(self, allocate):
+        self.allocate_received = allocate
+
+        #make sure this works. Not sure how logger works. 
+        self._logger.debug(
+                self.build_message(
+                    message="allocate received",
+                    tag="receive_price",
+                    value=allocate_received
+                )
+            )
+
+
+    """
+
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^DEV_QUESTION^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    Reqeusts to use up to request_amt in power from each connected grid controller. Does it ask grid controllers
+    in order of price? For now, assume each EUD only has one grid controller. 
+
+    """
+    def request_power(self, request_amt):
+        #sends out a message to each connected grid controller, in order of lowest to highest price. 
+
    
 
     

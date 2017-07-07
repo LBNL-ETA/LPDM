@@ -76,9 +76,14 @@ class DeviceThreadManager(object):
         # find the power sources
         dgs = filter(lambda t: issubclass(t.DeviceClass, PowerSource), self.threads)
         # find the euds
+
+
+        #----------------------------------------------------TODO------------------------------------------------------
         euds = filter(
             lambda t: not issubclass(t.DeviceClass, GridController) and not issubclass(t.DeviceClass, PowerSource), self.threads
         )
+        #instead make it filter for EUD's 
+        #----------------------------------------------------UNFINISHED------------------------------------------------
 
         # TODO: allow for more than 1 grid controller
         if len(gcs) > 1:

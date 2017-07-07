@@ -22,7 +22,7 @@ class Eud(Device):
     def __init__(self, config = None):
         # call the super constructor
         Device.__init__(self, config)
-        self.allocate_received = 0 
+        self.allocated = 0 
 
 
 #abstract methods 
@@ -59,15 +59,15 @@ class Eud(Device):
 
     """
 
-    def set_allocate_received(self, allocate):
-        self.allocate_received = allocate
+    def set_allocated(self, allocate):
+        self.allocated = allocate
 
         #make sure this works. Not sure how logger works. 
         self._logger.debug(
                 self.build_message(
                     message="allocate received",
-                    tag="receive_price",
-                    value=allocate_received
+                    tag="receive allocation",
+                    value=allocated
                 )
             )
 
@@ -80,8 +80,15 @@ class Eud(Device):
     in order of price? For now, assume each EUD only has one grid controller. 
 
     """
-    def request_power(self, request_amt):
-        #sends out a message to each connected grid controller, in order of lowest to highest price. 
+    def send_request(self, request):
+        #sends out a message to the connected grid controller 
+        GC.receive_power(){
+        
+        }
+
+        #gets put into a GC queue. That it will be in some order of priority, 
+
+
 
    
 

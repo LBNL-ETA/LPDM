@@ -13,20 +13,17 @@
 """
     Implementation of a general EUD device, which requests and consumes cerain amounts of power. 
 """
-from abc import abstractmethod
 
-from Build.device import Device
+from Build import Device
+from abc import abstractmethod
 
 
 class Eud(Device):
-    def __init__(self, config = None):
+    def __init__(self, device_id, supervisor):
         # call the super constructor
-        Device.__init__(self, config)
+        super().__init__(self, device_id, supervisor)
         self.allocated = 0 
 
-
-#abstract methods 
-#__________________________________________________________________________________
     @abstractmethod 
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
         pass
@@ -40,7 +37,6 @@ class Eud(Device):
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
         pass
 
-
     @abstractmethod
     def on_time_change(self, new_time):
         pass
@@ -48,10 +44,6 @@ class Eud(Device):
     @abstractmethod 
     def process_events(self):
         pass
-
-#___________________________________________________________________________________
-    
-    # eud messaging functions
 
     """
     Once a grid controller has sent an allocate message, the EUD stores the value allocated in a field. 
@@ -61,28 +53,6 @@ class Eud(Device):
 
     def set_allocated(self, allocate):
         self.allocated = allocate
-        #make sure this works. Not sure how logger works. 
-        self._logger.debug(
-                self.build_message(
-                    message="allocate received",
-                    tag="receive allocation",
-                    value=allocated
-                )
-            )
 
-
-    """
-
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^DEV_QUESTION^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-    Reqeusts to use up to request_amt in power from each connected grid controller. Does it ask grid controllers
-    in order of price? For now, assume each EUD only has one grid controller. 
-
-    """
     def send_request(self, request):
-        #sends out a message to the connected grid controller 
-        GC.receive_power(){
-        
-        }
-
-        #gets put into a GC queue. That it will be in some order of priority, 
+        pass

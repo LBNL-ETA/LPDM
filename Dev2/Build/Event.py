@@ -12,8 +12,8 @@ class Event:
 	def __init__(self, time):
 		self._time_stamp = time
 
-	def advanceTime():
-		self.time_stamp -= 1
+	def advanceTime(self):
+		self._time_stamp -= 1
 
 
 """
@@ -24,7 +24,7 @@ An event for when the device receives a price change.
 
 
 class PriceEvent(Event):
-	def __init__(self, time = 0, price_change)
+	def __init__(self, price_change, time = 0)
 
 
 

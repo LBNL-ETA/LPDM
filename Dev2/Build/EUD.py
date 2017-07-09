@@ -13,9 +13,10 @@
 """
     Implementation of a general EUD device, which requests and consumes cerain amounts of power. 
 """
-from abc import ABCMeta, abstractmethod
-from device.base.device import Device
-import logging
+from abc import abstractmethod
+
+from Build.device import Device
+
 
 class Eud(Device):
     def __init__(self, config = None):

@@ -1,9 +1,8 @@
 """
-A priority queue implementing a sorted queue of items sorted by priority.
-Implemented as a min-heap, returning
-
-
+A priority queue implementing a queue of items sorted by priority.
+Adapted from https://docs.python.org/2/library/heapq.html.
 """
+
 import itertools
 import heapq
 
@@ -54,6 +53,7 @@ class PriorityQueue:
         return not self._pq
 
     def clear(self):
+        """clear the priority queue"""
         self._pq.clear()
         self._entry_finder.clear()
         self._counter = itertools.count()

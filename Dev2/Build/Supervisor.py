@@ -1,8 +1,5 @@
 """
 
-############MORE DOCUMENTATION HERE#################################
-
-The supervisor class maintains a sorted map of the times of all initial events, mapping to the event with that time.
 
 """
 
@@ -15,10 +12,18 @@ class Supervisor:
         self._event_queue = Priority_queue.PriorityQueue()  # queue items are device_ids prioritized by next event time
         self._devices = {}
 
-    """Given a pointer to a device, adds a mapping from device_id to that device"""
+    ##
+    # Given a pointer to a device, adds a mapping from device_id to that device
+    # @param device the device to add to the supervisor device dictionary
+    ##
     def register_device(self, device):
         device_id = device.get_id()
         self._devices[device_id] = device
+
+    ##
+    # Registers an event
+    # @param device the device to add to the supervisor device dictionary
+    ##
 
     def register_event(self, device_id, time_of_next_event):
         self._event_queue.add(device_id, time_of_next_event)

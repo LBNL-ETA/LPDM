@@ -28,11 +28,6 @@ class Eud(Device):
     def on_power_change(self, source_device_id, target_device_id, time, new_power):
         pass
 
-    @abstractmethod
-    def on_capacity_change(self, source_device_id, target_device_id, time, value):
-        pass
-
-
     @abstractmethod 
     def on_price_change(self, source_device_id, target_device_id, time, new_price):
         pass

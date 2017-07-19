@@ -32,4 +32,6 @@ class MessageType(Enum):
     REGISTER = 1
     POWER = 2
     PRICE = 3
+    REQUEST = 4
+    ALLOCATE = 5
 

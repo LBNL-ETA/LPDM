@@ -9,9 +9,8 @@ The
 
 from Build import Priority_queue
 from Build import Event
-from Build.Message import MessageType
-
-
+from Build import Message
+from abc import abstractmethod
 
 class Device:
 
@@ -38,23 +37,15 @@ class Device:
         return self._device_id
 
     ##
-    # Advances time for the device by shifting all events in its queue down by a step value.
-    # Note: Events will not be shifted down below zero.
-
-    # @param step integer value to shift all event times by
-    def advance_time(self, step):
-        self._queue.shift(step)
-
-    ##
-    # Process all events in the device's queue with a time stamp of 0 (now).
+    # Process all events in the device's queue with a given time_stamp.
     # This function should be called after advance_time has been called by the supervisor.
 
-    def process_events(self):
+    def process_events(self, run_time):
         event, time_stamp = self._queue.pop()
-        while time_stamp is 0:
+        while time_stamp <= run_time:  # there shouldn't be any events less than run_time but just in case
             event.run_event()
             event, time_stamp = self._queue.pop()
-        self._queue.add(event, time_stamp)  # add back the last removed item without time 0.
+        self._queue.add(event, time_stamp)  # add back the last removed item which wasn't processed.
 
     ##
     # Report the time of the next earliest event in the device's event queue
@@ -75,24 +66,72 @@ class Device:
     # @param message a message to be read (must be a message object)
     def read_message(self, message):
         #  takes it apart into its components
-        # TODO: log the sender read time
-        if message.message_type == MessageType.REGISTER:
+        # TODO: log the sender and read time
+        if message.message_type == Message.MessageType.REGISTER:
+            self.register_device(message.sender, message.value)
+        elif message.message_type == Message.MessageType.POWER:
             # do stuff
             pass
-        elif message.message_type == MessageType.POWER:
-            #do stuff
+        elif message.message_type == Message.MessageType.PRICE:
+            # do stuff
             pass
-        elif message.message_type == MessageType.PRICE:
-            #do stuff
+        elif message.message_type == Message.MessageType.ALLOCATE:
+            # do stuff
+            pass
+        elif message.message_type == Message.MessageType.REQUEST:
+            # do stuff
             pass
         else:
             raise NameError('Unverified Message Type')
 
+    ##
+    # Registers or unregisters a given device from the device's connected device list
+    # @param device the device to register or unregister from connected devices
+    # @param value positive to register, 0 or negative to unregister
+
+    def register_device(self, device, value):
+        device_id = device.get_id()
+        if value > 0:
+            self._connected_devices[device_id] = device
+        else:
+            if device_id in self._connected_devices:
+                del self._connected_devices[device_id]  # unregister
+            else:
+                print("No Such Device To unregister")
+
+    ##
+    # Method to be called when the device receives a power message, indicating power flows
+    # have changed between two devices (either receiving or providing).
+    #
+    # @param new_power the value of power flow, negative if receiving, positive if providing.
+    @abstractmethod
+    def on_power_change(self, new_power):
+        pass
+
+    ##
+    # Method to be called when device receives a price message
+    #
+    # @param new_price the new price value
+
+    @abstractmethod
+    def on_price_change(self, new_price):
+        pass
+
+    ##
+    # Method to be called when device receives a request message, indicating a device is requesting to
+    # either provide or receive the requested quantity of power.
+    #
+    # @param new_price the new price value
+    @abstractmethod
+    def on_request(self, ):
+        pass
+
+    @abstractmethod
+    def on_allocate(self):
+        pass
 
 
-
-
-
-
+    # TODO: (1) Implement EUD-GC Messaging (2) Port in EUD subclasses, (3) TEST! (4) Add PV, UtilityMeter Messaging
+    # TODO: (5) Add Battery Functionality (6) MAJOR TESTING 
 
 

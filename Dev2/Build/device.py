@@ -12,6 +12,7 @@ from Build import Event
 from Build import Message
 from abc import abstractmethod
 
+
 class Device:
 
     def __init__(self, device_id, supervisor):
@@ -70,17 +71,13 @@ class Device:
         if message.message_type == Message.MessageType.REGISTER:
             self.register_device(message.sender, message.value)
         elif message.message_type == Message.MessageType.POWER:
-            # do stuff
-            pass
+            self.on_power_change(message.sender, message.value)
         elif message.message_type == Message.MessageType.PRICE:
-            # do stuff
-            pass
+            self.on_price_change(message.sender, message.value)
         elif message.message_type == Message.MessageType.ALLOCATE:
-            # do stuff
-            pass
+            self.on_allocate(message.sender, message.value)
         elif message.message_type == Message.MessageType.REQUEST:
-            # do stuff
-            pass
+            self.on_request(message.sender, message.value)
         else:
             raise NameError('Unverified Message Type')
 
@@ -90,6 +87,7 @@ class Device:
     # @param value positive to register, 0 or negative to unregister
 
     def register_device(self, device, value):
+        # log this, BABY.
         device_id = device.get_id()
         if value > 0:
             self._connected_devices[device_id] = device
@@ -105,29 +103,37 @@ class Device:
     #
     # @param new_power the value of power flow, negative if receiving, positive if providing.
     @abstractmethod
-    def on_power_change(self, new_power):
+    def on_power_message(self, sender, new_power):
         pass
 
     ##
     # Method to be called when device receives a price message
     #
     # @param new_price the new price value
+    #  TODO: This occurs when a device sends a price message. Internal price modulation vs external? Different funcs?
 
     @abstractmethod
-    def on_price_change(self, new_price):
+    def on_price_message(self, sender, new_price):
         pass
 
     ##
     # Method to be called when device receives a request message, indicating a device is requesting to
     # either provide or receive the requested quantity of power.
     #
-    # @param new_price the new price value
+    # @param request_amt the amount the device is requesting to provide (positive) or to receive (negative). s
     @abstractmethod
-    def on_request(self, ):
+    def on_request(self, sender, request_amt):
         pass
 
+    ##
+    # Method to be called once device has allocated to provide a given quantity of power to another device,
+    # or to receive a given quantity of power. Allocation should only ever occur after request messages
+    # have been passed and processed.
+    #
+    # @param allocated_amt the amount allocated to provide to another device (positive) or to receive from another
+    # device (negative). s
     @abstractmethod
-    def on_allocate(self):
+    def on_allocate(self, sender, allocate_amt):
         pass
 
 

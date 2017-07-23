@@ -1,14 +1,14 @@
 
-################################################################################################################################
+########################################################################################################################
 # *** Copyright Notice ***
 #
-# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v1.0"
-# Copyright (c) 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory
+# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v2.0"
+# Copyright (c) 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory
 # (subject to receipt of any required approvals from the U.S. Dept. of Energy).  All rights reserved.
 #
 # If you have questions about your rights to use or distribute this software, please contact
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
-################################################################################################################################
+########################################################################################################################
 
 """
     Implementation of a general EUD device, which requests and consumes certain amounts of power.
@@ -25,21 +25,25 @@ class Eud(Device):
     def __init__(self, device_id, supervisor):
         # call the super constructor
         super().__init__(self, device_id, supervisor)
-        self._allocated = 0
+        self._allocated = {}  # Dictionary of devices and how much the device has been allocated by those devices.
 
     ##
     # When the device receive See Device Superclass Description
 
     @abstractmethod 
-    def on_power_change(self, source_device_id, target_device_id, time, new_power):
-        pass
+    def process_power_message(self, sender_id, new_power):
+        pass # TODO: Or should this be EUD generalized?
 
     @abstractmethod 
-    def on_price_change(self, source_device_id, target_device_id, time, new_price):
+    def process_price_message(self, sender_id, new_price):
         pass
 
     @abstractmethod
-    def on_request(self, target, request_amt):
+    def process_request_message(self, sender, request_amt):
+        pass
+
+    @abstractmethod
+    def process_allocate_message(self, sender, allocate_amt):
         pass
 
     ##

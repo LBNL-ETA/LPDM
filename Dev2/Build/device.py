@@ -1,8 +1,23 @@
+########################################################################################################################
+# *** Copyright Notice ***
+#
+# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v2.0"
+# Copyright (c) 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory
+# (subject to receipt of any required approvals from the U.S. Dept. of Energy).  All rights reserved.
+#
+# If you have questions about your rights to use or distribute this software, please contact
+# Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
+########################################################################################################################
+
 """
 
-A device maintains a priority queue of functions prioritized by time.
-The queue is a heap sorted by by time signature, with time in milliseconds from the current time for the event to be processed.
-The
+A device maintains a priority queue of functions prioritized by time,
+which it then processes when instructed that time has passed by the
+supervisor.
+
+Devices maintain common functionality of messaging and receiving messages.
+Any type of device must be able to receive any type of message, but the sending
+of messages
 
 
 """
@@ -15,11 +30,12 @@ from abc import abstractmethod
 
 class Device:
 
-    def __init__(self, device_id, supervisor):
+    def __init__(self, device_id, supervisor, time=0):
         self._device_id = device_id
         self._queue = Priority_queue.PriorityQueue()
-        self._connected_devices = {}
+        self._connected_devices = {} # TODO: Decide whether this should just be a list.
         self._supervisor = supervisor
+        self._time = time #this will be updated by the supervisor.
 
     ##
     # Adds an event to the device's event queue and reports that event to the supervisor
@@ -63,7 +79,7 @@ class Device:
         self.add_event(Event(self.read_message, message), message.time + 1)
 
     ##
-    #
+    # Reads a message and responds based on its message type
     # @param message a message to be read (must be a message object)
     def read_message(self, message):
         #  takes it apart into its components
@@ -71,13 +87,13 @@ class Device:
         if message.message_type == Message.MessageType.REGISTER:
             self.register_device(message.sender, message.value)
         elif message.message_type == Message.MessageType.POWER:
-            self.on_power_change(message.sender, message.value)
+            self.process_power_message(message.sender, message.value)
         elif message.message_type == Message.MessageType.PRICE:
-            self.on_price_change(message.sender, message.value)
+            self.process_price_message(message.sender, message.value)
         elif message.message_type == Message.MessageType.ALLOCATE:
-            self.on_allocate(message.sender, message.value)
+            self.process_request_message(message.sender, message.value)
         elif message.message_type == Message.MessageType.REQUEST:
-            self.on_request(message.sender, message.value)
+            self.process_allocate_message(message.sender, message.value)
         else:
             raise NameError('Unverified Message Type')
 
@@ -101,9 +117,10 @@ class Device:
     # Method to be called when the device receives a power message, indicating power flows
     # have changed between two devices (either receiving or providing).
     #
+    # @param sender the sender of the message providing or receiving the new power
     # @param new_power the value of power flow, negative if receiving, positive if providing.
     @abstractmethod
-    def on_power_message(self, sender, new_power):
+    def process_power_message(self, sender, new_power):
         pass
 
     ##
@@ -113,7 +130,7 @@ class Device:
     #  TODO: This occurs when a device sends a price message. Internal price modulation vs external? Different funcs?
 
     @abstractmethod
-    def on_price_message(self, sender, new_price):
+    def process_price_message(self, sender, new_price):
         pass
 
     ##
@@ -122,7 +139,7 @@ class Device:
     #
     # @param request_amt the amount the device is requesting to provide (positive) or to receive (negative). s
     @abstractmethod
-    def on_request(self, sender, request_amt):
+    def process_request_message(self, sender, request_amt):
         pass
 
     ##
@@ -133,7 +150,7 @@ class Device:
     # @param allocated_amt the amount allocated to provide to another device (positive) or to receive from another
     # device (negative). s
     @abstractmethod
-    def on_allocate(self, sender, allocate_amt):
+    def process_allocate_message(self, sender, allocate_amt):
         pass
 
 

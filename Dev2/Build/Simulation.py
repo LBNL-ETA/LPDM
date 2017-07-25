@@ -13,13 +13,22 @@
 
 from Build import Supervisor
 
-supervisor = Supervisor()
 
-# Read in the simulation file. For each device,
-# add it to connected devices, and then add its name and TTIE to process_queue.
+def read_config_file():
+    pass
 
-while supervisor.has_next_event():
-    supervisor.occur_next_event()
+## Reads in the simulation file. For each device,
+#
+def set_up_simulation():
+    # (1) Initialize all Devices
+    # (2) Set all Device's queues with their scheduled events
+    # (3)
+    pass
 
-print("Simulation has finished.")
+
+def run_simulation():
+    supervisor = Supervisor.Supervisor()
+    while supervisor.has_next_event():
+        supervisor.occur_next_event()
+    print("Simulation has finished.")
 

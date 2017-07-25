@@ -75,5 +75,5 @@ class PriorityQueue:
             entry[0] -= offset
             if entry[0] < 0:
                 print("Warning: Attempted To Set Priority For Task {} To Below Zero".format(entry[-1]))
-            entry[0] = max(entry[0], 0)
+                entry[0] = 0
 

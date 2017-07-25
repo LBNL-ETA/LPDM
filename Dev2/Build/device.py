@@ -25,26 +25,28 @@ of messages
 from Build import Priority_queue
 from Build import Event
 from Build import Message
+from Build import Message_formatter
 from abc import abstractmethod
+import logging
 
 
-class Device:
+class Device(object):
 
-    def __init__(self, device_id, supervisor, time=0):
-        self._device_id = device_id
+    def __init__(self, device_id, device_type, supervisor, time=0, read_delay=.001):
+        self._device_id = device_id  # unique device ID
+        self._device_type = device_type
         self._queue = Priority_queue.PriorityQueue()
-        self._connected_devices = {} # TODO: Decide whether this should just be a list.
+        self._connected_devices = {}
         self._supervisor = supervisor
-        self._time = time #this will be updated by the supervisor.
-
-    ##
-    # Adds an event to the device's event queue and reports that event to the supervisor
-    # @param event the event to add to the event queue
-    # @param time_stamp the time to associate with the event in the queue
-
-    def add_event(self, event, time_stamp):
-        self._queue.add(event, time_stamp)
-        self._supervisor.register_event(self.report_next_event_time())
+        self._time = time  # device's local time. This will be updated by the supervisor.
+        self._read_delay = read_delay  # time it takes a device to process a message it has received. Default 1 ms
+        self._time_last_power_in_change = time  # records the last time power levels into device changed
+        self._time_last_power_out_change = time  # records the last time power levels out of device changed
+        self._power_in = 0.0  # the power being consumed by the device (Watts, must be > 0)
+        self._power_out = 0.0  # the power being distributed by the device (Watts, must be > 0)
+        self._sum_power_out = 0.0  # Record the total energy produced by this device (wH)
+        self._sum_power_in = 0.0  # Record the total energy produced by this device (wH)
+        self._logger = logging.getLogger("lpdm")  # Setup logging
 
     ##
     # Getter for the Device's ID
@@ -53,13 +55,33 @@ class Device:
     def get_id(self):
         return self._device_id
 
+
+    ##
+    # Updates the local time of the device.
+    # This method is only called by the Supervisor once it is about to process a next initial event.
+    # @param new_time the time to update to
+    def update_time(self, new_time):
+        self._time = new_time
+
+    ##
+    # Adds an event to the device's event queue and reports that event to the supervisor
+    # Will replace any existing event with the new value. Hence, only one event type at a time
+    # @param event the event to add to the event queue
+    # @param time_stamp the time to associate with the event in the queue
+
+    def add_event(self, event, time_stamp):
+        self._queue.add(event, time_stamp)
+        self._supervisor.register_event(self.report_next_event_time())
+
     ##
     # Process all events in the device's queue with a given time_stamp.
     # This function should be called after advance_time has been called by the supervisor.
 
-    def process_events(self, run_time):
+    def process_events(self):
         event, time_stamp = self._queue.pop()
-        while time_stamp <= run_time:  # there shouldn't be any events less than run_time but just in case
+        if time_stamp < self._time:
+            raise ValueError("Time was incremented while there was an unprocessed event.")
+        while time_stamp == self._time:  # there shouldn't be any events less than run_time but just in case
             event.run_event()
             event, time_stamp = self._queue.pop()
         self._queue.add(event, time_stamp)  # add back the last removed item which wasn't processed.
@@ -73,10 +95,10 @@ class Device:
         return self._device_id, time_stamp
 
     ##
-    # Receiving a message is modelled as putting an event with the message 1 time step after the function call.
+    # Receiving a message is modelled as putting an event with the message a certain delay after the function call.
     #
     def receive_message(self, message):
-        self.add_event(Event(self.read_message, message), message.time + 1)
+        self.add_event(Event.Event(self.read_message, message), message.time + self._read_delay)
 
     ##
     # Reads a message and responds based on its message type
@@ -152,6 +174,87 @@ class Device:
     @abstractmethod
     def process_allocate_message(self, sender, allocate_amt):
         pass
+
+    ##
+    # Sets the power level into the device.
+    #
+    # @param power_in the new amount of power in to device (nonnegative).
+    def set_power_in(self, power_in):
+        if power_in >= 0:
+            self._power_in = power_in
+        else:
+            raise ValueError("Power Level In Must Be Non-Negative")
+
+    ##
+    # Sets the power level out of the device
+    #
+    # @param power_in the new amount of power in to device (nonnegative).
+    def set_power_out(self, power_out):
+        if power_out >= 0:
+            self._power_in = power_out
+        else:
+            raise ValueError("Power Level Out Must Be Non-Negative")
+
+    ##
+    # Keeps a running total of the energy output by the device
+    # Call this method whenever power_out_level changes.
+
+    def sum_power_out(self):
+        time_diff = self._time - self._time_last_power_out_change
+        if time_diff > 0 and self._power_out:
+            self._sum_power_out += self._power_out * (time_diff / 3600.0)  # Return in KwH
+        self._time_last_power_out_change = self._time
+
+    ##
+    # Keeps a running total of the energy consumed by the device
+    # Call this method whenever power_out_level changes.
+    def sum_power_in(self):
+        time_diff = self._time - self._time_last_power_in_change
+        if time_diff > 0 and self._power_in:
+            self._sum_power_in += self._power_in * (time_diff / 3600.0)  # Return in KwH
+        self._time_last_power_in_change = self._time
+
+    # ______________________________LOGGING FUNCTIONALITY___________________________ #
+
+    ##
+    # Builds a logging message from a message, tag, and value, which also includes time and device_id
+    # @param message the message to add to logger
+    # @param tag the tag to add to the logger
+    # @param value the value add to the logger
+
+    # @return a formatted string to include in the logger
+    def build_message(self, message="", tag="", value=None):
+        """Build the log message string"""
+        return Message_formatter.build_message(
+            time_seconds=self._time,
+            message=message,
+            tag=tag,
+            value=value,
+            device_id=self._device_id
+        )
+
+    ##
+    # Writes the calculations of total energy used in KwH to the database
+
+    def write_calcs(self):
+        self._logger.info(self.build_message(
+            message="sum kwh out",
+            tag="sum_kwh_out",
+            value=self._sum_power_out / 1000.0
+        ))
+        self._logger.info(self.build_message(
+            message="sum kwh in",
+            tag="sum_kwh_in",
+            value=self._sum_power_in / 1000.0
+        ))
+
+    ##
+    # Method to be called at end of simulation resetting power levels and calculating
+    def finish(self):
+        "Gets called at the end of the simulation"
+        self.set_power_in(0.0)
+        self.set_power_out(0.0)
+        self.write_calcs()
 
 
     # TODO: (1) Implement EUD-GC Messaging (2) Port in EUD subclasses, (3) TEST! (4) Add PV, UtilityMeter Messaging

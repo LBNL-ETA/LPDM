@@ -18,21 +18,23 @@ power sources (such as Utility and PV), storage (batteries), and other grid cont
 
 from Build import Device
 from Build import Message
+from Build import Supervisor
 #import price logic.
 
-class GridController(Device):
+
+class GridController(Device.Device):
 
     # TODO: Add some notion of individual transmit/receive capacity
     # TODO: Add some notion of maximum net_load (e.g all net_load must be covered by battery, so what is max outflow?)
 
     def __init__(self, device_id, supervisor, price_logic=None):
-        super().__init__(self, device_id, supervisor)
+        super().__init__(device_id, "Grid Controller", supervisor)
         self._allocated = {}  # dictionary of devices and the amount the GC has been allocated from those devices.
         self._neighbor_prices = {}  # dictionary of connected device_id's and their most recent price value
         self._loads = {}  # dictionary of connected device_id's and their current power flow with this GC.
         self._net_load = 0  # the net load the grid controller is sum(power_outflows) - sum(power_inflows).
         self._price_logic = price_logic  # how the grid controller calculates its prices
-        self._price = price_logic.initial_price()  # the initial price as set by the price logic
+        self._price = price_logic.initial_price() if price_logic else None # the initial price as set by the price logic
 
     def process_power_message(self, sender_id, new_power):
         prev_power = self._neighbor_prices[sender_id] if sender_id in self._neighbor_prices.keys() else 0
@@ -51,24 +53,24 @@ class GridController(Device):
     def process_allocate_message(self, sender, allocate_amt):
         pass  # TODO: Complicated
 
-    def send_power_message(self, target_id, time, power_amt):
+    def send_power_message(self, target_id, power_amt):
         #  for now, assume target_id means device itself.
-        power_message = Message(time, self._device_id, Message.MessageType.POWER, power_amt)
+        power_message = Message.Message(self._time, self._device_id, Message.MessageType.POWER, power_amt)
         target_id.receive_message(power_message)
 
-    def send_price_message(self, target_id, time, price):
+    def send_price_message(self, target_id, price):
         #  for now, assume target_id means device itself.
-        price_message = Message(time, self._device_id, Message.MessageType.PRICE, price)
+        price_message = Message.Message(self._time, self._device_id, Message.MessageType.PRICE, price)
         target_id.receive_message(price_message)
 
-    def send_request_message(self, target_id, time, request_amt):
+    def send_request_message(self, target_id, request_amt):
         #  for now, assume target_id means device itself.
-        request_message = Message(time, self._device_id, Message.MessageType.REQUEST, request_amt)
+        request_message = Message.Message(self._time, self._device_id, Message.MessageType.REQUEST, request_amt)
         target_id.receive_message(request_message)
 
-    def send_allocate_message(self, target_id, time, allocate_amt):
+    def send_allocate_message(self, target_id, allocate_amt):
         #  for now, assume target_id means device itself.
-        allocate_message = Message(time, self._device_id, Message.MessageType.ALLOCATE, allocate_amt)
+        allocate_message = Message.Message(self._time, self._device_id, Message.MessageType.ALLOCATE, allocate_amt)
         target_id.receive_message(allocate_message)
 
     def on_allocated(self, sender_id, allocate_amt):
@@ -88,7 +90,7 @@ class GridController(Device):
 
     ##
     # The GC is looking to provide or receive power.
-
+    """
     def seek_power(self, time, power_amt):
         gcs = filter(lambda d : isinstance(d, GridController), self._connected_devices)
         #assumes connected devices is device list.
@@ -96,3 +98,9 @@ class GridController(Device):
             for device in gcs:
                 ##SHOULD BE IN ORDER OF PRICE. MAYBE we should  separate into buy and provide power methods.
                 self.send_request_message(time, device, )
+    """
+
+sup = Supervisor.Supervisor()
+gc1 = GridController("gc1", sup)
+sup.register_device(gc1)
+print(gc1.get_id())

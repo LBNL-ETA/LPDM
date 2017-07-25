@@ -18,7 +18,7 @@
 from enum import Enum
 
 
-class Message:
+class Message(object):
 
     def __init__(self, time, sender_id, message_type, value):
         self.time = time  # timestamp of message in milliseconds

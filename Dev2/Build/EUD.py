@@ -21,10 +21,13 @@ from Build import Device
 from abc import abstractmethod
 
 
-class Eud(Device):
+class Eud(Device.Device):
+
+    # TODO: Consider the multiple inheritance here. Do we want this to be init?
+
     def __init__(self, device_id, supervisor):
         # call the super constructor
-        super().__init__(self, device_id, supervisor)
+        super().__init__(device_id, supervisor)
         self._allocated = {}  # Dictionary of devices and how much the device has been allocated by those devices.
 
     ##

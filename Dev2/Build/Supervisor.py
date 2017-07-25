@@ -10,7 +10,7 @@
 ########################################################################################################################
 
 """
-
+The supervisor's role is to
 
 """
 
@@ -21,7 +21,7 @@ class Supervisor:
 
     def __init__(self):
         self._event_queue = Priority_queue.PriorityQueue()  # queue items are device_ids prioritized by next event time
-        self._devices = {}
+        self._devices = {}  # dictionary of device_id's mapping to their associated devices.
 
     ##
     # Given a pointer to a device, adds a mapping from device_id to that device
@@ -33,8 +33,8 @@ class Supervisor:
 
     ##
     # Registers an event
-    # @param device the device to add to the supervisor device dictionary
-    ##
+    # @param device_id the device to add to the supervisor device dictionary
+    # @param time_of_next_event the time of the next event to add to event queue
 
     def register_event(self, device_id, time_of_next_event):
         self._event_queue.add(device_id, time_of_next_event)
@@ -46,7 +46,8 @@ class Supervisor:
         device_id, time_of_next_event = self._event_queue.pop()
         if device_id in self._devices.keys():
             device = self._devices[device_id]
-            device.process_events(time_of_next_event)  # process all events at device's local time
+            device.update_time(time_of_next_event) # set the device's local time to the time of next event
+            device.process_events()  # process all events at device's local time
             device_id, device_next_time = device.report_next_event_time()
             self.register_event(device_id, device_next_time)  # add the next earliest time for device
         else:

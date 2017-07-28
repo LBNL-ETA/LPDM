@@ -38,20 +38,9 @@
                 "price_dim_stop": 0.2,
                 "price_off": 0.3,
                 "schedule": [
-                    [0, "off"], [15, "on"], [23, "off"]
-                ]
-            },
-            {
-                "device_id": "fan_1",
-                "uuid": 3,
-                "device_type": "fan",
-                "grid_controller_id": "gc_1",
-                "max_power_output": 200.0,
-                "price_dim_start": 0.1,
-                "price_dim_stop": 0.2,
-                "price_off": 0.3,
-                "schedule": [
-                    [0, "off"], [6, "on"], [15, "off"]
+                    [15, "on"], [23, "off"],
+                    [2, "on"], [4, "off"],
+                    [4, "on", "day"]
                 ]
             }
         ]

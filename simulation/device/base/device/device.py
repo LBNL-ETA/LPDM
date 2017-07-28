@@ -182,7 +182,7 @@ class Device(NotificationReceiver, NotificationSender):
         # check if there's already one scheduled
         found = filter(lambda d: d.value in ['on', 'off'], self._events)
         if len(found) == 0:
-            sched_event = self._scheduler.get_next_scheduled_task(self._time if self._is_initialized else self._time - 1)
+            sched_event = self._scheduler.get_next_scheduled_task(self._time)
             self._events.append(sched_event)
             self._logger.debug(self.build_message(message="set next on/off event {}".format(sched_event)))
 
@@ -191,7 +191,7 @@ class Device(NotificationReceiver, NotificationSender):
         # check if there's already one scheduled
         found = filter(lambda d: d.name == "price", self._events)
         if len(found) == 0:
-            sched_event = self._price_scheduler.get_next_scheduled_task(self._time if self._is_initialized else self._time - 1)
+            sched_event = self._price_scheduler.get_next_scheduled_task(self._time)
             self._events.append(sched_event)
             self._logger.debug(self.build_message(
                 message="set next price event {}".format(sched_event),

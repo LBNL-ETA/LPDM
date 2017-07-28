@@ -43,13 +43,16 @@ class Scheduler(object):
 
     def get_next_scheduled_task(self, time_seconds):
         """Get the next scheduled task given a time in seconds"""
+        # make sure the time passed is a valid number
+        if not type(time_seconds) in (int, float):
+            raise TypeError("Scheduler: invalid type for time_seconds ({}), must be int or float".format(type(time_seconds)))
+        elif time_seconds < 0:
+            raise ValueError("Scheduler: negative time values ({}) are not allowed.".format(time_seconds))
+
         # calculate the current day number
         day = int(time_seconds / SECS_IN_DAY)
         # calculate the number of seconds that have elapsed since midnight
         secs = time_seconds % SECS_IN_DAY
-
-        # print "get_next_scheduled_task for time {}".format(time_seconds)
-        # print "\tday = {}, secs = {}".format(day, secs)
 
         # find the next scheduled event
         found_item = None

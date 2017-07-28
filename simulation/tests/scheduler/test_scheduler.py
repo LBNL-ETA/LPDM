@@ -56,7 +56,6 @@ class TestScheduler(unittest.TestCase):
             [0, "off"]
         ]
 
-    @unittest.skip("skip")
     def test_parse_schedule_list_hour(self):
         """test parsing the schedule with lists and time is in hours"""
         # build the scheduler using the schedule_list
@@ -77,7 +76,6 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(scheduler.scheduled_items[4].day, 1)
         self.assertEqual(scheduler.scheduled_items[5].day, 1)
 
-    @unittest.skip("skip")
     def test_parse_schedule_dict_hour(self):
         """test parsing the schedule dict and time is in hours"""
         # build the scheduler using the schedule_dict
@@ -94,7 +92,6 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(scheduler.scheduled_items[4].time, self.schedule_dict_hour[4]["time"] * 60 * 60)
         self.assertEqual(scheduler.scheduled_items[5].time, self.schedule_dict_hour[5]["time"] * 60 * 60)
 
-    @unittest.skip("skip")
     def test_parse_schedule_dict_minute(self):
         """test parsing the schedule with dict and time is minute"""
         # build the scheduler using the schedule_list
@@ -111,7 +108,6 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(scheduler.scheduled_items[4].time, self.schedule_dict_minute[4]["time"] * 60)
         self.assertEqual(scheduler.scheduled_items[5].time, self.schedule_dict_minute[5]["time"] * 60)
 
-    @unittest.skip("skip")
     def test_parse_schedule_dict_second(self):
         """test parsing the schedule with dicts and time is seconds"""
         # build the scheduler using the schedule_list
@@ -128,7 +124,6 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(scheduler.scheduled_items[4].time, self.schedule_dict_second[4]["time"])
         self.assertEqual(scheduler.scheduled_items[5].time, self.schedule_dict_second[5]["time"])
 
-    @unittest.skip("skip")
     def test_parse_schedule_dict_day(self):
         """Test parsing schedule with dicts and time unit is days"""
         scheduler = Scheduler(self.schedule_dict_day)
@@ -137,7 +132,6 @@ class TestScheduler(unittest.TestCase):
         # should have 6 items all seconds should be 0, only days should be set
         self.assertEqual(len(scheduler.scheduled_items), 6)
 
-    @unittest.skip("skip")
     def test_get_next_scheduled_task(self):
         """Test retrieving tasks"""
         # build the scheduler using the schedule_dict
@@ -166,7 +160,6 @@ class TestScheduler(unittest.TestCase):
         task = scheduler.get_next_scheduled_task(15 * 24 * 3600)
         self.assertEqual(task.ttie, 24 * 3600 * 15 + 3 * 3600)
 
-    @unittest.skip("skip")
     def test_schedule_always_on(self):
         """Make sure the first event starts at time 0"""
         scheduler = Scheduler(self.schedule_always_on)
@@ -187,26 +180,33 @@ class TestScheduler(unittest.TestCase):
             # [0, "off"]
         # day #1
         task = scheduler.get_next_scheduled_task(0)
-        print "task"
-        print task
         self.assertEqual(task.ttie, 0)
         # day #2
         task = scheduler.get_next_scheduled_task(60 * 60 * 23)
-        print "task"
-        print task
         self.assertEqual(task.ttie, 60 * 60 * 24)
         # day #3
         task = scheduler.get_next_scheduled_task(60 * 60 * 47)
-        print "task"
-        print task
         self.assertEqual(task.ttie, 60 * 60 * 24 * 2)
         # day #4
         task = scheduler.get_next_scheduled_task(60 * 60 * 71)
-        print "task"
-        print task
         self.assertEqual(task.ttie, 60 * 60 * 24 * 3)
         # should be something coming up at 8:00
         # self.assertEqual(task.ttie, 0)
+
+    def test_on_off(self):
+        """Test a simple on/off schedule. On at 15:00 and off at 23:00.  Should repeat every day."""
+        # setup the schedule
+        the_schedule = [[15, "on"], [23, "off"]]
+        # setup the scheduler and parse the schedule
+        scheduler = Scheduler(the_schedule)
+        scheduler.parse_schedule()
+
+        # get the first task at time 0, should be on at 15
+        task = scheduler.get_next_scheduled_task(0)
+        self.assertEqual(task.ttie, 60 * 60 * 15)
+        # the task at 16:00 should return off at 23:00
+        task = scheduler.get_next_scheduled_task(60 * 60 * 16)
+        self.assertEqual(task.ttie, 60 * 60 * 23)
 
 if __name__ == "__main__":
     unittest.main()

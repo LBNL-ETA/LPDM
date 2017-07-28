@@ -35,6 +35,8 @@ class Scheduler(object):
             if type(schedule_item) is list:
                 if len(schedule_item) in (2,3):
                     self.scheduled_items.append(ScheduleItem(self.last_day_time, *schedule_item))
+                else:
+                    raise Exception("Schedule item not valid length ({})".format(schedule_item))
             elif type(schedule_item) is dict:
                 self.scheduled_items.append(ScheduleItem(self.last_day_time, **schedule_item))
         self._logger.debug(message_formatter.build_message(message="built schedule {}".format(self.scheduled_items), device_id="scheduler"))

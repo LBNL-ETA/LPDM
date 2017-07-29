@@ -59,47 +59,49 @@ class Scheduler(object):
         for item in self.scheduled_items:
             if item.day == day and item.time > secs:
                 # if there's a scheduled item for the current day then use it
-                found_item = item
-                break
+                ttie = (day * SECS_IN_DAY) + item.time
+                return LpdmEvent(ttie, item.value, self.task_name)
             elif item.day == 0 and day == 0 and item.time == 0 and secs == 0:
                 # attempting to get the schedule at t=0
-                found_item = item
-                break
+                return LpdmEvent(item.time, item.value, self.task_name)
             elif item.day > day:
                 # if there isn't anything happening on the current day
                 # then get the next schedule item
-                found_item = item
-                break
+                ttie = (item.day * SECS_IN_DAY) + item.time
+                return LpdmEvent(ttie, item.value, self.task_name)
 
-        # print "found item"
-        # print found_item
         # if an event hasn't been found then we are past the last defined schedule
         # so repeat the last full day's schedule
-        if found_item is None:
-            # pull the next scheduled item from the last day's scheduled tasks
-            last_day = None
-            last_day_items = []
-            # repeat the last day in the schedule
-            # get the items from the last scheduled day
-            for item in self.scheduled_items[::-1]:
-                if last_day is None:
-                    last_day = item.day
-                if item.day != last_day:
-                    break
-                last_day_items.insert(0, item)
+        # pull the next scheduled item from the last day's scheduled tasks
+        last_day = None
+        last_day_items = []
+        # repeat the last day in the schedule
+        # gather the items from the last scheduled day
+        for item in self.scheduled_items[::-1]:
+            # iterate over the schedule items backwards
+            # keep adding the scheduled items to the last_day_items list until the day changes
+            if last_day is None:
+                last_day = item.day
+            if item.day != last_day:
+                break
+            # add to the beginning of the list
+            last_day_items.insert(0, item)
 
-            if secs < last_day_items[0].time or secs >= last_day_items[-1].time:
-                found_item = last_day_items[0]
+        if len(last_day_items):
+            if secs < last_day_items[0].time:
+                item = last_day_items[0]
+                ttie = (day * SECS_IN_DAY) + item.time
+                return LpdmEvent(ttie, item.value, self.task_name)
+            elif secs >= last_day_items[-1].time:
+                item = last_day_items[0]
+                ttie = ((day + 1) * SECS_IN_DAY) + item.time
+                return LpdmEvent(ttie, item.value, self.task_name)
             else:
                 for item in last_day_items:
                     found_item = item
                     if item.time > secs:
                         break
-
-        if not found_item is None:
-            ttie = (day * SECS_IN_DAY) + found_item.time
-            if ttie <= time_seconds and time_seconds > 0:
-                ttie += SECS_IN_DAY
-            return LpdmEvent(ttie, found_item.value, self.task_name)
-        else:
-            return None
+                if found_item:
+                    ttie = (day * SECS_IN_DAY) + found_item.time
+                    return LpdmEvent(ttie, found_item.value, self.task_name)
+        return None

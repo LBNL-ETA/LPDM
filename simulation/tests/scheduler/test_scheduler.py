@@ -208,6 +208,59 @@ class TestScheduler(unittest.TestCase):
         task = scheduler.get_next_scheduled_task(60 * 60 * 16)
         self.assertEqual(task.ttie, 60 * 60 * 23)
 
+    def test_day_on_off_on(self):
+        """Setup a schedule to turn on on day 1, off on day 4, and on again on day 6"""
+        # setup the schedule
+        the_schedule = [[0, "on", "day"], [3, "off", "day"], [5, "on", "day"]]
+        # setup the scheduler and parse the schedule
+        scheduler = Scheduler(the_schedule)
+        scheduler.parse_schedule()
+
+        # get the first task at time 0, should be on at 0
+        task = scheduler.get_next_scheduled_task(0)
+        self.assertEqual(task.ttie, 0)
+        self.assertEqual(task.value, "on")
+
+        # anytime after t=0 and t < day #4, the next scheduled task should occur on day #4
+        task = scheduler.get_next_scheduled_task(1)
+        self.assertEqual(task.ttie, 60 * 60 * 24 * 3)
+        self.assertEqual(task.value, "off")
+
+    def test_repeat_schedule(self):
+        """Test a repeating schedule """
+        # setup the schedule
+        the_schedule = [
+            [15, "on", "hour"],
+            [23, "off", "hour"]
+        ]
+        # setup the scheduler and parse the schedule
+        scheduler = Scheduler(the_schedule)
+        scheduler.parse_schedule()
+
+        task = scheduler.get_next_scheduled_task(0)
+        self.assertEqual(task.ttie, 60 * 60 * 15)
+        self.assertEqual(task.value, "on")
+
+        task = scheduler.get_next_scheduled_task(task.ttie)
+        self.assertEqual(task.ttie, 60 * 60 * 23)
+        self.assertEqual(task.value, "off")
+
+        task = scheduler.get_next_scheduled_task(task.ttie)
+        self.assertEqual(task.ttie, (60 * 60 * 24) + (60 * 60 * 15))
+        self.assertEqual(task.value, "on")
+
+        task = scheduler.get_next_scheduled_task(task.ttie)
+        self.assertEqual(task.ttie, (60 * 60 * 24) + (60 * 60 * 23))
+        self.assertEqual(task.value, "off")
+
+        task = scheduler.get_next_scheduled_task(task.ttie)
+        self.assertEqual(task.ttie, (60 * 60 * 24 * 2) + (60 * 60 * 15))
+        self.assertEqual(task.value, "on")
+
+        task = scheduler.get_next_scheduled_task(task.ttie)
+        self.assertEqual(task.ttie, (60 * 60 * 24 * 2) + (60 * 60 * 23))
+        self.assertEqual(task.value, "off")
+
 if __name__ == "__main__":
     unittest.main()
 

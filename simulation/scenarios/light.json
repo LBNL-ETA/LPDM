@@ -1,5 +1,5 @@
 {
-    "run_time_days": 7,
+    "run_time_days": 10,
     "log_to_postgres": 1,
     "console_log_level": 20,
     "file_log_level": 20,
@@ -20,7 +20,9 @@
                 "device_type": "utility_meter",
                 "capacity": 5000.0,
                 "schedule": [
-                    [0, "on"]
+                    [0, "on", "day"],
+                    [3, "off", "day"],
+                    [7, "on", "day"]
                 ],
                 "price_schedule": [
                     [0, 0.1]
@@ -38,9 +40,7 @@
                 "price_dim_stop": 0.2,
                 "price_off": 0.3,
                 "schedule": [
-                    [15, "on"], [23, "off"],
-                    [2, "on"], [4, "off"],
-                    [4, "on", "day"]
+                    [15, "on"], [23, "off"]
                 ]
             }
         ]

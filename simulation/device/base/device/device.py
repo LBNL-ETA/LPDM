@@ -212,7 +212,11 @@ class Device(NotificationReceiver, NotificationSender):
         found_event = None
         # search through the non-scheduled events first
         for event in self._events:
-            if (event.ttie > self._time or (found_event is None and not self._is_initialized)) and (found_event is None or (event.ttie < found_event.ttie)):
+            # if the simulation hasn't started, ie is_initialized == False, no need to check the current time
+            # only look for the next lowest time
+            if not self._is_initialized and (found_event is None or event.ttie < found_event.ttie):
+                found_event = event
+            elif self._is_initialized and event.ttie > self._time and (found_event is None or event.ttie < found_event):
                 found_event = event
 
         if not found_event is None and (self._ttie is None or self._ttie < found_event.ttie):

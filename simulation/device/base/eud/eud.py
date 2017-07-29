@@ -151,7 +151,7 @@ class Eud(Device):
                         self.turn_off()
                     remove_items.append(event)
                     self._current_event = event
-                elif event.value == "on" and not self._in_operation:
+                elif event.value == "on":
                     if not self._in_operation:
                         self.turn_on()
                     remove_items.append(event)

@@ -14,13 +14,13 @@ The supervisor's role is to
 
 """
 
-from Build import Priority_queue
+from Build.priority_queue import PriorityQueue
 
 
 class Supervisor:
 
     def __init__(self):
-        self._event_queue = Priority_queue.PriorityQueue()  # queue items are device_ids prioritized by next event time
+        self._event_queue = PriorityQueue()  # queue items are device_ids prioritized by next event time
         self._devices = {}  # dictionary of device_id's mapping to their associated devices.
 
     ##

@@ -17,25 +17,25 @@
     it is connected to.
 """
 
-from Build import Device
+from Build.device import Device
+from Build.message import Message
 from abc import abstractmethod
 
 
-class Eud(Device.Device):
+class Eud(Device):
 
-    # TODO: Consider the multiple inheritance here. Do we want this to be init?
-
-    def __init__(self, device_id, supervisor):
+    def __init__(self, device_id, device_type, supervisor, time=0, read_delay=.001):
         # call the super constructor
-        super().__init__(device_id, supervisor)
+        super().__init__(device_id, device_type, supervisor, time, read_delay)
         self._allocated = {}  # Dictionary of devices and how much the device has been allocated by those devices.
+                              # NOTE: All values must be negative (EUD's cannot send power as of now).
 
     ##
     # When the device receive See Device Superclass Description
 
     @abstractmethod 
     def process_power_message(self, sender_id, new_power):
-        pass # TODO: Or should this be EUD generalized?
+        pass  # TODO: Or should this be EUD generalized?
 
     @abstractmethod 
     def process_price_message(self, sender_id, new_price):
@@ -69,18 +69,36 @@ class Eud(Device.Device):
     # This method is called once the EUD receives a message from its controller that has allocated
     # to provide a certain amount of power (the EUD should never receive a negative allocate message
     # from the grid controller since it is only a power consumer, not provider).
+
+    # @param device_id the id of the device which has allocated the amount of power
+    # @param allocate_amt the amount of power allocated by that device. Must be positive. Device will store this as a
+    # NEGATIVE value to indicate that it is receiving power.
     #
-    def set_allocated(self, allocate):
-        self._allocated = allocate
+    def set_allocated(self, device_id, allocate_amt):
+        if allocate_amt < 0:
+            raise ValueError("EUD cannot allocate to provide power")
+        else:
+            self._allocated[device_id] = -allocate_amt  # negative because it is receiving.
+
+
 
     ##
-
-
+    # Method to be called once it needs to recalculate
     #
+
     @abstractmethod
     def modulate_consumption(self):
         pass
 
+    ##
+    # TODO: THIS
+    # call this function to send a new messg
 
-    def send_request(self, request):
-        pass
+    def send_request(self, target_id, request_amt):
+        if request_amt > 0:
+            raise ValueError("EUD cannot request to distribute power")
+        if target_id in self._connected_devices.keys():
+            target_device = self._connected_devices[target_id]
+        else:
+            raise ValueError("invalid target to request")
+        target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, ))

@@ -14,11 +14,9 @@
 
 """
 
-from Build import Device
-from Build import EUD
+from Build.device import Device
 
 
-class Light(EUD):
-
+class UtilityMeter(Device):
     pass
 

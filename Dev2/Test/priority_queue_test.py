@@ -1,12 +1,12 @@
 import unittest
-from Build import Priority_queue
+from Build import priority_queue
 
 
 class TestPriorityQueue(unittest.TestCase):
 
 
     def setUp(self):
-        self.pq = Priority_queue.PriorityQueue()
+        self.pq = priority_queue.PriorityQueue()
 
     def tearDown(self):
         self.pq.clear()

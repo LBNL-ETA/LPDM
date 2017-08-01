@@ -9,26 +9,18 @@
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 ########################################################################################################################
 
-"""Runs the simulation."""
-
-from Build import Supervisor
+"""
 
 
-def read_config_file():
-    pass
+"""
 
-## Reads in the simulation file. For each device,
-#
-def set_up_simulation():
-    # (1) Initialize all Devices
-    # (2) Set all Device's queues with their scheduled events
-    # (3)
-    pass
+from Build.device import Device
+from Build.eud import Eud
 
 
-def run_simulation():
-    supervisor = Supervisor.Supervisor()
-    while supervisor.has_next_event():
-        supervisor.occur_next_event()
-    print("Simulation has finished.")
+class Light(Eud):
+
+    def __init__(self, device_id, supervisor):
+        super().__init__(device_id, supervisor)
+
 

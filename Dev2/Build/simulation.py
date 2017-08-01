@@ -9,13 +9,26 @@
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 ########################################################################################################################
 
-"""
+"""Runs the simulation."""
+
+from Build.supervisor import Supervisor
 
 
-"""
-
-from Build import Device
-
-
-class UtilityMeter(Device):
+def read_config_file():
     pass
+
+## Reads in the simulation file. For each device,
+#
+def set_up_simulation():
+    # (1) Initialize all Devices
+    # (2) Set all Device's queues with their scheduled events
+    # (3)
+    pass
+
+
+def run_simulation():
+    supervisor = Supervisor()
+    while supervisor.has_next_event():
+        supervisor.occur_next_event()
+    print("Simulation has finished.")
+

@@ -11,21 +11,25 @@
 
 """
 
-A device maintains a priority queue of functions prioritized by time,
+A device is a semi-autonomous agent in the simulation, which utilizes messaging and power flows to interact
+with other devices. A device will be a real world appliance with 'smart' functionality: it maintains in
+computerized memory a history of its transactions, its connected devices, a local time, events which
+it will have to process at a set time, and other state variables.
+
+In its implementation, a device maintains a priority queue of functions prioritized by time,
 which it then processes when instructed that time has passed by the
 supervisor.
 
-Devices maintain common functionality of messaging and receiving messages.
+Devices also maintain common functionality of messaging and receiving messages.
 Any type of device must be able to receive any type of message, but the sending
-of messages
-
-
+of messages can be limited to the specific type of device (not all device types can send
+all message types).
 """
 
-from Build import Priority_queue
-from Build import Event
-from Build import Message
-from Build import Message_formatter
+from Build.priority_queue import PriorityQueue
+from Build.event import Event
+from Build.message import Message, MessageType
+from Build import message_formatter
 from abc import abstractmethod
 import logging
 
@@ -35,7 +39,7 @@ class Device(object):
     def __init__(self, device_id, device_type, supervisor, time=0, read_delay=.001):
         self._device_id = device_id  # unique device ID
         self._device_type = device_type
-        self._queue = Priority_queue.PriorityQueue()
+        self._queue = PriorityQueue()
         self._connected_devices = {}
         self._supervisor = supervisor
         self._time = time  # device's local time. This will be updated by the supervisor.
@@ -98,7 +102,7 @@ class Device(object):
     # Receiving a message is modelled as putting an event with the message a certain delay after the function call.
     #
     def receive_message(self, message):
-        self.add_event(Event.Event(self.read_message, message), message.time + self._read_delay)
+        self.add_event(Event(self.read_message, message), message.time + self._read_delay)
 
     ##
     # Reads a message and responds based on its message type
@@ -106,15 +110,15 @@ class Device(object):
     def read_message(self, message):
         #  takes it apart into its components
         # TODO: log the sender and read time
-        if message.message_type == Message.MessageType.REGISTER:
+        if message.message_type == MessageType.REGISTER:
             self.register_device(message.sender, message.value)
-        elif message.message_type == Message.MessageType.POWER:
+        elif message.message_type == MessageType.POWER:
             self.process_power_message(message.sender, message.value)
-        elif message.message_type == Message.MessageType.PRICE:
+        elif message.message_type == MessageType.PRICE:
             self.process_price_message(message.sender, message.value)
-        elif message.message_type == Message.MessageType.ALLOCATE:
+        elif message.message_type == MessageType.ALLOCATE:
             self.process_request_message(message.sender, message.value)
-        elif message.message_type == Message.MessageType.REQUEST:
+        elif message.message_type == MessageType.REQUEST:
             self.process_allocate_message(message.sender, message.value)
         else:
             raise NameError('Unverified Message Type')
@@ -178,7 +182,7 @@ class Device(object):
     ##
     # Sets the power level into the device.
     #
-    # @param power_in the new amount of power in to device (nonnegative).
+    # @param power_in the new amount of power in to device (non-negative).
     def set_power_in(self, power_in):
         if power_in >= 0:
             self._power_in = power_in
@@ -188,7 +192,7 @@ class Device(object):
     ##
     # Sets the power level out of the device
     #
-    # @param power_in the new amount of power in to device (nonnegative).
+    # @param power_in the new amount of power in to device (non-negative).
     def set_power_out(self, power_out):
         if power_out >= 0:
             self._power_in = power_out
@@ -225,7 +229,7 @@ class Device(object):
     # @return a formatted string to include in the logger
     def build_message(self, message="", tag="", value=None):
         """Build the log message string"""
-        return Message_formatter.build_message(
+        return message_formatter.build_message(
             time_seconds=self._time,
             message=message,
             tag=tag,
@@ -251,13 +255,22 @@ class Device(object):
     ##
     # Method to be called at end of simulation resetting power levels and calculating
     def finish(self):
-        "Gets called at the end of the simulation"
+        """"Gets called at the end of the simulation"""
         self.set_power_in(0.0)
         self.set_power_out(0.0)
         self.write_calcs()
 
-
-    # TODO: (1) Implement EUD-GC Messaging (2) Port in EUD subclasses, (3) TEST! (4) Add PV, UtilityMeter Messaging
-    # TODO: (5) Add Battery Functionality (6) MAJOR TESTING 
-
+    # TODO: (1) Finish EUD-GC messaging. Request allocate ordering. Ensuring price gradient?
+    # TODO: (1.5) Ensure all abstract methods are covered by EUD/GC.
+    # TODO: (2) Expand the battery class and port in all previous battery functionality
+    # TODO: (3) Test current setup.
+    # TODO: (4) Add documentation to the Bruce page, documentation to functions.
+    # TODO: (5) Add PV and UtilityMeter Messaging.
+    # TODO: (6) Finish considering what the GC algorithms are for balancing its load
+    # TODO: (7) MAJOR TESTS.
+    # TODO: (8) Port in EUD subclasses.
+    # TODO: (9) Make sure all logging functionality is established
+    # TODO: (10) Get to some form of backwards compatibility with the website.
+    # TODO: (11) Scenario Testing.
+    # TODO: (12) Begin considering all the details/intricacies of the operation and new functionality.
 

@@ -24,6 +24,13 @@ Devices also maintain common functionality of messaging and receiving messages.
 Any type of device must be able to receive any type of message, but the sending
 of messages can be limited to the specific type of device (not all device types can send
 all message types).
+
+Note on Device Identification (include in Documentation).
+
+All GC's Device ID's must begin with 'GC'.
+All EUD's Device ID's must begin with 'EUD'.
+All Utility Meter's Device ID"s must begin with UM.
+All PV Device ID's must begin with PV.
 """
 
 from Build.priority_queue import PriorityQueue
@@ -37,7 +44,7 @@ import logging
 class Device(object):
 
     def __init__(self, device_id, device_type, supervisor, time=0, read_delay=.001):
-        self._device_id = device_id  # unique device ID
+        self._device_id = device_id  # unique device ID. Must begin with type of device (see documentation).
         self._device_type = device_type
         self._queue = PriorityQueue()
         self._connected_devices = {}
@@ -85,7 +92,7 @@ class Device(object):
         event, time_stamp = self._queue.pop()
         if time_stamp < self._time:
             raise ValueError("Time was incremented while there was an unprocessed event.")
-        while time_stamp == self._time:  # there shouldn't be any events less than run_time but just in case
+        while time_stamp == self._time:  # process current events. There shouldn't be any events less than run_time
             event.run_event()
             event, time_stamp = self._queue.pop()
         self._queue.add(event, time_stamp)  # add back the last removed item which wasn't processed.
@@ -100,7 +107,7 @@ class Device(object):
 
     ##
     # Receiving a message is modelled as putting an event with the message a certain delay after the function call.
-    #
+    # @param message the message to receive.
     def receive_message(self, message):
         self.add_event(Event(self.read_message, message), message.time + self._read_delay)
 
@@ -108,10 +115,9 @@ class Device(object):
     # Reads a message and responds based on its message type
     # @param message a message to be read (must be a message object)
     def read_message(self, message):
-        #  takes it apart into its components
         # TODO: log the sender and read time
         if message.message_type == MessageType.REGISTER:
-            self.register_device(message.sender, message.value)
+            self.process_register_message(message.sender, message.value)
         elif message.message_type == MessageType.POWER:
             self.process_power_message(message.sender, message.value)
         elif message.message_type == MessageType.PRICE:
@@ -129,7 +135,7 @@ class Device(object):
     # @param value positive to register, 0 or negative to unregister
 
     def register_device(self, device, value):
-        # log this, BABY.
+        # TODO: log this, BABY.
         device_id = device.get_id()
         if value > 0:
             self._connected_devices[device_id] = device
@@ -140,11 +146,22 @@ class Device(object):
                 print("No Such Device To unregister")
 
     ##
+    # Method to be called when the device receives a register message, indicating a device
+    # is seeking to register or unregister
+    #
+    # @param sender the sender of the message informing of registering.
+    # @param value positive if registering negative if unregistering
+
+    def process_register_message(self, sender, value):
+        self.register_device(sender, value)
+
+    ##
     # Method to be called when the device receives a power message, indicating power flows
     # have changed between two devices (either receiving or providing).
     #
     # @param sender the sender of the message providing or receiving the new power
     # @param new_power the value of power flow, negative if receiving, positive if providing.
+
     @abstractmethod
     def process_power_message(self, sender, new_power):
         pass

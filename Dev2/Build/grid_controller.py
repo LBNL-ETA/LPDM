@@ -19,6 +19,7 @@ power sources (such as Utility and PV), storage (batteries), and other grid cont
 from Build.device import Device
 from Build.message import Message, MessageType
 from Build.supervisor import Supervisor
+from Build.priority_queue import PriorityQueue
 from Build.battery import Battery
 from Build.battery import BatteryChargingPreference as BCP
 #import price logic.
@@ -148,8 +149,16 @@ class GridController(Device):
 
 sup = Supervisor()
 gc1 = GridController("gc1", sup)
+gc2 = GridController("gc2", sup)
 sup.register_device(gc1)
-print(gc1.get_id())
+sup.register_device(gc2)
+
+gc2.engage([gc1])
+sup.occur_next_event()
+gc2.set_power_in(20)
+gc2.set_power_out(10)
+print(gc1._connected_devices["gc2"]._power_in)
+
 
 """
 

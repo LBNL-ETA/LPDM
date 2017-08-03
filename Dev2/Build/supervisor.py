@@ -21,10 +21,21 @@ class Supervisor:
 
     def __init__(self):
         self._event_queue = PriorityQueue()  # queue items are device_ids prioritized by next event time
-        self._devices = {}  # dictionary of device_id's mapping to their associated devices.
+        self._devices = {}  # dictionary of device_id's mapping to their associated devices. All devices in simulation.
 
     ##
-    # Given a pointer to a device, adds a mapping from device_id to that device
+    # Method to get the device pointer from a device_id, called by devices when they receive a message from a
+    # device that they do not recognize.
+
+    def get_device(self, device_id):
+        if device_id in self._devices.keys():
+            return self._devices[device_id]
+        else:
+            print('No such device')
+            return None
+
+    ##
+    # Given a device, adds a mapping from device_id to that device
     # @param device the device to add to the supervisor device dictionary
     ##
     def register_device(self, device):
@@ -41,15 +52,17 @@ class Supervisor:
 
     ##
     # Runs the next event in the supervisor's queue, advancing that device's local time to that point
+    # Assumes queue is not empty. Call has_next_event first.
 
     def occur_next_event(self):
         device_id, time_of_next_event = self._event_queue.pop()
         if device_id in self._devices.keys():
             device = self._devices[device_id]
-            device.update_time(time_of_next_event) # set the device's local time to the time of next event
+            device.update_time(time_of_next_event)  # set the device's local time to the time of next event
             device.process_events()  # process all events at device's local time
-            device_id, device_next_time = device.report_next_event_time()
-            self.register_event(device_id, device_next_time)  # add the next earliest time for device
+            if device.has_upcoming_event():
+                device_id, device_next_time = device.report_next_event_time()
+                self.register_event(device_id, device_next_time)  # add the next earliest time for device
         else:
             raise KeyError("Device has not been properly initialized!")
 

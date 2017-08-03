@@ -27,26 +27,37 @@ class Eud(Device):
     def __init__(self, device_id, device_type, supervisor, time=0, read_delay=.001):
         # call the super constructor
         super().__init__(device_id, device_type, supervisor, time, read_delay)
-        self._allocated = {}  # Dictionary of devices and how much the device has been allocated by those devices.
-                              # NOTE: All values must be negative (EUD's cannot send power as of now).
+        self._allocated_in = {}  # Dictionary of devices and how much the device has been allocated by those devices.
+                                 # NOTE: All values must be positive, indicating the amount received.
         self._price = 0  # EUD receives price messages from GC's only. For now, assume it will always update price.
+
+    ##
+    # Sets the quantity of power that this EUD has been allocated to consume by a specific device
+
+    # @param device_id the id of the device which has allocated the amount of power
+    # @param allocate_amt the amount of power allocated by that device. Must be positive.
+    #
+    def set_allocated(self, device_id, allocate_amt):
+        if allocate_amt < 0:
+            raise ValueError("EUD cannot allocate to provide power")
+        else:
+            self._allocated_in[device_id] = allocate_amt
 
     ##
     # When the device receive See Device Superclass Description
 
-    @abstractmethod 
     def process_power_message(self, sender_id, new_power):
-        pass  # TODO: Or should this be EUD generalized?
+        if new_power != self._power_in and new_power > 0:
+            self.set_power_in(new_power)
+            self.modulate_power()
 
-    @abstractmethod
     def process_request_message(self, sender_id, request_amt):
-        pass
+        # TODO: log this message.
+        print("EUD does not process request messages")
 
     def process_price_message(self, sender_id, new_price):
         self._price = new_price  # EUD always updates its value to the price it receives.
-
-    def process_allocate_message(self, sender_id, allocate_amt):
-        self.on_allocate(sender_id, allocate_amt)
+        self.modulate_power()
 
     ##
     # Method to be called once device has allocated to provide a given quantity of power to another device,
@@ -55,41 +66,11 @@ class Eud(Device):
     # @param sender_id the device who has allocated to provide the given quantity
     # @param allocated_amt the amount allocated to provide to another device (positive) or to receive from another
     # device (negative).
-    def on_allocate(self, sender_id, allocate_amt):
+
+    def process_allocate_message(self, sender_id, allocate_amt):
         self.set_allocated(sender_id, allocate_amt)
         self.modulate_power()
-        #TODO: self.on_power_change()?
 
-    """
-    Once a grid controller has sent an allocate message, the EUD stores the value allocated in a field. 
-    The EUD can consume any amount of power up to the allocate received quantity. 
-
-    """
-    ##
-    # This method is called once the EUD receives a message from its controller that has allocated
-    # to provide a certain amount of power (the EUD should never receive a negative allocate message
-    # from the grid controller since it is only a power consumer, not provider).
-
-    # @param device_id the id of the device which has allocated the amount of power
-    # @param allocate_amt the amount of power allocated by that device. Must be positive. Device will store this as a
-    # NEGATIVE value to indicate that it is receiving power.
-    #
-    def set_allocated(self, device_id, allocate_amt):
-        if allocate_amt < 0:
-            raise ValueError("EUD cannot allocate to provide power")
-        else:
-            self._allocated[device_id] = -allocate_amt  # negative because it is receiving.
-
-
-
-    ##
-    # Method to be called once it needs to recalculate its internal mem.
-    # To be called after price has changed or it has received a new allocate amount.
-    #
-
-    @abstractmethod
-    def modulate_power(self):
-        pass
 
     ##
     # TODO: THIS
@@ -103,3 +84,13 @@ class Eud(Device):
         else:
             raise ValueError("invalid target to request")
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
+
+    ##
+    # Method to be called once it needs to recalculate its internal power usage.
+    # To be called after price, power level, or allocate has changed.
+    # This function will change the EUD's power level, returning the difference of new_power - old_power
+    # Must be implemented by all EUD's.
+
+    @abstractmethod
+    def modulate_power(self):
+        pass

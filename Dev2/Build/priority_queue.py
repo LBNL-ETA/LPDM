@@ -43,7 +43,7 @@ class PriorityQueue:
 
     def pop(self):
         """Remove and return the lowest priority task and its priority. Raise KeyError if empty."""
-        while self._pq:
+        while self._pq:  # Must loop in case front of queue is 'removed'
             priority, count, task = heapq.heappop(self._pq)
             if task is not self.REMOVED:
                 del self._entry_finder[task]
@@ -52,7 +52,7 @@ class PriorityQueue:
 
     def peek(self):
         """Returns the lowest priority task and its priority without removing. Raise KeyError if empty."""
-        while self._pq:
+        while self._pq:  # Must loop in case front of queue is 'removed'
             priority, count, task = heapq.heappop(self._pq)
             if task is not self.REMOVED:
                 put_back = [priority, count, task]

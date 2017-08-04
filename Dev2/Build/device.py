@@ -37,11 +37,11 @@ from Build.priority_queue import PriorityQueue
 from Build.event import Event
 from Build.message import Message, MessageType
 from Build import message_formatter
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 import logging
 
 
-class Device(object):
+class Device(metaclass=ABCMeta):
 
     def __init__(self, device_id, device_type, supervisor, time=0, read_delay=1):
         self._device_id = device_id  # unique device ID. Must begin with type of device (see documentation).
@@ -172,18 +172,20 @@ class Device(object):
     # @param message a message to be read (must be a message object)
     def read_message(self, message):
         # TODO: log the sender and read time
-        if message.message_type == MessageType.REGISTER:
-            self.process_register_message(message.sender_id, message.value)
-        elif message.message_type == MessageType.POWER:
-            self.process_power_message(message.sender_id, message.value)
-        elif message.message_type == MessageType.PRICE:
-            self.process_price_message(message.sender_id, message.value)
-        elif message.message_type == MessageType.ALLOCATE:
-            self.process_request_message(message.sender_id, message.value)
-        elif message.message_type == MessageType.REQUEST:
-            self.process_allocate_message(message.sender_id, message.value)
-        else:
-            raise NameError('Unverified Message Type')
+        if message:
+            if message.message_type == MessageType.REGISTER:
+                self.process_register_message(message.sender_id, message.value)
+            elif message.sender_id in self._connected_devices.keys():  # Only read other messages from verified devices.
+                if message.message_type == MessageType.POWER:
+                    self.process_power_message(message.sender_id, message.value)
+                elif message.message_type == MessageType.PRICE:
+                    self.process_price_message(message.sender_id, message.value)
+                elif message.message_type == MessageType.ALLOCATE:
+                    self.process_request_message(message.sender_id, message.value)
+                elif message.message_type == MessageType.REQUEST:
+                    self.process_allocate_message(message.sender_id, message.value)
+                else:
+                    raise NameError('Unverified Message Type')
 
     ##
     # Registers or unregisters a given device from the device's connected device list
@@ -339,8 +341,6 @@ class Device(object):
 
     # _____________________________________________________________________ #
 
-    # TODO: Simplify priority queue peeking to just look at q[0]? Test this.
-    # TODO: (0) Make sure that Events can work with multiple arguments. (More event testing).
     # TODO: (0.5) Convert the date format to accept milliseconds in message parsing.
     # TODO: (1) Finish EUD-GC messaging. Request allocate ordering. Ensuring price gradient?
     # TODO: (1.5) Ensure all abstract methods are covered by EUD/GC.

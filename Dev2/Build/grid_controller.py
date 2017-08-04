@@ -109,7 +109,7 @@ class GridController(Device):
 
     def on_allocated(self, sender_id, allocate_amt):
         self._allocated[sender_id] = allocate_amt  # record how much that device sent in the
-        self.modulate_power() #TODO: THIS FUNTION IS UNBUILT
+        #self.modulate_power() #TODO: THIS FUNTION IS UNBUILT
 
 
     ##
@@ -128,7 +128,7 @@ class GridController(Device):
     # This is the crux function that determines how a GC balances its power flows.
     #
 
-    def modulate_power(self, priority):
+    def modulate_power(self):
         # TODO: Read flow below. This is CRUX FUNCTION, HIGHLY COMPLICATED. CONSIDER DIFFERENT OPTIONS.
         pass
 
@@ -147,7 +147,7 @@ class GridController(Device):
         gcs = filter(lambda d: 
     """
 
-"""
+    """
 
 PROPOSED ORDER OF PRIORITIES TO BALANCE POWER LEVELS SEEKING. 
 
@@ -184,3 +184,7 @@ PROPOSED ORDER OF PRIORITIES TO BALANCE POWER LEVELS SEEKING.
     def seek_to_buy_power(self, time, power_amt):
         gcs = filter(lambda d: 
     """
+
+    ###   ____TESTING FUNCTIONS____###
+    def add_power_in(self):
+        self.set_power_in(10)  # FOR TESTING

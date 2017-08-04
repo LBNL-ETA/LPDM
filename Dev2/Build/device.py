@@ -139,9 +139,12 @@ class Device(object):
             event, time_stamp = self._queue.pop()
             if time_stamp < self._time:
                 raise ValueError("Time was incremented while there was an unprocessed event.")
-            while time_stamp == self._time and self.has_upcoming_event():  # process current events.
+            while time_stamp == self._time:  # process current events.
                 event.run_event()
-                event, time_stamp = self._queue.pop()
+                if self.has_upcoming_event():
+                    event, time_stamp = self._queue.pop()
+                else:
+                    break
             self._queue.add(event, time_stamp)  # add back the last removed item which wasn't processed.
 
     def has_upcoming_event(self):
@@ -153,6 +156,8 @@ class Device(object):
     # @return a tuple of device's ID and the time of its next event
 
     def report_next_event_time(self):
+        if not self.has_upcoming_event():
+            raise ValueError("No upcoming events for this device")
         next_event, time_stamp = self._queue.peek()
         return self._device_id, time_stamp
 
@@ -160,11 +165,6 @@ class Device(object):
     # Receiving a message is modelled as putting an event with the message a certain delay after the function call.
     # @param message the message to receive.
     def receive_message(self, message):
-        # If you get a message from a device you do not recognize, add it to your connected devices.
-        if message.sender_id not in self._connected_devices.keys():
-            device = self._supervisor.get_device(message.sender_id)
-            if device is not None:
-                self._connected_devices[message.sender_id] = device
         self.add_event(Event(self.read_message, message), message.time + self._read_delay)
 
     ##
@@ -339,7 +339,8 @@ class Device(object):
 
     # _____________________________________________________________________ #
 
-    # TODO: (0) Make sure that 
+    # TODO: Simplify priority queue peeking to just look at q[0]? Test this.
+    # TODO: (0) Make sure that Events can work with multiple arguments. (More event testing).
     # TODO: (0.5) Convert the date format to accept milliseconds in message parsing.
     # TODO: (1) Finish EUD-GC messaging. Request allocate ordering. Ensuring price gradient?
     # TODO: (1.5) Ensure all abstract methods are covered by EUD/GC.

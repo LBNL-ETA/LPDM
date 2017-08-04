@@ -69,5 +69,7 @@ class Supervisor:
     ##
     # Determines that the simulation should continue to run because there are unprocessed events in its queue
     def has_next_event(self):
+        if self._event_queue.is_empty():
+            print('yes')
         return not self._event_queue.is_empty()
 

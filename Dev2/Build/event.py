@@ -17,7 +17,8 @@ The time of an event's execution is stored in the queue of devices"""
 class Event(object):
     ##
     # Initialize an event with a function and arguments for that function
-    # @param action a function with __no return type__ to be run in the event
+    # @param action a function to be run in the event (nothing returned).
+    # NOTE: When passed to a function, must be bound to the object it is associated with
     # @param args a tuple of arguments for the function
 
     def __init__(self, action, args):

@@ -43,13 +43,24 @@ import logging
 
 class Device(metaclass=ABCMeta):
 
-    def __init__(self, device_id, device_type, supervisor, time=0, read_delay=1):
+    ##
+    # Initialize a device.
+    #
+
+    def __init__(self, device_id, device_type, supervisor, connected_devices=None, time=0, read_delay=0):
+        # TODO: Read_delay actual value
+
+        if self._connected_devices is None:
+            self._connected_devices = {}
+        else:
+            device_ids = [device.get_id() for device in connected_devices]
+            self._connected_devices = dict(zip(device_ids, connected_devices))
+
         self._device_id = device_id  # unique device ID. Must begin with type of device (see documentation).
         self._device_type = device_type
         self._queue = PriorityQueue()
-        self._connected_devices = {}
         self._supervisor = supervisor
-        self._time = time  # device's local time. This will be updated by the supervisor.
+        self._time = time  # device's local time, in milliseconds. This will be updated by the supervisor.
         self._read_delay = read_delay  # time it takes a device to process a message it has received. Default 1 ms
         self._time_last_power_in_change = time  # records the last time power levels into device changed
         self._time_last_power_out_change = time  # records the last time power levels out of device changed
@@ -57,6 +68,7 @@ class Device(metaclass=ABCMeta):
         self._power_out = 0.0  # the power being distributed by the device (Watts, must be > 0)
         self._sum_power_out = 0.0  # Record the total energy produced by this device (wH)
         self._sum_power_in = 0.0  # Record the total energy produced by this device (wH)
+        self._hourly_prices = []  # hourly average price tracking, stores the last 24 average values
         self._logger = logging.getLogger("lpdm")  # Setup logging
 
         self._logger.info(
@@ -133,19 +145,16 @@ class Device(metaclass=ABCMeta):
     ##
     # Process all events in the device's queue with a given time_stamp.
     # This function should be called after advance_time has been called by the supervisor.
-
     def process_events(self):
         if self.has_upcoming_event():
-            event, time_stamp = self._queue.pop()
+            event, time_stamp = self._queue.peek()
             if time_stamp < self._time:
                 raise ValueError("Time was incremented while there was an unprocessed event.")
-            while time_stamp == self._time:  # process current events.
+            while time_stamp == self._time and self.has_upcoming_event():  # process current events.
+                self._queue.pop()
                 event.run_event()
                 if self.has_upcoming_event():
-                    event, time_stamp = self._queue.pop()
-                else:
-                    break
-            self._queue.add(event, time_stamp)  # add back the last removed item which wasn't processed.
+                    event, time_stamp = self._queue.peek()
 
     def has_upcoming_event(self):
         return not self._queue.is_empty()
@@ -248,15 +257,6 @@ class Device(metaclass=ABCMeta):
             self.send_register_message(device_id, 1)
 
     ##
-    # Method to be called when device is leaving the grid, and is seeking to unregister with other devices.
-
-    # @param device_list the connected list of devices to add to its connected device list and to inform it has
-    # registered. Must be devices themselves (not ID's).
-    def disengage(self):
-        for device_id in self._connected_devices.keys():
-            self.send_register_message(device_id, -1)
-
-    ##
     # Method to be called when the device receives a power message, indicating power flows
     # have changed between two devices (either receiving or providing).
     #
@@ -341,18 +341,20 @@ class Device(metaclass=ABCMeta):
 
     # _____________________________________________________________________ #
 
-    # TODO: (0.5) Convert the date format to accept milliseconds in message parsing.
+    # TODO: (0) GC load balance algorithm port in.
     # TODO: (1) Finish EUD-GC messaging. Request allocate ordering. Ensuring price gradient?
     # TODO: (1.5) Ensure all abstract methods are covered by EUD/GC.
     # TODO: (2) Expand the battery class and port in all previous battery functionality
     # TODO: (3) Test current setup.
-    # TODO: (4) Add documentation to the Bruce page, documentation to functions.
+    # TODO: (4) Add documentation to the Bruce page, documentation to functions throughout.
     # TODO: (5) Add PV and UtilityMeter Messaging.
     # TODO: (6) Finish considering what the GC algorithms are for balancing its load
-    # TODO: (7) MAJOR TESTS.
-    # TODO: (8) Port in EUD subclasses.
+    # TODO: (7) Port in EUD subclasses -> Light, PV, GC. 
+    # TODO: (7) MAJOR TESTS. Make sure you can run this from command line with same results.
     # TODO: (9) Make sure all logging functionality is established
     # TODO: (10) Get to some form of backwards compatibility with the website.
     # TODO: (11) Scenario Testing.
     # TODO: (12) Begin considering all the details/intricacies of the operation and new functionality.
+
+    # TODO: (12.5) Convert the date format to accept milliseconds in message parsing (NOT PRIORITY)
 

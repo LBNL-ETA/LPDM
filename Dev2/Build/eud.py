@@ -79,11 +79,24 @@ class Eud(Device):
     def send_request(self, target_id, request_amt):
         if request_amt > 0:
             raise ValueError("EUD cannot request to distribute power")
-        if target_id in self._connected_devices.keys() and target_id.startswith("GC"):  # cannot request from non-GC's
+        if target_id in self._connected_devices.keys() and target_id.startswith("gc"):  # cannot request from non-GC's
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("invalid target to request")
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
+
+    # This method is called when the EUD wishes to inform a grid controller that it is now consuming X watts of power.
+    #
+    #
+
+    def send_power_message(self, target_id, power_amt):
+        if power_amt > 0:
+            raise ValueError("EUD cannot distribute power")
+        if target_id in self._connected_devices.keys() and target_id.startswith("gc"):  # cannot request from non-GC's
+            target_device = self._connected_devices[target_id]
+        else:
+            raise ValueError("invalid target to request")
+        target_device.receive_message(Message(self._time, self._device_id, MessageType.Power, power_amt))
 
     ##
     # Method to be called once it needs to recalculate its internal power usage.

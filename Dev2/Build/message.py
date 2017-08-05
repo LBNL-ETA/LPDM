@@ -33,14 +33,15 @@ class Message(object):
 # a positive value with Register indicates that it would like to be registered under that device's connected devices,
 # while a negative value indicates that it is requesting to disconnect.
 #
-# A power message indicates that a device is seeking to obtain or sell a quantity of power to/from another device.
-# A positive value indicates that it wants to sell that amount, while a negative value indicates that it would like
-# to purchase that amount.
+# A power message informs another device that power is now flowing between them in a certain direction.
+# Once a device has received a power message with a certain quantity, that power flow must now exists between them --
+# there is no further negotiation.
 
 # A price message contains information about the sending device's local price.
 
-# A request message indicates that the device is negotiating to provide or consume a given amount of power with another
-# device
+# A request message indicates that a device is seeking to obtain or sell a quantity of power to/from another device.
+# A positive value indicates that it wants to sell that amount, while a negative value indicates that it would like
+# to purchase that amount.
 
 # An allocate message indicates that the device has sent back its response to a request message (the negotiated amount).
 

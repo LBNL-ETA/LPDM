@@ -32,6 +32,13 @@ class TestPriorityQueue(unittest.TestCase):
         self.assertEqual(self.pq.peek(), ("one", 1))
         self.assertFalse(self.pq.is_empty())
 
+    def test_empty_after_remove(self):
+        self.pq.add("one", 1)
+        self.pq.add("two", 2)
+        while not self.pq.is_empty():
+            self.pq.pop()
+        self.assertTrue(self.pq.is_empty())
+
     def test_shift(self):
         self.pq.add("three", 3)
         self.pq.add("one", 1)

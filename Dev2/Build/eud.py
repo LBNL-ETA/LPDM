@@ -24,9 +24,8 @@ from abc import abstractmethod
 
 class Eud(Device):
 
-    def __init__(self, device_id, device_type, supervisor, time=0, read_delay=.001):
-        # call the super constructor
-        super().__init__(device_id, device_type, supervisor, time, read_delay)
+    def __init__(self, device_id, device_type, supervisor, connected_devices=None, time=0, read_delay=0):
+        super().__init__(device_id, device_type, supervisor, connected_devices, time, read_delay)
         self._allocated_in = {}  # Dictionary of devices and how much the device has been allocated by those devices.
                                  # NOTE: All values must be positive, indicating the amount received.
         self._price = 0  # EUD receives price messages from GC's only. For now, assume it will always update price.
@@ -52,8 +51,7 @@ class Eud(Device):
             self.modulate_power()
 
     def process_request_message(self, sender_id, request_amt):
-        # TODO: log this message.
-        print("EUD does not process request messages")
+        self._logger.info(self.build_message("Ignored request message from {}".format(sender_id)))
 
     def process_price_message(self, sender_id, new_price):
         self._price = new_price  # EUD always updates its value to the price it receives.

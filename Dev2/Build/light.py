@@ -20,7 +20,7 @@ from Build.eud import Eud
 
 class Light(Eud):
 
-    def __init__(self, device_id, supervisor):
-        super().__init__(device_id, supervisor)
+    def __init__(self, device_id, supervisor, gc=None):
+        super().__init__(device_id, "light", supervisor, connected_devices=gc)
 
 

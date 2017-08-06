@@ -46,11 +46,13 @@ class Device(metaclass=ABCMeta):
     ##
     # Initialize a device.
     #
+    # @param connected_devices a list of connected devices for this Device.
+    #
 
     def __init__(self, device_id, device_type, supervisor, connected_devices=None, time=0, read_delay=0):
         # TODO: Read_delay actual value
 
-        if self._connected_devices is None:
+        if connected_devices is None:
             self._connected_devices = {}
         else:
             device_ids = [device.get_id() for device in connected_devices]
@@ -74,6 +76,8 @@ class Device(metaclass=ABCMeta):
         self._logger.info(
             self.build_message("initialized device #{} - {}".format(self._device_id, self._device_type))
         )
+
+    # ____________________________ Maintenance Functions _________________________________#
 
     ##
     # Getter for the Device's ID
@@ -111,9 +115,17 @@ class Device(metaclass=ABCMeta):
         else:
             raise ValueError("Power Level Out Must Be Non-Negative")
 
+    #TODO: THIS
+    def calculate_power_in_out_from_change(prev_power, new_power):
+        if prev_power > 0 and new_power > prev_power:
+            power_out += new_power - prev_power
+        elif prev_power > 0  and new_power < prev_power:
+            power_out = max(0, power_out - (new_power - prev_power))
+        #continue. This shouldn't be that hard.
+
     ##
     # Keeps a running total of the energy output by the device
-    # Call this method whenever power_out_level changes.
+    # Call this method whenever power_out level changes.
 
     def sum_power_out(self):
         time_diff = self._time - self._time_last_power_out_change
@@ -123,13 +135,15 @@ class Device(metaclass=ABCMeta):
 
     ##
     # Keeps a running total of the energy consumed by the device
-    # Call this method whenever power_out_level changes.
+    # Call this method whenever power_in level changes.
 
     def sum_power_in(self):
         time_diff = self._time - self._time_last_power_in_change
         if time_diff > 0 and self._power_in:
             self._sum_power_in += self._power_in * (time_diff / 3600.0)  # Return in KwH
         self._time_last_power_in_change = self._time
+
+    #  ______________________________________Internal State Functions _________________________________#
 
     ##
     # Adds an event to the device's event queue and reports that event to the supervisor
@@ -171,6 +185,14 @@ class Device(metaclass=ABCMeta):
         return self._device_id, time_stamp
 
     ##
+    # Takes a schedule and adds it to the device's list.
+    # TODO: Consider adding some argument to parse this into multiple day repetition, etc. How to make repetition?
+    #
+    def setup_schedule(self, schedule):
+        pass
+    #  ______________________________________ Messaging/Interactive Functions_________________________________#
+
+    ##
     # Receiving a message is modelled as putting an event with the message a certain delay after the function call.
     # @param message the message to receive.
     def receive_message(self, message):
@@ -180,8 +202,10 @@ class Device(metaclass=ABCMeta):
     # Reads a message and responds based on its message type
     # @param message a message to be read (must be a message object)
     def read_message(self, message):
-        # TODO: log the sender and read time
         if message:
+            self._logger.info(self.build_message(
+                "Read message of type {} received from {} with value {}".format(message.message_type,
+                                                                                message.sender_id, message.value)))
             if message.message_type == MessageType.REGISTER:
                 self.process_register_message(message.sender_id, message.value)
             elif message.sender_id in self._connected_devices.keys():  # Only read other messages from verified devices.
@@ -215,7 +239,7 @@ class Device(metaclass=ABCMeta):
                     self.build_message("Unregistered device: {}".format(device_id))
                 )
             else:
-                print("No Such Device To unregister")
+                print("No Such Device To Unregister")
 
     ##
     # Method to be called when the device receives a register message, indicating a device
@@ -264,7 +288,7 @@ class Device(metaclass=ABCMeta):
     # @param new_power the value of power flow, negative if sender is receiving, positive if sender is providing.
 
     @abstractmethod
-    def process_power_message(self, sender, new_power):
+    def process_power_message(self, sender_id, new_power):
         pass
 
     ##
@@ -274,7 +298,7 @@ class Device(metaclass=ABCMeta):
     #  TODO: This occurs when a device sends a price message. Internal price modulation vs external? Different funcs?
 
     @abstractmethod
-    def process_price_message(self, sender, new_price):
+    def process_price_message(self, sender_id, new_price):
         pass
 
     ##
@@ -283,7 +307,7 @@ class Device(metaclass=ABCMeta):
     #
     # @param request_amt the amount the device is requesting to provide (positive) or to receive (negative). s
     @abstractmethod
-    def process_request_message(self, sender, request_amt):
+    def process_request_message(self, sender_id, request_amt):
         pass
 
     ##
@@ -294,7 +318,7 @@ class Device(metaclass=ABCMeta):
     # @param allocated_amt the amount allocated to provide to another device (positive) or to receive from another
     # device (negative). s
     @abstractmethod
-    def process_allocate_message(self, sender, allocate_amt):
+    def process_allocate_message(self, sender_id, allocate_amt):
         pass
 
     # ______________________________LOGGING FUNCTIONALITY___________________________ #
@@ -347,14 +371,15 @@ class Device(metaclass=ABCMeta):
     # TODO: (2) Expand the battery class and port in all previous battery functionality
     # TODO: (3) Test current setup.
     # TODO: (4) Add documentation to the Bruce page, documentation to functions throughout.
-    # TODO: (5) Add PV and UtilityMeter Messaging.
+    # TODO: (5) Add PV. Finish UtilityMeter Messaging.
     # TODO: (6) Finish considering what the GC algorithms are for balancing its load
-    # TODO: (7) Port in EUD subclasses -> Light, PV, GC. 
+    # TODO: (7) Port in EUD subclasses -> Light, PV, GC.
     # TODO: (7) MAJOR TESTS. Make sure you can run this from command line with same results.
     # TODO: (9) Make sure all logging functionality is established
     # TODO: (10) Get to some form of backwards compatibility with the website.
     # TODO: (11) Scenario Testing.
     # TODO: (12) Begin considering all the details/intricacies of the operation and new functionality.
+    # TODO: (13) Add logging to all the device functionality
 
     # TODO: (12.5) Convert the date format to accept milliseconds in message parsing (NOT PRIORITY)
 

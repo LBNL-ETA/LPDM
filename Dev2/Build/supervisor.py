@@ -67,7 +67,8 @@ class Supervisor:
             raise KeyError("Device has not been properly initialized!")
 
     ##
-    # Determines that the simulation should continue to run because there are unprocessed events in its queue
+    # Determines if the simulation is unfinished and there are unprocessed events in its queue
+
     def has_next_event(self):
         return not self._event_queue.is_empty()
 

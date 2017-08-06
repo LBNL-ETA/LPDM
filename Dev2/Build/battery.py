@@ -31,41 +31,68 @@ class Battery(object):
 
     ##
     # Initializes the battery to be contained within a grid controller.
-    # @param capacity the maximum charge capacity of the battery. Default 5000 kwh
-    # @param starting_soc the state of charge on initialization. Default 50%
+    # @param capacity the maximum charge capacity of the battery. Default 5000 kwh. Must be a double.
+    # @param starting_soc the state of charge on initialization. Default 100%
 
-    def __init__(self, capacity=5000.0, starting_soc=.5):
+    def __init__(self, price_logic, capacity=5000.0, starting_soc=1.0, max_charge_rate=10000, max_discharge_rate=10000):
 
         self._charging_preference = self.BatteryChargingPreference.NEUTRAL
-        self._preferred_charge_rate = 0 # battery's ideal charge rate, in kW
-        self._preferred_discharge_rate = 0 # battery's ideal discharge rate, in kW
-        self._max_charge_rate = 0 # largest possible charge rate, in kW
-        self._max_discharge_rate = 0 # largest possible discharge rate, in kW
-        self._capacity = capacity # energy capacity of the battery, in kWh.
-        self._current_charge = starting_soc * capacity
-        self._load = 0  # the load on the battery, either in or out, in kW.
+        self._price_logic = price_logic
+        self._min_soc = 0.2
+        self._max_soc = 0.8
+        self._preferred_charge_rate = max_charge_rate # temporary. Will be distinct value.
+        self._preferred_discharge_rate = max_discharge_rate # temporary. Will be distinct value.
+        self._max_charge_rate = max_charge_rate  # largest possible charge rate, in kW
+        self._max_discharge_rate = max_discharge_rate  # largest possible discharge rate, in kW
+        self._capacity = capacity  # energy capacity of the battery, in kWh.
+        self._current_soc = starting_soc
+        self._load = 0  # the load on the battery, either charge (negative) or discharge (positive), in kW.
         self._sum_charge_kwh = 0.0
+        self._price = 0  # informed of price by the grid controller on their communications.
         self._time = 0
+        self._last_charge_update_time = 0
 
-    def on_power_change(self):
-        pass
+    ##
+    # Adds a new load to the battery
+    # @param new_load the load to add
+    def get_load(self):
+        return self._load
+
+    ##
+    # Adds a new load to the battery
+    # @param new_load the load to add
+    # @param return whatever value was added to the battery's load.
+    def add_load(self, new_load):
+        old_load = self._load
+        self._load += new_load
+        self._load = min(self._load, self._max_discharge_rate) # don't add a load to exceed charge rate.
+        self._load = max(self._load, -self._max_charge_rate)
+        return self._load - old_load
+
+    ##
+    # Updates the state of charge and power levels of the battery reflecting current time.
+    # @param the time to update the battery's local time to
+    # @param price the local price of the associated grid controller
+    #
+    def update_state(self, time, price):
+        self._time = time
+        self._price = price
+        time_diff = time - self._last_charge_update_time
+        if time_diff > 0:
+            prev_soc = self._current_soc
+            power_change = -self._load * (time_diff / 3600.0)
+            new_charge_amt = (prev_soc * self._capacity) + power_change
+            self._current_soc = new_charge_amt / self._capacity
+
+            self.recalc_charge_preference()
+            if power_change > 0:
+                self._sum_charge_kwh += power_change
+
+    def recalc_charge_preference(self):
+        self._charging_preference = self._price_logic.preference(self._current_soc, self._price)
+        #TODO: What actually is this function? Logic?
 
 
 
-    def sum_charge_kwh(self):
-        """Keep a running total of the energy used for charging"""
-        time_diff = self._time - self._last_charge_update_time
-        power_level = self.charge_rate() if self._is_charging else 0
-        if time_diff > 0 and power_level > 0:
-            self._sum_charge_kwh += power_level * (time_diff / 3600.0)
-        self._last_charge_update_time = self._time
-
-    def write_calcs(self):
-        PowerSource.write_calcs(self)
-        self._logger.info(self.build_message(
-            message="sum charge_kwh",
-            tag="sum_charge_kwh",
-            value=self._sum_charge_kwh / 1000.0
-        ))
 
 

@@ -20,13 +20,15 @@ from Build.message import Message, MessageType
 
 class UtilityMeter(Device):
 
-    def __init(self):
+    def __init__(self, device_id, supervisor, connected_devices=None):
+        identifier = "utm{}".format(device_id)
+        super().__init__(identifier, "Utility Meter", supervisor, connected_devices)
         self._loads = {} #dictionary of devices and loads to those devices.
 
     def process_power_message(self, sender_id, new_power):
         prev_power = self._loads[sender_id] if sender_id in self._loads.keys() else 0
         self._loads[sender_id] = new_power
-        if
+        # TODO: if...
 
     ##
     # Method to be called when device receives a price message

@@ -115,13 +115,24 @@ class Device(metaclass=ABCMeta):
         else:
             raise ValueError("Power Level Out Must Be Non-Negative")
 
-    #TODO: THIS
-    def calculate_power_in_out_from_change(prev_power, new_power):
-        if prev_power > 0 and new_power > prev_power:
-            power_out += new_power - prev_power
-        elif prev_power > 0  and new_power < prev_power:
-            power_out = max(0, power_out - (new_power - prev_power))
-        #continue. This shouldn't be that hard.
+    ##
+    # After a device has changed the quantity of power it is sending, modify the power in and power out statistics
+    # Call after a load has been changed on this device.
+    # @param prev_power the previous power flow from this device's perspective
+    # @param new_power the new power flow from this device's perspective
+    def recalc_sum_power(self, prev_power, new_power):
+        if prev_power > 0:
+            if new_power > 0:
+                self._power_out += (new_power - prev_power)
+            elif new_power < 0:
+                self._power_out -= prev_power
+                self._power_in += new_power
+        elif prev_power < 0:
+            if new_power > 0:
+                self._power_in -= prev_power
+                self._power_out += new_power
+            elif new_power < 0:
+                self._power_in -= (new_power - prev_power)
 
     ##
     # Keeps a running total of the energy output by the device
@@ -365,7 +376,7 @@ class Device(metaclass=ABCMeta):
 
     # _____________________________________________________________________ #
 
-    # TODO: (0) GC load balance algorithm port in.
+    # TODO: (0) TEST GC LOAD BALANCE ALGORITHM. 
     # TODO: (1) Finish EUD-GC messaging. Request allocate ordering. Ensuring price gradient?
     # TODO: (1.5) Ensure all abstract methods are covered by EUD/GC.
     # TODO: (2) Expand the battery class and port in all previous battery functionality

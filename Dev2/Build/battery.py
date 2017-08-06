@@ -63,9 +63,13 @@ class Battery(object):
     # @param new_load the load to add
     # @param return whatever value was added to the battery's load.
     def add_load(self, new_load):
+        if self._current_soc <= self._min_soc and new_load > 0:
+            return 0  # don't discharge when too low
+        if self._current_soc >= self._max_soc and new_load < 0:
+            return 0  # don't charge when too high
         old_load = self._load
         self._load += new_load
-        self._load = min(self._load, self._max_discharge_rate) # don't add a load to exceed charge rate.
+        self._load = min(self._load, self._max_discharge_rate)  # don't add a load to exceed charge rate.
         self._load = max(self._load, -self._max_charge_rate)
         return self._load - old_load
 

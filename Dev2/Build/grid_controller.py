@@ -28,13 +28,15 @@ class GridController(Device):
 
     # TODO: Add some notion of individual transmit/receive capacity
     # TODO: Add some notion of maximum net_load (e.g all net_load must be covered by battery, so what is max outflow?)
-    
+    # @param device_id a unique id for this device. "gc" will be prefix for the provided id. Caller is responsible
+    # for ensuring the uniqueness of this id.
     # @param price logic contains an initial price as well as a differential threshold for when a GC should broadcast
     # changes in price
     # @param battery battery connected with this Grid Controller (could represent multiple batteries).
 
     def __init__(self, device_id, supervisor, connected_devices=None, price_logic=None, battery=None):
-        super().__init__(device_id, "Grid Controller", supervisor, connected_devices)
+        identifier = "gc{}".format(device_id)
+        super().__init__(identifier, "Grid Controller", supervisor, connected_devices)
         self._allocated = {}  # dictionary of devices and the amount the GC has allocated/been allocated by/to them.
         self._requested = {}  # dictionary of devices and requests that this device has received from them.
         self._loads = {}  # dictionary of devices and the current load of the GC with that device.
@@ -81,6 +83,21 @@ class GridController(Device):
         # send power message of 0 to all devices. send allocate message of 0 to all devices.
         # send request messages of 0 to all of them. Then, unregister with all.
 
+    ##
+    #
+    # Adds a load with a registered device. Call this before sending a power message so to
+    # calculate the load you can actually handle considering capacities.
+    # @param sender_id the device to associate the load with
+    # @param new_load the value of the new load
+    # TODO: Add a maximum channel capacity for this load.
+    # @return the amount added to the load
+    def add_load(self, sender_id, new_load):
+        prev_load = self._loads[sender_id] if sender_id in self._loads.keys() else 0
+        self._loads[sender_id] = new_load
+        return new_load - prev_load
+
+
+
     #  ______________________________________ Messaging/Interactive Functions_________________________________#
 
     ##
@@ -89,31 +106,8 @@ class GridController(Device):
 
     def process_power_message(self, sender_id, new_power):
         prev_power = self._loads[sender_id] if sender_id in self._loads.keys() else 0
-        power_change = -new_power - prev_power
-        if power_change and self._battery:
-            self._battery.update_state(self._time, self._price)  # make sure we have updated state of charge
-            remaining = power_change - self._battery.add_load(power_change)  # what wasn't able to be added
-
-            if remaining < 0:  # receiving more than can handle.
-                if self._connected_devices.keys().contains("utility_meter"): #TODO: "startswith".
-                # unilaterally stop accepting power from a source.
-
-            elif remaining > 0:
-                # see if you can go to utility grid to get more.
-                # otherwise, go
-                pass
-
-
-            # Need to update self.last_power_in_time, self.last_power_out_time.
-
-            #TODO: THIS!!!! RIGHT HERE, RIGHT NOW.
-            #TODO: Refactor this into the Balance Supply Demand Function.
-
-        # instead, subdivide this into power in and power out.
-        self._net_load += (-new_power - prev_power) # TODO: Change this with modified in out function.
-
-        self._loads[sender_id] = -new_power  # must add negative of sent_power from this GC's reference frame
-        # Check maximum transmit/receive capacity levels, and check maximum net_load concepts. Respond accordingly.
+        self.balance_power(prev_power, -new_power) # process new power from perspective of receiver.
+        pass
 
 
     ##
@@ -201,12 +195,56 @@ class GridController(Device):
             self.broadcast_new_price(self._price)
 
     ##
-    # Instantaneous supply-demand balance function, so that the net_load at any given time remains at zero.
+    # Instantaneous supply-demand balance function, so that the net load at any given time remains at zero.
+    # @param source_id the sender of the new amount of power.
+    # @param prev_power the previous power output of this device
+    # @param new_power the new power output of this device
     #
 
-    def balance_power(self):
-        pass
-        # TODO: This is implemented in Mike's code. Check it out and see if portable.
+    def balance_power(self, source_id, prev_source_power, new_source_power):
+        power_change = new_source_power - prev_source_power
+        if power_change == 0:
+            return
+        if self._battery:
+            self._battery.update_state(self._time, self._price)  # make sure we have updated state of charge
+            remaining = power_change - self._battery.add_load(power_change)  # what wasn't able to be added
+
+            if remaining != 0:
+                utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
+                if len(utility_meters):
+                    utm = utility_meters[0]
+                    prev_utm_power = self._loads[utm] if utm in self._loads.keys() else 0
+                    # (below) The additional amount you are able to provide to the utm (neg. if receive).
+                    extra_power_to_utm = self.add_load(utm, prev_utm_power - remaining)
+                    self.send_power_message(utm, self._loads[utm])
+                    self.recalc_sum_power(self._loads[utm], prev_utm_power)
+
+                    remaining += extra_power_to_utm  # what we were able to get from utm.
+                    self.add_load(source_id, new_source_power - remaining) # only send what we were able to get from utm
+                    self.send_power_message(source_id, self._loads[source_id])
+
+                else:  # not able to provide for the demanded power. Send a new power message saying what you can give.
+                    self.add_load(source_id, new_source_power - remaining)
+                    self.send_power_message(source_id, self._loads[source_id])
+
+            else:
+                self.add_load(source_id, new_source_power)
+                self.send_power_message(source_id, self._loads[source_id])
+                # NOTE: won't consider case where GC capacity is limiting and battery is not, not realistic.
+        else:
+            # TODO: CHECK IF THIS IS CORRECT
+                utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
+                if len(utility_meters):
+                    utm = utility_meters[0]
+                    prev_utm_power = self._loads[utm] if utm in self._loads.keys() else 0
+                    # (below) The additional amount you are able to provide to the utm (neg. if receive).
+                    self.add_load(utm, prev_utm_power - new_source_power)
+                    self.send_power_message(utm, self._loads[utm])
+                    self.recalc_sum_power(self._loads[utm], prev_utm_power)
+                    self.add_load(source_id, new_source_power)  # only send what we were able to get from utm
+                    self.send_power_message(source_id, self._loads[source_id])
+
+        self.recalc_sum_power(self._loads[source_id], prev_source_power)
 
     ##
     # This is the crux function that determines how a GC balances its power flows at a given time.

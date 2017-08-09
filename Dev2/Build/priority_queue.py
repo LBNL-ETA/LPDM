@@ -36,6 +36,8 @@ class PriorityQueue:
         self._entry_finder[task] = entry
         heapq.heappush(self._pq, entry)
 
+    # TODO: Add an update_by_attribute method. Looks for task with an attribute and updates it.
+
     def remove(self, task):
         """Mark an existing task as REMOVED.  Raise KeyError if not found."""
         entry = self._entry_finder.pop(task)

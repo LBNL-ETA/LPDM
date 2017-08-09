@@ -72,3 +72,9 @@ class Supervisor:
     def has_next_event(self):
         return not self._event_queue.is_empty()
 
+    ##
+    # Called at the end of the simulation. Finishes each device and instructs them to write their energy
+    # consumption calculations
+    def finish_all(self):
+        for device in self._devices.values():
+            device.finish()

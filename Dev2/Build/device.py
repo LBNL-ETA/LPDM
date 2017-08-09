@@ -195,12 +195,6 @@ class Device(metaclass=ABCMeta):
         next_event, time_stamp = self._queue.peek()
         return self._device_id, time_stamp
 
-    ##
-    # Takes a schedule and adds it to the device's list.
-    # TODO: Consider adding some argument to parse this into multiple day repetition, etc. How to make repetition?
-    #
-    def setup_schedule(self, schedule):
-        pass
     #  ______________________________________ Messaging/Interactive Functions_________________________________#
 
     ##
@@ -332,7 +326,24 @@ class Device(metaclass=ABCMeta):
     def process_allocate_message(self, sender_id, allocate_amt):
         pass
 
-    # ______________________________LOGGING FUNCTIONALITY___________________________ #
+    # ______________________________LOGGING/SCHEDULING FUNCTIONALITY___________________________ #
+
+
+
+    ##
+    #
+    # @param a list of scheduled events to add to the device's queue, in the format of list of tuples of
+    # function_name(string), time (hours).
+    #
+
+    def setup_schedule(self, scheduled_events):
+        for operation_name, time in scheduled_events:
+            if hasattr(self, operation_name):
+                func = getattr(self, operation_name) # throws an attribute error if incorrectly named event in schedule.
+            else:
+                raise ValueError("Called the scheduler with an incorrectly named function")
+            event = Event(func)  # for now no arguments. In future, list should be of tuples (time, func, args).
+            self.add_event(event, time)
 
     ##
     # Builds a logging message from a message, tag, and value, which also includes time and device_id
@@ -376,21 +387,19 @@ class Device(metaclass=ABCMeta):
 
     # _____________________________________________________________________ #
 
-    # TODO: (0) TEST GC LOAD BALANCE ALGORITHM. 
-    # TODO: (1) Finish EUD-GC messaging. Request allocate ordering. Ensuring price gradient?
-    # TODO: (1.5) Ensure all abstract methods are covered by EUD/GC.
-    # TODO: (2) Expand the battery class and port in all previous battery functionality
-    # TODO: (3) Test current setup.
+    # TODO: (0) Finish being able to read in JSON scenario file. Run a scenario test based on this input.
+    # TODO: (0.5) Complete the light class. Import in all previous functionality. Turn on, turn off, modulate power.
+    # TODO: (0.7) Test the Utility Class, to Ensure proper functionality. (Do last 3 together in scenario test)
+    # TODO: (0.9) Ensure that the sum_power functions are working correctly.
+    # TODO: (0.95) Ensure logging functions are working correctly.
     # TODO: (4) Add documentation to the Bruce page, documentation to functions throughout.
-    # TODO: (5) Add PV. Finish UtilityMeter Messaging.
-    # TODO: (6) Finish considering what the GC algorithms are for balancing its load
-    # TODO: (7) Port in EUD subclasses -> Light, PV, GC.
-    # TODO: (7) MAJOR TESTS. Make sure you can run this from command line with same results.
-    # TODO: (9) Make sure all logging functionality is established
+    # TODO: (5) Add PV.
+    # TODO: (6) Finish considering GC load balance algorithm
+    # TODO: (7) Port in Air Conditioner.
+    # TODO: (7) MAJOR TESTS. Make sure you can run larger simulation from command line same results.
+    # TODO: (9) More reconsideration of GC load balance algorithm.
     # TODO: (10) Get to some form of backwards compatibility with the website.
-    # TODO: (11) Scenario Testing.
-    # TODO: (12) Begin considering all the details/intricacies of the operation and new functionality.
-    # TODO: (13) Add logging to all the device functionality
-
+    # TODO: (11) Redesign the website, Input JSONS.
+    # TODO: (12) Start to modify price logic. Price Forecasts?
     # TODO: (12.5) Convert the date format to accept milliseconds in message parsing (NOT PRIORITY)
 

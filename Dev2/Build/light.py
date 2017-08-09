@@ -20,7 +20,32 @@ from Build.eud import Eud
 
 class Light(Eud):
 
-    def __init__(self, device_id, supervisor, gc=None):
-        super().__init__(device_id, "light", supervisor, connected_devices=gc)
+    def __init__(self, device_id, supervisor):
+        super().__init__(device_id, "light", supervisor)
+        self._power_level_max = 100.0  # percent of power level to operate when
+        self._power_level_low = 20.0  # percent of power level to operate when price is high.
+        self._power_level = 0.0
+
+    ## Will need to implement modulate power, which will involve sending a request message once
+    # it determines that it needs a set amount of power.
+
+    def turn_on(self):
+        pass
+
+    def turn_off(self):
+        pass
+
+    ##
+    # Calculate the desired power level based on the price. Port this in.
+    #
+    def calculate_desired_power_level(self):
+        pass
+
+    def modulate_power(self):
+        power_seek = self.calculate_desired_power_level()
+        self.send_power_message("gc1", power_seek) # for now. Soon it will be allocate request.
+
+
+
 
 

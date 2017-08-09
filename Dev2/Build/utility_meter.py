@@ -23,18 +23,17 @@ class UtilityMeter(Device):
     def __init__(self, device_id, supervisor, connected_devices=None):
         identifier = "utm{}".format(device_id)
         super().__init__(identifier, "Utility Meter", supervisor, connected_devices)
-        self._loads = {} #dictionary of devices and loads to those devices.
+        self._loads = {}  # dictionary of devices and loads to those devices.
 
     def process_power_message(self, sender_id, new_power):
         prev_power = self._loads[sender_id] if sender_id in self._loads.keys() else 0
         self._loads[sender_id] = new_power
-        # TODO: if...
+        self.recalc_sum_power(prev_power, new_power)
 
     ##
     # Method to be called when device receives a price message
     #
     # @param new_price the new price value
-    #  TODO: This occurs when a device sends a price message. Internal price modulation vs external? Different funcs?
 
     def process_price_message(self, sender_id, new_price):
         pass  # utility does not change its price based on prices of devices.
@@ -43,24 +42,17 @@ class UtilityMeter(Device):
     # Method to be called when device receives a request message, indicating a device is requesting to
     # either provide or receive the requested quantity of power.
     #
-    # @param request_amt the amount the device is requesting to provide (positive) or to receive (negative). s
+    # @param request_amt the amount the sender is requesting to provide (positive) or to receive (negative).
     def process_request_message(self, sender_id, request_amt):
         """provide the sender exactly what they request"""
-        self._loads[sender_id] = request_amt
-        self.send_power_message(sender_id, request_amt)
-
-
+        self._loads[sender_id] = -request_amt
+        self.send_power_message(sender_id, -request_amt)
 
     ##
-    # Method to be called once device has allocated to provide a given quantity of power to another device,
-    # or to receive a given quantity of power. Allocation should only ever occur after request messages
-    # have been passed and processed.
-    #
-    # @param allocated_amt the amount allocated to provide to another device (positive) or to receive from another
-    # device (negative). s
+    # Utility Meter does not process allocate messages.
+
     def process_allocate_message(self, sender_id, allocate_amt):
         pass
-
 
     def send_power_message(self, target_id, power_amt):
         if target_id in self._connected_devices.keys():

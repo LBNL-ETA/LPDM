@@ -35,14 +35,12 @@ class GridController(Device):
     # @param battery battery connected with this Grid Controller (could represent multiple batteries).
 
     def __init__(self, device_id, supervisor, connected_devices=None, price_logic=None, battery=None):
-        identifier = "gc{}".format(device_id)
-        super().__init__(identifier, "Grid Controller", supervisor, connected_devices)
+        # identifier = "gc{}".format(device_id)
+        super().__init__(device_id, "Grid Controller", supervisor, connected_devices)
         self._allocated = {}  # dictionary of devices and the amount the GC has allocated/been allocated by/to them.
         self._requested = {}  # dictionary of devices and requests that this device has received from them.
         self._loads = {}  # dictionary of devices and the current load of the GC with that device.
         self._neighbor_prices = {}  # dictionary of connected device_id's and their most recent price value
-        self._net_load = 0  # the net load the grid controller is sum(power_outflows) - sum(power_inflows).
-        self._desired_net_load = 0  # the flow the GC is seeking, equal to BCP * Battery.preferred_(dis)charge_rate
         self._price_logic = price_logic  # how the grid controller calculates its prices
         self._price = price_logic.initial_price() if price_logic else None # the initial price as set by the price logic
         self._battery = battery  # the battery contained within this grid controller. Communicates every minute.
@@ -85,13 +83,13 @@ class GridController(Device):
 
     ##
     #
-    # Adds a load with a registered device. Call this before sending a power message so to
+    # Changes a load with a registered device. Call this before sending a power message so as to
     # calculate the load you can actually handle considering capacities.
     # @param sender_id the device to associate the load with
     # @param new_load the value of the new load
     # TODO: Add a maximum channel capacity for this load.
     # @return the amount added to the load
-    def add_load(self, sender_id, new_load):
+    def change_load(self, sender_id, new_load):
         prev_load = self._loads[sender_id] if sender_id in self._loads.keys() else 0
         self._loads[sender_id] = new_load
         return new_load - prev_load
@@ -106,9 +104,8 @@ class GridController(Device):
 
     def process_power_message(self, sender_id, new_power):
         prev_power = self._loads[sender_id] if sender_id in self._loads.keys() else 0
-        self.balance_power(prev_power, -new_power) # process new power from perspective of receiver.
+        self.balance_power(sender_id, prev_power, -new_power) # process new power from perspective of receiver.
         pass
-
 
     ##
     # Processes a price message received from another device, modifying its own price based on its price logic.
@@ -171,7 +168,7 @@ class GridController(Device):
 
     def on_allocated(self, sender_id, allocate_amt):
         self._allocated[sender_id] = allocate_amt  # so we can consume or provide up to that amount of power anytime
-        # self.modulate_power() # TODO: THIS FUNTION IS UNBUILT
+        # self.modulate_power() # TODO: THIS FUNCTION IS UNBUILT
 
     #  ______________________________________Internal State Functions _________________________________#
 
@@ -197,8 +194,10 @@ class GridController(Device):
     ##
     # Instantaneous supply-demand balance function, so that the net load at any given time remains at zero.
     # @param source_id the sender of the new amount of power.
-    # @param prev_power the previous power output of this device
-    # @param new_power the new power output of this device
+    # @param prev_source_power the previous amount of power this device was sending to the source of the power change
+    # @param new_source_power the new amount of power this device is being instructed
+    # to send to the source of the power change
+    # NOTE: The GC may not provide the entire requested amount of power if it is not able.
     #
 
     def balance_power(self, source_id, prev_source_power, new_source_power):
@@ -208,41 +207,41 @@ class GridController(Device):
         if self._battery:
             self._battery.update_state(self._time, self._price)  # make sure we have updated state of charge
             remaining = power_change - self._battery.add_load(power_change)  # what wasn't able to be added
+        else:
+            remaining = power_change
 
-            if remaining != 0:
-                utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
-                if len(utility_meters):
-                    utm = utility_meters[0]
-                    prev_utm_power = self._loads[utm] if utm in self._loads.keys() else 0
-                    # (below) The additional amount you are able to provide to the utm (neg. if receive).
-                    extra_power_to_utm = self.add_load(utm, prev_utm_power - remaining)
-                    self.send_power_message(utm, self._loads[utm])
-                    self.recalc_sum_power(self._loads[utm], prev_utm_power)
+        if remaining:
+            utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
+            if len(utility_meters):
+                utm = utility_meters[0]
+                prev_utm_power = self._loads[utm] if utm in self._loads.keys() else 0
+                # (below) The additional amount you are able to provide to the utility meter (neg. if receive).
+                extra_power_to_utm = self.change_load(utm, prev_utm_power - remaining)
+                self.send_power_message(utm, self._loads[utm])
+                self.recalc_sum_power(self._loads[utm], prev_utm_power)
 
-                    remaining += extra_power_to_utm  # what we were able to get from utm.
-                    self.add_load(source_id, new_source_power - remaining) # only send what we were able to get from utm
-                    self.send_power_message(source_id, self._loads[source_id])
+                remaining += extra_power_to_utm  # what we were able to get from utility meter.
+                self.change_load(source_id, new_source_power - remaining)  # send what we were able to get from utm
+                self.send_power_message(source_id, self._loads[source_id])
 
-                else:  # not able to provide for the demanded power. Send a new power message saying what you can give.
-                    self.add_load(source_id, new_source_power - remaining)
-                    self.send_power_message(source_id, self._loads[source_id])
+                # add the unprovided power as a request to address later.
+                unprovided = new_source_power - self._loads[source_id]
+                if unprovided:
+                    self._requested[source_id] = unprovided
 
             else:
-                self.add_load(source_id, new_source_power)
+                # no utm, not able to provide for the demanded power. Send a new power message saying what you can give.
+                self.change_load(source_id, new_source_power - remaining)
                 self.send_power_message(source_id, self._loads[source_id])
-                # NOTE: won't consider case where GC capacity is limiting and battery is not, not realistic.
+
+                # add the unprovided power as a request.
+                unprovided = new_source_power - self._loads[source_id]
+                if unprovided:
+                    self._requested[source_id] = unprovided
         else:
-            # TODO: CHECK IF THIS IS CORRECT
-                utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
-                if len(utility_meters):
-                    utm = utility_meters[0]
-                    prev_utm_power = self._loads[utm] if utm in self._loads.keys() else 0
-                    # (below) The additional amount you are able to provide to the utm (neg. if receive).
-                    self.add_load(utm, prev_utm_power - new_source_power)
-                    self.send_power_message(utm, self._loads[utm])
-                    self.recalc_sum_power(self._loads[utm], prev_utm_power)
-                    self.add_load(source_id, new_source_power)  # only send what we were able to get from utm
-                    self.send_power_message(source_id, self._loads[source_id])
+            self.change_load(source_id, new_source_power)
+            self.send_power_message(source_id, self._loads[source_id])
+            # NOTE: won't consider case where GC wire capacity is limiting and battery discharge is not, not realistic.
 
         self.recalc_sum_power(self._loads[source_id], prev_source_power)
 
@@ -256,90 +255,32 @@ class GridController(Device):
         # Equivalent to the recalc argument in the Grid Controller Operation and Messaging model.
         # Returns a value, available, which is after load balancing how much it has available to distribute.
         # If it still is in need of power, this quantity will be 0.
+
+        net_load = self._power_out - self._power_in
+        # modulate_target is the net load that the GC is seeking to charge or discharge the battery.
+        if self._battery.get_charging_preference() == 1:
+            modulate_target = self._battery.get_preferred_discharge_rate()
+        elif self._battery.get_charging_preference() == -1:
+            modulate_target = -self._battery.get_preferred_charge_rate()
+        else:
+            modulate_target = 0
+
+        power_adjust = modulate_target - net_load  # how much to seek to adjust net load.
+
+        if power_adjust < 0:
+            self.seek_to_obtain_power(power_adjust)
+        if power_adjust > 0:
+            self.seek_to_distribute_power(power_adjust)
+
+    def seek_to_obtain_power(self, power_adjust):
+        # Step 1: Increase all allocate values up to their maximum.
+
+        for device_id in self._allocated.keys():
+            pass
+        pass 
+
+    def seek_to_distribute_power(self, power_adjust):
         pass
-        """
-        def optimize_load(self):
-     
-        # update the status of rechargeable itmes
-        # self.update_rechargeable_items()
-        # get the current total load on the system
-        # add the new load
-        remaining_load = self._load
-        starting_load = remaining_load
-
-        utility_meter = self.get_utility_meter()
-        um_orig = utility_meter.load
-        utility_meter.set_load(0.0)
-        # get the power sources and sort by the cheapest price
-        power_sources = [p for p in self.power_sources if p.is_configured() and not p.DeviceClass is UtilityMeter]
-        power_sources = sorted(power_sources, lambda a, b: cmp(a.price, b.price))
-        for ps in power_sources:
-            # how much power is available for the device
-            if remaining_load <= 1e-7:
-                # no more load left to distribute, remove power
-                ps.set_load(0.0)
-            else:
-                # there is power available for this device and power left to distribute
-                if not ps.is_available():
-                    if ps.load > 0:
-                        # self.logger.debug(self.build_message(message="set load for {} to {}".format(ps, 0)))
-                        ps.set_load(0.0)
-                else:
-                    if remaining_load > ps.capacity:
-                        # can't put all the remaining load on this power source
-                        # set to 100% and try the next power source
-                        if ps.load != ps.capacity:
-                            # self.logger.debug(self.build_message(message="set load for {} to {}".format(ps, ps.capacity)))
-                            ps.set_load(ps.capacity)
-                        remaining_load -= ps.capacity
-                    else:
-                        # this power source can handle all of the remaining load
-                        # self.logger.debug(self.build_message(message="set load for {} to {}".format(ps, remaining_load)))
-                        if ps.load != remaining_load:
-                            ps.set_load(remaining_load)
-                        remaining_load = 0
-
-        diff = abs(starting_load - self._load)
-        if remaining_load > 1e-7:
-            # more load remaining, try to put it on the utility meter
-            if utility_meter and utility_meter.capacity > 0:
-                # there is a utility meter present
-                utility_meter.set_load(remaining_load)
-                remaining_load = 0
-
-        if remaining_load > 1e-7:
-            self.logger.debug(
-                self.build_message(
-                    message="Unable to handle the load, total_load = {}, total_capacity = {}".format(self.total_load(), self.total_capacity()))
-            )
-            return False
-        elif diff > 1e-7:
-            # compare the difference being below some threshold instead of equality
-            self.logger.debug(self.build_message(message="starting load = {}, total_load = {}, equal ? {}".format(starting_load, self._load, abs(starting_load - self._load))))
-            raise Exception("starting/ending loads do not match {} != {}".format(starting_load, self._load))
-        # self.logger.debug(self.build_message(message="optimize_load (load = {}, cap = P{})".format(self._load, self._capacity), tag="optimize_after"))
-        self.logger.debug(
-            self.build_message(
-                message="total load",
-                tag="total_load",
-                value=self.total_load()
-            )
-        )
-        # self.logger.debug(
-            # self.build_message(
-                # message="total capacity",
-                # tag="total_capacity",
-                # value=self.total_capacity()
-            # )
-        # )
-        return True
-        
-        
-        
-        
-        
-        
-        """
 
 
     ##

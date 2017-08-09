@@ -32,16 +32,16 @@ class Battery(object):
     ##
     # Initializes the battery to be contained within a grid controller.
     # @param capacity the maximum charge capacity of the battery. Default 5000 kwh. Must be a double.
-    # @param starting_soc the state of charge on initialization. Default 100%
+    # @param starting_soc the state of charge on initialization. Default 50%
 
-    def __init__(self, price_logic, capacity=5000.0, starting_soc=1.0, max_charge_rate=10000, max_discharge_rate=10000):
+    def __init__(self, price_logic, capacity=2000.0, starting_soc=0.5, max_charge_rate=100, max_discharge_rate=100):
 
         self._charging_preference = self.BatteryChargingPreference.NEUTRAL
         self._price_logic = price_logic
         self._min_soc = 0.2
         self._max_soc = 0.8
         self._preferred_charge_rate = max_charge_rate # temporary. Will be distinct value.
-        self._preferred_discharge_rate = max_discharge_rate # temporary. Will be distinct value.
+        self._preferred_discharge_rate = max_discharge_rate  # temporary. Will be distinct value.
         self._max_charge_rate = max_charge_rate  # largest possible charge rate, in kW
         self._max_discharge_rate = max_discharge_rate  # largest possible discharge rate, in kW
         self._capacity = capacity  # energy capacity of the battery, in kWh.
@@ -59,16 +59,28 @@ class Battery(object):
         return self._load
 
     ##
-    # Adds a new load to the battery
-    # @param new_load the load to add
+    # Returns the value of the current batteries charging preference (1 if discharge, 0 if neutral, -1 if discharge)
+    def get_charging_preference(self):
+        return self._charging_preference.value
+
+    def get_preferred_charge_rate(self):
+        return self._preferred_charge_rate
+
+    def get_preferred_discharge_rate(self):
+        return self._preferred_discharge_rate
+
+    ##
+    # Adds a new load to the battery. Call update state first to ensure valid state of charge
+    # and to update charging calculations before modification.
+    # @param extra_load the load to add
     # @param return whatever value was added to the battery's load.
-    def add_load(self, new_load):
-        if self._current_soc <= self._min_soc and new_load > 0:
+    def add_load(self, extra_load):
+        if self._current_soc <= self._min_soc and extra_load > 0:
             return 0  # don't discharge when too low
-        if self._current_soc >= self._max_soc and new_load < 0:
+        if self._current_soc >= self._max_soc and extra_load < 0:
             return 0  # don't charge when too high
         old_load = self._load
-        self._load += new_load
+        self._load += extra_load
         self._load = min(self._load, self._max_discharge_rate)  # don't add a load to exceed charge rate.
         self._load = max(self._load, -self._max_charge_rate)
         return self._load - old_load
@@ -89,7 +101,7 @@ class Battery(object):
             self._current_soc = new_charge_amt / self._capacity
 
             self.recalc_charge_preference()
-            if power_change > 0:
+            if power_change > 0:  # only record amount charged by battery
                 self._sum_charge_kwh += power_change
 
     def recalc_charge_preference(self):

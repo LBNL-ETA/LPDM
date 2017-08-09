@@ -30,6 +30,16 @@ class Eud(Device):
                                  # NOTE: All values must be positive, indicating the amount received.
         self._price = 0  # EUD receives price messages from GC's only. For now, assume it will always update price.
 
+
+    # ___________________ BASIC FUNCTIONS ________________
+
+    def turn_on(self):
+        # Set power in to 0. power_out to 0.
+        pass
+
+    def turn_off(self):
+        pass
+
     ##
     # Sets the quantity of power that this EUD has been allocated to consume by a specific device
 
@@ -42,6 +52,7 @@ class Eud(Device):
         else:
             self._allocated_in[device_id] = allocate_amt
 
+    # ____________________MESSAGING FUNCTIONS___________________________
     ##
     # When the device receive See Device Superclass Description
 

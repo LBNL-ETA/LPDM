@@ -49,7 +49,7 @@ class Device(metaclass=ABCMeta):
     # @param connected_devices a list of connected devices for this Device.
     #
 
-    def __init__(self, device_id, device_type, supervisor, connected_devices=None, time=0, read_delay=0):
+    def __init__(self, device_id, device_type, supervisor, time=0, read_delay=0, connected_devices=None):
         # TODO: Read_delay actual value
 
         if connected_devices is None:
@@ -71,11 +71,14 @@ class Device(metaclass=ABCMeta):
         self._sum_power_out = 0.0  # Record the total energy produced by this device (wH)
         self._sum_power_in = 0.0  # Record the total energy produced by this device (wH)
         self._hourly_prices = []  # hourly average price tracking, stores the last 24 average values
+
+
         self._logger = logging.getLogger("lpdm")  # Setup logging
 
         self._logger.info(
             self.build_message("initialized device #{} - {}".format(self._device_id, self._device_type))
         )
+
 
     # ____________________________ Maintenance Functions _________________________________#
 
@@ -133,6 +136,8 @@ class Device(metaclass=ABCMeta):
                 self._power_out += new_power
             elif new_power < 0:
                 self._power_in -= (new_power - prev_power)
+        self.sum_power_in()
+        self.sum_power_out()
 
     ##
     # Keeps a running total of the energy output by the device
@@ -328,22 +333,21 @@ class Device(metaclass=ABCMeta):
 
     # ______________________________LOGGING/SCHEDULING FUNCTIONALITY___________________________ #
 
-
-
     ##
     #
-    # @param a list of scheduled events to add to the device's queue, in the format of list of tuples of
-    # function_name(string), time (hours).
+    # @param a list of scheduled events to add to the device's queue, in the format of list of list of
+    # time(hours), operation_name
     #
-
     def setup_schedule(self, scheduled_events):
-        for operation_name, time in scheduled_events:
+        for task in scheduled_events:
+            hour, operation_name = tuple(task)
             if hasattr(self, operation_name):
-                func = getattr(self, operation_name) # throws an attribute error if incorrectly named event in schedule.
+                func = getattr(self, operation_name)
             else:
                 raise ValueError("Called the scheduler with an incorrectly named function")
             event = Event(func)  # for now no arguments. In future, list should be of tuples (time, func, args).
-            self.add_event(event, time)
+            time_sec = hour * 3600
+            self.add_event(event, time_sec)
 
     ##
     # Builds a logging message from a message, tag, and value, which also includes time and device_id
@@ -379,8 +383,12 @@ class Device(metaclass=ABCMeta):
 
     ##
     # Method to be called at end of simulation resetting power levels and calculating
-    def finish(self):
+    # end_time the time to update the local time to
+    def finish(self, end_time):
         """"Gets called at the end of the simulation"""
+        self._time = end_time
+        self.sum_power_in()
+        self.sum_power_out()
         self.set_power_in(0.0)
         self.set_power_out(0.0)
         self.write_calcs()
@@ -394,6 +402,8 @@ class Device(metaclass=ABCMeta):
     # TODO: (0.95) Ensure logging functions are working correctly.
     # TODO: (4) Add documentation to the Bruce page, documentation to functions throughout.
     # TODO: (5) Add PV.
+    # TODO: (6) Refactor the solution. Consider using get method for default dictionary access.
+    # TODO: (6) Port in the Battery Price Algorithm.
     # TODO: (6) Finish considering GC load balance algorithm
     # TODO: (7) Port in Air Conditioner.
     # TODO: (7) MAJOR TESTS. Make sure you can run larger simulation from command line same results.

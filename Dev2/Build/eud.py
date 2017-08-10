@@ -38,6 +38,9 @@ class Eud(Device):
         pass
 
     def turn_off(self):
+        # send power message of 0, request of 0 to all connected devices.
+        self.set_power_in(0)
+        self.set_power_out(0)
         pass
 
     ##

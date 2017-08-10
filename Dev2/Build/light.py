@@ -29,17 +29,18 @@ class Light(Eud):
     ## Will need to implement modulate power, which will involve sending a request message once
     # it determines that it needs a set amount of power.
 
-    def turn_on(self):
-        pass
+    def on(self):
+        self.turn_on() # temporary method to work with JSON
+        # request its baseline amount of power.
 
-    def turn_off(self):
-        pass
+    def off(self):
+        self.turn_off()
 
     ##
     # Calculate the desired power level based on the price. Port this in.
     #
     def calculate_desired_power_level(self):
-        pass
+        return 0
 
     def modulate_power(self):
         power_seek = self.calculate_desired_power_level()

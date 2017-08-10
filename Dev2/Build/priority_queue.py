@@ -63,7 +63,7 @@ class PriorityQueue:
         raise KeyError('peek from an empty priority queue')
 
     def is_empty(self):
-        return not self._pq
+        return len(self._entry_finder) == 0
 
     def clear(self):
         """clear the priority queue"""

@@ -92,6 +92,7 @@ class GridController(Device):
     def change_load(self, sender_id, new_load):
         prev_load = self._loads[sender_id] if sender_id in self._loads.keys() else 0
         self._loads[sender_id] = new_load
+        self.recalc_sum_power(prev_load, new_load)
         return new_load - prev_load
 
 

@@ -35,9 +35,16 @@ class Supervisor:
             return None
 
     ##
+    # Returns the list of all devices in the simulation.
+    #
+    def all_devices(self):
+        return self._devices.values()
+
+    ##
     # Given a device, adds a mapping from device_id to that device
     # @param device the device to add to the supervisor device dictionary
-    ##
+    #
+
     def register_device(self, device):
         device_id = device.get_id()
         self._devices[device_id] = device
@@ -73,8 +80,18 @@ class Supervisor:
         return not self._event_queue.is_empty()
 
     ##
+    # Returns an (event, time_stamp) with next, or None.
+    # Call has next event first to be safe.
+    def peek_next_event(self):
+        if self.has_next_event():
+            return self._event_queue.peek()
+        else:
+            return None
+
+    ##
     # Called at the end of the simulation. Finishes each device and instructs them to write their energy
     # consumption calculations
-    def finish_all(self):
-        for device in self._devices.values():
-            device.finish()
+    # end_time the time of the finish event, to update each device to so they can perform their calculations.
+    def finish_all(self, end_time):
+        for device in self.all_devices():
+            device.finish(end_time)

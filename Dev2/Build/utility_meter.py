@@ -15,15 +15,41 @@
 """
 
 from Build.device import Device
+from Build.event import Event
 from Build.message import Message, MessageType
 
 
 class UtilityMeter(Device):
 
     def __init__(self, device_id, supervisor, connected_devices=None):
-        identifier = "utm{}".format(device_id)
-        super().__init__(identifier, "Utility Meter", supervisor, connected_devices)
+        super().__init__(device_id, "Utility Meter", supervisor, connected_devices)
         self._loads = {}  # dictionary of devices and loads to those devices.
+        self._price = 0
+
+    # Turn the utility meter on.
+    # TODO: Rename this function to make more clear after running Mike simulations
+    def on(self):
+        self._logger.info(self.build_message("Turning on utility meter", "turn_on", 1))
+
+    ##
+    # Sets the price of the utility meter.
+    # @param price the new price to set it to.
+    #
+    def set_price(self, price):
+        self._price = price
+
+    ##
+    # Adds a price schedule for this utility
+    #
+    def setup_price_schedule(self, price_schedule):
+        for price, hour in price_schedule:
+            price_event = Event(self.set_price, price)  # for now no arguments. In future, list should be of tuples (time, func, args).
+            time_sec = hour * 3600
+            self.add_event(price_event, time_sec)
+
+
+
+    # __________________________________ Messaging Functions _______________________ #
 
     def process_power_message(self, sender_id, new_power):
         prev_power = self._loads[sender_id] if sender_id in self._loads.keys() else 0

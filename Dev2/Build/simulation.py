@@ -49,7 +49,7 @@ class Simulation:
     #
 
     def setup_simulation(self):
-        self.read_config_file("../scenario_data/shared_test_scenario_1.json")
+        self.read_config_file("../scenario_data/scenario_A_basic_discharge_only.json")
         self.setup_logging()
 
         """We will change this later. Mike's way ain't bad (DeviceClassLoader).
@@ -57,8 +57,15 @@ class Simulation:
 
         for gc in self.config["devices"]["grid_controllers"]:
             gc_id = gc['device_id']
-            batt_info = gc['battery'] if 'battery' in gc.keys() else None
-            battery = Battery(price_logic=None, capacity=batt_info['capacity']) if batt_info else None
+            batt_info = gc.get('battery', None)
+            if batt_info:
+                max_discharge_rate = batt_info.get('max_discharge_rate', 1000.0)
+                max_charge_rate = batt_info.get('max_charge_rate', 1000.0)
+                capacity = batt_info.get('capacity', 50000.0)
+                battery = Battery(price_logic=None, capacity=capacity, max_charge_rate=max_charge_rate,
+                                  max_discharge_rate=max_discharge_rate)
+            else:
+                battery = None
             self.supervisor.register_device(GridController(gc_id, self.supervisor, battery=battery))
         for power_source in self.config["devices"]["power_sources"]:
             utm_id = power_source['device_id']

@@ -161,6 +161,9 @@ class Device(metaclass=ABCMeta):
             self._sum_power_in += self._power_in * (time_diff / 3600.0)  # Return in wH
         self._time_last_power_in_change = self._time
 
+
+
+
     #  ______________________________________Internal State Functions _________________________________#
 
     ##
@@ -413,11 +416,10 @@ class Device(metaclass=ABCMeta):
     # TODO: Associate each EUD with a GC?
     # TODO: (4) Add documentation to the Bruce page, documentation to functions throughout.
     # TODO: (5) Add PV.
-
     # TODO: (5.5) Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
-    # TODO: (6) Refactor the solution. Consider using get method for default dictionary access.
+    # TODO: (5.75) Refactor the solution. Code cleanup. Consider using get method for default dictionary access.
     # TODO: (6) Port in the Battery Price Algorithm.
-    # TODO: (6) Finish considering GC load balance algorithm
+    # TODO: (6.5) Finish considering GC load balance algorithm
     # TODO: (7) Port in Air Conditioner.
     # TODO: (8) Battery logic. Grid controller price logic.
     # TODO: (9) More reconsideration of GC load balance algorithm.
@@ -425,5 +427,5 @@ class Device(metaclass=ABCMeta):
     # TODO: (10) Get to some form of backwards compatibility with the website.
     # TODO: (11) Redesign the website, Input JSONS.
     # TODO: (12) Start to modify price logic. Price Forecasts?
-    # TODO: (12.5) Convert the date format to accept milliseconds in message parsing (NOT PRIORITY)
+    # TODO: (12.5) Convert the date format to accept milliseconds in message parsing
 

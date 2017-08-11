@@ -34,7 +34,7 @@ class Battery(object):
     # @param capacity the maximum charge capacity of the battery. Must be a double.
     # @param starting_soc the state of charge on initialization. Default 50%
 
-    def __init__(self, price_logic, capacity, starting_soc=0.5, max_charge_rate=1000, max_discharge_rate=1000):
+    def __init__(self, price_logic, capacity, max_charge_rate, max_discharge_rate, starting_soc=0.5):
 
         self._charging_preference = self.BatteryChargingPreference.NEUTRAL
         self._price_logic = price_logic
@@ -111,6 +111,7 @@ class Battery(object):
     def recalc_charge_preference(self):
         self._charging_preference = self._price_logic.preference(self._current_soc, self._price)
         #TODO: What actually is this function? Logic?
+
 
 
 

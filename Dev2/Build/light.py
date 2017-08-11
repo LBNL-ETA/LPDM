@@ -53,31 +53,22 @@ class Light(Eud):
         ))
 
     ##
-    # Calculate the desired power level (w) based on the price..
+    # Calculate the desired power level __in__ (w) based on the price..
     #
     def calculate_desired_power_level(self):
-        if self._price <= self._price_dim_start:
-            return self._power_level_max * self._max_operating_power
-        elif self._price <= self._price_dim_end:
-            # Linearly reduce power consumption
-            power_reduce_ratio = (self._price - self._price_dim_start) / (self._price_dim_end - self._price_dim_start)
-            power_level_reduced = self._power_level_max - (
-                                 (self._power_level_max - self._power_level_low) * power_reduce_ratio)
-            return self._max_operating_power * power_level_reduced
+        if self._in_operation:
+            if self._price <= self._price_dim_start:
+                return self._power_level_max * self._max_operating_power
+            elif self._price <= self._price_dim_end:
+                # Linearly reduce power consumption
+                power_reduce_ratio = (self._price - self._price_dim_start) / (self._price_dim_end - self._price_dim_start)
+                power_level_reduced = self._power_level_max - (
+                                     (self._power_level_max - self._power_level_low) * power_reduce_ratio)
+                return self._max_operating_power * power_level_reduced
 
-        elif self._price <= self._price_off:
-            return self._power_level_low * self._max_operating_power
-        else:
-            return 0.0
-
-    def modulate_power(self):
-        power_seek = self.calculate_desired_power_level() - self._power_in
-        if power_seek:
-            gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
-            if len(gcs): # TODO: Make this an allocate request.
-                self.send_power_message(gcs[0], -power_seek)  # negative because seeking to receive.
-            else:
-                self.turn_off()
+            elif self._price <= self._price_off:
+                return self._power_level_low * self._max_operating_power
+        return 0.0  # not in operation or price too high.
 
 
 

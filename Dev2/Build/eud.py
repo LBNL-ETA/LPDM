@@ -29,19 +29,25 @@ class Eud(Device):
         self._allocated_in = {}  # Dictionary of devices and how much the device has been allocated by those devices.
                                  # NOTE: All values must be positive, indicating the amount received.
         self._price = 0  # EUD receives price messages from GC's only. For now, assume it will always update price.
+        self._in_operation = False
 
 
     # ___________________ BASIC FUNCTIONS ________________
 
     def turn_on(self):
-        # Set power in to 0. power_out to 0.
-        pass
+        # Set power levels to update the power charge calculations.
+        self._in_operation = True
+        self.set_power_in(0)
+        self.set_power_out(0)
 
     def turn_off(self):
         gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
         self.send_power_message(gcs[0], 0)
         self.set_power_in(0)
         self.set_power_out(0)
+        self._in_operation = False
+        """Temporary: for debugging"""
+        self._logger.info(self.build_message(message="Current power input", tag="power in", value=self._sum_power_in))
         pass
 
     ##
@@ -117,8 +123,25 @@ class Eud(Device):
     # This function will change the EUD's power level, returning the difference of new_power - old_power
     # Must be implemented by all EUD's.
 
-    @abstractmethod
     def modulate_power(self):
+        desired_power_level = self.calculate_desired_power_level()
+        power_seek = desired_power_level - self._power_in
+        if power_seek:
+            gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
+            if len(gcs):  # TODO: Make this an allocate request.
+                self.recalc_sum_power(-self._power_in, -desired_power_level)
+                self.send_power_message(gcs[0], -power_seek)  # negative because seeking to receive.
+            else:
+                self.turn_off()
+
+
+    ## All EUD's must be able to calculate how much power they wish to consume at a given time based on their
+    # internal conditions
+
+    # @return the eud's desired power __in__, a positive value.
+
+    @abstractmethod
+    def calculate_desired_power_level(self):
         pass
 
     def device_specific_calcs(self):

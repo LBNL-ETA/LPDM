@@ -92,8 +92,8 @@ class GridController(Device):
     # @return the amount added to the load
     def change_load(self, sender_id, new_load):
         prev_load = self._loads[sender_id] if sender_id in self._loads.keys() else 0
-        self._loads[sender_id] = new_load
         self.recalc_sum_power(prev_load, new_load)
+        self._loads[sender_id] = new_load
         return new_load - prev_load
 
 
@@ -137,6 +137,9 @@ class GridController(Device):
             # LOG THIS ERROR AND ALL ERRORS.
         self._logger.info(self.build_message(message="Send power message to {}".format(target_id),
                                               tag="power message", value=power_amt))
+        prev_power = self._loads[target_id] if target_id in self._connected_devices.keys() else 0
+        self.recalc_sum_power(prev_power, power_amt)
+
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
     def send_price_message(self, target_id, price):
@@ -231,11 +234,9 @@ class GridController(Device):
                 # (below) The additional amount you are able to provide to the utility meter (neg. if receive).
                 extra_power_to_utm = self.change_load(utm, prev_utm_power - remaining)
                 self.send_power_message(utm, self._loads[utm])
-                self.recalc_sum_power(self._loads[utm], prev_utm_power)
 
                 remaining += extra_power_to_utm  # what we were able to get from utility meter.
                 self.change_load(source_id, new_source_power - remaining)  # send what we were able to get from utm
-                self.send_power_message(source_id, self._loads[source_id])
 
                 # add the unprovided power as a request to address later.
                 unprovided = new_source_power - self._loads[source_id]
@@ -245,7 +246,6 @@ class GridController(Device):
             else:
                 # no utm, not able to provide for the demanded power. Send a new power message saying what you can give.
                 self.change_load(source_id, new_source_power - remaining)
-                self.send_power_message(source_id, self._loads[source_id])
 
                 # add the unprovided power as a request.
                 unprovided = new_source_power - self._loads[source_id]
@@ -253,10 +253,10 @@ class GridController(Device):
                     self._requested[source_id] = unprovided
         else:
             self.change_load(source_id, new_source_power)
-            self.send_power_message(source_id, self._loads[source_id]) # TODO: Maybe only if not what expected?
             # NOTE: won't consider case where GC wire capacity is limiting and battery discharge is not, not realistic.
 
-        self.recalc_sum_power(self._loads[source_id], prev_source_power)
+        if self._loads[source_id] != new_source_power:  # inform recipient if power provided is not what was expected
+            self.send_power_message(source_id, self._loads[source_id])  # TODO: Maybe only if not what expected?
 
     ##
     # This is the crux function that determines how a GC balances its power flows at a given time.
@@ -378,7 +378,7 @@ Second priority: Negotiation balances (new allocate received, new request receiv
             self._logger.info(self.build_message(
                 message="battery sum discharge wh",
                 tag="battery sum discharge wh",
-                value=self._battery.sum_charge_wh
+                value=self._battery.sum_discharge_wh
             ))
 
 

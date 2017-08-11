@@ -46,8 +46,8 @@ class Device(metaclass=ABCMeta):
     ##
     # Initialize a device.
     #
+    # @param time Initialize time to -1 so that all register events can happen before schedules begin.
     # @param connected_devices a list of connected devices for this Device.
-    #
 
     def __init__(self, device_id, device_type, supervisor, time=0, read_delay=0, connected_devices=None):
         # TODO: Read_delay actual value
@@ -62,7 +62,7 @@ class Device(metaclass=ABCMeta):
         self._device_type = device_type
         self._queue = PriorityQueue()
         self._supervisor = supervisor
-        self._time = time  # device's local time, in milliseconds. This will be updated by the supervisor.
+        self._time = time  # device's local time, in seconds. This will be updated by the supervisor.
         self._read_delay = read_delay  # time it takes a device to process a message it has received. Default 1 ms
         self._time_last_power_in_change = time  # records the last time power levels into device changed
         self._time_last_power_out_change = time  # records the last time power levels out of device changed
@@ -71,8 +71,6 @@ class Device(metaclass=ABCMeta):
         self._sum_power_out = 0.0  # Record the total energy produced by this device (wH)
         self._sum_power_in = 0.0  # Record the total energy produced by this device (wH)
         self._hourly_prices = []  # hourly average price tracking, stores the last 24 average values
-
-
         self._logger = logging.getLogger("lpdm")  # Setup logging
 
         self._logger.info(
@@ -97,47 +95,51 @@ class Device(metaclass=ABCMeta):
         self._time = new_time
 
     ##
-    # Sets the power level into the device.
+    # Sets the power level into the device. Call this method when setting absolute power levels
+    # e.g. turning the device off
     #
     # @param power_in the new amount of power in to device (non-negative).
 
     def set_power_in(self, power_in):
         if power_in >= 0:
+            self.sum_power_in()  # record all previous power usage at the previous level.
             self._power_in = power_in
         else:
             raise ValueError("Power Level In Must Be Non-Negative")
 
     ##
-    # Sets the power level out of the device
+    # Sets the power level out of the device. Call this method when setting absolute power levels
+    # e.g. turning the device off
     #
     # @param power_in the new amount of power in to device (non-negative).
 
     def set_power_out(self, power_out):
         if power_out >= 0:
+            self.sum_power_out()  # record all previous power usage at the previous level.
             self._power_out = power_out
         else:
             raise ValueError("Power Level Out Must Be Non-Negative")
 
     ##
-    # After a device has changed the quantity of power it is sending, modify the power in and power out statistics
-    # Call after a load has been changed on this device.
+    # After a device has changed the quantity of power it is sending/receiving, modify the power in and power out.
+    # Call whenever a load has been changed on this device.
     # @param prev_power the previous power flow from this device's perspective
     # @param new_power the new power flow from this device's perspective
     def recalc_sum_power(self, prev_power, new_power):
-        if prev_power > 0:
-            if new_power > 0:
+        self.sum_power_in()  # log power usage at previous power level.
+        self.sum_power_out()
+        if prev_power >= 0:
+            if new_power >= 0:
                 self._power_out += (new_power - prev_power)
             elif new_power < 0:
                 self._power_out -= prev_power
-                self._power_in += new_power
+                self._power_in -= new_power
         elif prev_power < 0:
-            if new_power > 0:
-                self._power_in -= prev_power
+            if new_power >= 0:
+                self._power_in += prev_power
                 self._power_out += new_power
             elif new_power < 0:
-                self._power_in -= (new_power - prev_power)
-        self.sum_power_in()
-        self.sum_power_out()
+                self._power_in += (new_power - prev_power)
 
     ##
     # Keeps a running total of the energy output by the device
@@ -145,8 +147,8 @@ class Device(metaclass=ABCMeta):
 
     def sum_power_out(self):
         time_diff = self._time - self._time_last_power_out_change
-        if time_diff > 0 and self._power_out:
-            self._sum_power_out += self._power_out * (time_diff / 3600.0)  # Return in KwH
+        if time_diff > 0:
+            self._sum_power_out += self._power_out * (time_diff / 3600.0)  # Return in wH
         self._time_last_power_out_change = self._time
 
     ##
@@ -155,8 +157,8 @@ class Device(metaclass=ABCMeta):
 
     def sum_power_in(self):
         time_diff = self._time - self._time_last_power_in_change
-        if time_diff > 0 and self._power_in:
-            self._sum_power_in += self._power_in * (time_diff / 3600.0)  # Return in KwH
+        if time_diff > 0:
+            self._sum_power_in += self._power_in * (time_diff / 3600.0)  # Return in wH
         self._time_last_power_in_change = self._time
 
     #  ______________________________________Internal State Functions _________________________________#
@@ -345,7 +347,7 @@ class Device(metaclass=ABCMeta):
                 func = getattr(self, operation_name)
             else:
                 raise ValueError("Called the scheduler with an incorrectly named function")
-            event = Event(func)  # for now no arguments. In future, list should be of tuples (time, func, args).
+            event = Event(func)  # for now no arguments. TODO: list should be of tuples (time, func, args).
             time_sec = hour * 3600
             self.add_event(event, time_sec)
 
@@ -371,15 +373,22 @@ class Device(metaclass=ABCMeta):
 
     def write_calcs(self):
         self._logger.info(self.build_message(
-            message="sum kwh out",
-            tag="sum_kwh_out",
-            value=self._sum_power_out / 1000.0
+            message="sum wh out for device {}".format(self._device_id),
+            tag="sum_wh_out",
+            value=self._sum_power_out
         ))
         self._logger.info(self.build_message(
-            message="sum kwh in",
-            tag="sum_kwh_in",
-            value=self._sum_power_in / 1000.0
+            message="sum wh in for device {}".format(self._device_id),
+            tag="sum_wh_in",
+            value=self._sum_power_in
         ))
+        self.device_specific_calcs()
+
+    ##
+    # All device specific power consumption statistics are added here
+    @abstractmethod
+    def device_specific_calcs(self):
+        pass
 
     ##
     # Method to be called at end of simulation resetting power levels and calculating
@@ -387,27 +396,32 @@ class Device(metaclass=ABCMeta):
     def finish(self, end_time):
         """"Gets called at the end of the simulation"""
         self._time = end_time
-        self.sum_power_in()
-        self.sum_power_out()
         self.set_power_in(0.0)
         self.set_power_out(0.0)
         self.write_calcs()
 
     # _____________________________________________________________________ #
 
+    # TODO:
     # TODO: (0) Finish being able to read in JSON scenario file. Run a scenario test based on this input.
-    # TODO: (0.5) Complete the light class. Import in all previous functionality. Turn on, turn off, modulate power.
     # TODO: (0.7) Test the Utility Class, to Ensure proper functionality. (Do last 3 together in scenario test)
+    # TODO: (0.8) Try to run this from the command line.
     # TODO: (0.9) Ensure that the sum_power functions are working correctly.
     # TODO: (0.95) Ensure logging functions are working correctly.
+    # TODO: FIX JSON SETUP. This should be clean and extensible.
+    # TODO: Utility meter needs to communicate its price to the GC.
+    # TODO: Associate each EUD with a GC?
     # TODO: (4) Add documentation to the Bruce page, documentation to functions throughout.
     # TODO: (5) Add PV.
+
+    # TODO: (5.5) Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
     # TODO: (6) Refactor the solution. Consider using get method for default dictionary access.
     # TODO: (6) Port in the Battery Price Algorithm.
     # TODO: (6) Finish considering GC load balance algorithm
     # TODO: (7) Port in Air Conditioner.
-    # TODO: (7) MAJOR TESTS. Make sure you can run larger simulation from command line same results.
+    # TODO: (8) Battery logic. Grid controller price logic.
     # TODO: (9) More reconsideration of GC load balance algorithm.
+    # TODO: (9.5) GC, maybe only respond to power message with power message if its not equal to what was asked for?
     # TODO: (10) Get to some form of backwards compatibility with the website.
     # TODO: (11) Redesign the website, Input JSONS.
     # TODO: (12) Start to modify price logic. Price Forecasts?

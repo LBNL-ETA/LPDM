@@ -31,10 +31,10 @@ class Battery(object):
 
     ##
     # Initializes the battery to be contained within a grid controller.
-    # @param capacity the maximum charge capacity of the battery. Default 5000 kwh. Must be a double.
+    # @param capacity the maximum charge capacity of the battery. Must be a double.
     # @param starting_soc the state of charge on initialization. Default 50%
 
-    def __init__(self, price_logic, capacity=2000.0, starting_soc=0.5, max_charge_rate=100, max_discharge_rate=100):
+    def __init__(self, price_logic, capacity, starting_soc=0.5, max_charge_rate=1000, max_discharge_rate=1000):
 
         self._charging_preference = self.BatteryChargingPreference.NEUTRAL
         self._price_logic = price_logic
@@ -47,10 +47,11 @@ class Battery(object):
         self._capacity = capacity  # energy capacity of the battery, in kWh.
         self._current_soc = starting_soc
         self._load = 0  # the load on the battery, either charge (negative) or discharge (positive), in kW.
-        self._sum_charge_kwh = 0.0
         self._price = 0  # informed of price by the grid controller on their communications.
         self._time = 0
         self._last_charge_update_time = 0
+        self.sum_charge_wh = 0.0
+        self.sum_discharge_wh = 0.0
 
     ##
     # Adds a new load to the battery
@@ -96,13 +97,16 @@ class Battery(object):
         time_diff = time - self._last_charge_update_time
         if time_diff > 0:
             prev_soc = self._current_soc
-            power_change = -self._load * (time_diff / 3600.0)
+            power_change = -self._load * (time_diff / 3600.0)  # change in battery power level since last update
             new_charge_amt = (prev_soc * self._capacity) + power_change
             self._current_soc = new_charge_amt / self._capacity
 
-            self.recalc_charge_preference()
+            # TODO: self.recalc_charge_preference()
             if power_change > 0:  # only record amount charged by battery
-                self._sum_charge_kwh += power_change
+                self.sum_charge_wh += power_change
+            elif power_change < 0:
+                self.sum_discharge_wh -= power_change
+        self._last_charge_update_time = self._time
 
     def recalc_charge_preference(self):
         self._charging_preference = self._price_logic.preference(self._current_soc, self._price)

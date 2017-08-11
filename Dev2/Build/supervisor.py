@@ -31,8 +31,7 @@ class Supervisor:
         if device_id in self._devices.keys():
             return self._devices[device_id]
         else:
-            print('No such device')
-            return None
+            raise ValueError("There is no such requested device in the simulation")
 
     ##
     # Returns the list of all devices in the simulation.

@@ -24,8 +24,8 @@ from abc import abstractmethod
 
 class Eud(Device):
 
-    def __init__(self, device_id, device_type, supervisor, connected_devices=None, time=0, read_delay=0):
-        super().__init__(device_id, device_type, supervisor, connected_devices, time, read_delay)
+    def __init__(self, device_id, device_type, supervisor, time=0, read_delay=0, connected_devices=None):
+        super().__init__(device_id, device_type, supervisor, time, read_delay, connected_devices)
         self._allocated_in = {}  # Dictionary of devices and how much the device has been allocated by those devices.
                                  # NOTE: All values must be positive, indicating the amount received.
         self._price = 0  # EUD receives price messages from GC's only. For now, assume it will always update price.
@@ -38,7 +38,8 @@ class Eud(Device):
         pass
 
     def turn_off(self):
-        # send power message of 0, request of 0 to all connected devices.
+        gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
+        self.send_power_message(gcs[0], 0)
         self.set_power_in(0)
         self.set_power_out(0)
         pass
@@ -60,7 +61,7 @@ class Eud(Device):
     # When the device receive See Device Superclass Description
 
     def process_power_message(self, sender_id, new_power):
-        if new_power != self._power_in and new_power > 0:
+        if new_power >= 0:
             self.set_power_in(new_power)
             self.modulate_power()
 
@@ -108,7 +109,7 @@ class Eud(Device):
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("invalid target to request")
-        target_device.receive_message(Message(self._time, self._device_id, MessageType.Power, power_amt))
+        target_device.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
     ##
     # Method to be called once it needs to recalculate its internal power usage.
@@ -118,4 +119,7 @@ class Eud(Device):
 
     @abstractmethod
     def modulate_power(self):
+        pass
+
+    def device_specific_calcs(self):
         pass

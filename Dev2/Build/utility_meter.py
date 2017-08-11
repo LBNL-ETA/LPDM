@@ -22,7 +22,7 @@ from Build.message import Message, MessageType
 class UtilityMeter(Device):
 
     def __init__(self, device_id, supervisor, connected_devices=None):
-        super().__init__(device_id, "Utility Meter", supervisor, connected_devices)
+        super().__init__(device_id, "Utility Meter", supervisor, connected_devices=connected_devices)
         self._loads = {}  # dictionary of devices and loads to those devices.
         self._price = 0
 
@@ -40,10 +40,11 @@ class UtilityMeter(Device):
 
     ##
     # Adds a price schedule for this utility
+    # @oaram price_schedule a list of price, hour tuples that the utility sets its price at
     #
     def setup_price_schedule(self, price_schedule):
         for price, hour in price_schedule:
-            price_event = Event(self.set_price, price)  # for now no arguments. In future, list should be of tuples (time, func, args).
+            price_event = Event(self.set_price, price)
             time_sec = hour * 3600
             self.add_event(price_event, time_sec)
 
@@ -88,3 +89,21 @@ class UtilityMeter(Device):
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
 
+    ##
+    # TODO: Give the device an average price statistic to calculate.
+    #
+    def device_specific_calcs(self):
+        """
+        self._logger.info(self.build_message(
+            message="average price sold energy",
+            tag="average sell price",
+            value=self._battery.sum_charge_wh
+        ))
+
+        self._logger.info(self.build_message(
+            message="average price purchased energy",
+            tag="battery sum discharge wh",
+            value=self._battery.sum_charge_wh
+        ))
+        """
+        pass

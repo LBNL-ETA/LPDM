@@ -21,7 +21,7 @@ class SimulationLogger:
     """
     def __init__(self, console_log_level=logging.DEBUG, file_log_level=logging.DEBUG, pg_log_level=logging.DEBUG, log_to_postgres=False, log_format=None):
         self.app_name = "lpdm"
-        self.base_path = "logs"
+        self.base_path = "../logs"
         self.folder = None
         self.log_id = None
         self.logger = None

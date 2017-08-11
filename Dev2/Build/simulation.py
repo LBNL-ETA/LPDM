@@ -31,7 +31,7 @@ class Simulation:
         self.supervisor = None
 
     def read_config_file(self, filename):
-        with open(filename, 'w') as config_file:
+        with open(filename, 'r') as config_file:
             self.config = json.load(config_file)
 
     def setup_logging(self):
@@ -44,12 +44,16 @@ class Simulation:
         )
         self.log_manager.init()
 
-    ## Reads in the simulation file. For each device,
+    ## Reads in the simulation json file.
     #
-    def setup_simulation(self):
-        self.read_config_file("shared_test_scenario_1.txt")
+    #
 
-        """We will change this later. Mike's way ain't bad (DeviceClassLoader)"""
+    def setup_simulation(self):
+        self.read_config_file("../scenario_data/shared_test_scenario_1.json")
+        self.setup_logging()
+
+        """We will change this later. Mike's way ain't bad (DeviceClassLoader).
+        Want to change the references to so that the connected_devices can be done properly"""
 
         for gc in self.config["devices"]["grid_controllers"]:
             gc_id = gc['device_id']
@@ -66,10 +70,21 @@ class Simulation:
             self.supervisor.register_device(utm)
         for eud in self.config["devices"]["euds"]:
             light_id = eud['device_id']
-            light = Light(light_id, self.supervisor)
+            max_power = eud['max_power_output']
+            light = Light(device_id=light_id, supervisor=self.supervisor, max_operating_power=max_power)
             light_schedule = eud['schedule']
             light.setup_schedule(light_schedule)
             self.supervisor.register_device(light)
+
+        gc1 = self.supervisor.get_device("gc_1")
+        utm1 = self.supervisor.get_device("utm_1")
+        eud1 = self.supervisor.get_device("eud_1")
+        gc1._connected_devices["utm_1"] = utm1
+        gc1._connected_devices["eud_1"] = eud1
+        utm1._connected_devices["gc_1"] = gc1
+        eud1._connected_devices["gc_1"] = gc1
+
+        #gc1.engage([utm1, eud1])  # registers the gc with these entities and vice versa.
 
         days_to_run = int(self.config["run_time_days"])
         self.end_time = 24 * 60 * 60 * days_to_run  # end time in seconds

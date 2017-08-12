@@ -115,6 +115,8 @@ class Eud(Device):
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("invalid target to request")
+        self._logger.info(self.build_message(message="Send power message to {}".format(target_id),
+                                             tag="power message", value=power_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
     ##

@@ -106,7 +106,7 @@ class GridController(Device):
 
     def process_power_message(self, sender_id, new_power):
         prev_power = self._loads[sender_id] if sender_id in self._loads.keys() else 0
-        self.balance_power(sender_id, prev_power, -new_power) # process new power from perspective of receiver.
+        self.balance_power(sender_id, prev_power, -new_power)  # process new power from perspective of receiver.
 
     ##
     # Processes a price message received from another device, modifying its own price based on its price logic.
@@ -135,8 +135,9 @@ class GridController(Device):
         else:
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
-        self._logger.info(self.build_message(message="Send power message to {}".format(target_id),
-                                              tag="power message", value=power_amt))
+        self._logger.info(self.build_message(message="power msg to {}".format(target_id),
+                                             tag="power message", value=power_amt))
+
         prev_power = self._loads[target_id] if target_id in self._connected_devices.keys() else 0
         self.recalc_sum_power(prev_power, power_amt)
 
@@ -148,7 +149,7 @@ class GridController(Device):
         else:
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
-        self._logger.info(self.build_message(message="Send price message to {}".format(target_id),
+        self._logger.info(self.build_message(message="price msg to {}".format(target_id),
                                               tag="price message", value=price))
         target.receive_message(Message(self._time, self._device_id, MessageType.PRICE, price))
 
@@ -158,7 +159,7 @@ class GridController(Device):
         else:
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
-        self._logger.info(self.build_message(message="Send request message to {}".format(target_id),
+        self._logger.info(self.build_message(message="request msg to {}".format(target_id),
                                               tag="request message", value=request_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
 
@@ -168,7 +169,7 @@ class GridController(Device):
         else:
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
-        self._logger.info(self.build_message(message="Send allocate message to {}".format(target_id),
+        self._logger.info(self.build_message(message="allocate msg to {}".format(target_id),
                                               tag="allocate message", value=allocate_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.ALLOCATE, allocate_amt))
 
@@ -207,56 +208,70 @@ class GridController(Device):
 
     ##
     # Instantaneous supply-demand balance function, so that the net load at any given time remains at zero.
+    # See docs for an in-depth description of reasoning.
     # @param source_id the sender of the new amount of power.
     # @param prev_source_power the previous amount of power this device was sending to the source of the power change
-    # @param new_source_power the new amount of power this device is being instructed
+    # @param source_demanded_power the new amount of power this device is being instructed
     # to send to the source of the power change
     # NOTE: The GC may not provide the entire requested amount of power if it is not able.
     #
 
-    def balance_power(self, source_id, prev_source_power, new_source_power):
-        power_change = new_source_power - prev_source_power
+    def balance_power(self, source_id, prev_source_power, source_demanded_power):
+        power_change = source_demanded_power - prev_source_power
         if power_change == 0:
             return
+        remaining = power_change
+
+        utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
+        # If there is power in from utility and the power change is negative, reduce that flow.
+        for utm in utility_meters:
+            if self._loads.get(utm, 0) < 0:
+                prev_utm_load = self._loads[utm]
+                self.change_load(utm, min((prev_utm_load - remaining), 0))
+                new_utm_load = self._loads[utm]
+                self.send_power_message(utm, new_utm_load)
+                remaining += (new_utm_load - prev_utm_load)
+
+        # Try adding all the remaining demand onto the battery
         if self._battery:
             self._battery.update_state(self._time, self._price)  # make sure we have updated state of charge
-            remaining = power_change - self._battery.add_load(power_change)  # what wasn't able to be added
-        else:
-            remaining = power_change
+            remaining -= self._battery.add_load(remaining)
 
         if remaining:
-            self._logger.info(self.build_message(message="GC could not provide all of power",
-                                                  tag="undistributed power", value=remaining))
-            utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
             if len(utility_meters):
                 utm = utility_meters[0]
-                prev_utm_power = self._loads[utm] if utm in self._loads.keys() else 0
+                prev_utm_load = self._loads[utm] if utm in self._loads.keys() else 0
                 # (below) The additional amount you are able to provide to the utility meter (neg. if receive).
-                extra_power_to_utm = self.change_load(utm, prev_utm_power - remaining)
-                self.send_power_message(utm, self._loads[utm])
+                self.change_load(utm, prev_utm_load - remaining)
+                new_utm_load = self._loads[utm]
+                self.send_power_message(utm, new_utm_load)
 
-                remaining += extra_power_to_utm  # what we were able to get from utility meter.
-                self.change_load(source_id, new_source_power - remaining)  # send what we were able to get from utm
+                remaining += (new_utm_load - prev_utm_load)  # what we were able to get from utility meter.
+                self.change_load(source_id, source_demanded_power - remaining)  # send what we were able to get from utm
 
                 # add the unprovided power as a request to address later.
-                unprovided = new_source_power - self._loads[source_id]
+                unprovided = source_demanded_power - self._loads[source_id]
                 if unprovided:
                     self._requested[source_id] = unprovided
 
             else:
                 # no utm, not able to provide for the demanded power. Send a new power message saying what you can give.
-                self.change_load(source_id, new_source_power - remaining)
+                self.change_load(source_id, source_demanded_power - remaining)
 
                 # add the unprovided power as a request.
-                unprovided = new_source_power - self._loads[source_id]
+                unprovided = source_demanded_power - self._loads[source_id]
                 if unprovided:
                     self._requested[source_id] = unprovided
         else:
-            self.change_load(source_id, new_source_power)
+            self.change_load(source_id, source_demanded_power)
             # NOTE: won't consider case where GC wire capacity is limiting and battery discharge is not, not realistic.
 
-        if self._loads[source_id] != new_source_power:  # inform recipient if power provided is not what was expected
-            self.send_power_message(source_id, self._loads[source_id])  # TODO: Maybe only if not what expected?
+        # inform recipient if power provided is not what was expected
+        provided = self._loads[source_id]
+        if provided != source_demanded_power:
+            self._logger.info(self.build_message(message="GC only could provide {}W".format(provided),
+                                                 tag="undistributed power", value=provided))
+            self.send_power_message(source_id, provided)
 
     ##
     # This is the crux function that determines how a GC balances its power flows at a given time.

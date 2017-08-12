@@ -52,10 +52,15 @@ class UtilityMeter(Device):
 
     # __________________________________ Messaging Functions _______________________ #
 
+    ##
+    # Process a power message from a grid controller. Always provide what is demanded,
+    # assuming less than maximum output capacity.
+    # @param new_power the new power from the sender's perspective
+
     def process_power_message(self, sender_id, new_power):
         prev_power = self._loads[sender_id] if sender_id in self._loads.keys() else 0
-        self._loads[sender_id] = new_power
-        self.recalc_sum_power(prev_power, new_power)
+        self._loads[sender_id] = -new_power
+        self.recalc_sum_power(prev_power, -new_power)
 
     ##
     # Method to be called when device receives a price message
@@ -86,6 +91,10 @@ class UtilityMeter(Device):
             target = self._connected_devices[target_id]
         else:
             raise ValueError("This Utility Meter is connected to no such device")
+
+        self._logger.info(self.build_message(message="power msg to {}".format(target_id),
+                                             tag="power message", value=power_amt))
+
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
 

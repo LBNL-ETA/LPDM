@@ -26,6 +26,7 @@ class Message(object):
         self.message_type = message_type  # Message type object, defined below.
         self.value = value  # the quantity associated with the messages (all messages are a quantity)
 
+
 ##
 # Messages can be of five types: Register, power, price, request, and allocate.
 #

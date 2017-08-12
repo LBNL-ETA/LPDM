@@ -405,27 +405,24 @@ class Device(metaclass=ABCMeta):
 
     # _____________________________________________________________________ #
 
-    # TODO:
-    # TODO: (0) Finish being able to read in JSON scenario file. Run a scenario test based on this input.
-    # TODO: (0.7) Test the Utility Class, to Ensure proper functionality. (Do last 3 together in scenario test)
-    # TODO: (0.8) Try to run this from the command line.
-    # TODO: (0.9) Ensure that the sum_power functions are working correctly.
-    # TODO: (0.95) Ensure logging functions are working correctly.
-    # TODO: FIX JSON SETUP. This should be clean and extensible.
-    # TODO: Utility meter needs to communicate its price to the GC.
-    # TODO: Associate each EUD with a GC?
-    # TODO: (4) Add documentation to the Bruce page, documentation to functions throughout.
-    # TODO: (5) Add PV.
-    # TODO: (5.5) Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
-    # TODO: (5.75) Refactor the solution. Code cleanup. Consider using get method for default dictionary access.
-    # TODO: (6) Port in the Battery Price Algorithm.
-    # TODO: (6.5) Finish considering GC load balance algorithm
-    # TODO: (7) Port in Air Conditioner.
-    # TODO: (8) Battery logic. Grid controller price logic.
-    # TODO: (9) More reconsideration of GC load balance algorithm.
-    # TODO: (9.5) GC, maybe only respond to power message with power message if its not equal to what was asked for?
-    # TODO: (10) Get to some form of backwards compatibility with the website.
-    # TODO: (11) Redesign the website, Input JSONS.
-    # TODO: (12) Start to modify price logic. Price Forecasts?
-    # TODO: (12.5) Convert the date format to accept milliseconds in message parsing
+    # TODO: (0, Personal Issue) Error in Utility Meter Load balance
+    # TODO: (1) Change to allocate-request model. Add a flag to be able to require request before power (EUD only)
+    # TODO: (2) Change sign convention so power from is negative, power into is positive
+    # TODO: (2.5) Port in the Battery Logic.
+    # TODO: (3) 2-price model for utility meter.
+    # TODO: (4) Test the Utility Class, to Ensure proper functionality. (Do last 3 together in scenario test)
+    # TODO: (4.5) Port in grid controller price logic.
+    # TODO: (5) Refactor dependencies so this works from the command line
+    # TODO: (6) Ensure that the sum_power functions are working correctly (more scenario comparisons with Mike's code)
+    # TODO: (7) FIX JSON reading to be more organized. This should be clean and extensible.
+    # TODO: (8) Utility meter needs to communicate its price to the GC.
+    # TODO: (9) Add documentation to the Bruce page, documentation to functions throughout.
+    # TODO: (10) Add PV.
+    # TODO: (11) Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
+    # TODO: (12) Refactor the solution. Code cleanup. Consider using get method for default dictionary access.
+    # TODO: (13) Finish considering GC load balance algorithm
+    # TODO: (14) Port in Air Conditioner.
+    # TODO: (15) Get to some form of backwards compatibility with the website.
+    # TODO: (16) LONG TERM: Start to modify price logic. Price Forecasts?
+    # TODO: (17) Convert the date format to accept milliseconds in message parsing.
 

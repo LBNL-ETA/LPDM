@@ -9,18 +9,22 @@
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 ########################################################################################################################
 
+
 """Runs the simulation."""
 
 from Build.supervisor import Supervisor
 
 from Build.grid_controller import GridController
+
 from Build.battery import Battery
 from Build.utility_meter import UtilityMeter
 from Build.light import Light
+from Build.simulation_logger import SimulationLogger
 
 import json
 import logging
-from Build.simulation_logger import SimulationLogger
+import sys
+
 
 class Simulation:
 
@@ -48,8 +52,8 @@ class Simulation:
     #
     #
 
-    def setup_simulation(self):
-        self.read_config_file("../scenario_data/scenario_A_basic_discharge_only.json")
+    def setup_simulation(self, config_file):
+        self.read_config_file("../scenario_data/{}".format(config_file))
         self.setup_logging()
 
         """We will change this later. Mike's way ain't bad (DeviceClassLoader).
@@ -96,9 +100,9 @@ class Simulation:
         days_to_run = int(self.config["run_time_days"])
         self.end_time = 24 * 60 * 60 * days_to_run  # end time in seconds
 
-    def run_simulation(self):
+    def run_simulation(self, config_file):
         self.supervisor = Supervisor()
-        self.setup_simulation()
+        self.setup_simulation(config_file)
         while self.supervisor.has_next_event():
             device_id, time_stamp = self.supervisor.peek_next_event()
             if time_stamp > self.end_time:
@@ -108,11 +112,11 @@ class Simulation:
 
 if __name__ == "__main__":
     sim = Simulation()
-    sim.run_simulation()
+    if len(sys.argv) >= 2:
+        sim.run_simulation(sys.argv[1])
+    else:
+        raise FileNotFoundError("Must enter a configuration filename")
 
-
-
-
-
+# Use scenario_A_basic_discharge_only.json" as parameter
 
 

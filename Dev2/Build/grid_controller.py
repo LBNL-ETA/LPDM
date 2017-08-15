@@ -78,7 +78,7 @@ class GridController(Device):
         self.set_power_out(0)
         self.disengage()
 
-        self._logger.info(self.build_message(message="turn off", tag="turn off", value="1"))
+        self._logger.info(self.build_log_notation(message="turn off", tag="turn off", value="1"))
         # send power message of 0 to all devices. send allocate message of 0 to all devices.
         # send request messages of 0 to all of them. Then, unregister with all.
 
@@ -135,7 +135,7 @@ class GridController(Device):
         else:
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
-        self._logger.info(self.build_message(message="power msg to {}".format(target_id),
+        self._logger.info(self.build_log_notation(message="power msg to {}".format(target_id),
                                              tag="power message", value=power_amt))
 
         prev_power = self._loads[target_id] if target_id in self._connected_devices.keys() else 0
@@ -149,7 +149,7 @@ class GridController(Device):
         else:
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
-        self._logger.info(self.build_message(message="price msg to {}".format(target_id),
+        self._logger.info(self.build_log_notation(message="price msg to {}".format(target_id),
                                               tag="price message", value=price))
         target.receive_message(Message(self._time, self._device_id, MessageType.PRICE, price))
 
@@ -159,7 +159,7 @@ class GridController(Device):
         else:
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
-        self._logger.info(self.build_message(message="request msg to {}".format(target_id),
+        self._logger.info(self.build_log_notation(message="request msg to {}".format(target_id),
                                               tag="request message", value=request_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
 
@@ -169,7 +169,7 @@ class GridController(Device):
         else:
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
-        self._logger.info(self.build_message(message="allocate msg to {}".format(target_id),
+        self._logger.info(self.build_log_notation(message="allocate msg to {}".format(target_id),
                                               tag="allocate message", value=allocate_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.ALLOCATE, allocate_amt))
 
@@ -201,7 +201,7 @@ class GridController(Device):
     def modulate_price(self):
         old_price = self._price
         self._price = self._price_logic.calculate_price(self._neighbor_prices.values())
-        self._logger.info(self.build_message(message="GC price changed to {}".format(self._price),
+        self._logger.info(self.build_log_notation(message="GC price changed to {}".format(self._price),
                                              tag="price_change", value=self._price))
         if self._price - old_price >= self._price_logic.diff_threshold:  # broadcast only if significant change price.
             self.broadcast_new_price(self._price)
@@ -269,7 +269,7 @@ class GridController(Device):
         # inform recipient if power provided is not what was expected
         provided = self._loads[source_id]
         if provided != source_demanded_power:
-            self._logger.info(self.build_message(message="GC only could provide {}W".format(provided),
+            self._logger.info(self.build_log_notation(message="GC only could provide {}W".format(provided),
                                                  tag="undistributed power", value=provided))
             self.send_power_message(source_id, provided)
 
@@ -384,13 +384,13 @@ Second priority: Negotiation balances (new allocate received, new request receiv
 
         # Write out all consumptions statistics
         if self._battery:
-            self._logger.info(self.build_message(
+            self._logger.info(self.build_log_notation(
                 message="battery sum charge wh",
                 tag="battery sum charge wh",
                 value=self._battery.sum_charge_wh
             ))
 
-            self._logger.info(self.build_message(
+            self._logger.info(self.build_log_notation(
                 message="battery sum discharge wh",
                 tag="battery sum discharge wh",
                 value=self._battery.sum_discharge_wh

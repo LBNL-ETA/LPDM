@@ -23,7 +23,7 @@ def format_time_from_seconds(seconds):
 # @param tag the tag value to include in log
 # @param value the value to include in message
 
-def build_message(message="", time_seconds=None, device_id="", tag="", value=""):
+def build_log_msg(message="", time_seconds=None, device_id="", tag="", value=""):
 
     return "{0}; {1}; {2}; {3}; {4}; {5}".format(
         format_time_from_seconds(time_seconds),

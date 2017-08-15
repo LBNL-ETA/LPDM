@@ -28,15 +28,16 @@ class UtilityMeter(Device):
 
     # Turn the utility meter on.
     # TODO: Rename this function to make more clear after running Mike simulations
-    def on(self):
-        self._logger.info(self.build_message("Turning on utility meter", "turn_on", 1))
+    def turn_on(self):
+        self._logger.info(self.build_log_notation("Turning on utility meter", "turn_on", 1))
 
     ##
-    # Sets the price of the utility meter.
+    # Sets the price of the utility meter, and then broadcasts that new price to all connected devices.
     # @param price the new price to set it to.
     #
     def set_price(self, price):
         self._price = price
+
 
     ##
     # Adds a price schedule for this utility
@@ -92,24 +93,40 @@ class UtilityMeter(Device):
         else:
             raise ValueError("This Utility Meter is connected to no such device")
 
-        self._logger.info(self.build_message(message="power msg to {}".format(target_id),
+        self._logger.info(self.build_log_notation(message="power msg to {}".format(target_id),
                                              tag="power message", value=power_amt))
 
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
+    def send_price_message(self, target_id, price):
+        if target_id in self._connected_devices.keys():
+            target = self._connected_devices[target_id]
+        else:
+            raise ValueError("This Utility Meter is connected to no such device")
 
+        self._logger.info(self.build_log_notation(message="price msg to {}".format(target_id),
+                                             tag="price message", value=price))
+
+        target.receive_message(Message(self._time, self._device_id, MessageType.PRICE, price))
+
+    ##
+    # Informs all connected devices of the utility meter's buy price
+    # @param price the price to broadcast to all connected devices
+    def broadcast_price_levels(self, buy_price, sell_price):
+        for device_id in self._connected_devices.keys():
+            self.send_price_message(device_id, price)
     ##
     # TODO: Give the device an average price statistic to calculate.
     #
     def device_specific_calcs(self):
         """
-        self._logger.info(self.build_message(
+        self._logger.info(self.build_log_notation(
             message="average price sold energy",
             tag="average sell price",
             value=self._battery.sum_charge_wh
         ))
 
-        self._logger.info(self.build_message(
+        self._logger.info(self.build_log_notation(
             message="average price purchased energy",
             tag="battery sum discharge wh",
             value=self._battery.sum_charge_wh

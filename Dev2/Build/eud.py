@@ -37,8 +37,14 @@ class Eud(Device):
     def turn_on(self):
         # Set power levels to update the power charge calculations.
         self._in_operation = True
+        self.modulate_power()
         self.set_power_in(0)
         self.set_power_out(0)
+        self._logger.info(self.build_log_notation(
+            message="turn on device {}".format(self._device_id),
+            tag="turn on",
+            value=1
+        ))
 
     def turn_off(self):
         gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
@@ -47,8 +53,11 @@ class Eud(Device):
         self.set_power_out(0)
         self._in_operation = False
         """Temporary: for debugging"""
-        self._logger.info(self.build_message(message="Current power input", tag="power in", value=self._sum_power_in))
-        pass
+        self._logger.info(self.build_log_notation(
+            message="turn off device {}".format(self._device_id),
+            tag="turn off",
+            value=0
+        ))
 
     ##
     # Sets the quantity of power that this EUD has been allocated to consume by a specific device
@@ -72,7 +81,7 @@ class Eud(Device):
             self.modulate_power()
 
     def process_request_message(self, sender_id, request_amt):
-        self._logger.info(self.build_message("Ignored request message from {}".format(sender_id)))
+        self._logger.info(self.build_log_notation("Ignored request message from {}".format(sender_id)))
 
     def process_price_message(self, sender_id, new_price):
         self._price = new_price  # EUD always updates its value to the price it receives.
@@ -115,7 +124,7 @@ class Eud(Device):
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("invalid target to request")
-        self._logger.info(self.build_message(message="Send power message to {}".format(target_id),
+        self._logger.info(self.build_log_notation(message="Send power message to {}".format(target_id),
                                              tag="power message", value=power_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 

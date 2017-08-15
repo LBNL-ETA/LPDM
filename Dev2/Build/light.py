@@ -30,28 +30,6 @@ class Light(Eud):
         self._price_dim_end = 0.2  # price at which to change to lower_power mode.
         self._price_off = 0.3  # price at which to turn off completely
 
-
-    ## Will need to implement modulate power, which will involve sending a request message once
-    # it determines that it needs a set amount of power.
-    # TODO: Is this an EUD level generality?
-
-    def on(self):
-        self._logger.info(self.build_message(
-            message="turn on device {}".format(self._device_id),
-            tag="turn on",
-            value=1
-        ))
-        self.turn_on()
-        self.modulate_power()
-
-    def off(self):
-        self.turn_off()
-        self._logger.info(self.build_message(
-            message="turn off device {}".format(self._device_id),
-            tag="turn off",
-            value=0
-        ))
-
     ##
     # Calculate the desired power level __in__ (w) based on the price..
     #

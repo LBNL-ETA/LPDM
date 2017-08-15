@@ -33,10 +33,10 @@ All Utility Meter's Device ID"s must begin with UM.
 All PV Device ID's must begin with PV.
 """
 
-from Build.priority_queue import PriorityQueue
-from Build.event import Event
-from Build.message import Message, MessageType
-from Build import message_formatter
+from .priority_queue import PriorityQueue
+from .event import Event
+from .message import Message, MessageType
+from . import message_formatter
 from abc import ABCMeta, abstractmethod
 import logging
 
@@ -46,11 +46,15 @@ class Device(metaclass=ABCMeta):
     ##
     # Initialize a device.
     #
-    # @param time Initialize time to -1 so that all register events can happen before schedules begin.
+    # @param device_id unique device ID. Must begin with type of device (see documentation).
+    # @param device_type the type of this device (the most specific class descriptor)
+    # @param uuid the device's emergency shutdown priority
+    # @param time device's local time, in seconds. This will be updated by the supervisor.
+    # @param msg_latency the delay time before this device processes a received message.
     # @param connected_devices a list of connected devices for this Device.
 
-    def __init__(self, device_id, device_type, supervisor, time=0, read_delay=0, connected_devices=None):
-        # TODO: Read_delay actual value
+    def __init__(self, device_id, device_type, supervisor, time=0, msg_latency=0, connected_devices=None):
+        # TODO: msg_latency actual value
 
         if connected_devices is None:
             self._connected_devices = {}
@@ -58,12 +62,12 @@ class Device(metaclass=ABCMeta):
             device_ids = [device.get_id() for device in connected_devices]
             self._connected_devices = dict(zip(device_ids, connected_devices))
 
-        self._device_id = device_id  # unique device ID. Must begin with type of device (see documentation).
+        self._device_id = device_id
         self._device_type = device_type
         self._queue = PriorityQueue()
         self._supervisor = supervisor
-        self._time = time  # device's local time, in seconds. This will be updated by the supervisor.
-        self._read_delay = read_delay  # time it takes a device to process a message it has received. Default 1 ms
+        self._time = time
+        self._msg_latency = msg_latency
         self._time_last_power_in_change = time  # records the last time power levels into device changed
         self._time_last_power_out_change = time  # records the last time power levels out of device changed
         self._power_in = 0.0  # the power being consumed by the device (Watts, must be > 0)
@@ -74,9 +78,8 @@ class Device(metaclass=ABCMeta):
         self._logger = logging.getLogger("lpdm")  # Setup logging
 
         self._logger.info(
-            self.build_message("initialized device #{} - {}".format(self._device_id, self._device_type))
+            self.build_log_notation("initialized device #{} - {}".format(self._device_id, self._device_type))
         )
-
 
     # ____________________________ Maintenance Functions _________________________________#
 
@@ -211,14 +214,14 @@ class Device(metaclass=ABCMeta):
     # Receiving a message is modelled as putting an event with the message a certain delay after the function call.
     # @param message the message to receive.
     def receive_message(self, message):
-        self.add_event(Event(self.read_message, message), message.time + self._read_delay)
+        self.add_event(Event(self.read_message, message), message.time + self._msg_latency)
 
     ##
     # Reads a message and responds based on its message type
     # @param message a message to be read (must be a message object)
     def read_message(self, message):
         if message:
-            self._logger.info(self.build_message(
+            self._logger.info(self.build_log_notation(
                 "Read message of type {} received from {} with value {}".format(message.message_type,
                                                                                 message.sender_id, message.value)))
             if message.message_type == MessageType.REGISTER:
@@ -245,13 +248,13 @@ class Device(metaclass=ABCMeta):
         if value > 0 and device_id not in self._connected_devices.keys():
             self._connected_devices[device_id] = device
             self._logger.info(
-                self.build_message("Registered device: {}".format(device_id))
+                self.build_log_notation("Registered device: {}".format(device_id))
             )
         else:
             if device_id in self._connected_devices:
                 del self._connected_devices[device_id]  # unregister
                 self._logger.info(
-                    self.build_message("Unregistered device: {}".format(device_id))
+                    self.build_log_notation("Unregistered device: {}".format(device_id))
                 )
             else:
                 print("No Such Device To Unregister")
@@ -361,9 +364,9 @@ class Device(metaclass=ABCMeta):
     # @param value the value add to the logger
 
     # @return a formatted string to include in the logger
-    def build_message(self, message="", tag="", value=None):
+    def build_log_notation(self, message="", tag="", value=None):
         """Build the log message string"""
-        return message_formatter.build_message(
+        return message_formatter.build_log_msg(
             time_seconds=self._time,
             message=message,
             tag=tag,
@@ -375,12 +378,12 @@ class Device(metaclass=ABCMeta):
     # Writes the calculations of total energy used in KwH to the database
 
     def write_calcs(self):
-        self._logger.info(self.build_message(
+        self._logger.info(self.build_log_notation(
             message="sum wh out for device {}".format(self._device_id),
             tag="sum_wh_out",
             value=self._sum_power_out
         ))
-        self._logger.info(self.build_message(
+        self._logger.info(self.build_log_notation(
             message="sum wh in for device {}".format(self._device_id),
             tag="sum_wh_in",
             value=self._sum_power_in
@@ -389,6 +392,7 @@ class Device(metaclass=ABCMeta):
 
     ##
     # All device specific power consumption statistics are added here
+
     @abstractmethod
     def device_specific_calcs(self):
         pass
@@ -405,7 +409,6 @@ class Device(metaclass=ABCMeta):
 
     # _____________________________________________________________________ #
 
-    # TODO: (0, Personal Issue) Error in Utility Meter Load balance
     # TODO: (1) Change to allocate-request model. Add a flag to be able to require request before power (EUD only)
     # TODO: (2) Change sign convention so power from is negative, power into is positive
     # TODO: (2.5) Port in the Battery Logic.

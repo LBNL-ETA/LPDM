@@ -73,17 +73,17 @@ class Battery(object):
     ##
     # Adds a new load to the battery. Call update state first to ensure valid state of charge
     # and to update charging calculations before modification.
-    # @param extra_load the load to add
+    # @param extra_load the load to add from battery's perspective (positive charge, negative discharge)
     # @param return whatever value was added to the battery's load.
     def add_load(self, extra_load):
-        if self._current_soc <= self._min_soc and extra_load > 0:
+        if self._current_soc <= self._min_soc and extra_load < 0:
             return 0  # don't discharge when too low
-        if self._current_soc >= self._max_soc and extra_load < 0:
+        if self._current_soc >= self._max_soc and extra_load > 0:
             return 0  # don't charge when too high
         old_load = self._load
         self._load += extra_load
-        self._load = min(self._load, self._max_discharge_rate)  # don't add a load to exceed charge rate.
-        self._load = max(self._load, -self._max_charge_rate)
+        self._load = max(self._load, -self._max_discharge_rate)  # don't add a load to exceed charge rate.
+        self._load = min(self._load, self._max_charge_rate)
         return self._load - old_load
 
     ##
@@ -97,12 +97,12 @@ class Battery(object):
         time_diff = time - self._last_charge_update_time
         if time_diff > 0:
             prev_soc = self._current_soc
-            power_change = -self._load * (time_diff / 3600.0)  # change in battery power level since last update
+            power_change = self._load * (time_diff / 3600.0)  # change in battery power level since last update
             new_charge_amt = (prev_soc * self._capacity) + power_change
             self._current_soc = new_charge_amt / self._capacity
 
             # TODO: self.recalc_charge_preference()
-            if power_change > 0:  # only record amount charged by battery
+            if power_change > 0:
                 self.sum_charge_wh += power_change
             elif power_change < 0:
                 self.sum_discharge_wh -= power_change

@@ -126,23 +126,23 @@ class Device(metaclass=ABCMeta):
     ##
     # After a device has changed the quantity of power it is sending/receiving, modify the power in and power out.
     # Call whenever a load has been changed on this device.
-    # @param prev_power the previous power flow from this device's perspective
-    # @param new_power the new power flow from this device's perspective
+    # @param prev_power the previous power flow from this device's perspective (in positive, out negative)
+    # @param new_power the new power flow from this device's perspective (in positive, out negative)
     def recalc_sum_power(self, prev_power, new_power):
         self.sum_power_in()  # log power usage at previous power level.
         self.sum_power_out()
         if prev_power >= 0:
             if new_power >= 0:
-                self._power_out += (new_power - prev_power)
+                self._power_in += (new_power - prev_power)
             elif new_power < 0:
-                self._power_out -= prev_power
-                self._power_in -= new_power
+                self._power_in -= prev_power
+                self._power_out -= new_power
         elif prev_power < 0:
             if new_power >= 0:
-                self._power_in += prev_power
-                self._power_out += new_power
+                self._power_in += new_power
+                self._power_out += prev_power
             elif new_power < 0:
-                self._power_in += (new_power - prev_power)
+                self._power_out += (new_power - prev_power)
 
     ##
     # Keeps a running total of the energy output by the device
@@ -275,7 +275,6 @@ class Device(metaclass=ABCMeta):
 
     ##
     # Method to be called when the device wants to register or unregister with another device
-    # Usage Note: It must already have the devices in connected_devices it wishes to inform of registry.
     # @param target_id the device to receive the register message
     # @param value positive if registering negative if unregistering
 
@@ -303,7 +302,8 @@ class Device(metaclass=ABCMeta):
     # have changed between two devices (either receiving or providing).
     #
     # @param sender the sender of the message providing or receiving the new power
-    # @param new_power the value of power flow, negative if sender is receiving, positive if sender is providing.
+    # @param new_power the value of power flow from sender's perspective
+    # positive if sender is receiving, negative if sender is providing.
 
     @abstractmethod
     def process_power_message(self, sender_id, new_power):
@@ -323,7 +323,7 @@ class Device(metaclass=ABCMeta):
     # Method to be called when device receives a request message, indicating a device is requesting to
     # either provide or receive the requested quantity of power.
     #
-    # @param request_amt the amount the device is requesting to provide (positive) or to receive (negative). s
+    # @param request_amt the amount the sending device is requesting to receive (positive) or send (negative)
     @abstractmethod
     def process_request_message(self, sender_id, request_amt):
         pass
@@ -333,8 +333,9 @@ class Device(metaclass=ABCMeta):
     # or to receive a given quantity of power. Allocation should only ever occur after request messages
     # have been passed and processed.
     #
-    # @param allocated_amt the amount allocated to provide to another device (positive) or to receive from another
-    # device (negative). s
+    # @param allocated_amt the amount allocated from perspective of message sender.
+    # Positive indicates this device is allocated to take, negative indicates this device is allocated to provide.
+    # device (negative).
     @abstractmethod
     def process_allocate_message(self, sender_id, allocate_amt):
         pass

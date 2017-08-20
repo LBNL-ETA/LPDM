@@ -129,6 +129,11 @@ class GridController(Device):
     def process_allocate_message(self, sender, allocate_amt):
         pass  # TODO: Complicated
 
+    ##
+    # Sends a power message to another device
+    # @param target_id the recipient of the power message
+    # @param power_amt the quantity of the new power flow from this device's perspective
+
     def send_power_message(self, target_id, power_amt):
         if target_id in self._connected_devices.keys():
             target = self._connected_devices[target_id]
@@ -138,9 +143,7 @@ class GridController(Device):
         self._logger.info(self.build_log_notation(message="power msg to {}".format(target_id),
                                              tag="power message", value=power_amt))
 
-        prev_power = self._loads[target_id] if target_id in self._connected_devices.keys() else 0
-        self.recalc_sum_power(prev_power, power_amt)
-
+        self.change_load(target_id, power_amt)
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
     def send_price_message(self, target_id, price):
@@ -208,12 +211,11 @@ class GridController(Device):
 
     ##
     # Instantaneous supply-demand balance function, so that the net load at any given time remains at zero.
+    # The GC may not provide the entire requested amount of power if it is not able.
     # See docs for an in-depth description of reasoning.
     # @param source_id the sender of the new amount of power.
-    # @param prev_source_power the previous amount of power this device was sending to the source of the power change
-    # @param source_demanded_power the new amount of power this device is being instructed
-    # to send to the source of the power change
-    # NOTE: The GC may not provide the entire requested amount of power if it is not able.
+    # @param prev_source_power previous amount of a power flow from this GC's perspective
+    # @param source_demanded_power the new amount of the power flow from this GC's perspective.
     #
 
     def balance_power(self, source_id, prev_source_power, source_demanded_power):
@@ -223,14 +225,15 @@ class GridController(Device):
         remaining = power_change
 
         utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
-        # If there is power in from utility and the power change is negative, reduce that flow.
-        for utm in utility_meters:
-            if self._loads.get(utm, 0) < 0:
-                prev_utm_load = self._loads[utm]
-                self.change_load(utm, min((prev_utm_load - remaining), 0))
-                new_utm_load = self._loads[utm]
-                self.send_power_message(utm, new_utm_load)
-                remaining += (new_utm_load - prev_utm_load)
+        # If there is power in from utility and the power change is positive (must accept more), reduce that utm flow.
+        if power_change > 0:
+            for utm in utility_meters:
+                if self._loads.get(utm, 0) > 0:
+                    prev_utm_load = self._loads[utm]
+                    self.change_load(utm, max((prev_utm_load - remaining), 0))
+                    new_utm_load = self._loads[utm]
+                    self.send_power_message(utm, new_utm_load)
+                    remaining -= (prev_utm_load - new_utm_load)
 
         # Try adding all the remaining demand onto the battery
         if self._battery:
@@ -241,7 +244,6 @@ class GridController(Device):
             if len(utility_meters):
                 utm = utility_meters[0]
                 prev_utm_load = self._loads[utm] if utm in self._loads.keys() else 0
-                # (below) The additional amount you are able to provide to the utility meter (neg. if receive).
                 self.change_load(utm, prev_utm_load - remaining)
                 new_utm_load = self._loads[utm]
                 self.send_power_message(utm, new_utm_load)
@@ -269,8 +271,12 @@ class GridController(Device):
         # inform recipient if power provided is not what was expected
         provided = self._loads[source_id]
         if provided != source_demanded_power:
-            self._logger.info(self.build_log_notation(message="GC only could provide {}W".format(provided),
-                                                 tag="undistributed power", value=provided))
+            if provided > 0:
+                self._logger.info(self.build_log_notation(message="could only input {}W".format(provided),
+                                                          tag="insufficient power in", value=provided))
+            else:
+                self._logger.info(self.build_log_notation(message="could only output {}W".format(provided),
+                                                          tag="insufficient power out", value=provided))
             self.send_power_message(source_id, provided)
 
     ##

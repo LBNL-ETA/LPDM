@@ -12,6 +12,7 @@
 import os
 import re
 import logging
+from datetime import date, time
 
 
 class SimulationLogger:
@@ -31,11 +32,13 @@ class SimulationLogger:
         self.log_to_postgres = log_to_postgres
         self.log_format = log_format
 
-    def init(self):
+    ##
+    # Setup the logpaths and creates the logging handlers. Adds a file with info on the scenario file used and the date.
+    def init(self, config_file):
         """Setup the log paths and create the logging handlers"""
         self.generate_simulation_id()
         self.create_simulation_log_folder()
-        self.create_simulation_logger()
+        self.create_simulation_logger(config_file)
 
     def generate_simulation_id(self):
         """build a unique id for each simulation"""
@@ -61,7 +64,27 @@ class SimulationLogger:
     def app_name(self):
         return "{}_{}".format(self.app_name, self.log_id)
 
-    def create_simulation_logger(self):
+    ##
+    # Class to add a header to the python logger. Creates a custom formatter for first line then switches back.
+
+    class FileHandlerWithHeader(logging.FileHandler):
+        def __init__(self, header, filename, mode='a', encoding=None, delay=False):
+            super().__init__(filename, mode, encoding, delay)
+            self.header = header
+            self.file_pre_exists = os.path.exists(filename)
+
+            # Write the header if delay is False and a file stream was created.
+            if not delay and self.stream is not None:
+                self.stream.write("{}\n".format(self.header))
+
+        def emit(self, record):
+            if self.stream is None:
+                self.stream = self._open()
+            if not self.file_pre_exists:
+                self.stream.write("{}\n".format(self.header))
+            super().emit(record)
+
+    def create_simulation_logger(self, config_file):
         """
         Create the loggers and handlers for the app.
         Create an app level logger that stores log messages for the entire app.
@@ -74,14 +97,10 @@ class SimulationLogger:
         self.logger.setLevel(logging.DEBUG)
 
         # setup the formatter
-
-        if self.log_format == "debug":
-            formatter = logging.Formatter('[%(relativeCreated)d-%(levelname)-s-%(threadName)s-%(filename)s-%(funcName)s-%(lineno)d] - %(message)s')
-        else:
-            formatter = logging.Formatter('%(message)s')
+        header = "{}\n{}\n".format(date.today().isoformat(), config_file)
 
         # create file handler which logs even debug messages
-        fh = logging.FileHandler(os.path.join(self.simulation_log_path(), 'app.log'), mode='w')
+        fh = self.FileHandlerWithHeader(header, os.path.join(self.simulation_log_path(), 'sim_results.log'), mode='w')
         fh.setLevel(self.file_log_level)
 
         # create console handler with a higher log level
@@ -89,8 +108,12 @@ class SimulationLogger:
         ch.setLevel(self.console_log_level)
 
         # add the formatters
-        ch.setFormatter(formatter)
-        fh.setFormatter(formatter)
+        if self.log_format == "debug":
+            fmt = '[%(relativeCreated)d-%(levelname)-s-%(threadName)s-%(filename)s-%(funcName)s-%(lineno)d] - %(message)s'
+        else:
+            fmt = '%(message)s'
+        ch.setFormatter(logging.Formatter(fmt))
+        fh.setFormatter(logging.Formatter(fmt))
 
         # add the file and console loggers
         self.logger.addHandler(ch)

@@ -38,7 +38,7 @@ class Simulation:
         with open(filename, 'r') as config_file:
             self.config = json.load(config_file)
 
-    def setup_logging(self):
+    def setup_logging(self, config_file):
         self.log_manager = SimulationLogger(
             console_log_level=self.config.get("console_log_level", logging.DEBUG),
             file_log_level=self.config.get("file_log_level", logging.DEBUG),
@@ -46,7 +46,7 @@ class Simulation:
             log_to_postgres=self.config.get("log_to_postgres", False),
             log_format=self.config.get("log_format", None)
         )
-        self.log_manager.init()
+        self.log_manager.init(config_file)
 
     ## Reads in the simulation json file.
     #
@@ -54,7 +54,7 @@ class Simulation:
 
     def setup_simulation(self, config_file):
         self.read_config_file("../scenario_data/{}".format(config_file))
-        self.setup_logging()
+        self.setup_logging(config_file)
 
         """We will change this later. Mike's way ain't bad (DeviceClassLoader).
         Want to change the references to so that the connected_devices can be done properly"""

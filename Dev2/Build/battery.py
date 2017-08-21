@@ -64,6 +64,16 @@ class Battery(object):
     def get_charging_preference(self):
         return self._charging_preference.value
 
+    ##
+    # Based on the current state of charge determine what the optimal charge rate for the battery is.
+    def get_desired_power(self):
+        if self._charging_preference.value == 1:
+            return self._preferred_charge_rate
+        elif self._charging_preference.value == -1:
+            return -self._preferred_discharge_rate
+        else:
+            return 0
+
     def get_preferred_charge_rate(self):
         return self._preferred_charge_rate
 

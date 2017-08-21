@@ -24,39 +24,49 @@ from abc import abstractmethod
 
 class Eud(Device):
 
-    def __init__(self, device_id, device_type, supervisor, time=0, read_delay=0, connected_devices=None):
+    def __init__(self, device_id, device_type, supervisor, time=0, read_delay=0, power_direct=False,
+                 connected_devices=None):
         super().__init__(device_id, device_type, supervisor, time, read_delay, connected_devices)
-        self._allocated_in = {}  # Dictionary of devices and how much the device has been allocated by those devices.
-                                 # NOTE: All values must be positive, indicating the amount received.
+        self._allocated = {}  # Dictionary of devices and how much the device has been allocated by those devices.
+                              # NOTE: All values must be positive, indicating the amount received.
         self._price = 0  # EUD receives price messages from GC's only. For now, assume it will always update price.
         self._in_operation = False
+        self._power_direct = power_direct  # flag to determine whether we use request-allocate model or immediate power.
 
     # ___________________ BASIC FUNCTIONS ________________
 
+    ##
+    # Turns on the EUD, seeking to update to its desired power level. Previous state functions such as price
+    # are maintained.
     def turn_on(self):
-        # Set power levels to update the power charge calculations.
-        self._in_operation = True
-        self.modulate_power()
-        self.set_power_in(0)
-        self.set_power_out(0)
         self._logger.info(self.build_log_notation(
             message="turn on device {}".format(self._device_id),
             tag="turn on",
             value=1
         ))
 
+        # Set power levels to update the power charge calculations.
+        self._in_operation = True
+        self.modulate_power()
+        # self.set_power_in(0) this is a problem if things do not happen in the right order.
+        # self.set_power_out(0)
+
+    ##
+    # Turns off the EUD. Reduces all power consumption to 0 and informs all connected grid controllers
+    # of this change.
     def turn_off(self):
-        gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
-        self.send_power_message(gcs[0], 0)
-        self.set_power_in(0)
-        self.set_power_out(0)
-        self._in_operation = False
-        """Temporary: for debugging"""
         self._logger.info(self.build_log_notation(
             message="turn off device {}".format(self._device_id),
             tag="turn off",
             value=0
         ))
+
+        gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
+        for gc in gcs:
+            self.send_power_message(gc, 0)
+        self.set_power_in(0)
+        self.set_power_out(0)
+        self._in_operation = False
 
     ##
     # Sets the quantity of power that this EUD has been allocated to consume by a specific device
@@ -68,7 +78,7 @@ class Eud(Device):
         if allocate_amt < 0:
             raise ValueError("EUD cannot allocate to provide power")
         else:
-            self._allocated_in[device_id] = allocate_amt
+            self._allocated[device_id] = allocate_amt
 
     # ____________________MESSAGING FUNCTIONS___________________________
     ##
@@ -91,7 +101,7 @@ class Eud(Device):
         self._logger.info(self.build_log_notation("Ignored request message from {}".format(sender_id)))
 
     ##
-    # Method to be called after ... #TODO. THIS COMMEnt
+    # Method to be called after the EUD receives a price message from a grid controller, immediately updating its price.
     def process_price_message(self, sender_id, new_price):
         self._price = new_price  # EUD always updates its value to the price it receives.
         self.modulate_power()
@@ -105,28 +115,30 @@ class Eud(Device):
     # cannot respond unless the value is negative, since the EUD only consumes power.
 
     def process_allocate_message(self, sender_id, allocate_amt):
-        if allocate_amt > 0: # can not send power, so ignore this message
+        if allocate_amt > 0:  # can not send power, so ignore this message
             self._logger.info(self.build_log_notation("Ignored positive allocate message from {}".format(sender_id)))
         self.set_allocated(sender_id, -allocate_amt)  # records the amount this device has been allocate
         self.modulate_power()
 
-
     ##
-    # TODO: THIS
-    # call this function to send a new message requesting a given quantity of power from
+    # This method is called when the EUD is requesting to use power from a GC.
+    # @param target_id the recipient of the request message (must be a GC)
+    # @param request_amt the amount of power this EUD is requesting to receive (must be positive)
 
-    def send_request(self, target_id, request_amt):
-        if request_amt > 0:
+    def send_request_message(self, target_id, request_amt):
+        if request_amt < 0:
             raise ValueError("EUD cannot request to distribute power")
         if target_id in self._connected_devices.keys() and target_id.startswith("gc"):  # cannot request from non-GC's
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("invalid target to request")
+        self._logger.info(self.build_log_notation(message="Send request message to {}".format(target_id),
+                                                  tag="request message", value=request_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
 
     # This method is called when the EUD wishes to inform a grid controller that it is now consuming X watts of power.
-    #
-    #
+    # @param target_id the recipient of the power message (must be a GC)
+    # @param power_amt the value of the new load from this device's perspective.
     def send_power_message(self, target_id, power_amt):
         if power_amt < 0:
             raise ValueError("EUD cannot distribute power")
@@ -136,24 +148,36 @@ class Eud(Device):
             raise ValueError("invalid target to request")
         self._logger.info(self.build_log_notation(message="Send power message to {}".format(target_id),
                                                   tag="power message", value=power_amt))
+
+        self.recalc_sum_power(self._power_in, power_amt)
         target_device.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
     ##
     # Method to be called once it needs to recalculate its internal power usage.
     # To be called after price, power level, or allocate has changed.
-    # This function will change the EUD's power level, returning the difference of new_power - old_power
-    # Must be implemented by all EUD's.
+    # This function will change the EUD's power level to the desired level.
 
+    # TODO: Make it so EUD's can reduce consumption if they are taking too much.
     def modulate_power(self):
         desired_power_level = self.calculate_desired_power_level()
         power_seek = desired_power_level - self._power_in
+        remaining = power_seek # how much we have left to get
         if power_seek:
-            gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
-            if len(gcs):  # TODO: Make this an allocate request.
-                self.recalc_sum_power(self._power_in, desired_power_level)
-                self.send_power_message(gcs[0], power_seek)  # negative because seeking to receive.
-            else:
-                self.turn_off()  # unable to receive power to support its operation.
+            for gc in self._allocated.keys():  # take all up to what we've been allocated.
+                take_power = min(remaining, self._allocated[gc])
+                self.send_power_message(gc, take_power)
+                remaining -= take_power
+                if remaining <= 0:
+                    break
+            if remaining > 0:
+                gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
+                if len(gcs):
+                    if self._power_direct:
+                        self.send_power_message(gcs[0], power_seek)  # TODO: For now, assume 1 connected GC.
+                    else:
+                        self.send_request_message(gcs[0], power_seek)
+                else:
+                    self.turn_off()  # unable to receive power to support its operation.
 
     ##
     # Calculates EUD's desired power in to support its current internal state levels.

@@ -59,8 +59,9 @@ class Device(metaclass=ABCMeta):
         if connected_devices is None:
             self._connected_devices = {}
         else:
-            device_ids = [device.get_id() for device in connected_devices]
-            self._connected_devices = dict(zip(device_ids, connected_devices))
+            #device_ids = [device.get_id() for device in connected_devices]
+            #self._connected_devices = dict(zip(device_ids, connected_devices))
+            self._connected_devices = {device.get_id(): device for device in connected_devices}
 
         self._device_id = device_id
         self._device_type = device_type
@@ -232,9 +233,9 @@ class Device(metaclass=ABCMeta):
                 elif message.message_type == MessageType.PRICE:
                     self.process_price_message(message.sender_id, message.value)
                 elif message.message_type == MessageType.ALLOCATE:
-                    self.process_request_message(message.sender_id, message.value)
-                elif message.message_type == MessageType.REQUEST:
                     self.process_allocate_message(message.sender_id, message.value)
+                elif message.message_type == MessageType.REQUEST:
+                    self.process_request_message(message.sender_id, message.value)
                 else:
                     raise NameError('Unverified Message Type')
 
@@ -410,20 +411,23 @@ class Device(metaclass=ABCMeta):
 
     # _____________________________________________________________________ #
 
+    # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
+
     # TODO: (1) Change to allocate-request model. Add a flag to be able to require request before power (EUD only)
-    # TODO: (2) Change sign convention so power from is negative, power into is positive
-    # TODO: (2.5) Port in the Battery Logic.
-    # TODO: (3) 2-price model for utility meter.
-    # TODO: (4) Test the Utility Class, to Ensure proper functionality. (Do last 3 together in scenario test)
-    # TODO: (4.5) Port in grid controller price logic.
+    # TODO: (2) Port in the Battery Logic.
+    # TODO: (2.5) Test a more complicated multi-day schedule.
+    # TODO: (3) 2-price model for utility meter, all messaging. Test again.
+    # TODO: (4) Port in grid controller price logic.
     # TODO: (5) Refactor dependencies so this works from the command line
-    # TODO: (6) Ensure that the sum_power functions are working correctly (more scenario comparisons with Mike's code)
     # TODO: (7) FIX JSON reading to be more organized. This should be clean and extensible.
     # TODO: (8) Utility meter needs to communicate its price to the GC.
+    # TODO: (9) Add UUID value to device initialization.
+
+
     # TODO: (9) Add documentation to the Bruce page, documentation to functions throughout.
     # TODO: (10) Add PV.
     # TODO: (11) Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
-    # TODO: (12) Refactor the solution. Code cleanup. Consider using get method for default dictionary access.
+    # TODO: (12) Refactor the solution. Code cleanup.
     # TODO: (13) Finish considering GC load balance algorithm
     # TODO: (14) Port in Air Conditioner.
     # TODO: (15) Get to some form of backwards compatibility with the website.

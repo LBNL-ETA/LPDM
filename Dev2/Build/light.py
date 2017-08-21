@@ -31,7 +31,7 @@ class Light(Eud):
         self._price_off = 0.3  # price at which to turn off completely
 
     ##
-    # Calculate the desired power level __in__ (w) based on the price..
+    # Calculate the desired power level in based on the price (watts)
     #
     def calculate_desired_power_level(self):
         if self._in_operation:

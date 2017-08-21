@@ -38,8 +38,15 @@ class GridController(Device):
                  connected_devices=None):
         # identifier = "gc{}".format(device_id)
         super().__init__(device_id, "Grid Controller", supervisor, read_delay, time, connected_devices)
-        self._allocated = {}  # dictionary of devices and the amount the GC has allocated/been allocated by/to them.
-        self._requested = {}  # dictionary of devices and requests that this device has received from them.
+
+        # dictionary of devices and the amount the GC has allocated/been allocated by/to them.
+        # negative values are how much this GC has allocated to provide, positive for this GC to take.
+        self._allocated = {}
+
+        # dictionary of devices and unprovided requests that this device has received from them.
+        # negative values are requests for this GC to provide, positive are for this GC to receive.
+        self._requested = {}
+
         self._loads = {}  # dictionary of devices and the current load of the GC with that device.
         self._neighbor_prices = {}  # dictionary of connected device_id's and their most recent price value
         self._price_logic = price_logic  # how the grid controller calculates its prices
@@ -119,15 +126,31 @@ class GridController(Device):
         self.modulate_price()  # if price significantly changed, will broadcast this price to all neighbors.
         self.modulate_power()  # TODO: THIS FUNCTION IS UNBUILT.
 
+    ##
+    # Processes a request message from an EUD or another GC.
+    # Allocates to receive/provide at minimum an amount of trickle power, and rest equal to what is has available.
+    # @param sender_id the sender of the request message
+    # @param request_amt the quantity of power requested from perspective of message sender
     def process_request_message(self, sender_id, request_amt):
-        # TODO: Calculate how much it can allocate given that request. Use modulate_price function.
-        self._requested[sender_id] = request_amt
-        # available = self.modulate_power().
-        # Temporarily, we will just allocate the entire requested amount.
-        self.send_allocate_message(sender_id, request_amt)
+        if request_amt == 0:
+            self.send_allocate_message(sender_id, 0)  # always allow power flows to cease
+            return
+        available = self.calc_available_heuristic()
+        trickle_power = 500  # TODO: What should this be? Individualized to Devices? Different for take and provide?
+        if request_amt > 0:  # must provide a negative quantity (to distribute)
+            provide = min(available, -trickle_power)
+            unprovided = min(-request_amt - provide, 0)
+        else:  # must provide a positive quantity (to receive)
+            provide = max(available, trickle_power)
+            unprovided = max(-request_amt - provide, 0)
+        # Note: May provide more than asked for, which recipient can consume up to at any point.
+        self.send_allocate_message(sender_id, provide)  # negative if allocating to send, positive if to receive.
+        self._requested[sender_id] = unprovided
+        # TODO: Raise the price accordingly to whatever you didn't provide.
 
-    def process_allocate_message(self, sender, allocate_amt):
-        pass  # TODO: Complicated
+    def process_allocate_message(self, sender_id, allocate_amt):
+        self._allocated[sender_id] = allocate_amt  # so we can consume or provide up to that amount of power anytime
+        # self.modulate_power() # TODO: THIS FUNCTION IS UNBUILT
 
     ##
     # Sends a power message to another device
@@ -141,7 +164,7 @@ class GridController(Device):
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
         self._logger.info(self.build_log_notation(message="power msg to {}".format(target_id),
-                                             tag="power message", value=power_amt))
+                                                  tag="power message", value=power_amt))
 
         self.change_load(target_id, power_amt)
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
@@ -153,7 +176,7 @@ class GridController(Device):
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
         self._logger.info(self.build_log_notation(message="price msg to {}".format(target_id),
-                                              tag="price message", value=price))
+                                                  tag="price message", value=price))
         target.receive_message(Message(self._time, self._device_id, MessageType.PRICE, price))
 
     def send_request_message(self, target_id, request_amt):
@@ -163,7 +186,7 @@ class GridController(Device):
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
         self._logger.info(self.build_log_notation(message="request msg to {}".format(target_id),
-                                              tag="request message", value=request_amt))
+                                                  tag="request message", value=request_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
 
     def send_allocate_message(self, target_id, allocate_amt):
@@ -173,7 +196,8 @@ class GridController(Device):
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
         self._logger.info(self.build_log_notation(message="allocate msg to {}".format(target_id),
-                                              tag="allocate message", value=allocate_amt))
+                                                  tag="allocate message", value=allocate_amt))
+        self._allocated[target_id] = allocate_amt
         target_device.receive_message(Message(self._time, self._device_id, MessageType.ALLOCATE, allocate_amt))
 
     # Broadcasts the new price to all of its connected devices.
@@ -182,19 +206,15 @@ class GridController(Device):
         for device_id in self._connected_devices.keys():
             self.send_price_message(device_id, new_price)
 
-    def on_allocated(self, sender_id, allocate_amt):
-        self._allocated[sender_id] = allocate_amt  # so we can consume or provide up to that amount of power anytime
-        # self.modulate_power() # TODO: THIS FUNCTION IS UNBUILT
 
     #  ______________________________________Internal State Functions _________________________________#
 
     ##
     # Update the current state of the battery. Call this function every five minutes or on price change.
-    # Battery will recalculate it
-    # @param the time to set the battery to
+    # Battery will recalculate its current state of charge
 
-    def update_battery(self, time):
-        self._battery.update_state(time, self._price)
+    def update_battery(self):
+        self._battery.update_state(self._time, self._price)
     ##
     # Calculate this after a device has received a price message.
     # Iterates through the current prices of its neighbors and finds what its local price should be.
@@ -205,18 +225,19 @@ class GridController(Device):
         old_price = self._price
         self._price = self._price_logic.calculate_price(self._neighbor_prices.values())
         self._logger.info(self.build_log_notation(message="GC price changed to {}".format(self._price),
-                                             tag="price_change", value=self._price))
+                                                  tag="price_change", value=self._price))
         if self._price - old_price >= self._price_logic.diff_threshold:  # broadcast only if significant change price.
             self.broadcast_new_price(self._price)
 
     ##
     # Instantaneous supply-demand balance function, so that the net load at any given time remains at zero.
+    # To be called after this GC receives a power message.
     # The GC may not provide the entire requested amount of power if it is not able.
     # See docs for an in-depth description of reasoning.
+    #
     # @param source_id the sender of the new amount of power.
     # @param prev_source_power previous amount of a power flow from this GC's perspective
     # @param source_demanded_power the new amount of the power flow from this GC's perspective.
-    #
 
     def balance_power(self, source_id, prev_source_power, source_demanded_power):
         power_change = source_demanded_power - prev_source_power
@@ -237,7 +258,7 @@ class GridController(Device):
 
         # Try adding all the remaining demand onto the battery
         if self._battery:
-            self._battery.update_state(self._time, self._price)  # make sure we have updated state of charge
+            self.update_battery()  # make sure we have updated state of charge
             remaining -= self._battery.add_load(remaining)
 
         if remaining:
@@ -280,6 +301,24 @@ class GridController(Device):
             self.send_power_message(source_id, provided)
 
     ##
+    # Sees what the GC has available from its existing allocate levels, and uses this amount to determine
+    # how much to respond to an allocate message with
+    # @return the approximate amount this GC has available, positive if available to receive, negative if to distrib.
+
+    def calc_available_heuristic(self):
+        assets = 0  # diff. of amount the device has been allocated to receive and amount it is currently taking
+        liabilities = 0  # diff. of amount device has allocated to provide and amount it is currently providing
+        for dev_id, allocated in self._allocated.items():
+            if allocated > 0:  # allotted to receive
+                assets += max(allocated - self._loads.get(dev_id, 0), 0)
+            elif allocated < 0:
+                liabilities -= min(allocated - self._loads.get(dev_id, 0), 0)
+        self.update_battery()  # make sure we know current battery charge preference
+        available = liabilities - assets + self._battery.get_desired_power()
+        return available
+
+
+    ##
     # This is the crux function that determines how a GC balances its power flows at a given time.
     # Called upon significant event changes and at regular intervals to help the GC balance its powerflows.
     #
@@ -290,16 +329,16 @@ class GridController(Device):
         # Returns a value, available, which is after load balancing how much it has available to distribute.
         # If it still is in need of power, this quantity will be 0.
 
-        net_load = self._power_out - self._power_in
+        net_load = self._power_in - self._power_out
         # modulate_target is the net load that the GC is seeking to charge or discharge the battery.
         if self._battery.get_charging_preference() == 1:
-            modulate_target = self._battery.get_preferred_discharge_rate()
+            modulate_target = self._battery.get_preferred_charge_rate()
         elif self._battery.get_charging_preference() == -1:
-            modulate_target = -self._battery.get_preferred_charge_rate()
+            modulate_target = -self._battery.get_preferred_discharge_rate()
         else:
             modulate_target = 0
 
-        power_adjust = modulate_target - net_load  # how much to seek to adjust net load.
+        power_adjust = modulate_target - net_load # how much to seek to adjust net load.
 
         if power_adjust < 0:
             self.seek_to_obtain_power(power_adjust)

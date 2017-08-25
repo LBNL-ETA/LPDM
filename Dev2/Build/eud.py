@@ -27,8 +27,8 @@ class Eud(Device):
     def __init__(self, device_id, device_type, supervisor, time=0, read_delay=0, power_direct=False,
                  connected_devices=None):
         super().__init__(device_id, device_type, supervisor, time, read_delay, connected_devices)
-        self._allocated = {}  # Dictionary of devices and how much the device has been allocated by those devices.
-                              # NOTE: All values must be positive, indicating the amount received.
+        # Dictionary of devices and how much the device has been allocated by those devices. All values must be positive
+        self._allocated = {}
         self._price = 0  # EUD receives price messages from GC's only. For now, assume it will always update price.
         self._in_operation = False
         self._power_direct = power_direct  # flag to determine whether we use request-allocate model or immediate power.

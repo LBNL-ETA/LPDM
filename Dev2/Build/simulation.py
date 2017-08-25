@@ -29,7 +29,7 @@ import sys
 class Simulation:
 
     def __init__(self):
-        self.end_time = 0 # time to run simulation until. Update in setup_simulation.
+        self.end_time = 0  # time until which to run simulation. Update this in setup_simulation.
         self.log_manager = None
         self.config = None
         self.supervisor = None

@@ -59,8 +59,6 @@ class Device(metaclass=ABCMeta):
         if connected_devices is None:
             self._connected_devices = {}
         else:
-            #device_ids = [device.get_id() for device in connected_devices]
-            #self._connected_devices = dict(zip(device_ids, connected_devices))
             self._connected_devices = {device.get_id(): device for device in connected_devices}
 
         self._device_id = device_id
@@ -75,7 +73,6 @@ class Device(metaclass=ABCMeta):
         self._power_out = 0.0  # the power being distributed by the device (Watts, must be > 0)
         self._sum_power_out = 0.0  # Record the total energy produced by this device (wH)
         self._sum_power_in = 0.0  # Record the total energy produced by this device (wH)
-        self._hourly_prices = []  # hourly average price tracking, stores the last 24 average values
         self._logger = logging.getLogger("lpdm")  # Setup logging
 
         self._logger.info(
@@ -106,7 +103,7 @@ class Device(metaclass=ABCMeta):
 
     def set_power_in(self, power_in):
         if power_in >= 0:
-            self.sum_power_in()  # record all previous power usage at the previous level.
+            self.sum_power_in()  # record all power usage at the previous power level.
             self._power_in = power_in
         else:
             raise ValueError("Power Level In Must Be Non-Negative")
@@ -165,9 +162,6 @@ class Device(metaclass=ABCMeta):
             self._sum_power_in += self._power_in * (time_diff / 3600.0)  # Return in wH
         self._time_last_power_in_change = self._time
 
-
-
-
     #  ______________________________________Internal State Functions _________________________________#
 
     ##
@@ -189,7 +183,8 @@ class Device(metaclass=ABCMeta):
             event, time_stamp = self._queue.peek()
             if time_stamp < self._time:
                 raise ValueError("Time was incremented while there was an unprocessed event.")
-            while time_stamp == self._time and self.has_upcoming_event():  # process current events.
+            while time_stamp == self._time and self.has_upcoming_event():
+                # process current events.
                 self._queue.pop()
                 event.run_event()
                 if self.has_upcoming_event():
@@ -285,6 +280,8 @@ class Device(metaclass=ABCMeta):
         else:
             raise ValueError("This device is not connected to the message recipient")
             # LOG THIS ERROR AND ALL ERRORS.
+        self._logger.debug(self.build_log_notation(
+            "register msg to {}".format(target_id), tag="register msg", value=value))
         target.receive_message(Message(self._time, self._device_id, MessageType.REGISTER, value))
 
     ##
@@ -413,7 +410,6 @@ class Device(metaclass=ABCMeta):
 
     # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
-    # TODO: (1) Change to allocate-request model. Add a flag to be able to require request before power (EUD only)
     # TODO: (2) Port in the Battery Logic.
     # TODO: (2.5) Test a more complicated multi-day schedule.
     # TODO: (3) 2-price model for utility meter, all messaging. Test again.
@@ -422,7 +418,6 @@ class Device(metaclass=ABCMeta):
     # TODO: (7) FIX JSON reading to be more organized. This should be clean and extensible.
     # TODO: (8) Utility meter needs to communicate its price to the GC.
     # TODO: (9) Add UUID value to device initialization.
-
 
     # TODO: (9) Add documentation to the Bruce page, documentation to functions throughout.
     # TODO: (10) Add PV.
@@ -434,3 +429,6 @@ class Device(metaclass=ABCMeta):
     # TODO: (16) LONG TERM: Start to modify price logic. Price Forecasts?
     # TODO: (17) Convert the date format to accept milliseconds in message parsing.
 
+
+
+    # TODO: (distant, complicated scenarios): Multiple GC's and EUD's on each. Multi-Battery GC's.

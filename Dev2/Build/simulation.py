@@ -33,6 +33,10 @@ class Simulation:
         self.log_manager = None
         self.config = None
         self.supervisor = None
+        self.eud_dictionary = {
+            'light': [Light, 'max_power_output'],
+            'air_conditioner': [None, '']
+        }
 
     def read_config_file(self, filename):
         with open(filename, 'r') as config_file:
@@ -48,6 +52,77 @@ class Simulation:
         )
         self.log_manager.init(config_file)
 
+    def read_grid_controllers(self, config):
+
+        # TODO: Incorporate their scheduling
+
+        connections = []  # a list of tuples of (gc, [connections]) to initialize later once all devices are set.
+        for gc in config['devices']['grid_controllers']:
+            gc_id = gc['device_id']
+            price_logic = gc['price_logic']
+            # gc_uuid = gc.get(uuid, 0)
+            msg_latency = gc.get('message_latency', 0)  # default 0 msg latency
+            connected_devices = gc.get('connected_devices', None)
+            if connected_devices:
+                connections.append((gc_id, connected_devices))
+
+            batt_info = gc.get('battery', None)
+            if batt_info:
+                price_logic = batt_info['price_logic']
+                max_discharge_rate = batt_info.get('max_discharge_rate', 1000.0)
+                max_charge_rate = batt_info.get('max_charge_rate', 1000.0)
+                capacity = batt_info.get('capacity', 50000.0)
+                battery = Battery(price_logic=price_logic, capacity=capacity, max_charge_rate=max_charge_rate,
+                                  max_discharge_rate=max_discharge_rate)
+            else:
+                battery = None
+            self.supervisor.register_device(
+                GridController(device_id=gc_id, supervisor=self.supervisor, battery=battery, msg_latency=msg_latency,
+                               price_logic=price_logic))
+        return connections
+
+    def read_utility_meters(self, config):
+
+        # TODO: Incorporate new scheduling
+
+        connections = []  # a list of tuples of (utm, [connections]) to initialize later once all devices are set.
+        for utm in config['devices']['utility_meters']:
+            utm_id = utm['device_id']
+            connected_devices = utm.get('connected_devices', None)
+            if connected_devices:
+                connections.append((utm_id, connected_devices))
+
+            new_utm = UtilityMeter(utm_id, self.supervisor)
+            utm_schedule = utm['schedule']
+            utm_price_schedule = utm['price_schedule']
+            new_utm.setup_schedule(utm_schedule)
+            new_utm.setup_price_schedule(utm_price_schedule)
+            self.supervisor.register_device(new_utm)
+        return connections
+
+    def read_pvs(self, config):
+        pass
+        # TODO: Once we implement PV etc.
+
+    def read_euds(self, config):
+        connections = []
+        for eud in config['devices']['euds']:
+            eud_id = eud['device_id']
+            eud_type = eud['eud_type']
+            connected_devices = eud.get('connected_devices', None)
+            if connected_devices:
+                connections.append((eud_id, connected_devices))
+
+            eud_class = self.eud_dictionary[eud_type][0]
+            # get all the arguments for the eud constructor
+            args = [eud.get(cls_arg, None) for cls_arg in self.eud_dictionary[eud_type][1:]]
+            new_eud = eud_class(*args)
+            schedule = eud.get('schedule', None)
+            if schedule:
+                new_eud.setup_schedule(schedule)
+            self.supervisor.register_device(new_eud)
+        return connections
+
     ## Reads in the simulation json file.
     #
     #
@@ -56,46 +131,18 @@ class Simulation:
         self.read_config_file("../scenario_data/{}".format(config_file))
         self.setup_logging(config_file)
 
-        """We will change this later. Mike's way ain't bad (DeviceClassLoader).
-        Want to change the references to so that the connected_devices can be done properly"""
+        #  TODO: pv_connections = self.read_pvs(self.config)
 
-        for gc in self.config["devices"]["grid_controllers"]:
-            gc_id = gc['device_id']
-            batt_info = gc.get('battery', None)
-            if batt_info:
-                max_discharge_rate = batt_info.get('max_discharge_rate', 1000.0)
-                max_charge_rate = batt_info.get('max_charge_rate', 1000.0)
-                capacity = batt_info.get('capacity', 50000.0)
-                battery = Battery(price_logic=None, capacity=capacity, max_charge_rate=max_charge_rate,
-                                  max_discharge_rate=max_discharge_rate)
-            else:
-                battery = None
-            self.supervisor.register_device(GridController(gc_id, self.supervisor, battery=battery))
-        for power_source in self.config["devices"]["power_sources"]:
-            utm_id = power_source['device_id']
-            utm = UtilityMeter(utm_id, self.supervisor)
-            utm_schedule = power_source['schedule']
-            utm_price_schedule = power_source['price_schedule']
-            utm.setup_schedule(utm_schedule)
-            utm.setup_price_schedule(utm_price_schedule)
-            self.supervisor.register_device(utm)
-        for eud in self.config["devices"]["euds"]:
-            light_id = eud['device_id']
-            max_power = eud['max_power_output']
-            light = Light(device_id=light_id, supervisor=self.supervisor, max_operating_power=max_power)
-            light_schedule = eud['schedule']
-            light.setup_schedule(light_schedule)
-            self.supervisor.register_device(light)
+        connections = [self.read_grid_controllers(self.config), self.read_utility_meters(self.config),
+                       self.read_euds(self.config)]
 
-        gc1 = self.supervisor.get_device("gc_1")
-        utm1 = self.supervisor.get_device("utm_1")
-        eud1 = self.supervisor.get_device("eud_1")
-        gc1._connected_devices["utm_1"] = utm1
-        gc1._connected_devices["eud_1"] = eud1
-        utm1._connected_devices["gc_1"] = gc1
-        eud1._connected_devices["gc_1"] = gc1
-
-        #gc1.engage([utm1, eud1])  # registers the gc with these entities and vice versa.
+        for connect_list in connections:
+            for this_device_id, connects in connect_list:
+                this_device = self.supervisor.get_device(this_device_id)
+                for that_device_id in connects:
+                    that_device = self.supervisor.get_device(that_device_id)
+                    this_device.register_device(that_device, that_device_id, 1)
+                    that_device.register_device(this_device, this_device_id, 1)
 
         days_to_run = int(self.config["run_time_days"])
         self.end_time = 24 * 60 * 60 * days_to_run  # end time in seconds

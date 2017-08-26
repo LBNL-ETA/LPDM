@@ -33,10 +33,10 @@ class GridController(Device):
     # as a differential threshold for when a GC should broadcast changes in price
     # @param battery battery connected with this Grid Controller (could represent multiple batteries).
 
-    def __init__(self, device_id, supervisor, read_delay=0, time=0, price_logic=None, battery=None,
+    def __init__(self, device_id, supervisor, msg_latency=0, time=0, price_logic=None, battery=None,
                  connected_devices=None):
         # identifier = "gc{}".format(device_id)
-        super().__init__(device_id, "Grid Controller", supervisor, read_delay, time, connected_devices)
+        super().__init__(device_id, "Grid Controller", supervisor, msg_latency, time, connected_devices)
 
         # dictionary of devices and the amount the GC has allocated/been allocated by/to them.
         # negative values are how much this GC has allocated to provide, positive for this GC to take.
@@ -48,10 +48,17 @@ class GridController(Device):
 
         self._loads = {}  # dictionary of devices and the current load of the GC with that device.
         self._neighbor_prices = {}  # dictionary of connected device_id's and their most recent price value
-        self._price_logic = price_logic  # how the grid controller calculates its prices
-        self._price = price_logic.initial_price() if price_logic else 0 # the initial price as set by the price logic
         self._battery = battery  # the battery contained within this grid controller. Communicates every minute.
-        # a running average of the grid controller's time-weighted average hourly prices
+
+        # TODO: Let these have input parameters
+        if price_logic == "WeightedAverage":
+            self._price_logic = GCWeightedAveragePriceLogic()
+        #  elif price_logic == "MarginalPrice":
+        else:
+            raise ValueError("attempted to initialize grid controller with invalid price logic")
+        self._price = price_logic.initial_price() if price_logic else 0.0  # the initial price as set by the price logic
+
+    # how the grid controller calculates its prices
 
 
     #  ______________________________________Maintenance Functions______________________________________ #
@@ -216,9 +223,8 @@ class GridController(Device):
     # preference accordingly, and recalculate its current state of charge
 
     def update_battery(self):
-        self._battery.update_state(self._time, self._price, self._price_logic.get_average_prices(),
+        self._battery.update_state(self._time, self._price, self._price_logic.get_average_price(),
                                    self._price_logic.get_hourly_prices())
-        # TODO: Make sure these are in correct order.
 
     ##
     # Call this function every hour during the running of the simulation. This will reevaluate the current running
@@ -226,6 +232,7 @@ class GridController(Device):
     def update_price_calcs(self):
         self._price_logic.update_hourly_prices()
         self._price_logic.update_average_price()
+
 
     ##
     # Calculate this after a device has received a price message.
@@ -236,11 +243,11 @@ class GridController(Device):
     def modulate_price(self):
         old_price = self._price
         self.update_price_calcs()
-        self._price = self._price_logic.calc_price(self._neighbor_prices.values())
+        self._price = self._price_logic.calc_price(self._neighbor_prices, self._loads, self._requested, self._allocated)
         self._logger.info(self.build_log_notation(message="GC price changed to {}".format(self._price),
                                                   tag="price_change", value=self._price))
         # broadcast only if significant change price.
-        if self._price - old_price >= self._price_logic.get_price_differential():
+        if self._price - old_price >= self._price_logic.get_price_announce_threshold():
             self.broadcast_new_price(self._price)
 
     ##
@@ -465,9 +472,10 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
 
     ##
     # A method to determine the minimum price difference which should cause the grid controller to broadcast
-    # its new price to all connected devices
+    # its new price to a specified subset of its connected devices.
+    # TODO: Return tuple of price and time_diff to determine minimum time change before announcing
     @abstractmethod
-    def get_price_differential(self):
+    def get_price_announce_threshold(self):
         pass
 
     ##
@@ -480,7 +488,7 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
     ##
     # Gets the predicted price of this grid controller at the specified time (in seconds)
     @abstractmethod
-    def get_predicted_price(self, time):
+    def get_forecast_price(self, time):
         pass
 
     ##
@@ -497,11 +505,14 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
     def get_hourly_prices(self):
         pass
 
+    # TODO: Evaluation of price in context of the price history.
     ##
     # Updates the average time of the grid controller
     @abstractmethod
     def update_average_price(self, time):
         pass
+
+    ##
 
     @abstractmethod
     def get_average_price(self):
@@ -515,13 +526,13 @@ its average hourly prices and average price statistics.
 """
 
 
-class GridControllerPriceLogicA(GridControllerPriceLogic):
+class GCWeightedAveragePriceLogic(GridControllerPriceLogic):
 
-    # TODO: CHANGE THE LAST UPDATE TIME TO A HARD VALUE, and modify update hourly prices value.
+    # TODO: Hourly prices renamed to price history. Change to accept non-hour time intervals.
 
     def __init__(self):
         self._initial_price = 0.1
-        self._price_differential = 0.02
+        self._price_announce_threshold = 0.02
         self._current_price = self._initial_price
         self._hourly_prices = [self._initial_price for i in range(24)]
         self._hourly_average_price = 0.
@@ -531,10 +542,12 @@ class GridControllerPriceLogicA(GridControllerPriceLogic):
     def initial_price(self):
         return self._initial_price
 
-    def get_price_differential(self):
-        return self._price_differential
+    def get_price_announce_threshold(self):
+        return self._price_announce_threshold
 
-    def get_predicted_price(self, time):
+    ##
+    # Predicts the price based on the previous observed price at this hour.
+    def get_forecast_price(self, time):
         (day, seconds) = divmod(time, (24 * 60 * 60))
         (hour, seconds) = divmod(seconds, (60 * 60))
         return self._hourly_prices[hour]
@@ -542,13 +555,22 @@ class GridControllerPriceLogicA(GridControllerPriceLogic):
     def get_hourly_prices(self):
         return self._hourly_prices
 
+    ##
+    # Call this method at least every hour to ensure that the GC's hourly prices are up to date.
     def update_hourly_prices(self, time):
         secs_into_hour = time % 3600
-        time_diff = secs_into_hour - self._last_price_update_time
+        if secs_into_hour == 0:
+            secs_into_hour = 3600
 
-        prev_sum_price = self._hourly_average_price * self._last_price_update_time
+        time_diff = time - self._last_price_update_time  # should always be less than or equal to an hour
+        if time_diff > 3600:
+            raise ValueError("Missed an hourly value calculation")
+
+        prev_secs_into_hour = self._last_price_update_time % 3600
+
+        prev_sum_price = self._hourly_average_price * prev_secs_into_hour
         self._hourly_average_price = (prev_sum_price + (time_diff * self._current_price)) / secs_into_hour
-        self._last_price_update_time = secs_into_hour
+        self._last_price_update_time = time
 
     def update_average_price(self, time):
         time_diff = time - self._last_price_update_time
@@ -558,6 +580,97 @@ class GridControllerPriceLogicA(GridControllerPriceLogic):
     def get_average_price(self):
         return self._total_average_price
 
+    ##
+    # Calculates this GC's Price as a function of the prices of its power sources, weighted by the fraction
+    # of this GC's total power in that
     def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None):
-        return max(neighbor_prices) # TODO: This was temporary.
 
+        if neighbor_prices and loads:
+            total_load_in = 0.0
+            sum_price = 0.0
+            for source, load in loads:
+                if load > 0:  # receiving power from this entity
+                    neighbor_price = neighbor_prices.get(source, 0)
+                    if neighbor_price:
+                        total_load_in += load
+                        sum_price += neighbor_price * load
+            if total_load_in:
+                return sum_price / total_load_in
+        # insufficient information or no current loads in, return starting price
+        return self._initial_price
+
+
+
+    ##
+    #
+    """
+    class GCMarginalPriceLogic:
+
+        # TODO: CHANGE THE LAST UPDATE TIME TO A HARD VALUE, and modify update hourly prices value.
+
+        def __init__(self, initial_price=0.1, price_differential=.02, price_history_segments=24):
+            self._initial_price = 0.1
+            self._price_differential = 0.02
+            self._current_price = self._initial_price
+            self._price_history = [self._initial_price for i in range(price_history_segments)]
+            self._segment_average_price = 0.
+            self._total_average_price = 0.
+            self._last_price_update_time = 0  # the time in the hour when the price was last updated
+
+        def initial_price(self):
+            return self._initial_price
+
+        def get_price_differential(self):
+            return self._price_differential
+
+        ##
+        # Predicts the price based on the previous observed price at this hour.
+        def get_forecast_price(self, time):
+            (day, seconds) = divmod(time, (24 * 60 * 60))
+            (hour, seconds) = divmod(seconds, (60 * 60))
+            return self._hourly_prices[hour]
+
+        def get_segment_prices(self):
+            return self._segment_prices
+
+        def update_segment_prices(self, time):
+            segment_length =
+            secs_into_hour = time % 3600
+            time_diff = secs_into_hour - self._last_price_update_time
+
+            prev_sum_price = self._hourly_average_price * self._last_price_update_time
+            self._hourly_average_price = (prev_sum_price + (time_diff * self._current_price)) / secs_into_hour
+            self._last_price_update_time = secs_into_hour
+
+        def update_average_price(self, time):
+            time_diff = time - self._last_price_update_time
+            prev_sum_price = self._total_average_price * self._last_price_update_time
+            self._total_average_price = (prev_sum_price + (time_diff * self._current_price)) / time
+
+        def get_average_price(self):
+            return self._total_average_price
+
+        ##
+        # Calcutes this GC's Price as a function of the prices of its power sources, weighted by the fraction
+        # of this GC's total power in that
+        def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None):
+
+            if neighbor_prices and loads:
+                total_load_in = 0.0
+                sum_price = 0.0
+                for source, load in loads:
+                    if load > 0:  # receiving power from this entity
+                        neighbor_price = neighbor_prices.get(source, 0)
+                        if neighbor_price:
+                            total_load_in += load
+                            sum_price += neighbor_price * load
+
+                if total_load_in:
+                    return sum_price / total_load_in
+                else:
+                    return
+
+
+            else:
+                return self._initial_price
+    """

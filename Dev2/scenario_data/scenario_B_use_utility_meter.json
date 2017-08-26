@@ -11,6 +11,7 @@
                 "uuid": 1, 
                 "device_type": "grid_controller",
                 "static_price": false,
+                "price_logic": "weighted_average", 
                 "battery": {
                     "device_id": "battery_1",
                     "device_type": "battery",

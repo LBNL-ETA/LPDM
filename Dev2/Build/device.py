@@ -410,12 +410,12 @@ class Device(metaclass=ABCMeta):
 
     # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
-    # TODO: (2) Port in the Battery Logic.
+    # TODO: (2) Get the file read in to work. Test read_delay without battery preference, then battery preference.
     # TODO: (2.5) Test a more complicated multi-day schedule.
-    # TODO: (3) 2-price model for utility meter, all messaging. Test again.
-    # TODO: (4) Port in grid controller price logic.
+    # TODO: (3) 2-price model for utility meter, all messaging (with extended value options). Test again.
+    # TODO: (3.5) Utility meter communicates price to GC.
+
     # TODO: (5) Refactor dependencies so this works from the command line
-    # TODO: (7) FIX JSON reading to be more organized. This should be clean and extensible.
     # TODO: (8) Utility meter needs to communicate its price to the GC.
     # TODO: (9) Add UUID value to device initialization.
 
@@ -423,12 +423,10 @@ class Device(metaclass=ABCMeta):
     # TODO: (10) Add PV.
     # TODO: (11) Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
     # TODO: (12) Refactor the solution. Code cleanup.
+
     # TODO: (13) Finish considering GC load balance algorithm
     # TODO: (14) Port in Air Conditioner.
     # TODO: (15) Get to some form of backwards compatibility with the website.
-    # TODO: (16) LONG TERM: Start to modify price logic. Price Forecasts?
+    # TODO: (16) Reconsider price forecasts.
     # TODO: (17) Convert the date format to accept milliseconds in message parsing.
 
-
-
-    # TODO: (distant, complicated scenarios): Multiple GC's and EUD's on each. Multi-Battery GC's.

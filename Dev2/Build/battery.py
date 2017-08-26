@@ -42,9 +42,6 @@ class Battery(object):
 
         self._battery_id = battery_id
         self._charging_preference = self.BatteryChargingPreference.NEUTRAL
-        self._price_logic = price_logic
-        self._min_soc = 0.2
-        self._max_soc = 0.8
         self._preferred_charge_rate = preferred_charge_rate if preferred_charge_rate > 0 else max_charge_rate
         self._preferred_discharge_rate = preferred_discharge_rate if preferred_discharge_rate > 0 else max_discharge_rate
         self._max_charge_rate = max_charge_rate  # largest possible charge rate, in kW
@@ -54,13 +51,20 @@ class Battery(object):
         self._load = 0  # the load on the battery, either charge (positive) or discharge (negative), in w.
         self._price = 0  # informed of price by the grid controller on their communications.
         self._price_moving_average = 0  # total moving average of the price, weighted by time that price was maintained
-        self._hourly_prices = []  #
+        self._hourly_prices = []  # TODO: Rename this to regular prices.
         self._hourly_moving_price = 0  # battery's hourly moving average of price, weighted by time of that price
         self._time = 0  # battery's local time, updated by grid controller.
         self._last_update_time = 0  # time of last battery update from grid controller
         self.sum_charge_wh = 0.0
         self.sum_discharge_wh = 0.0
         self._logger = logging.getLogger("lpdm")  # Setup logging
+
+        if price_logic == 'hourly_preference':
+            self._price_logic = BatteryPriceLogicA()
+        elif price_logic == 'moving_average':
+            self._price_logic = BatteryPriceLogicB()
+        else:
+            raise ValueError("tried to set up battery with an invalid price logic")
 
     ##
     # Adds a new load to the battery
@@ -95,9 +99,9 @@ class Battery(object):
     # @param extra_load the load to add from battery's perspective (positive charge, negative discharge)
     # @param return whatever value was added to the battery's load.
     def add_load(self, extra_load):
-        if self._current_soc <= self._min_soc and extra_load < 0:
+        if self._current_soc <= 0 and extra_load < 0:
             return 0  # don't discharge when too low
-        if self._current_soc >= self._max_soc and extra_load > 0:
+        if self._current_soc >= 1.0 and extra_load > 0:
             return 0  # don't charge when too high
         old_load = self._load
         self._load += extra_load
@@ -126,7 +130,7 @@ class Battery(object):
             new_charge_amt = (prev_soc * self._capacity) + power_change
             self._current_soc = new_charge_amt / self._capacity
 
-            self.recalc_charge_preference()
+            # TODO: self.recalc_charge_preference()
             if power_change > 0:
                 self.sum_charge_wh += power_change
             elif power_change < 0:
@@ -169,7 +173,7 @@ class Battery(object):
             device_id=self._battery_id
         )
 
-    calculate_
+
 """
 Class to determine the battery's charging preference, based on its current state of charge, current price, 
 and price history. 

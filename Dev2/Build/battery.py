@@ -130,7 +130,7 @@ class Battery(object):
             new_charge_amt = (prev_soc * self._capacity) + power_change
             self._current_soc = new_charge_amt / self._capacity
 
-            # TODO: self.recalc_charge_preference()
+            self.recalc_charge_preference()
             if power_change > 0:
                 self.sum_charge_wh += power_change
             elif power_change < 0:
@@ -143,10 +143,10 @@ class Battery(object):
     # @param price_stat the representative statistic to use to calculate it?
     def recalc_charge_preference(self):
 
-        if self._price_logic.issubclass(BatteryPriceLogicA):
+        if type(self._price_logic) == BatteryPriceLogicA:
             self._charging_preference = self._price_logic.calc_charge_preference(self._current_soc, self._price,
                                                                                  self._hourly_prices)
-        elif self._price_logic.issubclass(BatteryPriceLogicB):
+        elif type(self._price_logic) == BatteryPriceLogicB:
             self._charging_preference = self._price_logic.calc_charge_preference(self._current_soc, self._price,
                                                                                  self._price_moving_average)
 

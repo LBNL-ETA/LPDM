@@ -158,10 +158,11 @@ class Eud(Device):
     # This function will change the EUD's power level to the desired level.
 
     # TODO: Make it so EUD's can reduce consumption if they are taking too much.
+    # TODO: Fix infinite loop with message between grid controller and EUD here.
     def modulate_power(self):
         desired_power_level = self.calculate_desired_power_level()
         power_seek = desired_power_level - self._power_in
-        remaining = power_seek # how much we have left to get
+        remaining = power_seek  # how much we have left to get
         if power_seek:
             for gc in self._allocated.keys():  # take all up to what we've been allocated.
                 take_power = min(remaining, self._allocated[gc])
@@ -172,11 +173,13 @@ class Eud(Device):
             if remaining > 0:
                 gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
                 if len(gcs):
-                    if self._power_direct:
-                        self.send_power_message(gcs[0], power_seek)  # TODO: For now, assume 1 connected GC.
-                    else:
-                        self.send_request_message(gcs[0], power_seek)
+                    if gcs[0] not in self._allocated.keys():
+                        if self._power_direct:
+                            self.send_power_message(gcs[0], remaining)  # TODO: For now, assume 1 connected GC.
+                        else:
+                            self.send_request_message(gcs[0], remaining)
                 else:
+                    # TODO: self.low_power()?
                     self.turn_off()  # unable to receive power to support its operation.
 
     ##

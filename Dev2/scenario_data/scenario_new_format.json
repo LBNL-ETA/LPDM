@@ -18,7 +18,7 @@
                     "capacity": 2000.0,
                     "max_discharge_rate": 200.0,
                     "max_charge_rate": 100.0, 
-                    "status_logic_class_name": "LogicB"
+                    "price_logic": "LogicB"
                     }
             }
         ],

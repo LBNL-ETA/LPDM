@@ -12,7 +12,7 @@ def format_time_from_seconds(seconds):
     (hours, seconds) = divmod(seconds, (60 * 60))
     (minutes, seconds) = divmod(seconds, 60)
     t_format = datetime.time(hour=hours, minute=minutes, second=seconds).isoformat()
-    return "Day #{0} {1}".format(days, t_format)
+    return "{0} {1}".format(days, t_format)
 
 
 ##

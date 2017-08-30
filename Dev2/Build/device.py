@@ -410,7 +410,8 @@ class Device(metaclass=ABCMeta):
 
     # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
-    # TODO: (2) Get the file read in to work. Test read_delay without battery preference, then battery preference.
+    # TODO: Go through in line todo's and work on them. Battery charge preference working?
+     # TODO: Test read_delay without battery preference, then battery preference.
     # TODO: (2.5) Test a more complicated multi-day schedule.
     # TODO: (3) 2-price model for utility meter, all messaging (with extended value options). Test again.
     # TODO: (3.5) Utility meter communicates price to GC.

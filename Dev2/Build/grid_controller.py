@@ -51,12 +51,12 @@ class GridController(Device):
         self._battery = battery  # the battery contained within this grid controller. Communicates every minute.
 
         # TODO: Let these have input parameters
-        if price_logic == "WeightedAverage":
+        if price_logic == "weighted_average":
             self._price_logic = GCWeightedAveragePriceLogic()
         #  elif price_logic == "MarginalPrice":
         else:
             raise ValueError("attempted to initialize grid controller with invalid price logic")
-        self._price = price_logic.initial_price() if price_logic else 0.0  # the initial price as set by the price logic
+        self._price = self._price_logic.initial_price() if self._price_logic else 0.0
 
     # how the grid controller calculates its prices
 
@@ -144,17 +144,25 @@ class GridController(Device):
             self.send_allocate_message(sender_id, 0)  # always allow power flows to cease
             return
         available = self.calc_available_heuristic()
-        trickle_power = 500  # TODO: What should this be? Individualized to Devices? Different for take and provide?
+        trickle_power = 900  # TODO: What should this be? Individualized to Devices? Different for take and provide?
         if request_amt > 0:  # must provide a negative quantity (to distribute)
+            # TODO: What am I already giving you? Don't give more trickle power if already giving.
+            current_provide = self._loads.get(sender_id, 0)
+            if current_provide < 0:
+                trickle_power += current_provide
             provide = min(available, -trickle_power)
             unprovided = min(-request_amt - provide, 0)
         else:  # must provide a positive quantity (to receive)
+            current_provide = self._loads.get(sender_id, 0)
+            if current_provide > 0:
+                trickle_power -= current_provide
             provide = max(available, trickle_power)
             unprovided = max(-request_amt - provide, 0)
         # Note: May provide more than asked for, which recipient can consume up to at any point.
         self.send_allocate_message(sender_id, provide)  # negative if allocating to send, positive if to receive.
         self._requested[sender_id] = unprovided
         # TODO: Raise the price accordingly to whatever you didn't provide.
+        # TODO: modulate power.
 
     def process_allocate_message(self, sender_id, allocate_amt):
         self._allocated[sender_id] = allocate_amt  # so we can consume or provide up to that amount of power anytime

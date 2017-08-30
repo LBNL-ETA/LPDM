@@ -33,6 +33,7 @@ class Simulation:
         self.log_manager = None
         self.config = None
         self.supervisor = None
+        # A dictionary of eud class names and their respective constructor input names to read from json (in order)
         self.eud_dictionary = {
             'light': [Light, 'max_power_output'],
             'air_conditioner': [None, '']
@@ -68,12 +69,13 @@ class Simulation:
 
             batt_info = gc.get('battery', None)
             if batt_info:
-                price_logic = batt_info['price_logic']
+                batt_price_logic = batt_info['price_logic']
+                batt_id = batt_info['battery_id']
                 max_discharge_rate = batt_info.get('max_discharge_rate', 1000.0)
                 max_charge_rate = batt_info.get('max_charge_rate', 1000.0)
                 capacity = batt_info.get('capacity', 50000.0)
-                battery = Battery(price_logic=price_logic, capacity=capacity, max_charge_rate=max_charge_rate,
-                                  max_discharge_rate=max_discharge_rate)
+                battery = Battery(battery_id = batt_id, price_logic=batt_price_logic, capacity=capacity,
+                                  max_charge_rate=max_charge_rate, max_discharge_rate=max_discharge_rate)
             else:
                 battery = None
             self.supervisor.register_device(
@@ -116,7 +118,7 @@ class Simulation:
             eud_class = self.eud_dictionary[eud_type][0]
             # get all the arguments for the eud constructor
             args = [eud.get(cls_arg, None) for cls_arg in self.eud_dictionary[eud_type][1:]]
-            new_eud = eud_class(*args)
+            new_eud = eud_class(eud_id, self.supervisor, *args)
             schedule = eud.get('schedule', None)
             if schedule:
                 new_eud.setup_schedule(schedule)
@@ -133,6 +135,7 @@ class Simulation:
 
         #  TODO: pv_connections = self.read_pvs(self.config)
 
+        # reads in and creates all the simulation devices before registering them
         connections = [self.read_grid_controllers(self.config), self.read_utility_meters(self.config),
                        self.read_euds(self.config)]
 

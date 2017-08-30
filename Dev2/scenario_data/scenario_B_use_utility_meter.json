@@ -22,7 +22,7 @@
                 }
             }
         ],
-        "power_sources": [
+        "utility_meters": [
             {
                 "device_id": "utm_1",
                 "uuid": 2,

@@ -63,6 +63,7 @@ class Simulation:
             price_logic = gc['price_logic']
             # gc_uuid = gc.get(uuid, 0)
             msg_latency = gc.get('message_latency', 0)  # default 0 msg latency
+            min_alloc_response_threshold = gc.get('threshold_alloc', 1)
             connected_devices = gc.get('connected_devices', None)
             if connected_devices:
                 connections.append((gc_id, connected_devices))
@@ -74,13 +75,15 @@ class Simulation:
                 max_discharge_rate = batt_info.get('max_discharge_rate', 1000.0)
                 max_charge_rate = batt_info.get('max_charge_rate', 1000.0)
                 capacity = batt_info.get('capacity', 50000.0)
-                battery = Battery(battery_id = batt_id, price_logic=batt_price_logic, capacity=capacity,
+                battery = Battery(battery_id=batt_id, price_logic=batt_price_logic, capacity=capacity,
                                   max_charge_rate=max_charge_rate, max_discharge_rate=max_discharge_rate)
             else:
                 battery = None
+
+            # make a new grid controller and register it with the supervisor
             self.supervisor.register_device(
                 GridController(device_id=gc_id, supervisor=self.supervisor, battery=battery, msg_latency=msg_latency,
-                               price_logic=price_logic))
+                               price_logic=price_logic, min_alloc_response_threshold=min_alloc_response_threshold))
         return connections
 
     def read_utility_meters(self, config):
@@ -94,6 +97,7 @@ class Simulation:
             if connected_devices:
                 connections.append((utm_id, connected_devices))
 
+            # make a new utility meter, set up its schedules, and register with supervisor
             new_utm = UtilityMeter(utm_id, self.supervisor)
             utm_schedule = utm['schedule']
             utm_price_schedule = utm['price_schedule']

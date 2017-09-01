@@ -12,7 +12,7 @@
 import os
 import re
 import logging
-from datetime import date, time
+from datetime import datetime, timezone
 
 
 class SimulationLogger:
@@ -97,7 +97,7 @@ class SimulationLogger:
         self.logger.setLevel(logging.DEBUG)
 
         # setup the formatter
-        header = "{}\n{}\n".format(date.today().isoformat(), config_file)
+        header = "{}\n{}\n".format(datetime.now(timezone.utc).astimezone().isoformat(), config_file)
 
         # create file handler which logs even debug messages
         fh = self.FileHandlerWithHeader(header, os.path.join(self.simulation_log_path(), 'sim_results.log'), mode='w')

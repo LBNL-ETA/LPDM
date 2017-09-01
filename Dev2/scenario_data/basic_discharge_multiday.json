@@ -1,5 +1,5 @@
 {
-    "run_time_days": 1,
+    "run_time_days": 2,
     "log_to_postgres": 0,
     "console_log_level": 20,
     "file_log_level": 20,
@@ -10,9 +10,10 @@
                 "device_id": "gc_1",
                 "uuid": 1, 
                 "device_type": "grid_controller",
-                "static_price": false, 
+                "static_price": false,
+                "threshold_alloc": 0.75, 
+                "message_latency": 1, 
                 "price_logic": "weighted_average",
-                "threshold_alloc": 0.75,
                 "connected_devices": ["utm_1", "eud_1"], 
                 "battery": {
                     "battery_id": "battery_1",
@@ -40,9 +41,10 @@
                 "device_id": "eud_1",
                 "uuid": 3,
                 "eud_type": "light",
-                "max_power_output": 500.0,             
+                "max_power_output": 500.0, 
+                "message_latency": 1,             
                 "schedule": [
-                    [0, "turn_on"], [6, "turn_off"], [8, "turn_on"], [18, "turn_off"]
+                    [0, "turn_on"], [6, "turn_off"], [8, "turn_on"], [18, "turn_off"], [24, "turn_on"], [30, "turn_off"], [32, "turn_on"], [42, "turn_off"]
                 ]
             }
         ]

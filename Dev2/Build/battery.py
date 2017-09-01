@@ -67,8 +67,7 @@ class Battery(object):
             raise ValueError("tried to set up battery with an invalid price logic")
 
     ##
-    # Adds a new load to the battery
-    # @param new_load the load to add
+    # Returns the current load on the battery
     def get_load(self):
         return self._load
 
@@ -76,6 +75,16 @@ class Battery(object):
     # Returns the value of the current batteries charging preference (1 if discharge, 0 if neutral, -1 if discharge)
     def get_charging_preference(self):
         return self._charging_preference.value
+
+    ##
+    # Getter for max charge rate
+    def get_max_charge_rate(self):
+        return self._max_charge_rate
+
+    ##
+    # Getter for max discharge rate
+    def get_max_discharge_rate(self):
+        return self._max_discharge_rate
 
     ##
     # Based on the current state of charge determine what the optimal charge rate for the battery is.
@@ -86,12 +95,6 @@ class Battery(object):
             return -self._preferred_discharge_rate
         else:
             return 0
-
-    def get_preferred_charge_rate(self):
-        return self._preferred_charge_rate
-
-    def get_preferred_discharge_rate(self):
-        return self._preferred_discharge_rate
 
     ##
     # Adds a new load to the battery. Call update state first to ensure valid state of charge

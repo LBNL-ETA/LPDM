@@ -26,15 +26,16 @@ from abc import ABCMeta, abstractmethod
 class GridController(Device):
 
     # TODO: Add some notion of individual transmit/receive capacity
-    # TODO: Add some notion of maximum net_load (e.g all net_load must be covered by battery, so what is max outflow?)
     # @param device_id a unique id for this device. "gc" will be prefix for the provided id. Caller is responsible
     # for ensuring the uniqueness of this id.
     # @param price logic a string name of a grid controller price logic class, which contains an initial price as well
     # as a differential threshold for when a GC should broadcast changes in price
+    # @param min_response_threshold_ratio the percentage of max battery (dis)charge rate to use as a minimum allocate
+    # response for request messages.
     # @param battery battery connected with this Grid Controller (could represent multiple batteries).
 
-    def __init__(self, device_id, supervisor, msg_latency=0, time=0, price_logic=None, battery=None,
-                 connected_devices=None):
+    def __init__(self, device_id, supervisor, msg_latency=0, time=0,
+                 price_logic=None, battery=None, min_alloc_response_threshold=1, connected_devices=None):
         # identifier = "gc{}".format(device_id)
         super().__init__(device_id, "Grid Controller", supervisor, msg_latency, time, connected_devices)
 
@@ -49,17 +50,18 @@ class GridController(Device):
         self._loads = {}  # dictionary of devices and the current load of the GC with that device.
         self._neighbor_prices = {}  # dictionary of connected device_id's and their most recent price value
         self._battery = battery  # the battery contained within this grid controller. Communicates every minute.
+        # the minimum allocate response to a negative request message (for this device to receive)
+        self._threshold_alloc_in = min_alloc_response_threshold * battery.get_max_charge_rate()
+        # the minimum allocate response to a positive request message (for this device to provide)
+        self._threshold_alloc_out = min_alloc_response_threshold * battery.get_max_discharge_rate()
 
         # TODO: Let these have input parameters
         if price_logic == "weighted_average":
             self._price_logic = GCWeightedAveragePriceLogic()
-        #  elif price_logic == "MarginalPrice":
+        #  TODO: elif price_logic == "MarginalPrice":
         else:
             raise ValueError("attempted to initialize grid controller with invalid price logic")
         self._price = self._price_logic.initial_price() if self._price_logic else 0.0
-
-    # how the grid controller calculates its prices
-
 
     #  ______________________________________Maintenance Functions______________________________________ #
 
@@ -111,8 +113,6 @@ class GridController(Device):
         self._loads[sender_id] = new_load
         return new_load - prev_load
 
-
-
     #  ______________________________________ Messaging/Interactive Functions_________________________________#
 
     ##
@@ -143,30 +143,16 @@ class GridController(Device):
         if request_amt == 0:
             self.send_allocate_message(sender_id, 0)  # always allow power flows to cease
             return
-        available = self.calc_available_heuristic()
-        trickle_power = 900  # TODO: What should this be? Individualized to Devices? Different for take and provide?
-        if request_amt > 0:  # must provide a negative quantity (to distribute)
-            # TODO: What am I already giving you? Don't give more trickle power if already giving.
-            current_provide = self._loads.get(sender_id, 0)
-            if current_provide < 0:
-                trickle_power += current_provide
-            provide = min(available, -trickle_power)
-            unprovided = min(-request_amt - provide, 0)
-        else:  # must provide a positive quantity (to receive)
-            current_provide = self._loads.get(sender_id, 0)
-            if current_provide > 0:
-                trickle_power -= current_provide
-            provide = max(available, trickle_power)
-            unprovided = max(-request_amt - provide, 0)
+        provide, unprovided = self.request_response(request_amt)
         # Note: May provide more than asked for, which recipient can consume up to at any point.
         self.send_allocate_message(sender_id, provide)  # negative if allocating to send, positive if to receive.
         self._requested[sender_id] = unprovided
-        # TODO: Raise the price accordingly to whatever you didn't provide.
-        # TODO: modulate power.
+        # TODO: Raise the price accordingly to whatever you didn't provide (self.modulate_price())
+        # TODO: self.modulate_power() --  or maybe wait on this function until a later moment.
 
     def process_allocate_message(self, sender_id, allocate_amt):
         self._allocated[sender_id] = allocate_amt  # so we can consume or provide up to that amount of power anytime
-        # self.modulate_power() # TODO: THIS FUNCTION IS UNBUILT
+        # TODO: self.modulate_power() -- still unbuilt
 
     ##
     # Sends a power message to another device
@@ -221,7 +207,6 @@ class GridController(Device):
     def broadcast_new_price(self, new_price):
         for device_id in self._connected_devices.keys():
             self.send_price_message(device_id, new_price)
-
 
     #  ______________________________________Internal State Functions _________________________________#
 
@@ -330,22 +315,42 @@ class GridController(Device):
             self.send_power_message(source_id, provided)
 
     ##
-    # Sees what the GC has available from its existing allocate levels, and uses this amount to determine
-    # how much to respond to an allocate message with
-    # @return the approximate amount this GC has available, positive if available to receive, negative if to distrib.
+    # Sees what the GC has freely available to increase from its existing allocates, and what it is liable to
+    # provide to other devices
+    # @return the current balance of power among allocate levels
 
-    def calc_available_heuristic(self):
+    def get_allocate_assets(self):
         assets = 0  # diff. of amount the device has been allocated to receive and amount it is currently taking
-        liabilities = 0  # diff. of amount device has allocated to provide and amount it is currently providing
         for dev_id, allocated in self._allocated.items():
             if allocated > 0:  # allotted to receive
                 assets += max(allocated - self._loads.get(dev_id, 0), 0)
-            elif allocated < 0:
-                liabilities -= min(allocated - self._loads.get(dev_id, 0), 0)
-        self.update_battery()  # make sure we know current battery charge preference
-        available = liabilities - assets + self._battery.get_desired_power()
-        return available
+        return assets
 
+    def get_allocate_liabilities(self):
+        liabilities = 0  # diff. of amount device has allocated to provide and amount it is currently providing
+        for dev_id, allocated in self._allocated.items():
+            if allocated < 0:
+                liabilities -= min(allocated - self._loads.get(dev_id, 0), 0)
+        return liabilities
+
+    ##
+    # Determines how much this GC responds to a power request.
+    # @return a tuple of provided, unprovided, where provided is the amount of power this device has
+    # allocated (positive to receive, negative to provide), and unprovided is the amount of power this device
+    # could not handle at this time.
+    def request_response(self, request_amt):
+        self.update_battery()
+        trickle_power = 50  # TODO: Change this to global grid controller variable.
+        if request_amt > 0:  # must provide a negative quantity (this device to distribute)
+            desired_response = self._battery.get_desired_power() - self.get_allocate_assets()
+            provide = max(min(desired_response, -self._threshold_alloc_out, -trickle_power), -request_amt)
+            unprovided = request_amt + provide  # provide is negative
+            return provide, unprovided
+        else:  # must provide positive quantity (this device to receive)
+            desired_response = self._battery.get_desired_power() + self.get_allocate_liabilities()
+            provide = min(max(desired_response, self._threshold_alloc_in, trickle_power), -request_amt)
+            unprovided = -request_amt - provide
+            return provide, unprovided
 
     ##
     # This is the crux function that determines how a GC balances its power flows at a given time.
@@ -360,14 +365,8 @@ class GridController(Device):
 
         net_load = self._power_in - self._power_out
         # modulate_target is the net load that the GC is seeking to charge or discharge the battery.
-        if self._battery.get_charging_preference() == 1:
-            modulate_target = self._battery.get_preferred_charge_rate()
-        elif self._battery.get_charging_preference() == -1:
-            modulate_target = -self._battery.get_preferred_discharge_rate()
-        else:
-            modulate_target = 0
 
-        power_adjust = modulate_target - net_load  # how much to seek to adjust net load.
+        power_adjust = self._battery.get_desired_power() - net_load  # how much to seek to adjust net load.
 
         if power_adjust < 0:
             self.seek_to_obtain_power(power_adjust)

@@ -410,7 +410,9 @@ class Device(metaclass=ABCMeta):
 
     # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
-    # TODO: Go through in line todo's and work on them. Battery charge preference working?
+    # TODO: Go through in line todo's and work on them.
+        #   --Make sure Battery charge preference working?
+        #   --Make sure allocate response is working as expected (debug grid controller available heuristic).
      # TODO: Test read_delay without battery preference, then battery preference.
     # TODO: (2.5) Test a more complicated multi-day schedule.
     # TODO: (3) 2-price model for utility meter, all messaging (with extended value options). Test again.

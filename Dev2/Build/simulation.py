@@ -35,7 +35,7 @@ class Simulation:
         self.supervisor = None
         # A dictionary of eud class names and their respective constructor input names to read from json (in order)
         self.eud_dictionary = {
-            'light': [Light, 'max_power_output'],
+            'light': [Light, 'max_operating_power'],
             'air_conditioner': [None, '']
         }
 
@@ -55,14 +55,13 @@ class Simulation:
 
     def read_grid_controllers(self, config):
 
-        # TODO: Incorporate their scheduling
-
         connections = []  # a list of tuples of (gc, [connections]) to initialize later once all devices are set.
         for gc in config['devices']['grid_controllers']:
             gc_id = gc['device_id']
             price_logic = gc['price_logic']
             # gc_uuid = gc.get(uuid, 0)
-            msg_latency = gc.get('message_latency', 0)  # default 0 msg latency
+            msg_latency = gc.get('message_latency', 0)
+            schedule = gc.get('schedule', None)
             min_alloc_response_threshold = gc.get('threshold_alloc', 1)
             connected_devices = gc.get('connected_devices', None)
             if connected_devices:
@@ -80,12 +79,14 @@ class Simulation:
             else:
                 battery = None
 
+            new_gc = GridController(device_id=gc_id, supervisor=self.supervisor, battery=battery,
+                                    msg_latency=msg_latency, price_logic=price_logic, schedule=schedule,
+                                    min_alloc_response_threshold=min_alloc_response_threshold)
             # make a new grid controller and register it with the supervisor
-            self.supervisor.register_device(
-                GridController(device_id=gc_id, supervisor=self.supervisor, battery=battery, msg_latency=msg_latency,
-                               price_logic=price_logic, min_alloc_response_threshold=min_alloc_response_threshold))
+            self.supervisor.register_device(new_gc)
         return connections
 
+    # make a new utility meter and register with supervisor
     def read_utility_meters(self, config):
 
         # TODO: Incorporate new scheduling
@@ -93,16 +94,15 @@ class Simulation:
         connections = []  # a list of tuples of (utm, [connections]) to initialize later once all devices are set.
         for utm in config['devices']['utility_meters']:
             utm_id = utm['device_id']
+            msg_latency = utm.get('message_latency', 0)
             connected_devices = utm.get('connected_devices', None)
+            schedule = utm.get('schedule', None)
+            price_schedule = utm.get('price_schedule', None)
             if connected_devices:
                 connections.append((utm_id, connected_devices))
 
-            # make a new utility meter, set up its schedules, and register with supervisor
-            new_utm = UtilityMeter(utm_id, self.supervisor)
-            utm_schedule = utm['schedule']
-            utm_price_schedule = utm['price_schedule']
-            new_utm.setup_schedule(utm_schedule)
-            new_utm.setup_price_schedule(utm_price_schedule)
+            new_utm = UtilityMeter(device_id=utm_id, supervisor=self.supervisor,
+                                   msg_latency=msg_latency, schedule=schedule, price_schedule=price_schedule)
             self.supervisor.register_device(new_utm)
         return connections
 
@@ -115,17 +115,19 @@ class Simulation:
         for eud in config['devices']['euds']:
             eud_id = eud['device_id']
             eud_type = eud['eud_type']
+            msg_latency = eud.get('message_latency', 0)
+            start_time = eud.get('start_time', 0)
             connected_devices = eud.get('connected_devices', None)
+            schedule = eud.get('schedule', None)
             if connected_devices:
                 connections.append((eud_id, connected_devices))
 
             eud_class = self.eud_dictionary[eud_type][0]
             # get all the arguments for the eud constructor
-            args = [eud.get(cls_arg, None) for cls_arg in self.eud_dictionary[eud_type][1:]]
-            new_eud = eud_class(eud_id, self.supervisor, *args)
-            schedule = eud.get('schedule', None)
-            if schedule:
-                new_eud.setup_schedule(schedule)
+            eud_specific_args = {cls_arg: eud.get(cls_arg, None) for cls_arg in self.eud_dictionary[eud_type][1:]}
+            new_eud = eud_class(device_id=eud_id, supervisor=self.supervisor, time=start_time, msg_latency=msg_latency,
+                                schedule=schedule, **eud_specific_args)
+
             self.supervisor.register_device(new_eud)
         return connections
 

@@ -53,8 +53,8 @@ class Device(metaclass=ABCMeta):
     # @param msg_latency the delay time before this device processes a received message.
     # @param connected_devices a list of connected devices for this Device.
 
-    def __init__(self, device_id, device_type, supervisor, time=0, msg_latency=0, connected_devices=None):
-        # TODO: msg_latency actual value
+    def __init__(self, device_id, device_type, supervisor, time=0, msg_latency=0, schedule=None,
+                 connected_devices=None):
 
         if connected_devices is None:
             self._connected_devices = {}
@@ -73,8 +73,11 @@ class Device(metaclass=ABCMeta):
         self._power_out = 0.0  # the power being distributed by the device (Watts, must be > 0)
         self._sum_power_out = 0.0  # Record the total energy produced by this device (wH)
         self._sum_power_in = 0.0  # Record the total energy produced by this device (wH)
-        self._logger = logging.getLogger("lpdm")  # Setup logging
 
+        if schedule:
+            self.setup_schedule(schedule)
+
+        self._logger = logging.getLogger("lpdm")  # Setup logging
         self._logger.info(
             self.build_log_notation("initialized device #{} - {}".format(self._device_id, self._device_type))
         )
@@ -411,9 +414,10 @@ class Device(metaclass=ABCMeta):
     # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
     # TODO: Go through in line todo's and work on them.
-        #   --Make sure Battery charge preference working?
         #   --Make sure allocate response is working as expected (debug grid controller available heuristic).
+    # TODO: Add back in uuid
      # TODO: Test read_delay without battery preference, then battery preference.
+    # TODO: get pricing model working.
     # TODO: (2.5) Test a more complicated multi-day schedule.
     # TODO: (3) 2-price model for utility meter, all messaging (with extended value options). Test again.
     # TODO: (3.5) Utility meter communicates price to GC.

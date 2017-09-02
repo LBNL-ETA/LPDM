@@ -24,9 +24,10 @@ from abc import abstractmethod
 
 class Eud(Device):
 
-    def __init__(self, device_id, device_type, supervisor, time=0, read_delay=0, power_direct=False,
-                 connected_devices=None):
-        super().__init__(device_id, device_type, supervisor, time, read_delay, connected_devices)
+    def __init__(self, device_id, device_type, supervisor, time=0, msg_latency=0, power_direct=False,
+                 schedule=None, connected_devices=None):
+        super().__init__(device_id, device_type, supervisor, time=time, msg_latency=msg_latency, schedule=schedule,
+                         connected_devices=connected_devices)
         # Dictionary of devices and how much the device has been allocated by those devices. All values must be positive
         self._allocated = {}
         self._price = 0  # EUD receives price messages from GC's only. For now, assume it will always update price.

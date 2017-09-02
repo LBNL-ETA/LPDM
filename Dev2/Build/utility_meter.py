@@ -21,13 +21,16 @@ from Build.message import Message, MessageType
 
 class UtilityMeter(Device):
 
-    def __init__(self, device_id, supervisor, connected_devices=None):
-        super().__init__(device_id, "Utility Meter", supervisor, connected_devices=connected_devices)
+    def __init__(self, device_id, supervisor, msg_latency=0, schedule=None, price_schedule=None,
+                 connected_devices=None):
+        super().__init__(device_id, "Utility Meter", supervisor, msg_latency=msg_latency, schedule=schedule,
+                         connected_devices=connected_devices)
         self._loads = {}  # dictionary of devices and loads to those devices.
         self._price = 0
+        if price_schedule:
+            self.setup_price_schedule(price_schedule)
 
     # Turn the utility meter on.
-    # TODO: Rename this function to make more clear after running Mike simulations
     def turn_on(self):
         self._logger.info(self.build_log_notation("Turning on utility meter", "turn_on", 1))
 
@@ -48,8 +51,6 @@ class UtilityMeter(Device):
             price_event = Event(self.set_price, price)
             time_sec = hour * 3600
             self.add_event(price_event, time_sec)
-
-
 
     # __________________________________ Messaging Functions _______________________ #
 

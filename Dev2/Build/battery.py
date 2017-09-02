@@ -51,7 +51,7 @@ class Battery(object):
         self._load = 0  # the load on the battery, either charge (positive) or discharge (negative), in w.
         self._price = 0  # informed of price by the grid controller on their communications.
         self._price_moving_average = 0  # total moving average of the price, weighted by time that price was maintained
-        self._hourly_prices = []  # TODO: Rename this to regular prices.
+        self._hourly_prices = []  # TODO: Rename this to price history
         self._hourly_moving_price = 0  # battery's hourly moving average of price, weighted by time of that price
         self._time = 0  # battery's local time, updated by grid controller.
         self._last_update_time = 0  # time of last battery update from grid controller
@@ -119,6 +119,8 @@ class Battery(object):
     # @param price the local price of the associated grid controller
     # @param average price information on the average price of the grid controller
     # @param hourly prices information on the hourly prices of the grid controller
+
+    # TODO: Change this to price history.
     #
     def update_state(self, time, price, average_price, hourly_prices):
         self._time = time
@@ -269,7 +271,7 @@ class BatteryPriceLogicB(BatteryPriceLogic):
 
     ##
     # Sets the thresholds which help determine the battery charging preference, based on direct comparison to
-    # the average.
+    # the moving average price.
     #
     def adjust_price_thresholds(self, moving_avg_price):
 

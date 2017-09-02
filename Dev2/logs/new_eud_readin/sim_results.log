@@ -1,13 +1,12 @@
-2017-09-01T16:39:55.244608-07:00
+2017-09-02T10:54:03.041863-07:00
 basic_discharge_multiday.json
-conditions: message latency = 1
 
-0 00:00:01; 1; gc_1; ; None; initialized device #gc_1 - Grid Controller
+0 00:00:00; 0; gc_1; ; None; initialized device #gc_1 - Grid Controller
 0 00:00:00; 0; utm_1; ; None; initialized device #utm_1 - Utility Meter
 0 00:00:00; 0; eud_1; ; None; initialized device #eud_1 - light
-0 00:00:01; 1; gc_1; ; None; Registered device: utm_1
+0 00:00:00; 0; gc_1; ; None; Registered device: utm_1
 0 00:00:00; 0; utm_1; ; None; Registered device: gc_1
-0 00:00:01; 1; gc_1; ; None; Registered device: eud_1
+0 00:00:00; 0; gc_1; ; None; Registered device: eud_1
 0 00:00:00; 0; eud_1; ; None; Registered device: gc_1
 0 00:00:00; 0; utm_1; turn_on; 1; Turning on utility meter
 0 00:00:00; 0; eud_1; turn on; 1; turn on device eud_1

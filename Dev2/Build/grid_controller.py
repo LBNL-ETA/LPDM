@@ -34,10 +34,12 @@ class GridController(Device):
     # response for request messages.
     # @param battery battery connected with this Grid Controller (could represent multiple batteries).
 
-    def __init__(self, device_id, supervisor, msg_latency=0, time=0,
-                 price_logic=None, battery=None, min_alloc_response_threshold=1, connected_devices=None):
+    def __init__(self, device_id, supervisor, time=0, msg_latency=0,
+                 price_logic=None, price_logic_interval=3600, battery=None, min_alloc_response_threshold=1,
+                 schedule=None, connected_devices=None):
         # identifier = "gc{}".format(device_id)
-        super().__init__(device_id, "Grid Controller", supervisor, msg_latency, time, connected_devices)
+        super().__init__(device_id=device_id, device_type="grid_controller", supervisor=supervisor,
+                         time=time, msg_latency=msg_latency, schedule=schedule, connected_devices=connected_devices)
 
         # dictionary of devices and the amount the GC has allocated/been allocated by/to them.
         # negative values are how much this GC has allocated to provide, positive for this GC to take.
@@ -57,11 +59,13 @@ class GridController(Device):
 
         # TODO: Let these have input parameters
         if price_logic == "weighted_average":
-            self._price_logic = GCWeightedAveragePriceLogic()
+            self._price_logic = GCWeightedAveragePriceLogic(24)
         #  TODO: elif price_logic == "MarginalPrice":
         else:
             raise ValueError("attempted to initialize grid controller with invalid price logic")
         self._price = self._price_logic.initial_price() if self._price_logic else 0.0
+        self.setup_price_calc_schedule(self._price_logic.get_price_history_interval())
+
 
     #  ______________________________________Maintenance Functions______________________________________ #
 
@@ -112,6 +116,22 @@ class GridController(Device):
         self.recalc_sum_power(prev_load, new_load)
         self._loads[sender_id] = new_load
         return new_load - prev_load
+
+    ##
+    # Recalculates the average price history at every given interval.
+    # @param[in] price_history_interval how frequently prices should be recalculated.
+    # @param[in] total_runtime the total runtime of the simulation, this will setup events up until that time
+    def setup_price_calc_schedule(self, price_history_interval, total_runtime):
+        # TODO
+        pass
+
+    ##
+    # Sets up the events to recalculate the battery's charge preference every certain period of time.
+    # @param price_history_interval how frequently prices should be recalculated.
+    # @param total_runtime the total runtime of the simulation, this will setup events up until that time
+    def setup_battery_update_schedule(self, update_frequency, total_runtime):
+        # TODO
+        pass
 
     #  ______________________________________ Messaging/Interactive Functions_________________________________#
 
@@ -226,7 +246,6 @@ class GridController(Device):
         self._price_logic.update_hourly_prices()
         self._price_logic.update_average_price()
 
-
     ##
     # Calculate this after a device has received a price message.
     # Iterates through the current prices of its neighbors and finds what its local price should be.
@@ -315,9 +334,8 @@ class GridController(Device):
             self.send_power_message(source_id, provided)
 
     ##
-    # Sees what the GC has freely available to increase from its existing allocates, and what it is liable to
-    # provide to other devices
-    # @return the current balance of power among allocate levels
+    # Sees what the GC has freely available to increase from its existing allocates compared to existing loads
+    # @return quantity of freely available power from existing allocates
 
     def get_allocate_assets(self):
         assets = 0  # diff. of amount the device has been allocated to receive and amount it is currently taking
@@ -325,6 +343,10 @@ class GridController(Device):
             if allocated > 0:  # allotted to receive
                 assets += max(allocated - self._loads.get(dev_id, 0), 0)
         return assets
+
+    ##
+    # Sees what the GC is liable to provide other devices because of underutilized allocates
+    # @return quantity of excess allocate liabilities
 
     def get_allocate_liabilities(self):
         liabilities = 0  # diff. of amount device has allocated to provide and amount it is currently providing
@@ -334,7 +356,7 @@ class GridController(Device):
         return liabilities
 
     ##
-    # Determines how much this GC responds to a power request.
+    # Determines how much this GC responds to a power request. See documentation for reasoning.
     # @return a tuple of provided, unprovided, where provided is the amount of power this device has
     # allocated (positive to receive, negative to provide), and unprovided is the amount of power this device
     # could not handle at this time.
@@ -344,7 +366,7 @@ class GridController(Device):
         if request_amt > 0:  # must provide a negative quantity (this device to distribute)
             desired_response = self._battery.get_desired_power() - self.get_allocate_assets()
             provide = max(min(desired_response, -self._threshold_alloc_out, -trickle_power), -request_amt)
-            unprovided = request_amt + provide  # provide is negative
+            unprovided = -request_amt - provide  # provide is negative
             return provide, unprovided
         else:  # must provide positive quantity (this device to receive)
             desired_response = self._battery.get_desired_power() + self.get_allocate_liabilities()
@@ -499,6 +521,11 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
         pass
 
     ##
+    # Gets the number of price intervals
+    def get_price_history_interval(self):
+        pass
+
+    ##
     # Given the current time of the device, sets the hourly prices of the GC accordingly.
     # This function should be called every hour by the GC, as well as when the GC's price changes.
     @abstractmethod
@@ -536,12 +563,21 @@ its average hourly prices and average price statistics.
 class GCWeightedAveragePriceLogic(GridControllerPriceLogic):
 
     # TODO: Hourly prices renamed to price history. Change to accept non-hour time intervals.
+    # TODO: Allow for factors such as initial price to be input parameters. 
 
-    def __init__(self):
+    def __init__(self, price_history_interval):
         self._initial_price = 0.1
         self._price_announce_threshold = 0.02
         self._current_price = self._initial_price
-        self._hourly_prices = [self._initial_price for i in range(24)]
+        self._price_history_interval = price_history_interval
+
+        seconds_in_day = 24 * 60 * 60
+        # calculate rounded up num. of intervals
+        daily_price_history_len, rem = divmod(seconds_in_day, price_history_interval)
+        if rem:
+            daily_price_history_len += 1
+
+        self._hourly_prices = [self._initial_price for i in range(daily_price_history_len)]
         self._hourly_average_price = 0.
         self._total_average_price = 0.
         self._last_price_update_time = 0  # the time in the hour when the price was last updated

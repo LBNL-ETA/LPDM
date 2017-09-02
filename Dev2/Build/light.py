@@ -20,9 +20,10 @@ from Build.eud import Eud
 
 class Light(Eud):
 
-    def __init__(self, device_id, supervisor, max_operating_power, read_delay=0, time=0, connected_devices=None):
-        super().__init__(device_id, "light", supervisor, read_delay=read_delay, time=time,
-                         connected_devices=connected_devices)
+    def __init__(self, device_id, supervisor, max_operating_power, msg_latency=0, time=0,
+                 schedule=None, connected_devices=None):
+        super().__init__(device_id, "light", supervisor, msg_latency=msg_latency, time=time,
+                         schedule=schedule, connected_devices=connected_devices)
         self._max_operating_power = max_operating_power  # the device's ideal maximum power usage
         self._power_level_max = 1.0  # percentage of power level to operate at when price is low
         self._power_level_low = 0.2  # percent of power level to operate at when price is high.

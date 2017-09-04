@@ -33,7 +33,7 @@ class SimulationLogger:
         self.log_format = log_format
 
     ##
-    # Setup the logpaths and creates the logging handlers. Adds a file with info on the scenario file used and the date.
+    # Setup the logpaths and creates the logging handlers.
     def init(self, config_file):
         """Setup the log paths and create the logging handlers"""
         self.generate_simulation_id()

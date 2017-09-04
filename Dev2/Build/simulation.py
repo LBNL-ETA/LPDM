@@ -53,7 +53,10 @@ class Simulation:
         )
         self.log_manager.init(config_file)
 
-    def read_grid_controllers(self, config):
+    ##
+    #
+    # @param runtime the length of running the simulation, used for GC's to setup their price calc schedules and
+    def read_grid_controllers(self, config, runtime):
 
         connections = []  # a list of tuples of (gc, [connections]) to initialize later once all devices are set.
         for gc in config['devices']['grid_controllers']:
@@ -81,7 +84,7 @@ class Simulation:
 
             new_gc = GridController(device_id=gc_id, supervisor=self.supervisor, battery=battery,
                                     msg_latency=msg_latency, price_logic=price_logic, schedule=schedule,
-                                    min_alloc_response_threshold=min_alloc_response_threshold)
+                                    min_alloc_response_threshold=min_alloc_response_threshold, total_runtime=runtime)
             # make a new grid controller and register it with the supervisor
             self.supervisor.register_device(new_gc)
         return connections
@@ -139,10 +142,13 @@ class Simulation:
         self.read_config_file("../scenario_data/{}".format(config_file))
         self.setup_logging(config_file)
 
+        days_to_run = int(self.config["run_time_days"])
+        self.end_time = 24 * 60 * 60 * days_to_run  # end time in seconds
+
         #  TODO: pv_connections = self.read_pvs(self.config)
 
         # reads in and creates all the simulation devices before registering them
-        connections = [self.read_grid_controllers(self.config), self.read_utility_meters(self.config),
+        connections = [self.read_grid_controllers(self.config, self.end_time), self.read_utility_meters(self.config),
                        self.read_euds(self.config)]
 
         for connect_list in connections:
@@ -152,9 +158,6 @@ class Simulation:
                     that_device = self.supervisor.get_device(that_device_id)
                     this_device.register_device(that_device, that_device_id, 1)
                     that_device.register_device(this_device, this_device_id, 1)
-
-        days_to_run = int(self.config["run_time_days"])
-        self.end_time = 24 * 60 * 60 * days_to_run  # end time in seconds
 
     def run_simulation(self, config_file):
         self.supervisor = Supervisor()

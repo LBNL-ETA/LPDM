@@ -79,7 +79,7 @@ class Device(metaclass=ABCMeta):
 
         self._logger = logging.getLogger("lpdm")  # Setup logging
         self._logger.info(
-            self.build_log_notation("initialized device #{} - {}".format(self._device_id, self._device_type))
+            self.build_log_notation("initialize {} - {}".format(self._device_id, self._device_type))
         )
 
     # ____________________________ Maintenance Functions _________________________________#
@@ -221,8 +221,7 @@ class Device(metaclass=ABCMeta):
     def read_message(self, message):
         if message:
             self._logger.info(self.build_log_notation(
-                "Read message of type {} received from {} with value {}".format(message.message_type,
-                                                                                message.sender_id, message.value)))
+                "Read {} from {} with value {}".format(message.message_type, message.sender_id, message.value)))
             if message.message_type == MessageType.REGISTER:
                 self.process_register_message(message.sender_id, message.value)
             elif message.sender_id in self._connected_devices.keys():  # Only read other messages from verified devices.
@@ -247,13 +246,13 @@ class Device(metaclass=ABCMeta):
         if value > 0 and device_id not in self._connected_devices.keys():
             self._connected_devices[device_id] = device
             self._logger.info(
-                self.build_log_notation("Registered device: {}".format(device_id))
+                self.build_log_notation("registered {}".format(device_id))
             )
         else:
             if device_id in self._connected_devices:
                 del self._connected_devices[device_id]  # unregister
                 self._logger.info(
-                    self.build_log_notation("Unregistered device: {}".format(device_id))
+                    self.build_log_notation("unregistered {}".format(device_id))
                 )
             else:
                 print("No Such Device To Unregister")
@@ -284,7 +283,7 @@ class Device(metaclass=ABCMeta):
             raise ValueError("This device is not connected to the message recipient")
             # LOG THIS ERROR AND ALL ERRORS.
         self._logger.debug(self.build_log_notation(
-            "register msg to {}".format(target_id), tag="register msg", value=value))
+            "REGISTER to {}".format(target_id), tag="register msg", value=value))
         target.receive_message(Message(self._time, self._device_id, MessageType.REGISTER, value))
 
     ##
@@ -381,13 +380,13 @@ class Device(metaclass=ABCMeta):
 
     def write_calcs(self):
         self._logger.info(self.build_log_notation(
-            message="sum wh out for device {}".format(self._device_id),
-            tag="sum_wh_out",
+            message="sum Wh out".format(self._device_id),
+            tag="power calcs",
             value=self._sum_power_out
         ))
         self._logger.info(self.build_log_notation(
-            message="sum wh in for device {}".format(self._device_id),
-            tag="sum_wh_in",
+            message="sum Wh in",
+            tag="power calcs",
             value=self._sum_power_in
         ))
         self.device_specific_calcs()
@@ -413,8 +412,11 @@ class Device(metaclass=ABCMeta):
 
     # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
-    # TODO: Go through in line todo's and work on them.
-        #   --Make sure allocate response is working as expected (debug grid controller available heuristic).
+    # TODO: (1) Change pricing model to reflect variable amount of time.
+    # TODO: (2) Change input model so that the price logic is constructed outside of Grid Controller.
+    # TODO: (3) Change the logging format to what Bruce Described.
+    # TODO: (4) Overload constructors.
+
     # TODO: Add back in uuid
      # TODO: Test read_delay without battery preference, then battery preference.
     # TODO: get pricing model working.

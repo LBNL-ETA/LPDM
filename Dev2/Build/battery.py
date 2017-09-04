@@ -110,6 +110,9 @@ class Battery(object):
         self._load += extra_load
         self._load = max(self._load, -self._max_discharge_rate)  # don't add a load to exceed charge rate.
         self._load = min(self._load, self._max_charge_rate)
+
+        self._logger.debug(self.build_battery_log_notation(
+            "battery load changed from {} to {}".format(old_load, self._load)))
         return self._load - old_load
 
 
@@ -147,6 +150,7 @@ class Battery(object):
     #
     # @param price_stat the representative statistic to use to calculate it?
     def recalc_charge_preference(self):
+        old_preference = self._charging_preference
 
         if type(self._price_logic) == BatteryPriceLogicA:
             self._charging_preference = self._price_logic.calc_charge_preference(self._current_soc, self._price,
@@ -155,10 +159,12 @@ class Battery(object):
             self._charging_preference = self._price_logic.calc_charge_preference(self._current_soc, self._price,
                                                                                  self._price_moving_average)
 
-        self._logger.info(self.build_battery_log_notation(
-            "charging preference changed to {}".format(self._charging_preference),
-            value=self._charging_preference.value))
-
+        if old_preference != self._charging_preference:
+            self._logger.info(self.build_battery_log_notation(
+                "changed from {}".format(old_preference)))
+        else:
+            self._logger.info(self.build_battery_log_notation(
+                "unchanged charge preference".format(old_preference)))
     # _____________________________________________________ #
     ##
     # Builds a logging message for this battery, always including information about its state of charge and battery
@@ -173,7 +179,7 @@ class Battery(object):
         return message_formatter.build_log_msg(
             time_seconds=self._time,
             message=message,
-            tag="current soc : {}, current charge pref: {}".format(self._current_soc, self._charging_preference),
+            tag="current soc {}, current charge pref {}".format(self._current_soc, self._charging_preference),
             value=value,
             device_id=self._battery_id
         )

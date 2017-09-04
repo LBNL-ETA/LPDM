@@ -41,8 +41,8 @@ class Eud(Device):
     # are maintained.
     def turn_on(self):
         self._logger.info(self.build_log_notation(
-            message="turn on device {}".format(self._device_id),
-            tag="turn on",
+            message="turn on {}".format(self._device_id),
+            tag="turn_on",
             value=1
         ))
 
@@ -57,8 +57,8 @@ class Eud(Device):
     # of this change.
     def turn_off(self):
         self._logger.info(self.build_log_notation(
-            message="turn off device {}".format(self._device_id),
-            tag="turn off",
+            message="turn off {}".format(self._device_id),
+            tag="turn_off",
             value=0
         ))
 
@@ -94,12 +94,12 @@ class Eud(Device):
             self.modulate_power()
         else:
             self.send_power_message(sender_id, 0)
-            self._logger.info(self.build_log_notation("Ignored positive power message from {}".format(sender_id)))
+            self._logger.info(self.build_log_notation("ignored positive power message from {}".format(sender_id)))
 
     ##
     # EUD's do not respond to request messages.
     def process_request_message(self, sender_id, request_amt):
-        self._logger.info(self.build_log_notation("Ignored request message from {}".format(sender_id)))
+        self._logger.info(self.build_log_notation("ignored request message from {}".format(sender_id)))
 
     ##
     # Method to be called after the EUD receives a price message from a grid controller, immediately updating its price.
@@ -117,7 +117,7 @@ class Eud(Device):
 
     def process_allocate_message(self, sender_id, allocate_amt):
         if allocate_amt > 0:  # can not send power, so ignore this message
-            self._logger.info(self.build_log_notation("Ignored positive allocate message from {}".format(sender_id)))
+            self._logger.info(self.build_log_notation("ignored positive allocate message from {}".format(sender_id)))
         self.set_allocated(sender_id, -allocate_amt)  # records the amount this device has been allocate
         self.modulate_power()
 
@@ -133,8 +133,8 @@ class Eud(Device):
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("invalid target to request")
-        self._logger.info(self.build_log_notation(message="Send request message to {}".format(target_id),
-                                                  tag="request message", value=request_amt))
+        self._logger.info(self.build_log_notation(message="REQUEST to {}".format(target_id),
+                                                  tag="request_msg", value=request_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
 
     # This method is called when the EUD wishes to inform a grid controller that it is now consuming X watts of power.
@@ -147,8 +147,8 @@ class Eud(Device):
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("invalid target to request")
-        self._logger.info(self.build_log_notation(message="Send power message to {}".format(target_id),
-                                                  tag="power message", value=power_amt))
+        self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
+                                                  tag="power_msg", value=power_amt))
 
         self.recalc_sum_power(self._power_in, power_amt)
         target_device.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))

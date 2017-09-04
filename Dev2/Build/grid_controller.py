@@ -30,13 +30,15 @@ class GridController(Device):
     # for ensuring the uniqueness of this id.
     # @param price logic a string name of a grid controller price logic class, which contains an initial price as well
     # as a differential threshold for when a GC should broadcast changes in price
+    # @param price logic interval how often to update the battery # TODO: Move this to be external in simulation.
     # @param min_response_threshold_ratio the percentage of max battery (dis)charge rate to use as a minimum allocate
     # response for request messages.
     # @param battery battery connected with this Grid Controller (could represent multiple batteries).
+    # @param
 
     def __init__(self, device_id, supervisor, time=0, msg_latency=0,
                  price_logic=None, price_logic_interval=3600, battery=None, min_alloc_response_threshold=1,
-                 schedule=None, connected_devices=None):
+                 schedule=None, total_runtime=86400, connected_devices=None):
         # identifier = "gc{}".format(device_id)
         super().__init__(device_id=device_id, device_type="grid_controller", supervisor=supervisor,
                          time=time, msg_latency=msg_latency, schedule=schedule, connected_devices=connected_devices)
@@ -59,12 +61,13 @@ class GridController(Device):
 
         # TODO: Let these have input parameters
         if price_logic == "weighted_average":
-            self._price_logic = GCWeightedAveragePriceLogic(24)
+            self._price_logic = GCWeightedAveragePriceLogic(price_logic_interval)
         #  TODO: elif price_logic == "MarginalPrice":
         else:
             raise ValueError("attempted to initialize grid controller with invalid price logic")
         self._price = self._price_logic.initial_price() if self._price_logic else 0.0
-        self.setup_price_calc_schedule(self._price_logic.get_price_history_interval())
+        self.setup_price_calc_schedule(self._price_logic.get_price_history_interval(), total_runtime)
+        self.setup_battery_update_schedule(600, total_runtime)  # TODO: make this an input parameter?
 
 
     #  ______________________________________Maintenance Functions______________________________________ #
@@ -115,6 +118,8 @@ class GridController(Device):
         prev_load = self._loads[sender_id] if sender_id in self._loads.keys() else 0
         self.recalc_sum_power(prev_load, new_load)
         self._loads[sender_id] = new_load
+        self._logger.debug(self.build_log_notation(message="load changed for {} to {}".format(sender_id, new_load),
+                                                   tag="load change", value=new_load))
         return new_load - prev_load
 
     ##
@@ -185,8 +190,8 @@ class GridController(Device):
         else:
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
-        self._logger.info(self.build_log_notation(message="power msg to {}".format(target_id),
-                                                  tag="power message", value=power_amt))
+        self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
+                                                  tag="power_msg", value=power_amt))
 
         self.change_load(target_id, power_amt)
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
@@ -197,8 +202,8 @@ class GridController(Device):
         else:
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
-        self._logger.info(self.build_log_notation(message="price msg to {}".format(target_id),
-                                                  tag="price message", value=price))
+        self._logger.info(self.build_log_notation(message="PRICE to {}".format(target_id),
+                                                  tag="price_msg", value=price))
         target.receive_message(Message(self._time, self._device_id, MessageType.PRICE, price))
 
     def send_request_message(self, target_id, request_amt):
@@ -207,8 +212,8 @@ class GridController(Device):
         else:
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
-        self._logger.info(self.build_log_notation(message="request msg to {}".format(target_id),
-                                                  tag="request message", value=request_amt))
+        self._logger.info(self.build_log_notation(message="REQUEST to {}".format(target_id),
+                                                  tag="request_msg", value=request_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
 
     def send_allocate_message(self, target_id, allocate_amt):
@@ -217,8 +222,8 @@ class GridController(Device):
         else:
             raise ValueError("This GC is connected to no such device")
             # LOG THIS ERROR AND ALL ERRORS.
-        self._logger.info(self.build_log_notation(message="allocate msg to {}".format(target_id),
-                                                  tag="allocate message", value=allocate_amt))
+        self._logger.info(self.build_log_notation(message="ALLOCATE to {}".format(target_id),
+                                                  tag="allocate_msg", value=allocate_amt))
         self._allocated[target_id] = allocate_amt
         target_device.receive_message(Message(self._time, self._device_id, MessageType.ALLOCATE, allocate_amt))
 
@@ -256,7 +261,7 @@ class GridController(Device):
         old_price = self._price
         self.update_price_calcs()
         self._price = self._price_logic.calc_price(self._neighbor_prices, self._loads, self._requested, self._allocated)
-        self._logger.info(self.build_log_notation(message="GC price changed to {}".format(self._price),
+        self._logger.info(self.build_log_notation(message="price changed to {}".format(self._price),
                                                   tag="price_change", value=self._price))
         # broadcast only if significant change price.
         if self._price - old_price >= self._price_logic.get_price_announce_threshold():
@@ -477,14 +482,14 @@ Second priority: Negotiation balances (new allocate received, new request receiv
         # Write out all consumptions statistics
         if self._battery:
             self._logger.info(self.build_log_notation(
-                message="battery sum charge wh",
-                tag="battery sum charge wh",
+                message="battery sum charge Wh",
+                tag="power_calcs",
                 value=self._battery.sum_charge_wh
             ))
 
             self._logger.info(self.build_log_notation(
-                message="battery sum discharge wh",
-                tag="battery sum discharge wh",
+                message="battery sum discharge Wh",
+                tag="power_calcs",
                 value=self._battery.sum_discharge_wh
             ))
 
@@ -539,6 +544,13 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
     def get_hourly_prices(self):
         pass
 
+    ##
+    # gets the frequency of price calculations for this price logic.
+    #
+    @abstractmethod
+    def get_price_history_interval(self):
+        pass
+
     # TODO: Evaluation of price in context of the price history.
     ##
     # Updates the average time of the grid controller
@@ -547,10 +559,11 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
         pass
 
     ##
-
     @abstractmethod
     def get_average_price(self):
         pass
+
+
 
 """ 
 
@@ -563,7 +576,7 @@ its average hourly prices and average price statistics.
 class GCWeightedAveragePriceLogic(GridControllerPriceLogic):
 
     # TODO: Hourly prices renamed to price history. Change to accept non-hour time intervals.
-    # TODO: Allow for factors such as initial price to be input parameters. 
+    # TODO: Allow for factors such as initial price to be input parameters.
 
     def __init__(self, price_history_interval):
         self._initial_price = 0.1
@@ -597,6 +610,9 @@ class GCWeightedAveragePriceLogic(GridControllerPriceLogic):
 
     def get_hourly_prices(self):
         return self._hourly_prices
+
+    def get_price_history_interval(self):
+        return self._price_history_interval
 
     ##
     # Call this method at least every hour to ensure that the GC's hourly prices are up to date.

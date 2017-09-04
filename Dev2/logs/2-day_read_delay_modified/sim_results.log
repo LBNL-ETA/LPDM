@@ -1,0 +1,56 @@
+2017-09-02T13:23:11.112722-07:00
+basic_discharge_multiday.json
+
+0 00:00:00; 0; gc_1; ; None; initialized device #gc_1 - grid_controller
+0 00:00:00; 0; utm_1; ; None; initialized device #utm_1 - Utility Meter
+0 00:00:00; 0; eud_1; ; None; initialized device #eud_1 - light
+0 00:00:00; 0; gc_1; ; None; Registered device: utm_1
+0 00:00:00; 0; utm_1; ; None; Registered device: gc_1
+0 00:00:00; 0; gc_1; ; None; Registered device: eud_1
+0 00:00:00; 0; eud_1; ; None; Registered device: gc_1
+0 00:00:00; 0; utm_1; turn_on; 1; Turning on utility meter
+0 00:00:00; 0; eud_1; turn on; 1; turn on device eud_1
+0 00:00:00; 0; eud_1; request message; 500.0; Send request message to gc_1
+0 00:00:01; 1; gc_1; ; None; Read message of type MessageType.REQUEST received from eud_1 with value 500.0
+0 00:00:01; 1; battery_1; current soc : 0.5, current charge pref: BatteryChargingPreference.NEUTRAL; 0; charging preference changed to BatteryChargingPreference.NEUTRAL
+0 00:00:01; 1; gc_1; allocate message; -500.0; allocate msg to eud_1
+0 00:00:02; 2; eud_1; ; None; Read message of type MessageType.ALLOCATE received from gc_1 with value -500.0
+0 00:00:02; 2; eud_1; power message; 500.0; Send power message to gc_1
+0 00:00:03; 3; gc_1; ; None; Read message of type MessageType.POWER received from eud_1 with value 500.0
+0 00:00:03; 3; battery_1; current soc : 0.5, current charge pref: BatteryChargingPreference.NEUTRAL; 0; charging preference changed to BatteryChargingPreference.NEUTRAL
+0 06:00:00; 21600; eud_1; turn off; 0; turn off device eud_1
+0 06:00:00; 21600; eud_1; power message; 0; Send power message to gc_1
+0 06:00:01; 21601; gc_1; ; None; Read message of type MessageType.POWER received from eud_1 with value 0
+0 06:00:01; 21601; battery_1; current soc : 0.44000555555555554, current charge pref: BatteryChargingPreference.NEUTRAL; 0; charging preference changed to BatteryChargingPreference.NEUTRAL
+0 08:00:00; 28800; eud_1; turn on; 1; turn on device eud_1
+0 08:00:00; 28800; eud_1; power message; 500.0; Send power message to gc_1
+0 08:00:01; 28801; gc_1; ; None; Read message of type MessageType.POWER received from eud_1 with value 500.0
+0 08:00:01; 28801; battery_1; current soc : 0.44000555555555554, current charge pref: BatteryChargingPreference.NEUTRAL; 0; charging preference changed to BatteryChargingPreference.NEUTRAL
+0 18:00:00; 64800; eud_1; turn off; 0; turn off device eud_1
+0 18:00:00; 64800; eud_1; power message; 0; Send power message to gc_1
+0 18:00:01; 64801; gc_1; ; None; Read message of type MessageType.POWER received from eud_1 with value 0
+0 18:00:01; 64801; battery_1; current soc : 0.34000555555555556, current charge pref: BatteryChargingPreference.NEUTRAL; 0; charging preference changed to BatteryChargingPreference.NEUTRAL
+1 00:00:00; 86400; eud_1; turn on; 1; turn on device eud_1
+1 00:00:00; 86400; eud_1; power message; 500.0; Send power message to gc_1
+1 00:00:01; 86401; gc_1; ; None; Read message of type MessageType.POWER received from eud_1 with value 500.0
+1 00:00:01; 86401; battery_1; current soc : 0.34000555555555556, current charge pref: BatteryChargingPreference.NEUTRAL; 0; charging preference changed to BatteryChargingPreference.NEUTRAL
+1 06:00:00; 108000; eud_1; turn off; 0; turn off device eud_1
+1 06:00:00; 108000; eud_1; power message; 0; Send power message to gc_1
+1 06:00:01; 108001; gc_1; ; None; Read message of type MessageType.POWER received from eud_1 with value 0
+1 06:00:01; 108001; battery_1; current soc : 0.28000555555555556, current charge pref: BatteryChargingPreference.NEUTRAL; 0; charging preference changed to BatteryChargingPreference.NEUTRAL
+1 08:00:00; 115200; eud_1; turn on; 1; turn on device eud_1
+1 08:00:00; 115200; eud_1; power message; 500.0; Send power message to gc_1
+1 08:00:01; 115201; gc_1; ; None; Read message of type MessageType.POWER received from eud_1 with value 500.0
+1 08:00:01; 115201; battery_1; current soc : 0.28000555555555556, current charge pref: BatteryChargingPreference.NEUTRAL; 0; charging preference changed to BatteryChargingPreference.NEUTRAL
+1 18:00:00; 151200; eud_1; turn off; 0; turn off device eud_1
+1 18:00:00; 151200; eud_1; power message; 0; Send power message to gc_1
+1 18:00:01; 151201; gc_1; ; None; Read message of type MessageType.POWER received from eud_1 with value 0
+1 18:00:01; 151201; battery_1; current soc : 0.18000555555555556, current charge pref: BatteryChargingPreference.CHARGE; 1; charging preference changed to BatteryChargingPreference.CHARGE
+2 00:00:00; 172800; gc_1; sum_wh_out; 15999.722222222223; sum wh out for device gc_1
+2 00:00:00; 172800; gc_1; sum_wh_in; 0.0; sum wh in for device gc_1
+2 00:00:00; 172800; gc_1; battery sum charge wh; 0.0; battery sum charge wh
+2 00:00:00; 172800; gc_1; battery sum discharge wh; 15999.722222222223; battery sum discharge wh
+2 00:00:00; 172800; utm_1; sum_wh_out; 0.0; sum wh out for device utm_1
+2 00:00:00; 172800; utm_1; sum_wh_in; 0.0; sum wh in for device utm_1
+2 00:00:00; 172800; eud_1; sum_wh_out; 0.0; sum wh out for device eud_1
+2 00:00:00; 172800; eud_1; sum_wh_in; 15999.722222222223; sum wh in for device eud_1

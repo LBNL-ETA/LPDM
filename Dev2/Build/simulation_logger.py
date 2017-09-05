@@ -20,7 +20,8 @@ class SimulationLogger:
     """
     This class sets up the logging and handlers for the simulation.
     """
-    def __init__(self, console_log_level=logging.DEBUG, file_log_level=logging.DEBUG, pg_log_level=logging.DEBUG, log_to_postgres=False, log_format=None):
+    def __init__(self, console_log_level=logging.DEBUG, file_log_level=logging.DEBUG, pg_log_level=logging.DEBUG,
+                 log_to_postgres=False, log_format=None):
         self.app_name = "lpdm"
         self.base_path = "../logs"
         self.folder = None
@@ -34,11 +35,11 @@ class SimulationLogger:
 
     ##
     # Setup the logpaths and creates the logging handlers.
-    def init(self, config_file):
+    def init(self, config_file, override_args):
         """Setup the log paths and create the logging handlers"""
         self.generate_simulation_id()
         self.create_simulation_log_folder()
-        self.create_simulation_logger(config_file)
+        self.create_simulation_logger(config_file, override_args)
 
     def generate_simulation_id(self):
         """build a unique id for each simulation"""
@@ -84,7 +85,7 @@ class SimulationLogger:
                 self.stream.write("{}\n".format(self.header))
             super().emit(record)
 
-    def create_simulation_logger(self, config_file):
+    def create_simulation_logger(self, config_file, override_args):
         """
         Create the loggers and handlers for the app.
         Create an app level logger that stores log messages for the entire app.
@@ -97,8 +98,12 @@ class SimulationLogger:
         self.logger.setLevel(logging.DEBUG)
 
         # setup the formatter
-        header = "{}\n{}\n".format(datetime.now(timezone.utc).astimezone().isoformat(), config_file)
-
+        if len(override_args):
+            log_override_vals = "Override values: {}".format(", ".join(override_args))
+            header = "{}\n{}\n{}\n".format(datetime.now(timezone.utc).astimezone().isoformat(), config_file,
+                                           log_override_vals)
+        else:
+            header = "{}\n{}\n".format(datetime.now(timezone.utc).astimezone().isoformat(), config_file)
         # create file handler which logs even debug messages
         fh = self.FileHandlerWithHeader(header, os.path.join(self.simulation_log_path(), 'sim_results.log'), mode='w')
         fh.setLevel(self.file_log_level)

@@ -43,7 +43,7 @@ class Simulation:
         with open(filename, 'r') as config_file:
             self.config = json.load(config_file)
 
-    def setup_logging(self, config_file):
+    def setup_logging(self, config_file, override_args):
         self.log_manager = SimulationLogger(
             console_log_level=self.config.get("console_log_level", logging.DEBUG),
             file_log_level=self.config.get("file_log_level", logging.DEBUG),
@@ -51,12 +51,12 @@ class Simulation:
             log_to_postgres=self.config.get("log_to_postgres", False),
             log_format=self.config.get("log_format", None)
         )
-        self.log_manager.init(config_file)
+        self.log_manager.init(config_file, override_args)
 
     ##
     #
     # @param runtime the length of running the simulation, used for GC's to setup their price calc schedules and
-    def read_grid_controllers(self, config, runtime):
+    def read_grid_controllers(self, config, runtime, override_args):
 
         connections = []  # a list of tuples of (gc, [connections]) to initialize later once all devices are set.
         for gc in config['devices']['grid_controllers']:
@@ -64,8 +64,12 @@ class Simulation:
             price_logic = gc['price_logic']
             # gc_uuid = gc.get(uuid, 0)
             msg_latency = gc.get('message_latency', 0)
-            schedule = gc.get('schedule', None)
+            msg_latency = int(override_args.get('devices.{}.message_latency'.format(gc_id), msg_latency))
             min_alloc_response_threshold = gc.get('threshold_alloc', 1)
+            min_alloc_response_threshold = float(override_args.get('devices.{}.threshold_alloc'.format(gc_id),
+                                                                   min_alloc_response_threshold))
+
+            schedule = gc.get('schedule', None)
             connected_devices = gc.get('connected_devices', None)
             if connected_devices:
                 connections.append((gc_id, connected_devices))
@@ -75,8 +79,14 @@ class Simulation:
                 batt_price_logic = batt_info['price_logic']
                 batt_id = batt_info['battery_id']
                 max_discharge_rate = batt_info.get('max_discharge_rate', 1000.0)
+                max_discharge_rate = float(override_args.get('devices.{}.{}.max_discharge_rate'.format(gc_id, batt_id),
+                                                             max_discharge_rate))
                 max_charge_rate = batt_info.get('max_charge_rate', 1000.0)
+                max_charge_rate = float(override_args.get('devices.{}.{}.max_charge_rate'.format(gc_id, batt_id),
+                                                          max_charge_rate))
                 capacity = batt_info.get('capacity', 50000.0)
+                capacity = float(override_args.get('devices.{}.{}.capacity'.format(gc_id, batt_id),
+                                                   capacity))
                 battery = Battery(battery_id=batt_id, price_logic=batt_price_logic, capacity=capacity,
                                   max_charge_rate=max_charge_rate, max_discharge_rate=max_discharge_rate)
             else:
@@ -90,7 +100,7 @@ class Simulation:
         return connections
 
     # make a new utility meter and register with supervisor
-    def read_utility_meters(self, config):
+    def read_utility_meters(self, config, override_args):
 
         # TODO: Incorporate new scheduling
 
@@ -98,6 +108,7 @@ class Simulation:
         for utm in config['devices']['utility_meters']:
             utm_id = utm['device_id']
             msg_latency = utm.get('message_latency', 0)
+            msg_latency = int(override_args.get('devices.{}.message_latency'.format(utm_id), msg_latency))
             connected_devices = utm.get('connected_devices', None)
             schedule = utm.get('schedule', None)
             price_schedule = utm.get('price_schedule', None)
@@ -109,17 +120,20 @@ class Simulation:
             self.supervisor.register_device(new_utm)
         return connections
 
-    def read_pvs(self, config):
+    def read_pvs(self, config, override_args):
         pass
         # TODO: Once we implement PV etc.
 
-    def read_euds(self, config):
+    def read_euds(self, config, override_args):
         connections = []
         for eud in config['devices']['euds']:
             eud_id = eud['device_id']
             eud_type = eud['eud_type']
+
             msg_latency = eud.get('message_latency', 0)
+            msg_latency = int(override_args.get('devices.{}.message_latency'.format(eud_id), msg_latency))
             start_time = eud.get('start_time', 0)
+            start_time = int(override_args.get('devices.{}.start_time'.format(eud_id), start_time))
             connected_devices = eud.get('connected_devices', None)
             schedule = eud.get('schedule', None)
             if connected_devices:
@@ -128,28 +142,35 @@ class Simulation:
             eud_class = self.eud_dictionary[eud_type][0]
             # get all the arguments for the eud constructor
             eud_specific_args = {cls_arg: eud.get(cls_arg, None) for cls_arg in self.eud_dictionary[eud_type][1:]}
+            for k, v in eud_specific_args.items():
+                eud_specific_args[k] = float(override_args.get('devices.{}.{}'.format(eud_id, k), v))  # TODO: dangerous
             new_eud = eud_class(device_id=eud_id, supervisor=self.supervisor, time=start_time, msg_latency=msg_latency,
                                 schedule=schedule, **eud_specific_args)
-
             self.supervisor.register_device(new_eud)
+
         return connections
 
-    ## Reads in the simulation json file.
+    ##
+    # Reads in the simulation json file and any override parameters, creating all the devices which will participate
+    # in the simulation.
     #
-    #
+    # @param config_file the list
 
-    def setup_simulation(self, config_file):
+    def setup_simulation(self, config_file, override_args):
         self.read_config_file("../scenario_data/{}".format(config_file))
-        self.setup_logging(config_file)
+        self.setup_logging(config_file, override_args)
 
-        days_to_run = int(self.config["run_time_days"])
-        self.end_time = 24 * 60 * 60 * days_to_run  # end time in seconds
+        overrides = self.parse_inputs_to_dict(override_args)
+
+        run_time_days = self.config["run_time_days"]
+        run_time_days = int(overrides.get('run_time_days', run_time_days))
+        self.end_time = 24 * 60 * 60 * run_time_days  # end time in seconds
 
         #  TODO: pv_connections = self.read_pvs(self.config)
 
         # reads in and creates all the simulation devices before registering them
-        connections = [self.read_grid_controllers(self.config, self.end_time), self.read_utility_meters(self.config),
-                       self.read_euds(self.config)]
+        connections = [self.read_grid_controllers(self.config, self.end_time, overrides),
+                       self.read_utility_meters(self.config, overrides), self.read_euds(self.config, overrides)]
 
         for connect_list in connections:
             for this_device_id, connects in connect_list:
@@ -159,9 +180,22 @@ class Simulation:
                     this_device.register_device(that_device, that_device_id, 1)
                     that_device.register_device(this_device, this_device_id, 1)
 
-    def run_simulation(self, config_file):
+    ##
+    # Takes a list of keyword arguments in the form of strings such as 'key=value' and outputs them as
+    # a dictionary of string to float values. These inputs must be float override values.
+
+    def parse_inputs_to_dict(self, args):
+        arg_dict = {}
+        for arg in args:
+            key_val = arg.split('=')
+            if len(key_val) == 2:
+                key, val = key_val
+                arg_dict[key] = val
+        return arg_dict
+
+    def run_simulation(self, config_file, override_args):
         self.supervisor = Supervisor()
-        self.setup_simulation(config_file)
+        self.setup_simulation(config_file, override_args)
         while self.supervisor.has_next_event():
             device_id, time_stamp = self.supervisor.peek_next_event()
             if time_stamp > self.end_time:
@@ -171,11 +205,13 @@ class Simulation:
 
 if __name__ == "__main__":
     sim = Simulation()
-    if len(sys.argv) >= 2:
-        sim.run_simulation(sys.argv[1])
+    if len(sys.argv) >= 3:
+        sim.run_simulation(sys.argv[1], sys.argv[2:])
+    elif len(sys.argv) == 2:
+        sim.run_simulation(sys.argv[1], [])
     else:
         raise FileNotFoundError("Must enter a configuration filename")
 
-# Use scenario_A_basic_discharge_only.json" as parameter
+
 
 

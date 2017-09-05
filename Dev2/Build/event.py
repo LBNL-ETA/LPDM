@@ -32,6 +32,5 @@ class Event(object):
     # @param args a tuple of arguments for the function
 
     def run_event(self):
-        # TODO: MAKE SURE THIS WORKS WITH MULTIPLE ARGUMENTS.
         self._action(*self._args)
 

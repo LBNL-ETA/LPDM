@@ -413,6 +413,8 @@ class Device(metaclass=ABCMeta):
     # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
     # TODO: (1) Change pricing model to reflect variable amount of time.
+        # SETUP price calc schedule, battery update schedule.
+        # Change scheduling to allow for multiday schedules, etc.
     # TODO: (2) Change input model so that the price logic is constructed outside of Grid Controller.
     # TODO: (3) Change the logging format to what Bruce Described.
     # TODO: (4) Overload constructors.

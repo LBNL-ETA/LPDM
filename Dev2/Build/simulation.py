@@ -10,10 +10,9 @@
 ########################################################################################################################
 
 
-"""Runs the simulation."""
+"""Performs FILE IO and sets up the simulation."""
 
 from Build.supervisor import Supervisor
-
 from Build.grid_controller import GridController
 
 from Build.battery import Battery
@@ -24,7 +23,7 @@ from Build.simulation_logger import SimulationLogger
 import json
 import logging
 import sys
-
+import os
 
 class Simulation:
 
@@ -87,8 +86,10 @@ class Simulation:
                 capacity = batt_info.get('capacity', 50000.0)
                 capacity = float(override_args.get('devices.{}.{}.capacity'.format(gc_id, batt_id),
                                                    capacity))
+                update_frequency = batt_info.get('update_frequency', 1200)
                 battery = Battery(battery_id=batt_id, price_logic=batt_price_logic, capacity=capacity,
-                                  max_charge_rate=max_charge_rate, max_discharge_rate=max_discharge_rate)
+                                  max_charge_rate=max_charge_rate, max_discharge_rate=max_discharge_rate,
+                                  update_frequency=update_frequency)
             else:
                 battery = None
 
@@ -120,7 +121,35 @@ class Simulation:
             self.supervisor.register_device(new_utm)
         return connections
 
+    def read_pv_data(self, filename):
+        data_out = []  # list of tuples of time and power ratios
+        pv_data = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+                               "scenario_data/pv_data/{}".format(filename))
+        with open(pv_data, 'r') as data:
+            for raw_line in data:
+                for line in raw_line.split("\r"):
+                    parts = line.strip().split(',')
+                    if len(parts) == 2 and parts[0].strip():
+                        time_parts = parts[0].split(':')
+                        if len(time_parts) == 3:
+                            time_secs = (int(time_parts[0]) * 60 * 60) + (int(time_parts[1]) * 60) + int(time_parts[2])
+                            power_ratio = float(parts[1])
+                            data_out.append((time_secs, power_ratio))
+        return data_out
+
     def read_pvs(self, config, override_args):
+        connections = []
+        for pv in config['devices']['pv']:
+            pv_id = pv['device_id']
+            msg_latency = pv.get('message_latency', 0)
+            msg_latency = int(override_args.get('devices.{}.message_latency'.format(pv_id), msg_latency))
+            connected_devices = pv.get('connected_devices', None)
+            schedule = pv.get('schedule', None)
+            #output_schedule = pv.get('price_schedule', None)
+            # open the file called raw_data.csv.
+            if connected_devices:
+                connections.append((pv_id, connected_devices))
+
         pass
         # TODO: Once we implement PV etc.
 
@@ -157,7 +186,8 @@ class Simulation:
     # @param config_file the list
 
     def setup_simulation(self, config_file, override_args):
-        self.read_config_file("../scenario_data/{}".format(config_file))
+        self.read_config_file(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+                              "scenario_data/{}".format(config_file)))
         self.setup_logging(config_file, override_args)
 
         overrides = self.parse_inputs_to_dict(override_args)
@@ -193,24 +223,27 @@ class Simulation:
                 arg_dict[key] = val
         return arg_dict
 
-    def run_simulation(self, config_file, override_args):
-        self.supervisor = Supervisor()
-        self.setup_simulation(config_file, override_args)
-        while self.supervisor.has_next_event():
-            device_id, time_stamp = self.supervisor.peek_next_event()
-            if time_stamp > self.end_time:
-                break
-            self.supervisor.occur_next_event()
-        self.supervisor.finish_all(self.end_time)
 
-if __name__ == "__main__":
+##
+# Creates an instance of a simulation class, which performs all the necessary file I/O with the input file.
+# Then, iterates through all events created in the simulation and writes output to the log file.
+# @param config_file the configuration json containing the specifications of the run. See docs for more details.
+# @param override_args list of manual parameters to override in the format 'device_id.attribute_name=value'.
+
+def run_simulation(config_file, override_args):
+
     sim = Simulation()
-    if len(sys.argv) >= 3:
-        sim.run_simulation(sys.argv[1], sys.argv[2:])
-    elif len(sys.argv) == 2:
-        sim.run_simulation(sys.argv[1], [])
-    else:
-        raise FileNotFoundError("Must enter a configuration filename")
+    sim.supervisor = Supervisor()
+    sim.setup_simulation(config_file, override_args)
+
+    while sim.supervisor.has_next_event():
+        device_id, time_stamp = sim.supervisor.peek_next_event()
+        if time_stamp > sim.end_time:
+            break
+        sim.supervisor.occur_next_event()
+
+    sim.supervisor.finish_all(sim.end_time)
+
 
 
 

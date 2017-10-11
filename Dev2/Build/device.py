@@ -33,10 +33,10 @@ All Utility Meter's Device ID"s must begin with UM.
 All PV Device ID's must begin with PV.
 """
 
-from .priority_queue import PriorityQueue
-from .event import Event
-from .message import Message, MessageType
-from . import message_formatter
+from Build.priority_queue import PriorityQueue
+from Build.event import Event
+from Build.message import Message, MessageType
+from Build import message_formatter
 from abc import ABCMeta, abstractmethod
 import logging
 
@@ -412,32 +412,29 @@ class Device(metaclass=ABCMeta):
 
     # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
-    # TODO: (1) Change pricing model to reflect variable amount of time.
-        # SETUP price calc schedule, battery update schedule.
-        # Change scheduling to allow for multiday schedules, etc.
-    # TODO: (2) Change input model so that the price logic is constructed outside of Grid Controller.
-    # TODO: (3) Change the logging format to what Bruce Described.
-    # TODO: (4) Overload constructors.
+    # TODO: (1) Change pricing to add calculated value into spot in the list of prices. Log this for debugging.
+    # TODO: (2) SCHEDULING CHANGES:
+        #  Change scheduling to allow for multiday schedules, etc.
+        #  Change input model so that the price logic is constructed outside of Grid Controller.
+        #  Add parameters to logic constructors.
+    # TODO: (3.5) Utility meter communicates buy-sell price to GC.
+    # TODO: Add back in uuid.  DEFAULT UUID IS 1000 + counter, default device id is type_uuid.
+    ##### # TODO: (2.5) Compare results against an old Mike model.
+    #####   TODO: (3) 2-price model for utility meter, all messaging (with extended value options). Test again
 
-    # TODO: Add back in uuid
-     # TODO: Test read_delay without battery preference, then battery preference.
-    # TODO: get pricing model working.
-    # TODO: (2.5) Test a more complicated multi-day schedule.
-    # TODO: (3) 2-price model for utility meter, all messaging (with extended value options). Test again.
-    # TODO: (3.5) Utility meter communicates price to GC.
-
-    # TODO: (5) Refactor dependencies so this works from the command line
     # TODO: (8) Utility meter needs to communicate its price to the GC.
     # TODO: (9) Add UUID value to device initialization.
 
-    # TODO: (9) Add documentation to the Bruce page, documentation to functions throughout.
-    # TODO: (10) Add PV.
+    ###### TODO: (10) Add PV.
     # TODO: (11) Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
     # TODO: (12) Refactor the solution. Code cleanup.
 
+
+    ### # TODO: (14) Port in Air Conditioner, other EUD's to get to functionality.
+    ### # TODO: (15) Get to some form of backwards compatibility with the dashboard.
+
+    # LONGER TERM:
     # TODO: (13) Finish considering GC load balance algorithm
-    # TODO: (14) Port in Air Conditioner.
-    # TODO: (15) Get to some form of backwards compatibility with the website.
     # TODO: (16) Reconsider price forecasts.
     # TODO: (17) Convert the date format to accept milliseconds in message parsing.
 

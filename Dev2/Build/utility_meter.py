@@ -26,7 +26,8 @@ class UtilityMeter(Device):
         super().__init__(device_id, "Utility Meter", supervisor, msg_latency=msg_latency, schedule=schedule,
                          connected_devices=connected_devices)
         self._loads = {}  # dictionary of devices and loads to those devices.
-        self._price = 0
+        self._sell_price = 0
+        self._buy_price = 0
         if price_schedule:
             self.setup_price_schedule(price_schedule)
 
@@ -38,8 +39,17 @@ class UtilityMeter(Device):
     # Sets the price of the utility meter, and then broadcasts that new price to all connected devices.
     # @param price the new price to set it to.
     #
-    def set_price(self, price):
-        self._price = price
+    def set_sell_price(self, sell_price):
+        self._sell_price = sell_price
+        self._logger.info(self.build_log_notation("set sell price", "set sell price", sell_price))
+        self.broadcast_price_levels(sell_price)  # TODO: Needs to communicate BOTH buy and sell prices.
+
+    ##
+    # Sets the buy price of the utility meter.
+
+    def set_buy_price(self, buy_price):
+        self._buy_price = buy_price
+        self._logger.info(self.build_log_notation("set buy price", "set buy price", buy_price))
 
 
     ##
@@ -47,9 +57,9 @@ class UtilityMeter(Device):
     # @oaram price_schedule a list of price, hour tuples that the utility sets its price at
     #
     def setup_price_schedule(self, price_schedule):
-        for price, hour in price_schedule:
-            price_event = Event(self.set_price, price)
-            time_sec = hour * 3600
+        for hour, price in price_schedule:
+            price_event = Event(self.set_sell_price, price)
+            time_sec = int(hour) * 3600
             self.add_event(price_event, time_sec)
 
     # __________________________________ Messaging Functions _______________________ #
@@ -119,7 +129,7 @@ class UtilityMeter(Device):
         for device_id in self._connected_devices.keys():
             self.send_price_message(device_id, price)
     ##
-    # TODO: Give the device an average price statistic to calculate.
+    # TODO: Give the utm an average price statistic to calculate.
     #
 
     def device_specific_calcs(self):

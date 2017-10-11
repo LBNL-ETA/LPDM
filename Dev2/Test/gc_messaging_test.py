@@ -5,8 +5,7 @@ from Build.event import Event
 from Build.battery import Battery
 from Build.utility_meter import UtilityMeter
 
-
-
+# TODO: DO NOT USE. HAS NOT BEEN UPDATED.
 
 class TestGCMessaging(unittest.TestCase):
     def setUp(self):

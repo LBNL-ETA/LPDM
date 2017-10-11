@@ -4,6 +4,8 @@ from Build.grid_controller import GridController
 from Build.event import Event
 from Build.priority_queue import PriorityQueue
 
+
+# TODO: DO NOT USE. HAS NOT BEEN UPDATED.
 class TestEventModel(unittest.TestCase):
 
     def setUp(self):

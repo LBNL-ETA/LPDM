@@ -2,6 +2,7 @@ import unittest
 from Build.supervisor import Supervisor
 from Build.grid_controller import GridController
 
+# TODO: DO NOT USE. HAS NOT BEEN UPDATED.
 
 class TestDeviceRegister(unittest.TestCase):
     def setUp(self):

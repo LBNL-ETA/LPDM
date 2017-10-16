@@ -143,7 +143,7 @@ class Device(metaclass=ABCMeta):
                 self._power_in += new_power
                 self._power_out += prev_power
             elif new_power < 0:
-                self._power_out += (new_power - prev_power)
+                self._power_out -= (new_power - prev_power)
 
     ##
     # Keeps a running total of the energy output by the device
@@ -288,9 +288,10 @@ class Device(metaclass=ABCMeta):
 
     ##
     # Method to be called when device is entering the grid, and is seeking to register with other devices.
-
+    #
     # @param device_list the connected list of devices to add to its connected device list and to inform it has
     # registered. Must be devices themselves (not ID's).
+
     def engage(self, device_list):
         for device in device_list:
             device_id = device.get_id()
@@ -312,9 +313,8 @@ class Device(metaclass=ABCMeta):
     ##
     # Method to be called when device receives a price message
     #
+    # @param sender_id the sender of the message informing of the new price
     # @param new_price the new price value
-    #  TODO: This occurs when a device sends a price message. Internal price modulation vs external? Different funcs?
-
     @abstractmethod
     def process_price_message(self, sender_id, new_price):
         pass
@@ -340,13 +340,14 @@ class Device(metaclass=ABCMeta):
     def process_allocate_message(self, sender_id, allocate_amt):
         pass
 
-    # ______________________________LOGGING/SCHEDULING FUNCTIONALITY___________________________ #
+    # ______________________________SCHEDULING FUNCTIONALITY___________________________ #
 
     ##
     #
     # @param a list of scheduled events to add to the device's queue, in the format of list of list of
-    # time(hours), operation_name
+    # time(seconds), operation_name
     #
+    # TODO: REVISE THIS.
     def setup_schedule(self, scheduled_events):
         for task in scheduled_events:
             hour, operation_name = tuple(task)
@@ -357,6 +358,8 @@ class Device(metaclass=ABCMeta):
             event = Event(func)  # for now no arguments. TODO: list should be of tuples (time, func, args).
             time_sec = hour * 3600
             self.add_event(event, time_sec)
+
+    # _____________________________ LOGGING FUNCTIONALITY ____________________________ #
 
     ##
     # Builds a logging message from a message, tag, and value, which also includes time and device_id
@@ -393,7 +396,6 @@ class Device(metaclass=ABCMeta):
 
     ##
     # All device specific power consumption statistics are added here
-
     @abstractmethod
     def device_specific_calcs(self):
         pass
@@ -412,29 +414,34 @@ class Device(metaclass=ABCMeta):
 
     # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
-    # TODO: (1) Change pricing to add calculated value into spot in the list of prices. Log this for debugging.
+    # TODO: Test that the PV is working. 
+    # TODO: Get Air Conditioner Fully Working (new file IO, etc.)
     # TODO: (2) SCHEDULING CHANGES:
         #  Change scheduling to allow for multiday schedules, etc.
-        #  Change input model so that the price logic is constructed outside of Grid Controller.
-        #  Add parameters to logic constructors.
     # TODO: (3.5) Utility meter communicates buy-sell price to GC.
     # TODO: Add back in uuid.  DEFAULT UUID IS 1000 + counter, default device id is type_uuid.
     ##### # TODO: (2.5) Compare results against an old Mike model.
     #####   TODO: (3) 2-price model for utility meter, all messaging (with extended value options). Test again
+    # TODO: Incorporate the linear/nondirect power reduction done by the battery when overtextended
 
-    # TODO: (8) Utility meter needs to communicate its price to the GC.
-    # TODO: (9) Add UUID value to device initialization.
-
-    ###### TODO: (10) Add PV.
     # TODO: (11) Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
-    # TODO: (12) Refactor the solution. Code cleanup.
+    # TODO: (12) Code cleanup. Documentation
+
+    ### # TODO: (14) Port in other EUD's to be able to run all old tests.
 
 
-    ### # TODO: (14) Port in Air Conditioner, other EUD's to get to functionality.
     ### # TODO: (15) Get to some form of backwards compatibility with the dashboard.
+
+    # TODO: If device wants to enter the grid at a later point in time, allow to add an "engage" to its schedule
 
     # LONGER TERM:
     # TODO: (13) Finish considering GC load balance algorithm
     # TODO: (16) Reconsider price forecasts.
-    # TODO: (17) Convert the date format to accept milliseconds in message parsing.
 
+
+
+
+# TODO TESTING:
+    # Non 1-hour price intervals
+    # PV and AC File Read-In
+    #

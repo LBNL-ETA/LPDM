@@ -61,6 +61,7 @@ class Battery(object):
         self.sum_charge_wh = 0.0
         self.sum_discharge_wh = 0.0
         self._logger = logging.getLogger("lpdm")  # Setup logging
+        self._last_log_update_time = 0  # the last time the battery logged its state
 
         if price_logic == 'hourly_preference':
             self._price_logic = BatteryPriceLogicA()
@@ -75,6 +76,11 @@ class Battery(object):
     # Returns the current load on the battery
     def get_load(self):
         return self._load
+
+    ##
+    # Returns the batteries current state of charge
+    def get_current_soc(self):
+        return self._current_soc
 
     ##
     # Returns the value of the current batteries charging preference (1 if discharge, 0 if neutral, -1 if discharge)
@@ -125,6 +131,14 @@ class Battery(object):
         return self._load - old_load
 
     ##
+    # Resets the battery load to zero
+    def clear_load(self):
+        old_load = self._load
+        self._load = 0
+        self._logger.debug(self.build_battery_log_notation(
+            "battery load cleared from {} to zero".format(old_load)))
+
+    ##
     # Updates the state of charge and power levels of the battery reflecting current time.
     # @param the time to update the battery's local time to
     # @param price the local price of the associated grid controller
@@ -144,7 +158,6 @@ class Battery(object):
             power_change = self._load * (time_diff / 3600.0)  # change in battery power level since last update
             new_charge_amt = (prev_soc * self._capacity) + power_change
             self._current_soc = new_charge_amt / self._capacity
-
             self.recalc_charge_preference()
             if power_change > 0:
                 self.sum_charge_wh += power_change
@@ -157,6 +170,8 @@ class Battery(object):
     #
     # @param price_stat the representative statistic to use to calculate it?
     def recalc_charge_preference(self):
+
+        BATTERY_LOG_FREQUENCY = 7200  # log battery state every two hours minimum
         old_preference = self._charging_preference
 
         if type(self._price_logic) == BatteryPriceLogicA:
@@ -167,13 +182,13 @@ class Battery(object):
                                                                                  self._average_price)
 
         """Log changes in battery charge preference"""
-        battery_log_update_time = 7200  # log the battery's state every two hours
         if old_preference != self._charging_preference:
             self._logger.info(self.build_battery_log_notation(
                 "changed from {}".format(old_preference)))
-        elif self._time - self._last_update_time > battery_log_update_time:
+        elif self._time - self._last_log_update_time > BATTERY_LOG_FREQUENCY:
             self._logger.info(self.build_battery_log_notation(
                 "unchanged charge preference"))
+            self._last_log_update_time = self._time
 
     # _____________________ BATTERY SPECIFIC LOGGING ________________________________ #
     ##

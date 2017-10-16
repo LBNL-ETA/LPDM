@@ -19,7 +19,8 @@
                     "battery_id": "battery_1",
                     "device_type": "battery",
                     "capacity": 50000.0,
-                    "price_logic": "hourly_preference"
+                    "price_logic": "hourly_preference", 
+                    "starting soc": 0.5 
                 }
             }
         ],

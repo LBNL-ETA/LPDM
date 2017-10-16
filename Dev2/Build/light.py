@@ -20,16 +20,17 @@ from Build.eud import Eud
 
 class Light(Eud):
 
-    def __init__(self, device_id, supervisor, max_operating_power, msg_latency=0, time=0,
-                 schedule=None, connected_devices=None):
-        super().__init__(device_id, "light", supervisor, msg_latency=msg_latency, time=time,
-                         schedule=schedule, connected_devices=connected_devices)
+    def __init__(self, device_id, supervisor, msg_latency=0, time=0,
+                 schedule=None, connected_devices=None, max_operating_power=100, power_level_max=1.0,
+                 power_level_low=0.2, price_dim_start=0.1, price_dim_end=0.2, price_off=0.3):
+        super().__init__(device_id=device_id, device_type="light", supervisor=supervisor,
+                         msg_latency=msg_latency, time=time, schedule=schedule, connected_devices=connected_devices)
         self._max_operating_power = max_operating_power  # the device's ideal maximum power usage
-        self._power_level_max = 1.0  # percentage of power level to operate at when price is low
-        self._power_level_low = 0.2  # percent of power level to operate at when price is high.
-        self._price_dim_start = 0.1  # the price at which to start to lower power
-        self._price_dim_end = 0.2  # price at which to change to lower_power mode.
-        self._price_off = 0.3  # price at which to turn off completely
+        self._power_level_max = power_level_max # percentage of power level to operate at when price is low
+        self._power_level_low = power_level_low  # percent of power level to operate at when price is high.
+        self._price_dim_start = price_dim_start  # the price at which to start to lower power
+        self._price_dim_end = price_dim_end  # price at which to change to lower_power mode.
+        self._price_off = price_off  # price at which to turn off completely
 
     ##
     # Calculate the desired power level in based on the price (watts)
@@ -49,7 +50,14 @@ class Light(Eud):
                 return self._power_level_low * self._max_operating_power
         return 0.0  # not in operation or price too high.
 
+    def begin_internal_operation(self):
+        pass
 
+    def end_internal_operation(self):
+        pass
+
+    def device_specific_calcs(self):
+        pass
 
 
 

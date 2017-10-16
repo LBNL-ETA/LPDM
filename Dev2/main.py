@@ -9,6 +9,10 @@
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 ########################################################################################################################
 
+"""
+Main run portal for the simulation. Calls run simulation in simulation.py.
+"""
+
 import Build.simulation as sim
 import sys
 

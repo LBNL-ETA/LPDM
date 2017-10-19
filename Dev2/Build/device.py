@@ -463,6 +463,8 @@ def nonzero_power(power_level):
 # TODO: (17) Global variables of trickle power, power_direct.
 # TODO: (18) Get to some form of backwards compatibility with the dashboard.
 # TODO: (19) If device wants to enter the grid at a later point in time, allow to add an "engage" to its schedule
+# TODO: (20) Maximum channel capacity for Grid Controllers.
+# TODO: (21) Air conditioner linear interpolate of price/set point
 
 # LONGER TERM:
 # TODO: (20) Finish considering GC load balance algorithm

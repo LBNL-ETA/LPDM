@@ -52,8 +52,12 @@ class AirConditionerSimple(Eud):
     ##
     # Loads a temperature schedule into the AC. Requires that
     # @param temp_schedule a list of tuples of (time, temperature) for outdoor temperatures.
+    # TODO: Where is this?
     def load_temperature_profile(self, temperature_schedule):
         self.setup_schedule(temperature_schedule)
+
+    def schedule(self):
+        pass
 
     def schedule_setpoint_evaluation_events(self, total_runtime):
         curr_time = 0
@@ -61,12 +65,12 @@ class AirConditionerSimple(Eud):
             self.add_event(Event(self.reassess_setpoint), curr_time)
             curr_time += self._setpoint_interval
 
-
-    if self._time > self._last_temperature_update_time:
-        self.adjust_internal_temperature()
-        self.reasses_setpoint()
-        self.precooling_update()
-        self.control_compressor_operation()
+    def calculate_desired_power_level(self):
+        if self._time > self._last_temperature_update_time:
+            self.adjust_internal_temperature()
+            self.reassess_setpoint()
+            self.precooling_update()
+            self.control_compressor_operation()
 
     def reassess_setpoint(self):
         """
@@ -94,31 +98,31 @@ class AirConditionerSimple(Eud):
         adjust the temperature of the device based on the indoor/outdoor temperature difference
         """
         if self._time > self._last_temperature_update_time:
+            delta_t = ((self._time - self._last_temperature_update_time) / 3600.0) # time difference in hours
             if self._compressor_is_on:
                 # if the compressor is on adjust the internal temperature due to cooling
-                delta_t = ((self._time - self._last_temperature_update_time) / 3600.0)
                 delta_c = delta_t * self._temperature_change_rate_hr_comp
                 self._current_temperature -= delta_c
-                self._logger.debug(self.build_message(
+                self._logger.debug(self.build_log_notation(
                     message="compressor adjustment",
                     tag="comp_delta_c",
                     value=delta_c
                 ))
 
             # calculate the indoor delta_t due to the outdoor temperature
-            if not self._current_outdoor_temperature is None:
+            if self._current_outdoor_temperature is not None:
                 # difference between indoor and outdoor temp
                 delta_t = ((self._time - self._last_temperature_update_time) / 3600.0)
                 delta_indoor_outdoor = self._current_outdoor_temperature - self._current_temperature
                 delta_c = delta_t * delta_indoor_outdoor * self._temperature_change_rate_hr_oa
-                self._logger.debug(self.build_message(
+                self._logger.debug(self.build_log_notation(
                     message="oa adjustment",
                     tag="oa_delta_c",
                     value=delta_c
                 ))
                 self._current_temperature += delta_c
-                self._logger.debug(
-                    self.build_message(
+                self._logger.info(
+                    self.build_log_notation(
                         message="Internal temperature",
                         tag="internal_temperature",
                         value=self._current_temperature
@@ -170,12 +174,6 @@ class AirConditionerSimple(Eud):
                 # if current temperature is below the set point and compressor is on, turn it off
                 self.turn_off_compressor()
 
-    def turn_on(self):
-        """override the base class. if ac is on doesn't mean it's using power because compressor needs to be on"""
-        if not self._in_operation:
-            self._logger.info(self.build_message(message="turn on device", tag="on/off", value=1))
-            self._in_operation = True
-
     def turn_off(self):
         "Turn off the device"
         if self._in_operation:
@@ -215,17 +213,7 @@ class AirConditionerSimple(Eud):
                 self.set_power_level(0.0)
                 self.broadcast_new_power(self._power_level, target_device_id=self._grid_controller_id)
 
-    def sum_energy_used(self, power_level):
-        self._total_energy_use += power_level * (self._time - self._last_total_energy_update_time) / (1000 * 3600)
-        self._last_total_energy_update_time = self._time
 
-    def schedule_next_outdoor_temperature_change(self):
-        """schedule the next temperature update (in one hour)"""
-        new_event = LpdmEvent(self._time + self._temperature_update_interval, "update_outdoor_temperature")
-        # check if the event is already there
-        found_items = filter(lambda d: d.ttie == new_event.ttie and d.value == new_event.value, self._events)
-        if len(found_items) == 0:
-            self._events.append(new_event)
 
     def process_outdoor_temperature_change(self):
         """Update the current outdoor temperature"""

@@ -41,8 +41,10 @@ class PV(Device):
     # If this PV is connected to multiple devices, it evenly distributes its load amongst them.
     def update_power_status(self, peak_power, power_percent):
         for device_id in self._connected_devices.keys():
-            self.set_power_out(peak_power * power_percent)
-            self.send_power_message(device_id, -self._power_out)
+            power_amt = peak_power * power_percent
+            if power_amt != self._power_out:
+                self.set_power_out(power_amt)
+                self.send_power_message(device_id, -self._power_out)
 
     def send_power_message(self, target_id, power_amt):
         if target_id in self._connected_devices.keys():

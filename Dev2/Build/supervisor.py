@@ -90,19 +90,18 @@ class Supervisor:
             return None
 
     ##
-    # Checks that all calculations are valid for this simulation run.
-    # We have for all devices, power_out <= sum(connected devices power in), and
-    # power_in <= sum(connected_devices power out). Finally, the state of the system should
-    # balance such that sum(all_power_out) - sum(all_power_in) = 0.
+    # Returns the total simulation power in and total simulation power out for the device.
+    # Total simulation power in should approximately equal simulation power out, with small margin of error
+    # allowed because of float rounding and because message latency slightly affects the calculations.
 
-    def check_valid_calcs(self):
+    def total_calcs(self):
         total_power_in = 0.0
         total_power_out = 0.0
         for device in self._devices.values():
             total_power_in += device._sum_power_in
             total_power_out += device._sum_power_out
-        self._logger.info("total simulation power in: {}".format(total_power_in))
-        self._logger.info("total simulation power out: {}".format(total_power_out))
+        self._logger.info("total simulation power in: {} Wh".format(total_power_in))
+        self._logger.info("total simulation power out: {} Wh".format(total_power_out))
 
     ##
     # Called at the end of the simulation. Finishes each device and instructs them to write their energy
@@ -111,4 +110,4 @@ class Supervisor:
     def finish_all(self, end_time):
         for device in self.all_devices():
             device.finish(end_time)
-        self.check_valid_calcs()
+        self.total_calcs()

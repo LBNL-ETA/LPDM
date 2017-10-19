@@ -112,7 +112,7 @@ class GridController(Device):
         self.set_power_out(0)
         self.disengage()
 
-        self._logger.info(self.build_log_notation(message="turn off", tag="turn off", value="1"))
+        self._logger.info(self.build_log_notation(message="turn off", tag="turn_off", value="1"))
         # send power message of 0 to all devices. send allocate message of 0 to all devices.
         # send request messages of 0 to all of them. Then, unregister with all.
 
@@ -349,11 +349,19 @@ class GridController(Device):
 
         utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
         # If there is power in from utility and the power change is positive (must accept more), reduce that utm flow.
-        if power_change > 0:
-            for utm in utility_meters:
+        # Likewise, if we are selling to utm and power change is negative, reduce how much we sell.
+        for utm in utility_meters:
+            if power_change > 0:  # must accept more.
                 if self._loads.get(utm, 0) > 0:
                     prev_utm_load = self._loads[utm]
                     self.change_load(utm, max((prev_utm_load - remaining), 0))
+                    new_utm_load = self._loads[utm]
+                    self.send_power_message(utm, new_utm_load)
+                    remaining -= (prev_utm_load - new_utm_load)
+            elif power_change < 0:  # must provide more
+                if self._loads.get(utm, 0) < 0:
+                    prev_utm_load = self._loads[utm]
+                    self.change_load(utm, min((prev_utm_load - remaining), 0))
                     new_utm_load = self._loads[utm]
                     self.send_power_message(utm, new_utm_load)
                     remaining -= (prev_utm_load - new_utm_load)

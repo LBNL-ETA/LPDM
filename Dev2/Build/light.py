@@ -17,6 +17,8 @@ An implementation of a light EUD. The light functions such that
 from Build.device import Device
 from Build.eud import Eud
 
+# TODO: Add a current brightness field, so that we know what this device's current state is. On and off will
+
 
 class Light(Eud):
 
@@ -31,6 +33,7 @@ class Light(Eud):
         self._price_dim_start = price_dim_start  # the price at which to start to lower power
         self._price_dim_end = price_dim_end  # price at which to change to lower_power mode.
         self._price_off = price_off  # price at which to turn off completely
+        self._brightness = 0.0
 
     ##
     # Calculate the desired power level in based on the price (watts)
@@ -49,6 +52,27 @@ class Light(Eud):
             elif self._price <= self._price_off:
                 return self._power_level_low * self._max_operating_power
         return 0.0  # not in operation or price too high.
+
+    ##
+    # Turns the light "on", and hence begins consuming power. Does not affect whether device is in operation and can
+    # receive messages, only power consumption.
+    def on(self):
+        pass
+
+    ##
+    # Turns the light "off", and stops consuming power. Does not affect this device's ability to receive messages,
+    # and it remains in operation even when off.
+    def off(self):
+        pass
+
+    # TODO: Make it so that this device changes its brightness accordingly.
+    def respond_to_power(self, received_power, requested_power):
+        self._brightness = received_power / self._max_operating_power
+        self._logger.info(self.build_log_notation(
+            message="brightness changed to {}".format(self._brightness),
+            tag="brightness",
+            value=self._brightness
+        ))
 
     def begin_internal_operation(self):
         pass

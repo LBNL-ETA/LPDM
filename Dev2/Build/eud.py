@@ -45,10 +45,11 @@ class Eud(Device):
     ##
     # Turns on the EUD, seeking to update to its desired power level. Previous state functions such as price
     # are maintained.
+    # TODO: Rename this to Start Up. Registers this device with all of its connected devices.
     def turn_on(self):
         self._logger.info(self.build_log_notation(
-            message="turn on {}".format(self._device_id),
-            tag="turn_on",
+            message="start up {}".format(self._device_id),
+            tag="start_up",
             value=1
         ))
         # Set power levels to update the power charge calculations.
@@ -58,23 +59,25 @@ class Eud(Device):
         # self.set_power_in(0) this is a problem if things do not happen in the right order.
         # self.set_power_out(0)
 
+    # TODO: Rename this to Shut Down. Removes this device from the active grid.
     ##
     # Turns off the EUD. Reduces all power consumption to 0 and informs all connected grid controllers
     # of this change.
     def turn_off(self):
         self._logger.info(self.build_log_notation(
-            message="turn off {}".format(self._device_id),
-            tag="turn_off",
+            message="shut down {}".format(self._device_id),
+            tag="shut_down",
             value=0
         ))
 
         gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
         for gc in gcs:
             self.send_power_message(gc, 0)
+            self.change_load_in(gc, 0)
         self.set_power_in(0)
         self.set_power_out(0)
-        self._in_operation = False
         self.end_internal_operation()
+        self._in_operation = False
 
     ##
     # Sets the quantity of power that this EUD has been allocated to consume by a specific device
@@ -158,56 +161,67 @@ class Eud(Device):
         self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
                                                   tag="power_msg", value=power_amt))
 
-        self.recalc_sum_power(self._power_in, power_amt)
+        #self.recalc_sum_power(self._power_in, power_amt)
         target_device.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
+    def change_load_in(self, sender_id, new_load):
+        prev_load = self._loads_in.get(sender_id, 0)
+        self.recalc_sum_power(prev_load, new_load)
+        self._loads_in[sender_id] = new_load
     ##
     # Method to be called once it needs to recalculate its internal power usage.
     # To be called after price, power level, or allocate has changed.
     # This function will change the EUD's power level to the desired level.
     # This function is compatible with this EUD being associated with multiple grid controllers.
 
+    # TODO: This as a prototype for the GC modulate power function (shifting loads from more to less expensive).
+    # TODO: GC modulate power function will have a 'timeout', where it can add an event to modulate power 10s later.
     def modulate_power(self):
         desired_power_level = self.calculate_desired_power_level()
         if desired_power_level > 0:
             remaining = desired_power_level  # how much we have left to get (ignoring what we are getting already)
+            total_power_taken = 0
 
             power_sources = []  # list of gcs we will get power from.
             gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
+            # TODO: Take in order of prices from the sources.
+            # TODO: Move power direct into the top level for this decision.
+            # gcs_by_price = sorted(gcs, key=lambda d: self._gc_prices.get(d, 1000.0))
             for device in self._allocated.keys():
                 if device in gcs:
                     # take all up to what we've been allocated.
                     take_power = min(remaining, self._allocated[device])
                     self.send_power_message(device, take_power)
-                    self._loads_in[device] = take_power
+                    self.change_load_in(device, take_power)
                     remaining -= take_power
+                    total_power_taken += take_power
                     if take_power:
                         power_sources.append(device)
                     if remaining <= 0:
                         break
 
+            # TODO: Make this dependent on prices instead. Request all from cheapest first. 
             if remaining > 0:
                 num_gcs = len(gcs)
                 if num_gcs:
                     for gc in gcs:
-                        current_load = self._loads_in.get(gc, 0)
-                        extra_power = current_load + (remaining / num_gcs)
+                        prev_load = self._loads_in.get(gc, 0)
+                        extra_power = remaining / num_gcs # add a fractional value
                         if self._power_direct:
-                            self.send_power_message(gc, extra_power)
-                            self._loads_in[gc] = extra_power
-                            power_sources.append(gc)
+                            self.send_power_message(gc, prev_load + extra_power)
+                            self.change_load_in(gc, prev_load + extra_power)
+                            total_power_taken += extra_power
                         else:
                             self.send_request_message(gc, extra_power)
-                else:
-                    # TODO: self.low_power()?
-                    self.turn_off()  # unable to receive power to support its operation.
+                        power_sources.append(gc)  # TODO: Decide if this is correct for both here?
 
             # clear the record with all GC's that we didn't get power from.
             for gc in gcs:
                 if gc not in power_sources:
                     self.send_power_message(gc, 0)
-                    self._loads_in[gc] = 0
+                    self.change_load_in(gc, 0)
 
+            self.respond_to_power(requested_power=desired_power_level, received_power=total_power_taken)
     ##
     # Calculates EUD's desired power in to support its current internal state levels.
     # NOTE: EUD must be in_operation for this function to work.
@@ -215,6 +229,14 @@ class Eud(Device):
 
     @abstractmethod
     def calculate_desired_power_level(self):
+        pass
+
+    ##
+    # How this EUD responds once it receives a given quantity of power after requesting a certain amount.
+    # @param requested_power how much this device wanted to consume
+    # @param received_power how much power this device immediately received
+    @abstractmethod
+    def respond_to_power(self, requested_power, received_power):
         pass
 
     ##

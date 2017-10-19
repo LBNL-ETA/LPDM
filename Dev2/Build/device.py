@@ -56,6 +56,8 @@ class Device(metaclass=ABCMeta):
     def __init__(self, device_id, device_type, supervisor, time=0, msg_latency=0, schedule=None,
                  connected_devices=None):
 
+        # TODO: Add all_devices dictionary, which is idea of physical connection. Will be a dictionary of devices to
+        # TODO... wires. That device can then register at any point later on in the simulation.
         if connected_devices is None:
             self._connected_devices = {}
         else:
@@ -144,6 +146,7 @@ class Device(metaclass=ABCMeta):
                 self._power_out += prev_power
             elif new_power < 0:
                 self._power_out -= (new_power - prev_power)
+        return 0
 
     ##
     # Keeps a running total of the energy output by the device
@@ -295,7 +298,8 @@ class Device(metaclass=ABCMeta):
     def engage(self, device_list):
         for device in device_list:
             device_id = device.get_id()
-            self._connected_devices[device_id] = device
+            if device_id not in self._connected_devices.keys():
+                self._connected_devices[device_id] = device
             self.send_register_message(device_id, 1)
 
     ##
@@ -414,8 +418,10 @@ class Device(metaclass=ABCMeta):
 
     # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
-    # TODO: Test that the PV is working. 
+    # TODO: Test that the PV is working.
+    # TODO: Review price logics again.
     # TODO: Get Air Conditioner Fully Working (new file IO, etc.)
+    # TODO: Change the EUD's so that turn_off and shut down are different functions.
     # TODO: (2) SCHEDULING CHANGES:
         #  Change scheduling to allow for multiday schedules, etc.
     # TODO: (3.5) Utility meter communicates buy-sell price to GC.
@@ -424,10 +430,14 @@ class Device(metaclass=ABCMeta):
     #####   TODO: (3) 2-price model for utility meter, all messaging (with extended value options). Test again
     # TODO: Incorporate the linear/nondirect power reduction done by the battery when overtextended
 
+    # TODO: Redesign/Refactor EUD's modulate power value.
     # TODO: (11) Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
-    # TODO: (12) Code cleanup. Documentation
-
-    ### # TODO: (14) Port in other EUD's to be able to run all old tests.
+    # TODO: (11.5) Allow Device Setup Schedule to include arguments in its schedule list.
+    # TODO: (12) Refactor from "Build" to "Physical Layer" and "Simulation Library". Code cleanup. Documentation
+    # TODO: (13) Add in "Fx" EUD.
+    # TODO: (14) Add capability of adding physical layer connections to ensure that we can include wire connections.
+    # TODO: (15) Then, change the input model so that register messages are not sent in creating simulation.
+    # TODO: (16) Port in all other EUD's to be able to run all old tests (HVAC and Refrigerator not included)? 
 
 
     ### # TODO: (15) Get to some form of backwards compatibility with the dashboard.

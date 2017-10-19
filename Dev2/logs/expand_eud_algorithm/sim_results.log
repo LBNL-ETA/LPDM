@@ -1,0 +1,128 @@
+2017-10-18T22:51:19.268694-07:00
+discharge_multiday_utm_multiple_prices.json
+Override values: devices.gc_1.battery_1.starting_soc=0
+
+0 00:00:00; 0; gc_1; ; None; initialize gc_1 - grid_controller
+0 00:00:00; 0; utm_1; ; None; initialize utm_1 - Utility Meter
+0 00:00:00; 0; eud_1; ; None; initialize eud_1 - light
+0 00:00:00; 0; gc_1; ; None; registered utm_1
+0 00:00:00; 0; utm_1; ; None; registered gc_1
+0 00:00:00; 0; gc_1; ; None; registered eud_1
+0 00:00:00; 0; eud_1; ; None; registered gc_1
+0 00:00:00; 0; utm_1; turn_on; 1; Turning on utility meter
+0 00:00:00; 0; utm_1; set sell price; 0.1; set sell price
+0 00:00:00; 0; utm_1; price message; 0.1; price msg to gc_1
+0 00:00:00; 0; eud_1; start_up; 1; start up eud_1
+0 00:00:00; 0; eud_1; request_msg; 500.0; REQUEST to gc_1
+0 00:00:00; 0; eud_1; brightness; 0.0; brightness changed to 0.0
+0 00:00:01; 1; gc_1; ; None; Read MessageType.PRICE from utm_1 with value 0.1
+0 00:00:01; 1; gc_1; ; None; Read MessageType.REQUEST from eud_1 with value 500.0
+0 00:00:01; 1; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; changed from BatteryChargingPreference.NEUTRAL
+0 00:00:01; 1; gc_1; allocate_msg; -500.0; ALLOCATE to eud_1
+0 00:00:02; 2; eud_1; ; None; Read MessageType.ALLOCATE from gc_1 with value -500.0
+0 00:00:02; 2; eud_1; power_msg; 500.0; POWER to gc_1
+0 00:00:02; 2; eud_1; brightness; 1.0; brightness changed to 1.0
+0 00:00:03; 3; gc_1; ; None; Read MessageType.POWER from eud_1 with value 500.0
+0 00:00:03; 3; gc_1; power_msg; 500.0; POWER to utm_1
+0 00:00:04; 4; utm_1; ; None; Read MessageType.POWER from gc_1 with value 500.0
+0 02:20:00; 8400; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+0 04:40:00; 16800; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+0 06:00:00; 21600; eud_1; shut_down; 0; shut down eud_1
+0 06:00:00; 21600; eud_1; power_msg; 0; POWER to gc_1
+0 06:00:01; 21601; gc_1; ; None; Read MessageType.POWER from eud_1 with value 0
+0 06:00:01; 21601; gc_1; power_msg; 0.0; POWER to utm_1
+0 06:00:02; 21602; utm_1; ; None; Read MessageType.POWER from gc_1 with value 0.0
+0 07:00:00; 25200; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+0 08:00:00; 28800; eud_1; start_up; 1; start up eud_1
+0 08:00:00; 28800; eud_1; power_msg; 500.0; POWER to gc_1
+0 08:00:00; 28800; eud_1; brightness; 1.0; brightness changed to 1.0
+0 08:00:00; 28800; utm_1; set sell price; 0.15; set sell price
+0 08:00:00; 28800; utm_1; price message; 0.15; price msg to gc_1
+0 08:00:01; 28801; gc_1; ; None; Read MessageType.POWER from eud_1 with value 500.0
+0 08:00:01; 28801; gc_1; power_msg; 500.0; POWER to utm_1
+0 08:00:01; 28801; gc_1; ; None; Read MessageType.PRICE from utm_1 with value 0.15
+0 08:00:01; 28801; gc_1; price change; 0.15; price changed to 0.15
+0 08:00:01; 28801; gc_1; price_msg; 0.15; PRICE to utm_1
+0 08:00:01; 28801; gc_1; price_msg; 0.15; PRICE to eud_1
+0 08:00:02; 28802; utm_1; ; None; Read MessageType.POWER from gc_1 with value 500.0
+0 08:00:02; 28802; utm_1; ; None; Read MessageType.PRICE from gc_1 with value 0.15
+0 08:00:02; 28802; eud_1; ; None; Read MessageType.PRICE from gc_1 with value 0.15
+0 08:00:02; 28802; eud_1; power_msg; 300.00000000000006; POWER to gc_1
+0 08:00:02; 28802; eud_1; brightness; 0.6000000000000001; brightness changed to 0.6000000000000001
+0 08:00:03; 28803; gc_1; ; None; Read MessageType.POWER from eud_1 with value 300.00000000000006
+0 08:00:03; 28803; gc_1; power_msg; 300.00000000000006; POWER to utm_1
+0 08:00:04; 28804; utm_1; ; None; Read MessageType.POWER from gc_1 with value 300.00000000000006
+0 09:20:00; 33600; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+0 11:40:00; 42000; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+0 14:00:00; 50400; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+0 16:20:00; 58800; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+0 18:00:00; 64800; eud_1; shut_down; 0; shut down eud_1
+0 18:00:00; 64800; eud_1; power_msg; 0; POWER to gc_1
+0 18:00:00; 64800; utm_1; set sell price; 0.05; set sell price
+0 18:00:00; 64800; utm_1; price message; 0.05; price msg to gc_1
+0 18:00:01; 64801; gc_1; ; None; Read MessageType.POWER from eud_1 with value 0
+0 18:00:01; 64801; gc_1; power_msg; 0.0; POWER to utm_1
+0 18:00:01; 64801; gc_1; ; None; Read MessageType.PRICE from utm_1 with value 0.05
+0 18:00:01; 64801; gc_1; price change; 0.1; price changed to 0.1
+0 18:00:02; 64802; utm_1; ; None; Read MessageType.POWER from gc_1 with value 0.0
+0 18:40:00; 67200; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+0 21:00:00; 75600; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+0 23:20:00; 84000; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 00:00:00; 86400; eud_1; start_up; 1; start up eud_1
+1 00:00:00; 86400; eud_1; power_msg; 300.00000000000006; POWER to gc_1
+1 00:00:00; 86400; eud_1; brightness; 0.6000000000000001; brightness changed to 0.6000000000000001
+1 00:00:00; 86400; utm_1; set sell price; 0.1; set sell price
+1 00:00:00; 86400; utm_1; price message; 0.1; price msg to gc_1
+1 00:00:01; 86401; gc_1; ; None; Read MessageType.POWER from eud_1 with value 300.00000000000006
+1 00:00:01; 86401; gc_1; power_msg; 300.00000000000006; POWER to utm_1
+1 00:00:01; 86401; gc_1; ; None; Read MessageType.PRICE from utm_1 with value 0.1
+1 00:00:02; 86402; utm_1; ; None; Read MessageType.POWER from gc_1 with value 300.00000000000006
+1 01:40:00; 92400; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 04:00:00; 100800; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 06:00:00; 108000; eud_1; shut_down; 0; shut down eud_1
+1 06:00:00; 108000; eud_1; power_msg; 0; POWER to gc_1
+1 06:00:01; 108001; gc_1; ; None; Read MessageType.POWER from eud_1 with value 0
+1 06:00:01; 108001; gc_1; power_msg; 0.0; POWER to utm_1
+1 06:00:01; 108001; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 06:00:02; 108002; utm_1; ; None; Read MessageType.POWER from gc_1 with value 0.0
+1 08:00:00; 115200; eud_1; start_up; 1; start up eud_1
+1 08:00:00; 115200; eud_1; power_msg; 300.00000000000006; POWER to gc_1
+1 08:00:00; 115200; eud_1; brightness; 0.6000000000000001; brightness changed to 0.6000000000000001
+1 08:00:00; 115200; utm_1; set sell price; 0.15; set sell price
+1 08:00:00; 115200; utm_1; price message; 0.15; price msg to gc_1
+1 08:00:01; 115201; gc_1; ; None; Read MessageType.POWER from eud_1 with value 300.00000000000006
+1 08:00:01; 115201; gc_1; power_msg; 300.00000000000006; POWER to utm_1
+1 08:00:01; 115201; gc_1; ; None; Read MessageType.PRICE from utm_1 with value 0.15
+1 08:00:01; 115201; gc_1; price change; 0.15; price changed to 0.15
+1 08:00:01; 115201; gc_1; price_msg; 0.15; PRICE to utm_1
+1 08:00:01; 115201; gc_1; price_msg; 0.15; PRICE to eud_1
+1 08:00:02; 115202; utm_1; ; None; Read MessageType.POWER from gc_1 with value 300.00000000000006
+1 08:00:02; 115202; utm_1; ; None; Read MessageType.PRICE from gc_1 with value 0.15
+1 08:00:02; 115202; eud_1; ; None; Read MessageType.PRICE from gc_1 with value 0.15
+1 08:00:02; 115202; eud_1; power_msg; 300.00000000000006; POWER to gc_1
+1 08:00:02; 115202; eud_1; brightness; 0.6000000000000001; brightness changed to 0.6000000000000001
+1 08:00:03; 115203; gc_1; ; None; Read MessageType.POWER from eud_1 with value 300.00000000000006
+1 08:20:00; 116400; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 10:40:00; 124800; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 13:00:00; 133200; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 15:20:00; 141600; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 17:40:00; 150000; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 18:00:00; 151200; utm_1; set sell price; 0.05; set sell price
+1 18:00:00; 151200; utm_1; price message; 0.05; price msg to gc_1
+1 18:00:00; 151200; eud_1; shut_down; 0; shut down eud_1
+1 18:00:00; 151200; eud_1; power_msg; 0; POWER to gc_1
+1 18:00:01; 151201; gc_1; ; None; Read MessageType.PRICE from utm_1 with value 0.05
+1 18:00:01; 151201; gc_1; price change; 0.05; price changed to 0.05
+1 18:00:01; 151201; gc_1; ; None; Read MessageType.POWER from eud_1 with value 0
+1 18:00:01; 151201; gc_1; power_msg; 0.0; POWER to utm_1
+1 18:00:02; 151202; utm_1; ; None; Read MessageType.POWER from gc_1 with value 0.0
+1 20:00:00; 158400; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 22:20:00; 166800; battery_1; SOC 0.0, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+2 00:00:00; 172800; gc_1; power calcs; 10799.833333333334; sum Wh out
+2 00:00:00; 172800; gc_1; power calcs; 10799.833333333334; sum Wh in
+2 00:00:00; 172800; gc_1; power_calcs; 0.0; battery sum charge Wh
+2 00:00:00; 172800; gc_1; power_calcs; 0.0; battery sum discharge Wh
+2 00:00:00; 172800; utm_1; power calcs; 10799.833333333334; sum Wh out
+2 00:00:00; 172800; utm_1; power calcs; 0.0; sum Wh in
+2 00:00:00; 172800; eud_1; power calcs; 0.0; sum Wh out
+2 00:00:00; 172800; eud_1; power calcs; 10799.833333333336; sum Wh in

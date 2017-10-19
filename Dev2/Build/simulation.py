@@ -271,6 +271,7 @@ class Simulation:
         connections = [self.read_grid_controllers(self.config, self.end_time, overrides),
                        self.read_utility_meters(self.config, overrides), self.read_euds(self.config, overrides)]
 
+        # TODO: Change this so that it takes into account them turning on, not just sending register messages.
         for connect_list in connections:
             for this_device_id, connects in connect_list:
                 this_device = self.supervisor.get_device(this_device_id)

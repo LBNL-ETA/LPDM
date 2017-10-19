@@ -157,6 +157,22 @@ class GridController(Device):
     #  ______________________________________ Messaging/Interactive Functions_________________________________#
 
     ##
+    # Override of the device register message function. When it receives a register message, also responds
+    # with information about this GC's price.
+    #
+    # @param sender the sender of the message informing of registering.
+    # @param value positive if sender is registering negative if unregistering
+
+    def process_register_message(self, sender_id, value):
+        if sender_id in self._connected_devices.keys():
+            sender = self._connected_devices[sender_id]
+        else:
+            sender = self._supervisor.get_device(sender_id)  # not in local table. Ask supervisor for the pointer to it.
+        self.register_device(sender, sender_id, value)
+        if value > 0:
+            self.send_price_message(sender_id, self._price)
+
+    ##
     # @param sender_id the device which sent the power message
     # @param new_power the new power value from the perspective of the message sender.
 
@@ -692,8 +708,6 @@ Hence, it seems that marginal price logic will be superior here.
 
 
 class GCWeightedAveragePriceLogic(GridControllerPriceLogic):
-
-    # TODO: Allow for factors such as initial price to be input parameters.
 
     ##
     # @param price_history_interval the length of the interval to calculate the average price for and store in memory

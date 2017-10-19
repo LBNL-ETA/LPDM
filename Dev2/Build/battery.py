@@ -47,11 +47,11 @@ class Battery(object):
         self._charging_preference = self.BatteryChargingPreference.NEUTRAL
         self._preferred_charge_rate = preferred_charge_rate if preferred_charge_rate else max_charge_rate
         self._preferred_discharge_rate = preferred_discharge_rate if preferred_discharge_rate else max_discharge_rate
-        self._max_charge_rate = max_charge_rate  # largest possible charge rate, in kW
-        self._max_discharge_rate = max_discharge_rate  # largest possible discharge rate, in kW
-        self._capacity = capacity  # energy capacity of the battery, in kWh.
+        self._max_charge_rate = max_charge_rate  # largest possible charge rate, in W
+        self._max_discharge_rate = max_discharge_rate  # largest possible discharge rate, in W
+        self._capacity = capacity  # energy capacity of the battery, in Wh.
         self._current_soc = starting_soc
-        self._load = 0  # the load on the battery, either charge (positive) or discharge (negative), in w.
+        self._load = 0  # the load on the battery, either charge (positive) or discharge (negative), in W.
         self._price = 0  # informed of price by the grid controller on their communications.
         self._price_history = []  # a history of the battery's prices every set interval
         self._average_price = 0  # battery's hourly moving average of price, weighted by time of that price
@@ -126,7 +126,7 @@ class Battery(object):
         self._load = max(self._load, -self._max_discharge_rate)  # don't add a load to exceed charge rate.
         self._load = min(self._load, self._max_charge_rate)
 
-        self._logger.debug(self.build_battery_log_notation(
+        self._logger.info(self.build_battery_log_notation(
             "battery load changed from {} to {}".format(old_load, self._load)))
         return self._load - old_load
 
@@ -135,7 +135,7 @@ class Battery(object):
     def clear_load(self):
         old_load = self._load
         self._load = 0
-        self._logger.debug(self.build_battery_log_notation(
+        self._logger.info(self.build_battery_log_notation(
             "battery load cleared from {} to zero".format(old_load)))
 
     ##

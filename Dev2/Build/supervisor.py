@@ -15,6 +15,7 @@ The supervisor's role is to
 """
 
 from Build.priority_queue import PriorityQueue
+import logging
 
 
 class Supervisor:
@@ -22,6 +23,7 @@ class Supervisor:
     def __init__(self):
         self._event_queue = PriorityQueue()  # queue items are device_ids prioritized by next event time
         self._devices = {}  # dictionary of device_id's mapping to their associated devices. All devices in simulation.
+        self._logger = logging.getLogger("lpdm")  # Setup logging
 
     ##
     # Method to get the device pointer from a device_id, called by devices when they receive a message from a
@@ -88,9 +90,25 @@ class Supervisor:
             return None
 
     ##
+    # Checks that all calculations are valid for this simulation run.
+    # We have for all devices, power_out <= sum(connected devices power in), and
+    # power_in <= sum(connected_devices power out). Finally, the state of the system should
+    # balance such that sum(all_power_out) - sum(all_power_in) = 0.
+
+    def check_valid_calcs(self):
+        total_power_in = 0.0
+        total_power_out = 0.0
+        for device in self._devices.values():
+            total_power_in += device._sum_power_in
+            total_power_out += device._sum_power_out
+        self._logger.info("total simulation power in: {}".format(total_power_in))
+        self._logger.info("total simulation power out: {}".format(total_power_out))
+
+    ##
     # Called at the end of the simulation. Finishes each device and instructs them to write their energy
     # consumption calculations
     # end_time the time of the finish event, to update each device to so they can perform their calculations.
     def finish_all(self, end_time):
         for device in self.all_devices():
             device.finish(end_time)
+        self.check_valid_calcs()

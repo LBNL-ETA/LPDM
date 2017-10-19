@@ -69,6 +69,9 @@ class Simulation:
     def read_grid_controllers(self, config, runtime, override_args):
 
         connections = []  # a list of tuples of (gc, [connections]) to initialize later once all devices are set.
+        if 'grid_controllers' not in config['devices'].keys():
+            return connections
+
         for gc in config['devices']['grid_controllers']:
             gc_id = gc['device_id']
             price_logic = gc['price_logic']
@@ -108,7 +111,7 @@ class Simulation:
         DEFAULT_MAX_CHARGE_RATE = 1000.0  # 1000W default
         DEFAULT_MAX_DISCHARGE_RATE = 1000.0  # 1000W default
         DEFAULT_UPDATE_RATE = 1200  # Update every 20 minutes by default
-        DEFAULT_CAPACITY = 50000.0  # Default battery capacity 50000 W.
+        DEFAULT_CAPACITY = 10000.0  # Default battery capacity 10000 WH. (10 kWh)
         DEFAULT_STARTING_SOC = 0.5  # Default battery starts at 50% charge
 
         batt_price_logic = battery_info['price_logic']
@@ -135,10 +138,11 @@ class Simulation:
     # @param config the configuration dictionary derived from the input JSON file
     # @param override_args a dictionary of override arguments
     def read_utility_meters(self, config, override_args):
+        connections = []  # a list of tuples of (utm, [connections]) to initialize later once all devices are set.
 
         # TODO: Incorporate new scheduling
-
-        connections = []  # a list of tuples of (utm, [connections]) to initialize later once all devices are set.
+        if 'utility_meters' not in config['devices'].keys():
+            return connections
         for utm in config['devices']['utility_meters']:
             utm_id = utm['device_id']
             msg_latency = utm.get('message_latency', self.DEFAULT_MESSAGE_LATENCY)
@@ -175,9 +179,11 @@ class Simulation:
 
     ##
     # Reads in the PV data from the input JSON
-    def read_pvs(self, config, override_args):
+    def read_pvs(self, config, runtime, override_args):
         connections = []
-        for pv in config['devices']['pv']:
+        if 'pvs' not in config['devices'].keys():
+            return connections
+        for pv in config['devices']['pvs']:
             pv_id = pv['device_id']
             msg_latency = pv.get('message_latency', self.DEFAULT_MESSAGE_LATENCY)
             msg_latency = int(override_args.get('devices.{}.message_latency'.format(pv_id), msg_latency))
@@ -189,7 +195,7 @@ class Simulation:
                 connections.append((pv_id, connected_devices))
 
             new_pv = PV(device_id=pv_id, supervisor=self.supervisor, power_profile=output_schedule,
-                        peak_power=peak_power, msg_latency=msg_latency)
+                        peak_power=peak_power, total_runtime=runtime, msg_latency=msg_latency)
             self.supervisor.register_device(new_pv)
         return connections
 
@@ -212,9 +218,10 @@ class Simulation:
     # which has a list of the names of different unique construction parameters for each EUD, and then tries to find
     # the values for those
 
-
     def read_euds(self, config, override_args):
         connections = []
+        if 'euds' not in config['devices'].keys():
+            return connections
         for eud in config['devices']['euds']:
             eud_id = eud['device_id']
             eud_type = eud['eud_type']
@@ -269,7 +276,8 @@ class Simulation:
 
         # reads in and creates all the simulation devices before registering them
         connections = [self.read_grid_controllers(self.config, self.end_time, overrides),
-                       self.read_utility_meters(self.config, overrides), self.read_euds(self.config, overrides)]
+                       self.read_utility_meters(self.config, overrides),
+                       self.read_pvs(self.config, self.end_time, overrides), self.read_euds(self.config, overrides)]
 
         # TODO: Change this so that it takes into account them turning on, not just sending register messages.
         for connect_list in connections:

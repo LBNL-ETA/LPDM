@@ -161,7 +161,6 @@ class Eud(Device):
         self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
                                                   tag="power_msg", value=power_amt))
 
-        #self.recalc_sum_power(self._power_in, power_amt)
         target_device.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
     def change_load_in(self, sender_id, new_load):

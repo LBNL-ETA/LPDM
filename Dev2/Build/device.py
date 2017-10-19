@@ -40,6 +40,9 @@ from Build import message_formatter
 from abc import ABCMeta, abstractmethod
 import logging
 
+SECONDS_IN_DAY = 24 * 60 * 60
+SECONDS_IN_HOUR = 3600
+
 
 class Device(metaclass=ABCMeta):
 
@@ -92,6 +95,11 @@ class Device(metaclass=ABCMeta):
     # @return the device's ID
     def get_id(self):
         return self._device_id
+
+    ##
+    # Getter for the Device's type
+    def get_type(self):
+        return self._device_type
 
     ##
     # Updates the local time of the device.
@@ -414,44 +422,48 @@ class Device(metaclass=ABCMeta):
         self.set_power_out(0.0)
         self.write_calcs()
 
-    # _____________________________________________________________________ #
 
-    # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
+MIN_NONZERO_POWER = 0.01  # minimum value for power levels to be considered nonzero (to avoid floating point error).
 
-    # TODO: Test that the PV is working.
-    # TODO: Review price logics again.
-    # TODO: Get Air Conditioner Fully Working (new file IO, etc.)
-    # TODO: Change the EUD's so that turn_off and shut down are different functions.
-    # TODO: (2) SCHEDULING CHANGES:
-        #  Change scheduling to allow for multiday schedules, etc.
-    # TODO: (3.5) Utility meter communicates buy-sell price to GC.
-    # TODO: Add back in uuid.  DEFAULT UUID IS 1000 + counter, default device id is type_uuid.
-    ##### # TODO: (2.5) Compare results against an old Mike model.
-    #####   TODO: (3) 2-price model for utility meter, all messaging (with extended value options). Test again
-    # TODO: Incorporate the linear/nondirect power reduction done by the battery when overtextended
-
-    # TODO: Redesign/Refactor EUD's modulate power value.
-    # TODO: (11) Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
-    # TODO: (11.5) Allow Device Setup Schedule to include arguments in its schedule list.
-    # TODO: (12) Refactor from "Build" to "Physical Layer" and "Simulation Library". Code cleanup. Documentation
-    # TODO: (13) Add in "Fx" EUD.
-    # TODO: (14) Add capability of adding physical layer connections to ensure that we can include wire connections.
-    # TODO: (15) Then, change the input model so that register messages are not sent in creating simulation.
-    # TODO: (16) Port in all other EUD's to be able to run all old tests (HVAC and Refrigerator not included)? 
+##
+# All power requests, unsatisfied power responses, and fluctuations that occur in the range of less than
+# the min nonzero power are likely caused by floating point error and will be ignored by all devices.
+# @param power_level the power level to determine whether it is significantly large to be considered nonzero
+# @return a boolean value whether this power_level is significantly nonzero
 
 
-    ### # TODO: (15) Get to some form of backwards compatibility with the dashboard.
-
-    # TODO: If device wants to enter the grid at a later point in time, allow to add an "engage" to its schedule
-
-    # LONGER TERM:
-    # TODO: (13) Finish considering GC load balance algorithm
-    # TODO: (16) Reconsider price forecasts.
+def nonzero_power(power_level):
+    return abs(power_level) > MIN_NONZERO_POWER
 
 
+# _____________________________________________________________________ #
 
+# INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
-# TODO TESTING:
-    # Non 1-hour price intervals
-    # PV and AC File Read-In
-    #
+# TODO: Test that the PV is working.
+# TODO: Review price logics again.
+# TODO: Get Air Conditioner Fully Working (new file IO, etc.)
+# TODO: Change the EUD's so that turn_off and shut down are different functions.
+# TODO: (2) SCHEDULING CHANGES:
+    #  Change scheduling to allow for multiday schedules, etc.
+# TODO: (3.5) Utility meter communicates buy-sell price to GC.
+# TODO: Add back in uuid.  DEFAULT UUID IS 1000 + counter, default device id is type_uuid.
+##### # TODO: (2.5) Compare results against an old Mike model.
+#####   TODO: (3) 2-price model for utility meter, all messaging (with extended value options). Test again
+# TODO: Incorporate the linear/nondirect power reduction done by the battery when overtextended
+
+# TODO: Redesign/Refactor EUD's modulate power value.
+# TODO: (11) Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
+# TODO: (11.5) Allow Device Setup Schedule to include arguments in its schedule list.
+# TODO: (12) Refactor from "Build" to "Physical Layer" and "Simulation Library". Code cleanup. Documentation
+# TODO: (13) Add in "Fx" EUD.
+# TODO: (14) Add capability of adding physical layer connections to ensure that we can include wire connections.
+# TODO: (15) Then, change the input model so that register messages are not sent in creating simulation.
+# TODO: (16) Port in all other EUD's to be able to run all old tests (HVAC and Refrigerator not included)?
+# TODO: (17) Global variables of trickle power, power_direct.
+# TODO: (18) Get to some form of backwards compatibility with the dashboard.
+# TODO: (19) If device wants to enter the grid at a later point in time, allow to add an "engage" to its schedule
+
+# LONGER TERM:
+# TODO: (20) Finish considering GC load balance algorithm
+# TODO: (21) Reconsider price forecasts.

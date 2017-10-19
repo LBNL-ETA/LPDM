@@ -23,12 +23,12 @@ from Build.eud import Eud
 class Light(Eud):
 
     def __init__(self, device_id, supervisor, msg_latency=0, time=0,
-                 schedule=None, connected_devices=None, max_operating_power=100, power_level_max=1.0,
+                 schedule=None, connected_devices=None, max_operating_power=100.0, power_level_max=1.0,
                  power_level_low=0.2, price_dim_start=0.1, price_dim_end=0.2, price_off=0.3):
         super().__init__(device_id=device_id, device_type="light", supervisor=supervisor,
                          msg_latency=msg_latency, time=time, schedule=schedule, connected_devices=connected_devices)
         self._max_operating_power = max_operating_power  # the device's ideal maximum power usage
-        self._power_level_max = power_level_max # percentage of power level to operate at when price is low
+        self._power_level_max = power_level_max  # percentage of power level to operate at when price is low
         self._power_level_low = power_level_low  # percent of power level to operate at when price is high.
         self._price_dim_start = price_dim_start  # the price at which to start to lower power
         self._price_dim_end = price_dim_end  # price at which to change to lower_power mode.

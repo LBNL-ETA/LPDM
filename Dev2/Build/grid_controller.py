@@ -16,15 +16,13 @@ power sources (such as Utility and PV), storage (batteries), and other grid cont
 (for the purposes of allocating power efficiently between them."""
 
 
-from Build.device import Device
+from Build.device import Device, nonzero_power, SECONDS_IN_DAY, SECONDS_IN_HOUR
 from Build.message import Message, MessageType
 from Build.battery import Battery
 from Build.event import Event
 from abc import ABCMeta, abstractmethod
 # temporary, for debugging only.
 import logging
-
-SECONDS_IN_DAY = 24 * 60 * 60
 
 
 class GridController(Device):
@@ -41,9 +39,9 @@ class GridController(Device):
     # @param
 
     def __init__(self, device_id, supervisor, time=0, msg_latency=0,
-                 price_logic="", price_logic_interval=3600, starting_price=0.1, price_announce_threshold=0.02,
-                 battery=None, min_alloc_response_threshold=1.0,
-                 schedule=None, total_runtime=86400, connected_devices=None):
+                 price_logic="", price_logic_interval=SECONDS_IN_HOUR, starting_price=0.1,
+                 price_announce_threshold=0.02, battery=None, min_alloc_response_threshold=1.0,
+                 schedule=None, total_runtime=SECONDS_IN_DAY, connected_devices=None):
         # identifier = "gc{}".format(device_id)
         super().__init__(device_id=device_id, device_type="grid_controller", supervisor=supervisor,
                          time=time, msg_latency=msg_latency, schedule=schedule, connected_devices=connected_devices)
@@ -311,7 +309,6 @@ class GridController(Device):
     def update_average_price_calcs(self):
         self._price_logic.update_prices(self._time)
 
-
     def recalculate_price(self):
         self._price = self._price_logic.calc_price(neighbor_prices=self._neighbor_prices,
                                                    loads=self._loads, requested=self._requested,
@@ -362,11 +359,11 @@ class GridController(Device):
                     remaining -= (prev_utm_load - new_utm_load)
 
         # Try adding all the remaining demand onto the battery
-        if self._battery:
+        if nonzero_power(remaining) and self._battery:
             self.update_battery()  # make sure we have updated state of charge
             remaining -= self._battery.add_load(remaining)
 
-        if remaining:
+        if nonzero_power(remaining):
             if len(utility_meters):
                 utm = utility_meters[0]
                 prev_utm_load = self._loads[utm] if utm in self._loads.keys() else 0
@@ -395,7 +392,7 @@ class GridController(Device):
 
         # inform recipient if power provided is not what was expected
         provided = self._loads[source_id]
-        if provided != source_demanded_power:
+        if nonzero_power(provided - source_demanded_power):
             if provided > 0:
                 self._logger.info(self.build_log_notation(message="could only input {}W".format(provided),
                                                           tag="insufficient power in", value=provided))
@@ -543,9 +540,13 @@ Second priority: Negotiation balances (new allocate received, new request receiv
 
     # ________________________________LOGGING SPECIFIC FUNCTIONALITY______________________________#
 
+    ##
+    # The grid controller is also responsible for writing its batteries calculations. Additionally, the grid controller
+    # checks the turth
     def device_specific_calcs(self):
 
-        # Write out all consumptions statistics
+        MARGIN_OF_ERROR = .1
+        # Write out all battery consumptions statistics
         if self._battery:
             self._logger.info(self.build_log_notation(
                 message="battery sum charge Wh",
@@ -557,6 +558,15 @@ Second priority: Negotiation balances (new allocate received, new request receiv
                 message="battery sum discharge Wh",
                 tag="power_calcs",
                 value=self._battery.sum_discharge_wh
+            ))
+            # Ensure that the change in power is completely covered by the battery for valid calculations
+            power_differential = (self._battery.sum_discharge_wh - self._battery.sum_charge_wh) - \
+                                 (self._sum_power_out - self._sum_power_in)
+            valid_calc = (power_differential <= MARGIN_OF_ERROR)
+            self._logger.info(self.build_log_notation(
+                message="valid power balance: {}".format(valid_calc),
+                tag="valid_calcs",
+                value=valid_calc
             ))
 
     """ A class to determine the Grid Controller's Price Logic"""

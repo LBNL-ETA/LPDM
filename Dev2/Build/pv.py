@@ -10,7 +10,7 @@
 ########################################################################################################################
 
 
-from Build.device import Device
+from Build.device import Device, SECONDS_IN_DAY
 from Build.event import Event
 from Build.message import Message, MessageType
 
@@ -18,16 +18,23 @@ from Build.message import Message, MessageType
 class PV(Device):
 
     def __init__(self, device_id, supervisor, power_profile, peak_power, time=0, msg_latency=0,
-                 schedule=None, connected_devices=None):
+                 schedule=None, connected_devices=None, total_runtime=SECONDS_IN_DAY):
 
         super().__init__(device_id=device_id, device_type="pv", supervisor=supervisor,
                          time=time, msg_latency=msg_latency, schedule=schedule, connected_devices=connected_devices)
-        self.setup_power_schedule(power_profile, peak_power)
+        self.setup_power_schedule(power_profile, peak_power, total_runtime)
 
-    def setup_power_schedule(self, power_profile, peak_power):
-        for time, power_percent in power_profile:
-            power_event = Event(self.update_power_status, peak_power, power_percent)
-            self.add_event(power_event, time)
+    ##
+    # Sets up the power generation schedule for this PV.
+    # Takes input of a daily power generation schedule.
+    # TODO NOTE: assumes total_runtime is in days, and schedule is at most one day long. make more robust?
+    def setup_power_schedule(self, power_profile, peak_power, total_runtime):
+        curr_time = 0
+        while curr_time < total_runtime:
+            for time, power_percent in power_profile:
+                power_event = Event(self.update_power_status, peak_power, power_percent)
+                self.add_event(power_event, time + curr_time)
+            curr_time += SECONDS_IN_DAY
 
     ##
     # Changes the amount of power that this device is producing and
@@ -35,7 +42,7 @@ class PV(Device):
     def update_power_status(self, peak_power, power_percent):
         for device_id in self._connected_devices.keys():
             self.set_power_out(peak_power * power_percent)
-            self.send_power_message(device_id, self._power_out)
+            self.send_power_message(device_id, -self._power_out)
 
     def send_power_message(self, target_id, power_amt):
         if target_id in self._connected_devices.keys():

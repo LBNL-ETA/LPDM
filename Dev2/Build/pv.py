@@ -29,12 +29,12 @@ class PV(Device):
     # Takes input of a daily power generation schedule.
     # TODO NOTE: assumes total_runtime is in days, and schedule is at most one day long. make more robust?
     def setup_power_schedule(self, power_profile, peak_power, total_runtime):
-        curr_time = 0
-        while curr_time < total_runtime:
+        curr_day = 0  # Current day in seconds
+        while curr_day < total_runtime:
             for time, power_percent in power_profile:
                 power_event = Event(self.update_power_status, peak_power, power_percent)
-                self.add_event(power_event, time + curr_time)
-            curr_time += SECONDS_IN_DAY
+                self.add_event(power_event, time + curr_day)
+            curr_day += SECONDS_IN_DAY
 
     ##
     # Changes the amount of power that this device is producing and

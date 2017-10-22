@@ -110,7 +110,7 @@ class Eud(Device):
         if new_power <= 0:
             self.set_power_in(-new_power)
             self._loads_in[sender_id] = -new_power
-            self.modulate_power()  # Try to recalibrate with other sources of power to stay balanced
+            self.respond_to_power(-new_power)
         else:
             self.send_power_message(sender_id, 0)
             self._logger.info(self.build_log_notation("ignored positive power message from {}".format(sender_id)))
@@ -230,7 +230,7 @@ class Eud(Device):
                             self.change_load_in(gc, prev_load + extra_power)
                             total_power_taken += extra_power
                         else:
-                            self.send_request_message(gc, extra_power)
+                            self.send_request_message(gc, prev_load + extra_power)
                         power_sources.append(gc)  # TODO: Decide if this is correct for both here?
 
             # clear the record with all GC's that we didn't get power from.
@@ -239,7 +239,7 @@ class Eud(Device):
                     self.send_power_message(gc, 0)
                     self.change_load_in(gc, 0)
 
-            self.respond_to_power(requested_power=desired_power_level, received_power=total_power_taken)
+            self.respond_to_power(total_power_taken)
 
         ##
     # EUD specific processes to initiate when this device turns on
@@ -264,10 +264,9 @@ class Eud(Device):
 
     ##
     # How this EUD responds once it receives a given quantity of power after requesting a certain amount.
-    # @param requested_power how much this device wanted to consume
-    # @param received_power how much power this device immediately received
+    # @param received_power how much power this device immediately received (must be positive value)
     @abstractmethod
-    def respond_to_power(self, requested_power, received_power):
+    def respond_to_power(self, received_power):
         pass
 
     ##

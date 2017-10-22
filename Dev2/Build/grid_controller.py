@@ -50,8 +50,9 @@ class GridController(Device):
         # negative values are how much this GC has allocated to provide, positive for this GC to take.
         self._allocated = {}
 
-        # dictionary of devices and unprovided requests that this device has received from them
-        # (unprovided implies that there has not been a sufficient allocate response).
+        # dictionary of devices and requests that this device has received from them.
+        # Only is added to when this grid controller could not provide the full quantity in response.
+        # TODO: Reevaluate this.
         # Negative values are requests for this GC to provide, positive are for this GC to receive.
         self._requested = {}
 
@@ -199,10 +200,12 @@ class GridController(Device):
         if request_amt == 0:
             self.send_allocate_message(sender_id, 0)  # always allow power flows to cease
             return
-        provide, unprovided = self.request_response(request_amt)
+        elif not nonzero_power(self._requested.get(sender_id, 0) + request_amt):
+            return  # Already have noted this request and am working on it.
+        provide = self.request_response(request_amt)
         # Note: May provide more than asked for, which recipient can consume up to at any point.
         self.send_allocate_message(sender_id, provide)  # negative if allocating to send, positive if to receive.
-        self._requested[sender_id] = unprovided
+        self._requested[sender_id] = -request_amt
         self.modulate_price()
         # TODO: self.modulate_power() --  or maybe wait on this function until a later moment.
 
@@ -385,7 +388,7 @@ class GridController(Device):
                 # add the unprovided power as a request to address later.
                 unprovided = source_demanded_power - self._loads[source_id]
                 if unprovided:
-                    self._requested[source_id] = unprovided
+                    self._requested[source_id] = source_demanded_power
 
             else:
                 # no utm, not able to provide for the demanded power. Send a new power message saying what you can give.
@@ -394,7 +397,7 @@ class GridController(Device):
                 # add the unprovided power as a request.
                 unprovided = source_demanded_power - self._loads[source_id]
                 if unprovided:
-                    self._requested[source_id] = unprovided
+                    self._requested[source_id] = source_demanded_power
         else:
             self.change_load(source_id, source_demanded_power)
 
@@ -433,22 +436,16 @@ class GridController(Device):
 
     ##
     # Determines how much this GC responds to a power request. See documentation for reasoning.
-    # @return a tuple of provided, unprovided, where provided is the amount of power this device has
-    # allocated (positive to receive, negative to provide), and unprovided is the amount of power this device
-    # could not handle at this time.
+    # @return how much this device will provide in respond to that request message
     def request_response(self, request_amt):
         self.update_battery()
         trickle_power = 50.0  # TODO: Change this to global grid controller variable.
         if request_amt > 0:  # must provide a negative quantity (this device to distribute)
             desired_response = self._battery.get_optimal_charge_rate() - self.get_allocate_assets()
-            provide = max(min(desired_response, -self._threshold_alloc_out, -trickle_power), -request_amt)
-            unprovided = -request_amt - provide  # provide is negative
-            return provide, unprovided
+            return max(min(desired_response, -self._threshold_alloc_out, -trickle_power), -request_amt)
         else:  # must provide positive quantity (this device to receive)
             desired_response = self._battery.get_optimal_charge_rate() + self.get_allocate_liabilities()
-            provide = min(max(desired_response, self._threshold_alloc_in, trickle_power), -request_amt)
-            unprovided = -request_amt - provide
-            return provide, unprovided
+            return min(max(desired_response, self._threshold_alloc_in, trickle_power), -request_amt)
 
     ##
     # This is the crux function that determines how a GC balances its power flows at a given time.

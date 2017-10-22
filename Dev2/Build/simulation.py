@@ -19,6 +19,7 @@ from Build.battery import Battery
 from Build.utility_meter import UtilityMeter
 from Build.light import Light
 from Build.air_conditioner import AirConditionerSimple
+from Build.fixed_consumption import FixedConsumption
 from Build.simulation_logger import SimulationLogger
 from Build.pv import PV
 
@@ -49,7 +50,8 @@ class Simulation:
             'air_conditioner': [AirConditionerSimple, 'compressor_operating_power', 'initial_temp', 'temp_max_delta',
                                 'initial_set_point', 'price_to_setpoint', 'temperature_schedule', 'precooling_enabled',
                                 'precooling_price_threshold', 'compressor_cooling_rate', 'heat_exchange_rate',
-                                'temperature_update_interval']
+                                'temperature_update_interval'],
+            'fixed_consumption': [FixedConsumption, 'desired_power_level']
         }
 
     def read_config_file(self, filename):
@@ -234,7 +236,8 @@ class Simulation:
             start_time = eud.get('start_time', 0)
             start_time = int(override_args.get('devices.{}.start_time'.format(eud_id), start_time))
             modulation_interval = eud.get('modulation_interval', 600)
-            modulation_interval = int(override_args.get('devices.{}.start_time'.format(eud_id), modulation_interval))
+            modulation_interval = int(override_args.get('devices.{}.modulation_interval'.format(eud_id),
+                                                        modulation_interval))
             connected_devices = eud.get('connected_devices', None)
             schedule = eud.get('schedule', None)
             if connected_devices:

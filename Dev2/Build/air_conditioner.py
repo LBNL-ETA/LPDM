@@ -100,7 +100,7 @@ class AirConditionerSimple(Eud):
         for price_val, setpoint in sorted_by_price:
             if price <= price_val:
                 return setpoint
-        return sorted_by_price[-1][1] # Price is higher than all in dictionary. Return the last value.
+        return sorted_by_price[-1][1]  # Price is higher than all in dictionary. Return the last value.
 
     def adjust_internal_temperature(self):
         """
@@ -122,7 +122,7 @@ class AirConditionerSimple(Eud):
                 delta_indoor_outdoor = self._current_outdoor_temperature - self._current_temperature
                 delta_c = delta_t * delta_indoor_outdoor * self._heat_exchange_rate
                 self._current_temperature += delta_c
-                self._logger.info(self.build_log_notation(
+                self._logger.debug(self.build_log_notation(
                         message="Internal temperature", tag="internal_temperature", value=self._current_temperature))
 
             self._last_temperature_update_time = self._time
@@ -148,14 +148,24 @@ class AirConditionerSimple(Eud):
             return
 
         delta = self._current_temperature - self._set_point
-        self._logger.info(self.build_log_notation(
+        self._logger.debug(self.build_log_notation(
                           message="delta from setpoint: {}".format(delta), tag="delta_t", value=delta))
+
         if abs(delta) > self._temperature_max_delta:
             if delta > 0 and not self._compressor_is_on:
                 # if the current temperature is above the set point and compressor is off, turn it on
+                self._logger.info(self.build_log_notation(
+                    message="temp: {}, setpoint: {}, above delta threshold".format(
+                        self._current_temperature, self._set_point), tag="above_delta_threshold", value=delta))
+
                 self.turn_on_compressor()
+
             elif delta < 0 and self._compressor_is_on:
                 # if current temperature is below the set point and compressor is on, turn it off
+                self._logger.info(self.build_log_notation(
+                    message="temp: {}, setpoint: {}, below delta threshold".format(
+                        self._current_temperature, self._set_point), tag="below_delta_threshold", value=delta))
+
                 self.turn_off_compressor()
 
     def turn_on_compressor(self):
@@ -169,7 +179,7 @@ class AirConditionerSimple(Eud):
         self._logger.info(self.build_log_notation(message="turn off compressor", tag="compressor_on_off", value=0))
 
     def update_outdoor_temperature(self, new_temperature):
-        self._logger.info(self.build_log_notation(message="new outdoor temperature: {}".format(new_temperature),
+        self._logger.debug(self.build_log_notation(message="new outdoor temperature: {}".format(new_temperature),
                                                   tag="new_temp", value=new_temperature))
         self._current_outdoor_temperature = new_temperature
 
@@ -192,7 +202,7 @@ class AirConditionerSimple(Eud):
             return 0.0
 
     # TODO: Change this to compressor_should_be_on variable instead, and have it work through request.
-    def respond_to_power(self, requested_power, received_power):
+    def respond_to_power(self, received_power):
         # We didn't get enough power to operate the compressor
         if received_power < self._compressor_operating_power:
             self._logger.info(self.build_log_notation(

@@ -67,7 +67,7 @@ class Light(Eud):
         pass
 
     # TODO: Make it so that this device changes its brightness accordingly.
-    def respond_to_power(self, received_power, requested_power):
+    def respond_to_power(self, received_power):
         self._brightness = received_power / self._max_operating_power
         self._logger.info(self.build_log_notation(
             message="brightness changed to {}".format(self._brightness),

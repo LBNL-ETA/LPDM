@@ -18,7 +18,7 @@ from Build.grid_controller import GridController
 from Build.battery import Battery
 from Build.utility_meter import UtilityMeter
 from Build.light import Light
-# from Build.air_conditioner import AirConditionerSimple
+from Build.air_conditioner import AirConditionerSimple
 from Build.simulation_logger import SimulationLogger
 from Build.pv import PV
 
@@ -46,7 +46,10 @@ class Simulation:
         self.eud_dictionary = {
             'light': [Light, 'max_operating_power', 'power_level_max', 'power_level_low', 'price_dim_start',
                       'price_dim_end', 'price_off'],
-            'air_conditioner': [None, '']
+            'air_conditioner': [AirConditionerSimple, 'compressor_operating_power', 'initial_temp', 'temp_max_delta',
+                                'initial_set_point', 'price_to_setpoint', 'temperature_schedule', 'precooling_enabled',
+                                'precooling_price_threshold', 'compressor_cooling_rate', 'heat_exchange_rate',
+                                'setpoint_interval', 'temperature_update_interval']
         }
 
     def read_config_file(self, filename):
@@ -207,7 +210,7 @@ class Simulation:
             for line in data:
                 parts = line.strip().split(',')
                 if len(parts) == 2 and parts[0].strip():
-                    time_secs = int(parts[0])
+                    time_secs = int(float(parts[0]))
                     temp = float(parts[1].strip())
                     data_out.append((time_secs, temp))
         return data_out
@@ -243,11 +246,22 @@ class Simulation:
                     eud_specific_args[cls_arg] = eud[cls_arg]
 
             # look for override values
-            for k, v in eud_specific_args.items():
+            for param in eud_specific_args.keys():
                 try:
-                    eud_specific_args[k] = float(override_args.get('devices.{}.{}'.format(eud_id, k), v))
-                except ValueError:
-                    raise ValueError("Tried to use a non-numeric override value") # TODO: Should we allow bool override?
+                    eud_specific_args[param] = float(override_args['devices.{}.{}'.format(eud_id, param)])
+                except (ValueError, TypeError, KeyError):
+                    # Either not a correct float override value or override_args does not contain the value.
+                    continue
+
+            external_data = eud.get('external_data', None)
+            if external_data:  # external data is a dictionary of constructor names to dictionaries of source info
+                for argument, source_info in external_data.items():
+                    if source_info:
+                        readin_function = source_info['readin_function']
+                        source_file = source_info['source_file']
+                        func = getattr(self, readin_function)
+                        data = func(source_file)
+                        eud_specific_args[argument] = data
 
             new_eud = eud_class(device_id=eud_id, supervisor=self.supervisor, time=start_time, msg_latency=msg_latency,
                                 schedule=schedule, **eud_specific_args)
@@ -271,8 +285,6 @@ class Simulation:
         run_time_days = self.config["run_time_days"]
         run_time_days = int(overrides.get('run_time_days', run_time_days))
         self.end_time = 24 * 60 * 60 * run_time_days  # end time in seconds
-
-        #  TODO: pv_connections = self.read_pvs(self.config)
 
         # reads in and creates all the simulation devices before registering them
         connections = [self.read_grid_controllers(self.config, self.end_time, overrides),

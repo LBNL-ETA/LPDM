@@ -34,9 +34,7 @@ class Eud(Device):
         self._loads_in = {}
         # EUD receives price messages from GC's only. For now, assume it will always update price.
         self._price = 0
-
         self._in_operation = False
-
         # flag to determine whether we use request-allocate model or immediate power.
         self._power_direct = power_direct
 
@@ -176,6 +174,7 @@ class Eud(Device):
     # TODO: This as a prototype for the GC modulate power function (shifting loads from more to less expensive).
     # TODO: GC modulate power function will have a 'timeout', where it can add an event to modulate power 10s later.
     def modulate_power(self):
+        self.update_state()  # make sure we are updated before calculating any desired power
         desired_power_level = self.calculate_desired_power_level()
         if desired_power_level > 0:
             remaining = desired_power_level  # how much we have left to get (ignoring what we are getting already)
@@ -221,6 +220,19 @@ class Eud(Device):
                     self.change_load_in(gc, 0)
 
             self.respond_to_power(requested_power=desired_power_level, received_power=total_power_taken)
+
+        ##
+    # EUD specific processes to initiate when this device turns on
+    @abstractmethod
+    def begin_internal_operation(self):
+        pass
+
+    ##
+    # Eud specific processes to initiate or terminate when this device turns off
+    @abstractmethod
+    def end_internal_operation(self):
+        pass
+
     ##
     # Calculates EUD's desired power in to support its current internal state levels.
     # NOTE: EUD must be in_operation for this function to work.
@@ -239,15 +251,10 @@ class Eud(Device):
         pass
 
     ##
-    # EUD specific processes to initiate when this device turns on
+    # Call to update all the internal state functions of the EUD. Call this function before calling
+    # calculate desired power level.
     @abstractmethod
-    def begin_internal_operation(self):
-        pass
-
-    ##
-    # Eud specific processes to initiate or terminate when this device turns off
-    @abstractmethod
-    def end_internal_operation(self):
+    def update_state(self):
         pass
 
     @abstractmethod

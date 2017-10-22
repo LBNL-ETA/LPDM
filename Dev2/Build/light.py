@@ -74,6 +74,9 @@ class Light(Eud):
             value=self._brightness
         ))
 
+    def update_state(self):
+        pass
+
     def begin_internal_operation(self):
         pass
 

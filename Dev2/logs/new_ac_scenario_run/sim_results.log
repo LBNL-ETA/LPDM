@@ -1,0 +1,443 @@
+2017-10-22T00:05:06.145653-07:00
+ac_scenario_1.json
+
+0 00:00:00; 0; gc_1; ; None; initialize gc_1 - grid_controller
+0 00:00:00; 0; utm_1; ; None; initialize utm_1 - Utility Meter
+0 00:00:00; 0; pv_1; ; None; initialize pv_1 - pv
+0 00:00:00; 0; eud_1; ; None; initialize eud_1 - light
+0 00:00:00; 0; eud_2; ; None; initialize eud_2 - air_conditioner
+0 00:00:00; 0; gc_1; ; None; registered utm_1
+0 00:00:00; 0; utm_1; ; None; registered gc_1
+0 00:00:00; 0; gc_1; ; None; registered eud_1
+0 00:00:00; 0; eud_1; ; None; registered gc_1
+0 00:00:00; 0; gc_1; ; None; registered eud_2
+0 00:00:00; 0; eud_2; ; None; registered gc_1
+0 00:00:00; 0; gc_1; ; None; registered pv_1
+0 00:00:00; 0; pv_1; ; None; registered gc_1
+0 00:00:00; 0; utm_1; turn_on; 1; Turning on utility meter
+0 00:00:00; 0; utm_1; set sell price; 0.1; set sell price
+0 00:00:00; 0; utm_1; price message; 0.1; price msg to gc_1
+0 00:00:00; 0; eud_1; start_up; 1; start up eud_1
+0 00:00:00; 0; eud_1; request_msg; 500.0; REQUEST to gc_1
+0 00:00:00; 0; eud_1; brightness; 0.0; brightness changed to 0.0
+0 00:00:00; 0; eud_2; start_up; 1; start up eud_2
+0 00:00:00; 0; eud_2; set_point; 18.0; setpoint changed to 18.0
+0 00:00:00; 0; eud_2; delta_t; 7.0; delta from setpoint: 7.0
+0 00:00:00; 0; eud_2; compressor_on_off; 1; compressor_on
+0 00:00:00; 0; eud_2; request_msg; 500.0; REQUEST to gc_1
+0 00:00:00; 0; eud_2; insufficient power; 0; insufficient power to run compressor
+0 00:00:00; 0; eud_2; compressor_on_off; 0; turn off compressor
+0 00:00:01; 1; gc_1; ; None; Read MessageType.PRICE from utm_1 with value 0.1
+0 00:00:01; 1; gc_1; ; None; Read MessageType.REQUEST from eud_1 with value 500.0
+0 00:00:01; 1; gc_1; allocate_msg; -500.0; ALLOCATE to eud_1
+0 00:00:01; 1; gc_1; ; None; Read MessageType.REQUEST from eud_2 with value 500.0
+0 00:00:01; 1; gc_1; allocate_msg; -500.0; ALLOCATE to eud_2
+0 00:00:02; 2; eud_1; ; None; Read MessageType.ALLOCATE from gc_1 with value -500.0
+0 00:00:02; 2; eud_1; power_msg; 500.0; POWER to gc_1
+0 00:00:02; 2; eud_1; brightness; 1.0; brightness changed to 1.0
+0 00:00:02; 2; eud_2; ; None; Read MessageType.ALLOCATE from gc_1 with value -500.0
+0 00:00:02; 2; eud_2; internal_temperature; 24.99987092611111; Internal temperature
+0 00:00:02; 2; eud_2; delta_t; 6.999870926111111; delta from setpoint: 6.999870926111111
+0 00:00:02; 2; eud_2; compressor_on_off; 1; compressor_on
+0 00:00:02; 2; eud_2; power_msg; 500.0; POWER to gc_1
+0 00:00:03; 3; gc_1; ; None; Read MessageType.POWER from eud_1 with value 500.0
+0 00:00:03; 3; battery_1; SOC 0.5, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 0 to -500.0
+0 00:00:03; 3; gc_1; ; None; Read MessageType.POWER from eud_2 with value 500.0
+0 00:00:03; 3; battery_1; SOC 0.5, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -500.0 to -1000.0
+0 02:20:00; 8400; battery_1; SOC 0.45335000000000014, charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+0 04:40:00; 16800; battery_1; SOC 0.4066833333333337, charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+0 06:00:00; 21600; eud_1; shut_down; 0; shut down eud_1
+0 06:00:00; 21600; eud_1; power_msg; 0; POWER to gc_1
+0 06:00:01; 21601; gc_1; ; None; Read MessageType.POWER from eud_1 with value 0
+0 06:00:01; 21601; battery_1; SOC 0.3800111111111115, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -1000.0 to -500.0
+0 07:00:00; 25200; battery_1; SOC 0.37001388888888925, charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+0 07:40:00; 27600; pv_1; power_msg; -108.0; POWER to gc_1
+0 07:40:01; 27601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -108.0
+0 07:40:01; 27601; battery_1; SOC 0.36334444444444475, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -500.0 to -392.0
+0 07:50:00; 28200; pv_1; power_msg; -216.0; POWER to gc_1
+0 07:50:01; 28201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -216.0
+0 07:50:01; 28201; battery_1; SOC 0.3620377777777781, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -392.0 to -284.0
+0 08:00:00; 28800; utm_1; set sell price; 0.15; set sell price
+0 08:00:00; 28800; utm_1; price message; 0.15; price msg to gc_1
+0 08:00:00; 28800; eud_1; start_up; 1; start up eud_1
+0 08:00:00; 28800; eud_1; power_msg; 500.0; POWER to gc_1
+0 08:00:00; 28800; eud_1; brightness; 1.0; brightness changed to 1.0
+0 08:00:00; 28800; pv_1; power_msg; -306.0; POWER to gc_1
+0 08:00:01; 28801; gc_1; ; None; Read MessageType.PRICE from utm_1 with value 0.15
+0 08:00:01; 28801; gc_1; ; None; Read MessageType.POWER from eud_1 with value 500.0
+0 08:00:01; 28801; battery_1; SOC 0.3610911111111115, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -284.0 to -784.0
+0 08:00:01; 28801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -306.0
+0 08:00:01; 28801; battery_1; SOC 0.3610911111111115, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -784.0 to -694.0
+0 08:10:00; 29400; pv_1; power_msg; -414.0; POWER to gc_1
+0 08:10:01; 29401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -414.0
+0 08:10:01; 29401; battery_1; SOC 0.3587777777777781, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -694.0 to -586.0
+0 08:20:00; 30000; pv_1; power_msg; -522.0; POWER to gc_1
+0 08:20:01; 30001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -522.0
+0 08:20:01; 30001; battery_1; SOC 0.3568244444444447, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -586.0 to -478.0
+0 08:30:00; 30600; pv_1; power_msg; -612.0; POWER to gc_1
+0 08:30:01; 30601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -612.0
+0 08:30:01; 30601; battery_1; SOC 0.3552311111111114, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -478.0 to -388.0
+0 08:40:00; 31200; pv_1; power_msg; -720.0; POWER to gc_1
+0 08:40:01; 31201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -720.0
+0 08:40:01; 31201; battery_1; SOC 0.353937777777778, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -388.0 to -280.0
+0 08:50:00; 31800; pv_1; power_msg; -810.0; POWER to gc_1
+0 08:50:01; 31801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -810.0
+0 08:50:01; 31801; battery_1; SOC 0.3530044444444447, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -280.0 to -190.0
+0 09:00:00; 32400; pv_1; power_msg; -900.0; POWER to gc_1
+0 09:00:01; 32401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -900.0
+0 09:00:01; 32401; battery_1; SOC 0.3523711111111113, charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+0 09:00:01; 32401; battery_1; SOC 0.3523711111111113, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -190.0 to -100.0
+0 09:10:00; 33000; pv_1; power_msg; -990.0000000000001; POWER to gc_1
+0 09:10:01; 33001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -990.0000000000001
+0 09:10:01; 33001; battery_1; SOC 0.35203777777777795, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -100.0 to -9.999999999999886
+0 09:20:00; 33600; pv_1; power_msg; -1080.0; POWER to gc_1
+0 09:20:01; 33601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1080.0
+0 09:20:01; 33601; battery_1; SOC 0.3520044444444446, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -9.999999999999886 to 80.0
+0 09:30:00; 34200; pv_1; power_msg; -1152.0; POWER to gc_1
+0 09:30:01; 34201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1152.0
+0 09:30:01; 34201; battery_1; SOC 0.35227111111111126, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 80.0 to 152.0
+0 09:40:00; 34800; pv_1; power_msg; -1242.0; POWER to gc_1
+0 09:40:01; 34801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1242.0
+0 09:40:01; 34801; battery_1; SOC 0.35277777777777786, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 152.0 to 242.0
+0 09:50:00; 35400; pv_1; power_msg; -1314.0; POWER to gc_1
+0 09:50:01; 35401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1314.0
+0 09:50:01; 35401; battery_1; SOC 0.35358444444444453, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 242.0 to 314.0
+0 10:00:00; 36000; pv_1; power_msg; -1386.0; POWER to gc_1
+0 10:00:01; 36001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1386.0
+0 10:00:01; 36001; battery_1; SOC 0.3546311111111112, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 314.0 to 386.0
+0 10:10:00; 36600; pv_1; power_msg; -1440.0; POWER to gc_1
+0 10:10:01; 36601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1440.0
+0 10:10:01; 36601; battery_1; SOC 0.35591777777777783, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 386.0 to 440.0
+0 10:20:00; 37200; pv_1; power_msg; -1512.0; POWER to gc_1
+0 10:20:01; 37201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1512.0
+0 10:20:01; 37201; battery_1; SOC 0.35738444444444445, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 440.0 to 512.0
+0 10:30:00; 37800; pv_1; power_msg; -1566.0; POWER to gc_1
+0 10:30:01; 37801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1566.0
+0 10:30:01; 37801; battery_1; SOC 0.3590911111111111, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 512.0 to 566.0
+0 10:40:00; 38400; pv_1; power_msg; -1602.0; POWER to gc_1
+0 10:40:01; 38401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1602.0
+0 10:40:01; 38401; battery_1; SOC 0.3609777777777778, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 566.0 to 602.0
+0 10:50:00; 39000; pv_1; power_msg; -1656.0; POWER to gc_1
+0 10:50:01; 39001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1656.0
+0 10:50:01; 39001; battery_1; SOC 0.36298444444444444, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 602.0 to 656.0
+0 11:00:00; 39600; pv_1; power_msg; -1692.0; POWER to gc_1
+0 11:00:01; 39601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1692.0
+0 11:00:01; 39601; battery_1; SOC 0.3651711111111111, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 656.0 to 692.0
+0 11:10:00; 40200; pv_1; power_msg; -1728.0; POWER to gc_1
+0 11:10:01; 40201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1728.0
+0 11:10:01; 40201; battery_1; SOC 0.36747777777777774, charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+0 11:10:01; 40201; battery_1; SOC 0.36747777777777774, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 692.0 to 728.0
+0 11:20:00; 40800; pv_1; power_msg; -1746.0; POWER to gc_1
+0 11:20:01; 40801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1746.0
+0 11:20:01; 40801; battery_1; SOC 0.36990444444444437, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 728.0 to 746.0
+0 11:30:00; 41400; pv_1; power_msg; -1764.0; POWER to gc_1
+0 11:30:01; 41401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1764.0
+0 11:30:01; 41401; battery_1; SOC 0.372391111111111, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 746.0 to 764.0
+0 11:40:00; 42000; pv_1; power_msg; -1782.0; POWER to gc_1
+0 11:40:01; 42001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1782.0
+0 11:40:01; 42001; battery_1; SOC 0.37493777777777765, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 764.0 to 782.0
+0 11:50:00; 42600; pv_1; power_msg; -1800.0; POWER to gc_1
+0 11:50:01; 42601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1800.0
+0 11:50:01; 42601; battery_1; SOC 0.3775444444444443, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 782.0 to 800.0
+0 12:20:00; 44400; pv_1; power_msg; -1782.0; POWER to gc_1
+0 12:20:01; 44401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1782.0
+0 12:20:01; 44401; battery_1; SOC 0.3855444444444443, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 800.0 to 782.0
+0 12:30:00; 45000; pv_1; power_msg; -1764.0; POWER to gc_1
+0 12:30:01; 45001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1764.0
+0 12:30:01; 45001; battery_1; SOC 0.38815111111111095, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 782.0 to 764.0
+0 12:40:00; 45600; pv_1; power_msg; -1746.0; POWER to gc_1
+0 12:40:01; 45601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1746.0
+0 12:40:01; 45601; battery_1; SOC 0.3906977777777776, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 764.0 to 746.0
+0 12:50:00; 46200; pv_1; power_msg; -1728.0; POWER to gc_1
+0 12:50:01; 46201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1728.0
+0 12:50:01; 46201; battery_1; SOC 0.3931844444444442, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 746.0 to 728.0
+0 13:00:00; 46800; pv_1; power_msg; -1692.0; POWER to gc_1
+0 13:00:01; 46801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1692.0
+0 13:00:01; 46801; battery_1; SOC 0.39561111111111086, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 728.0 to 692.0
+0 13:10:00; 47400; pv_1; power_msg; -1656.0; POWER to gc_1
+0 13:10:01; 47401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1656.0
+0 13:10:01; 47401; battery_1; SOC 0.39791777777777754, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 692.0 to 656.0
+0 13:20:00; 48000; pv_1; power_msg; -1602.0; POWER to gc_1
+0 13:20:00; 48000; battery_1; SOC 0.4001007999999997, charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+0 13:20:01; 48001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1602.0
+0 13:20:01; 48001; battery_1; SOC 0.40010444444444415, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 656.0 to 602.0
+0 13:30:00; 48600; pv_1; power_msg; -1566.0; POWER to gc_1
+0 13:30:01; 48601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1566.0
+0 13:30:01; 48601; battery_1; SOC 0.4021111111111108, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 602.0 to 566.0
+0 13:40:00; 49200; pv_1; power_msg; -1512.0; POWER to gc_1
+0 13:40:01; 49201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1512.0
+0 13:40:01; 49201; battery_1; SOC 0.4039977777777775, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 566.0 to 512.0
+0 13:50:00; 49800; pv_1; power_msg; -1440.0; POWER to gc_1
+0 13:50:01; 49801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1440.0
+0 13:50:01; 49801; battery_1; SOC 0.40570444444444415, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 512.0 to 440.0
+0 14:00:00; 50400; pv_1; power_msg; -1386.0; POWER to gc_1
+0 14:00:01; 50401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1386.0
+0 14:00:01; 50401; battery_1; SOC 0.4071711111111108, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 440.0 to 386.0
+0 14:10:00; 51000; pv_1; power_msg; -1314.0; POWER to gc_1
+0 14:10:01; 51001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1314.0
+0 14:10:01; 51001; battery_1; SOC 0.4084577777777774, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 386.0 to 314.0
+0 14:20:00; 51600; pv_1; power_msg; -1242.0; POWER to gc_1
+0 14:20:01; 51601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1242.0
+0 14:20:01; 51601; battery_1; SOC 0.4095044444444441, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 314.0 to 242.0
+0 14:30:00; 52200; pv_1; power_msg; -1152.0; POWER to gc_1
+0 14:30:01; 52201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1152.0
+0 14:30:01; 52201; battery_1; SOC 0.41031111111111074, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 242.0 to 152.0
+0 14:40:00; 52800; pv_1; power_msg; -1080.0; POWER to gc_1
+0 14:40:01; 52801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1080.0
+0 14:40:01; 52801; battery_1; SOC 0.4108177777777774, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 152.0 to 80.0
+0 14:50:00; 53400; pv_1; power_msg; -990.0000000000001; POWER to gc_1
+0 14:50:01; 53401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -990.0000000000001
+0 14:50:01; 53401; battery_1; SOC 0.41108444444444403, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 80.0 to -9.999999999999886
+0 15:00:00; 54000; pv_1; power_msg; -900.0; POWER to gc_1
+0 15:00:01; 54001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -900.0
+0 15:00:01; 54001; battery_1; SOC 0.41105111111111065, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -9.999999999999886 to -100.0
+0 15:10:00; 54600; pv_1; power_msg; -810.0; POWER to gc_1
+0 15:10:01; 54601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -810.0
+0 15:10:01; 54601; battery_1; SOC 0.4107177777777773, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -100.0 to -190.0
+0 15:20:00; 55200; pv_1; power_msg; -720.0; POWER to gc_1
+0 15:20:01; 55201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -720.0
+0 15:20:01; 55201; battery_1; SOC 0.4100844444444439, charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+0 15:20:01; 55201; battery_1; SOC 0.4100844444444439, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -190.0 to -280.0
+0 15:30:00; 55800; pv_1; power_msg; -612.0; POWER to gc_1
+0 15:30:01; 55801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -612.0
+0 15:30:01; 55801; battery_1; SOC 0.4091511111111106, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -280.0 to -388.0
+0 15:40:00; 56400; pv_1; power_msg; -522.0; POWER to gc_1
+0 15:40:01; 56401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -522.0
+0 15:40:01; 56401; battery_1; SOC 0.4078577777777772, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -388.0 to -478.0
+0 15:50:00; 57000; pv_1; power_msg; -414.0; POWER to gc_1
+0 15:50:01; 57001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -414.0
+0 15:50:01; 57001; battery_1; SOC 0.4062644444444439, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -478.0 to -586.0
+0 16:00:00; 57600; pv_1; power_msg; -306.0; POWER to gc_1
+0 16:00:01; 57601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -306.0
+0 16:00:01; 57601; battery_1; SOC 0.4043111111111105, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -586.0 to -694.0
+0 16:10:00; 58200; pv_1; power_msg; -216.0; POWER to gc_1
+0 16:10:01; 58201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -216.0
+0 16:10:01; 58201; battery_1; SOC 0.4019977777777772, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -694.0 to -784.0
+0 16:20:00; 58800; pv_1; power_msg; -108.0; POWER to gc_1
+0 16:20:01; 58801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -108.0
+0 16:20:01; 58801; battery_1; SOC 0.3993844444444439, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -784.0 to -892.0
+0 16:30:00; 59400; pv_1; power_msg; -0.0; POWER to gc_1
+0 16:30:01; 59401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -0.0
+0 16:30:01; 59401; battery_1; SOC 0.3964111111111105, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -892.0 to -1000.0
+0 17:40:00; 63600; battery_1; SOC 0.37308333333333277, charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+0 18:00:00; 64800; utm_1; set sell price; 0.05; set sell price
+0 18:00:00; 64800; utm_1; price message; 0.05; price msg to gc_1
+0 18:00:00; 64800; eud_1; shut_down; 0; shut down eud_1
+0 18:00:00; 64800; eud_1; power_msg; 0; POWER to gc_1
+0 18:00:01; 64801; gc_1; ; None; Read MessageType.PRICE from utm_1 with value 0.05
+0 18:00:01; 64801; gc_1; ; None; Read MessageType.POWER from eud_1 with value 0
+0 18:00:01; 64801; battery_1; SOC 0.3664111111111106, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -1000.0 to -500.0
+0 20:00:00; 72000; battery_1; SOC 0.34641388888888824, charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+0 22:20:00; 80400; battery_1; SOC 0.32308055555555476, charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+1 00:00:00; 86400; utm_1; set sell price; 0.1; set sell price
+1 00:00:00; 86400; utm_1; price message; 0.1; price msg to gc_1
+1 00:00:00; 86400; eud_1; start_up; 1; start up eud_1
+1 00:00:00; 86400; eud_1; power_msg; 500.0; POWER to gc_1
+1 00:00:00; 86400; eud_1; brightness; 1.0; brightness changed to 1.0
+1 00:00:01; 86401; gc_1; ; None; Read MessageType.PRICE from utm_1 with value 0.1
+1 00:00:01; 86401; gc_1; ; None; Read MessageType.POWER from eud_1 with value 500.0
+1 00:00:01; 86401; battery_1; SOC 0.30641111111111036, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -500.0 to -1000.0
+1 00:40:00; 88800; battery_1; SOC 0.29308333333333264, charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+1 03:00:00; 97200; battery_1; SOC 0.2464166666666658, charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+1 05:20:00; 105600; battery_1; SOC 0.19974999999999907, charge pref BatteryChargingPreference.CHARGE; None; changed from BatteryChargingPreference.NEUTRAL
+1 05:40:00; 106800; battery_1; SOC 0.19308333333333239, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 06:00:00; 108000; eud_1; shut_down; 0; shut down eud_1
+1 06:00:00; 108000; eud_1; power_msg; 0; POWER to gc_1
+1 06:00:01; 108001; gc_1; ; None; Read MessageType.POWER from eud_1 with value 0
+1 06:00:01; 108001; battery_1; SOC 0.18641111111111014, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from -1000.0 to -500.0
+1 07:40:00; 114000; pv_1; power_msg; -108.0; POWER to gc_1
+1 07:40:01; 114001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -108.0
+1 07:40:01; 114001; battery_1; SOC 0.16974444444444353, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 07:40:01; 114001; battery_1; SOC 0.16974444444444353, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from -500.0 to -392.0
+1 07:50:00; 114600; pv_1; power_msg; -216.0; POWER to gc_1
+1 07:50:01; 114601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -216.0
+1 07:50:01; 114601; battery_1; SOC 0.16843777777777685, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from -392.0 to -284.0
+1 08:00:00; 115200; utm_1; set sell price; 0.15; set sell price
+1 08:00:00; 115200; utm_1; price message; 0.15; price msg to gc_1
+1 08:00:00; 115200; eud_1; start_up; 1; start up eud_1
+1 08:00:00; 115200; eud_1; power_msg; 500.0; POWER to gc_1
+1 08:00:00; 115200; eud_1; brightness; 1.0; brightness changed to 1.0
+1 08:00:00; 115200; pv_1; power_msg; -306.0; POWER to gc_1
+1 08:00:01; 115201; gc_1; ; None; Read MessageType.PRICE from utm_1 with value 0.15
+1 08:00:01; 115201; gc_1; ; None; Read MessageType.POWER from eud_1 with value 500.0
+1 08:00:01; 115201; battery_1; SOC 0.16749111111111017, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from -284.0 to -784.0
+1 08:00:01; 115201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -306.0
+1 08:00:01; 115201; battery_1; SOC 0.16749111111111017, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from -784.0 to -694.0
+1 08:10:00; 115800; pv_1; power_msg; -414.0; POWER to gc_1
+1 08:10:01; 115801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -414.0
+1 08:10:01; 115801; battery_1; SOC 0.16517777777777687, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from -694.0 to -586.0
+1 08:20:00; 116400; pv_1; power_msg; -522.0; POWER to gc_1
+1 08:20:01; 116401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -522.0
+1 08:20:01; 116401; battery_1; SOC 0.16322444444444353, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from -586.0 to -478.0
+1 08:30:00; 117000; pv_1; power_msg; -612.0; POWER to gc_1
+1 08:30:01; 117001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -612.0
+1 08:30:01; 117001; battery_1; SOC 0.1616311111111102, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from -478.0 to -388.0
+1 08:40:00; 117600; pv_1; power_msg; -720.0; POWER to gc_1
+1 08:40:01; 117601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -720.0
+1 08:40:01; 117601; battery_1; SOC 0.16033777777777686, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from -388.0 to -280.0
+1 08:50:00; 118200; pv_1; power_msg; -810.0; POWER to gc_1
+1 08:50:01; 118201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -810.0
+1 08:50:01; 118201; battery_1; SOC 0.15940444444444352, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from -280.0 to -190.0
+1 09:00:00; 118800; pv_1; power_msg; -900.0; POWER to gc_1
+1 09:00:01; 118801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -900.0
+1 09:00:01; 118801; battery_1; SOC 0.1587711111111102, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from -190.0 to -100.0
+1 09:10:00; 119400; pv_1; power_msg; -990.0000000000001; POWER to gc_1
+1 09:10:01; 119401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -990.0000000000001
+1 09:10:01; 119401; battery_1; SOC 0.15843777777777687, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from -100.0 to -9.999999999999886
+1 09:20:00; 120000; pv_1; power_msg; -1080.0; POWER to gc_1
+1 09:20:01; 120001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1080.0
+1 09:20:01; 120001; battery_1; SOC 0.15840444444444352, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from -9.999999999999886 to 80.0
+1 09:30:00; 120600; pv_1; power_msg; -1152.0; POWER to gc_1
+1 09:30:01; 120601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1152.0
+1 09:30:01; 120601; battery_1; SOC 0.15867111111111018, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 80.0 to 152.0
+1 09:40:00; 121200; pv_1; power_msg; -1242.0; POWER to gc_1
+1 09:40:01; 121201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1242.0
+1 09:40:01; 121201; battery_1; SOC 0.15917777777777686, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 152.0 to 242.0
+1 09:50:00; 121800; pv_1; power_msg; -1314.0; POWER to gc_1
+1 09:50:01; 121801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1314.0
+1 09:50:01; 121801; battery_1; SOC 0.1599844444444435, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 09:50:01; 121801; battery_1; SOC 0.1599844444444435, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 242.0 to 314.0
+1 10:00:00; 122400; pv_1; power_msg; -1386.0; POWER to gc_1
+1 10:00:01; 122401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1386.0
+1 10:00:01; 122401; battery_1; SOC 0.16103111111111018, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 314.0 to 386.0
+1 10:10:00; 123000; pv_1; power_msg; -1440.0; POWER to gc_1
+1 10:10:01; 123001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1440.0
+1 10:10:01; 123001; battery_1; SOC 0.16231777777777684, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 386.0 to 440.0
+1 10:20:00; 123600; pv_1; power_msg; -1512.0; POWER to gc_1
+1 10:20:01; 123601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1512.0
+1 10:20:01; 123601; battery_1; SOC 0.1637844444444435, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 440.0 to 512.0
+1 10:30:00; 124200; pv_1; power_msg; -1566.0; POWER to gc_1
+1 10:30:01; 124201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1566.0
+1 10:30:01; 124201; battery_1; SOC 0.16549111111111017, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 512.0 to 566.0
+1 10:40:00; 124800; pv_1; power_msg; -1602.0; POWER to gc_1
+1 10:40:01; 124801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1602.0
+1 10:40:01; 124801; battery_1; SOC 0.16737777777777688, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 566.0 to 602.0
+1 10:50:00; 125400; pv_1; power_msg; -1656.0; POWER to gc_1
+1 10:50:01; 125401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1656.0
+1 10:50:01; 125401; battery_1; SOC 0.16938444444444353, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 602.0 to 656.0
+1 11:00:00; 126000; pv_1; power_msg; -1692.0; POWER to gc_1
+1 11:00:01; 126001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1692.0
+1 11:00:01; 126001; battery_1; SOC 0.17157111111111017, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 656.0 to 692.0
+1 11:10:00; 126600; pv_1; power_msg; -1728.0; POWER to gc_1
+1 11:10:01; 126601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1728.0
+1 11:10:01; 126601; battery_1; SOC 0.17387777777777685, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 692.0 to 728.0
+1 11:20:00; 127200; pv_1; power_msg; -1746.0; POWER to gc_1
+1 11:20:01; 127201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1746.0
+1 11:20:01; 127201; battery_1; SOC 0.17630444444444354, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 728.0 to 746.0
+1 11:30:00; 127800; pv_1; power_msg; -1764.0; POWER to gc_1
+1 11:30:01; 127801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1764.0
+1 11:30:01; 127801; battery_1; SOC 0.17879111111111023, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 746.0 to 764.0
+1 11:40:00; 128400; pv_1; power_msg; -1782.0; POWER to gc_1
+1 11:40:01; 128401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1782.0
+1 11:40:01; 128401; battery_1; SOC 0.1813377777777769, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 764.0 to 782.0
+1 11:50:00; 129000; pv_1; power_msg; -1800.0; POWER to gc_1
+1 11:50:01; 129001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1800.0
+1 11:50:01; 129001; battery_1; SOC 0.18394444444444358, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 782.0 to 800.0
+1 12:00:00; 129600; battery_1; SOC 0.1866066666666658, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 12:20:00; 130800; pv_1; power_msg; -1782.0; POWER to gc_1
+1 12:20:01; 130801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1782.0
+1 12:20:01; 130801; battery_1; SOC 0.19194444444444358, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 800.0 to 782.0
+1 12:30:00; 131400; pv_1; power_msg; -1764.0; POWER to gc_1
+1 12:30:01; 131401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1764.0
+1 12:30:01; 131401; battery_1; SOC 0.19455111111111026, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 782.0 to 764.0
+1 12:40:00; 132000; pv_1; power_msg; -1746.0; POWER to gc_1
+1 12:40:01; 132001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1746.0
+1 12:40:01; 132001; battery_1; SOC 0.19709777777777693, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 764.0 to 746.0
+1 12:50:00; 132600; pv_1; power_msg; -1728.0; POWER to gc_1
+1 12:50:01; 132601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1728.0
+1 12:50:01; 132601; battery_1; SOC 0.19958444444444362, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from 746.0 to 728.0
+1 13:00:00; 133200; pv_1; power_msg; -1692.0; POWER to gc_1
+1 13:00:00; 133200; battery_1; SOC 0.20200706666666585, charge pref BatteryChargingPreference.NEUTRAL; None; changed from BatteryChargingPreference.CHARGE
+1 13:00:01; 133201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1692.0
+1 13:00:01; 133201; battery_1; SOC 0.20201111111111028, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 728.0 to 692.0
+1 13:10:00; 133800; pv_1; power_msg; -1656.0; POWER to gc_1
+1 13:10:01; 133801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1656.0
+1 13:10:01; 133801; battery_1; SOC 0.20431777777777696, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 692.0 to 656.0
+1 13:20:00; 134400; pv_1; power_msg; -1602.0; POWER to gc_1
+1 13:20:01; 134401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1602.0
+1 13:20:01; 134401; battery_1; SOC 0.2065044444444436, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 656.0 to 602.0
+1 13:30:00; 135000; pv_1; power_msg; -1566.0; POWER to gc_1
+1 13:30:01; 135001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1566.0
+1 13:30:01; 135001; battery_1; SOC 0.2085111111111103, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 602.0 to 566.0
+1 13:40:00; 135600; pv_1; power_msg; -1512.0; POWER to gc_1
+1 13:40:01; 135601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1512.0
+1 13:40:01; 135601; battery_1; SOC 0.21039777777777696, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 566.0 to 512.0
+1 13:50:00; 136200; pv_1; power_msg; -1440.0; POWER to gc_1
+1 13:50:01; 136201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1440.0
+1 13:50:01; 136201; battery_1; SOC 0.21210444444444365, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 512.0 to 440.0
+1 14:00:00; 136800; pv_1; power_msg; -1386.0; POWER to gc_1
+1 14:00:01; 136801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1386.0
+1 14:00:01; 136801; battery_1; SOC 0.21357111111111032, charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+1 14:00:01; 136801; battery_1; SOC 0.21357111111111032, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 440.0 to 386.0
+1 14:10:00; 137400; pv_1; power_msg; -1314.0; POWER to gc_1
+1 14:10:01; 137401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1314.0
+1 14:10:01; 137401; battery_1; SOC 0.214857777777777, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 386.0 to 314.0
+1 14:20:00; 138000; pv_1; power_msg; -1242.0; POWER to gc_1
+1 14:20:01; 138001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1242.0
+1 14:20:01; 138001; battery_1; SOC 0.21590444444444368, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 314.0 to 242.0
+1 14:30:00; 138600; pv_1; power_msg; -1152.0; POWER to gc_1
+1 14:30:01; 138601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1152.0
+1 14:30:01; 138601; battery_1; SOC 0.21671111111111035, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 242.0 to 152.0
+1 14:40:00; 139200; pv_1; power_msg; -1080.0; POWER to gc_1
+1 14:40:01; 139201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -1080.0
+1 14:40:01; 139201; battery_1; SOC 0.21721777777777704, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 152.0 to 80.0
+1 14:50:00; 139800; pv_1; power_msg; -990.0000000000001; POWER to gc_1
+1 14:50:01; 139801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -990.0000000000001
+1 14:50:01; 139801; battery_1; SOC 0.21748444444444373, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from 80.0 to -9.999999999999886
+1 15:00:00; 140400; pv_1; power_msg; -900.0; POWER to gc_1
+1 15:00:01; 140401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -900.0
+1 15:00:01; 140401; battery_1; SOC 0.2174511111111104, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -9.999999999999886 to -100.0
+1 15:10:00; 141000; pv_1; power_msg; -810.0; POWER to gc_1
+1 15:10:01; 141001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -810.0
+1 15:10:01; 141001; battery_1; SOC 0.21711777777777708, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -100.0 to -190.0
+1 15:20:00; 141600; pv_1; power_msg; -720.0; POWER to gc_1
+1 15:20:01; 141601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -720.0
+1 15:20:01; 141601; battery_1; SOC 0.21648444444444376, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -190.0 to -280.0
+1 15:30:00; 142200; pv_1; power_msg; -612.0; POWER to gc_1
+1 15:30:01; 142201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -612.0
+1 15:30:01; 142201; battery_1; SOC 0.21555111111111044, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -280.0 to -388.0
+1 15:40:00; 142800; pv_1; power_msg; -522.0; POWER to gc_1
+1 15:40:01; 142801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -522.0
+1 15:40:01; 142801; battery_1; SOC 0.21425777777777713, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -388.0 to -478.0
+1 15:50:00; 143400; pv_1; power_msg; -414.0; POWER to gc_1
+1 15:50:01; 143401; gc_1; ; None; Read MessageType.POWER from pv_1 with value -414.0
+1 15:50:01; 143401; battery_1; SOC 0.2126644444444438, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -478.0 to -586.0
+1 16:00:00; 144000; pv_1; power_msg; -306.0; POWER to gc_1
+1 16:00:01; 144001; gc_1; ; None; Read MessageType.POWER from pv_1 with value -306.0
+1 16:00:01; 144001; battery_1; SOC 0.2107111111111105, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -586.0 to -694.0
+1 16:10:00; 144600; pv_1; power_msg; -216.0; POWER to gc_1
+1 16:10:01; 144601; gc_1; ; None; Read MessageType.POWER from pv_1 with value -216.0
+1 16:10:01; 144601; battery_1; SOC 0.20839777777777715, charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+1 16:10:01; 144601; battery_1; SOC 0.20839777777777715, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -694.0 to -784.0
+1 16:20:00; 145200; pv_1; power_msg; -108.0; POWER to gc_1
+1 16:20:01; 145201; gc_1; ; None; Read MessageType.POWER from pv_1 with value -108.0
+1 16:20:01; 145201; battery_1; SOC 0.20578444444444383, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -784.0 to -892.0
+1 16:30:00; 145800; pv_1; power_msg; -0.0; POWER to gc_1
+1 16:30:01; 145801; gc_1; ; None; Read MessageType.POWER from pv_1 with value -0.0
+1 16:30:01; 145801; battery_1; SOC 0.20281111111111053, charge pref BatteryChargingPreference.NEUTRAL; None; battery load changed from -892.0 to -1000.0
+1 16:40:00; 146400; battery_1; SOC 0.19948333333333274, charge pref BatteryChargingPreference.CHARGE; None; changed from BatteryChargingPreference.NEUTRAL
+1 18:00:00; 151200; utm_1; set sell price; 0.05; set sell price
+1 18:00:00; 151200; utm_1; price message; 0.05; price msg to gc_1
+1 18:00:00; 151200; eud_1; shut_down; 0; shut down eud_1
+1 18:00:00; 151200; eud_1; power_msg; 0; POWER to gc_1
+1 18:00:01; 151201; gc_1; ; None; Read MessageType.PRICE from utm_1 with value 0.05
+1 18:00:01; 151201; gc_1; ; None; Read MessageType.POWER from eud_1 with value 0
+1 18:00:01; 151201; battery_1; SOC 0.17281111111111047, charge pref BatteryChargingPreference.CHARGE; None; battery load changed from -1000.0 to -500.0
+1 18:20:00; 152400; battery_1; SOC 0.16948055555555494, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 20:40:00; 160800; battery_1; SOC 0.14614722222222154, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+1 23:00:00; 169200; battery_1; SOC 0.12281388888888813, charge pref BatteryChargingPreference.CHARGE; None; unchanged charge preference
+2 00:00:00; 172800; gc_1; power calcs; 39999.305555555526; sum Wh out
+2 00:00:00; 172800; gc_1; power calcs; 20640.0; sum Wh in
+2 00:00:00; 172800; gc_1; power_calcs; 5908.000000000002; battery sum charge Wh
+2 00:00:00; 172800; gc_1; power_calcs; 25100.638888888916; battery sum discharge Wh
+2 00:00:00; 172800; gc_1; valid_calcs; True; valid power balance: True
+2 00:00:00; 172800; utm_1; power calcs; 0.0; sum Wh out
+2 00:00:00; 172800; utm_1; power calcs; 0.0; sum Wh in
+2 00:00:00; 172800; pv_1; power calcs; 20640.0; sum Wh out
+2 00:00:00; 172800; pv_1; power calcs; 0.0; sum Wh in
+2 00:00:00; 172800; eud_1; power calcs; 0.0; sum Wh out
+2 00:00:00; 172800; eud_1; power calcs; 15999.722222222223; sum Wh in
+2 00:00:00; 172800; eud_2; power calcs; 0.0; sum Wh out
+2 00:00:00; 172800; eud_2; power calcs; 23999.722222222223; sum Wh in
+total simulation power in: 60639.44444444444 Wh
+total simulation power out: 60639.305555555526 Wh

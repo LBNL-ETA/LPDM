@@ -22,20 +22,22 @@ from Build.device import SECONDS_IN_DAY
 class AirConditionerSimple(Eud):
 
     ##
+    # @param compressor_operating_power how much energy the device requires to keep the compressor in operation
     # @param compressor_temp_rate the cooling rate at the air conditioner (degrees C / hour).
     # @param heat_exchange_rate the rate of change in temperature as a result of the difference between internal and
     # external temperature
-    def __init__(self, device_id, supervisor, msg_latency=0, schedule=None, time=0, connected_devices=None,
-                 max_power_output=500.0, current_temp=25.0, temp_max_delta=0.5, base_set_point=23.0,
-                 price_to_setpoint=None, precooling_enabled=False, precooling_price_threshold=None,
-                 compressor_cooling_rate=2.0, heat_exchange_rate=0.1, setpoint_interval=600,
-                 temperature_update_interval=300):
+    # @param price_to_setpoint a list of lists of price, setpoint for this device to modify setpoint based on price
+    def __init__(self, device_id, supervisor, msg_latency=0, schedule=None, total_runtime=SECONDS_IN_DAY, time=0,
+                 connected_devices=None, compressor_operating_power=500.0, initial_temp=25.0, temp_max_delta=0.5,
+                 initial_set_point=23.0, price_to_setpoint=None, temperature_schedule=None, precooling_enabled=False,
+                 precooling_price_threshold=None, compressor_cooling_rate=2.0, heat_exchange_rate=0.1,
+                 setpoint_interval=600, temperature_update_interval=300):
 
         super().__init__(device_id, "air_conditioner", supervisor, msg_latency=msg_latency, time=time,
                          schedule=schedule, connected_devices=connected_devices)
 
-        self._max_power_output = max_power_output
-        self._current_temperature = current_temp
+        self._compressor_operating_power = compressor_operating_power
+        self._current_temperature = initial_temp
         self._current_outdoor_temperature = None
 
         self._temperature_max_delta = temp_max_delta  # How much to let the temperature to vary around setpoint
@@ -43,19 +45,24 @@ class AirConditionerSimple(Eud):
         self._precooling_enabled = precooling_enabled
         self._precooling_price_threshold = precooling_price_threshold
 
-        self._set_point = base_set_point  # The starting temperature set point
+        self._set_point = initial_set_point  # The starting temperature set point
         self._setpoint_interval = setpoint_interval
 
         self._price_to_setpoint = price_to_setpoint  # A list of tuples of (price, setpoint).
 
-        self._temperature_schedule = None
-
         self._compressor_cooling_rate = compressor_cooling_rate
 
         self._heat_exchange_rate = heat_exchange_rate
-        self._compressor_is_on = False
         self._last_temperature_update_time = 0.0  # the time the last internal temperature update occurred
         self._temperature_update_interval = temperature_update_interval
+
+        self._compressor_is_on = False
+        self._compressor_should_be_on = False
+
+        if temperature_schedule is None:
+            raise ValueError("tried to initialize air conditioner without temperature schedule")
+        self._temperature_schedule = temperature_schedule
+        self.schedule_outdoor_temperature_events(self._temperature_schedule, total_runtime)
 
     ##
     # @param temperature_schedule a list of tuples of (time, temperature) for outdoor temperatures.
@@ -68,15 +75,6 @@ class AirConditionerSimple(Eud):
                 self.add_event(temperature_event, time + curr_day)
             curr_day += SECONDS_IN_DAY
 
-
-    """ UNNECESSARY. Only need to do this when the price changes. 
-        def schedule_setpoint_evaluation_events(self, total_runtime):
-            curr_time = 0
-            while curr_time < total_runtime:
-                self.add_event(Event(self.reassess_setpoint), curr_time)
-                curr_time += self._setpoint_interval
-    """
-
     def schedule_temperature_change_events(self, total_runtime):
         curr_time = 0
         while curr_time < total_runtime:
@@ -85,15 +83,12 @@ class AirConditionerSimple(Eud):
 
     def reassess_setpoint(self):
         if self._price is None:
-            return False
+            return
         new_set_point = self.get_setpoint_from_price(self._price)
         if new_set_point != self._set_point:
             self._set_point = new_set_point
-            self._logger.debug(self.build_log_notation(
+            self._logger.info(self.build_log_notation(
                 message="setpoint changed to {}".format(new_set_point), tag="set_point", value=new_set_point))
-            return True
-        else:
-            return False
 
     def get_setpoint_from_price(self, price):
         if self._price_to_setpoint is None:
@@ -109,7 +104,7 @@ class AirConditionerSimple(Eud):
         adjust the temperature of the device based on the indoor/outdoor temperature difference
         """
         if self._time > self._last_temperature_update_time:
-            delta_t = ((self._time - self._last_temperature_update_time) / 3600.0)  # time difference in hours
+            delta_t = (self._time - self._last_temperature_update_time) / 3600.0  # time difference in hours
             if self._compressor_is_on:
                 # if the compressor is on adjust the internal temperature due to cooling
                 delta_c = delta_t * self._compressor_cooling_rate
@@ -126,9 +121,11 @@ class AirConditionerSimple(Eud):
                 self._current_temperature += delta_c
                 self._logger.info(self.build_log_notation(
                         message="Internal temperature", tag="internal_temperature", value=self._current_temperature))
-                self._last_temperature_update_time = self._time
 
-    # TODO: Understand this. Only missing component and we should be good.
+            self._last_temperature_update_time = self._time
+
+    # TODO: Remove/Replace this after equality test.
+    """
     def precooling_update(self):
         if self._precooling_enabled and not self._in_operation:
             if self._precooling_price_threshold is None or self._price < self._precooling_price_threshold:
@@ -141,7 +138,8 @@ class AirConditionerSimple(Eud):
                 self._logger.info(self.build_log_notation(
                     message="precooling device, price {}".format(self._price), tag="precool_on_off", value=0))
                 self.turn_off()
-
+    """
+    # TODO: After equivalency test, change to compressor should be on.
     def control_compressor_operation(self):
         """turn the compressor on/off when needed"""
         # see if the current tempreature is outside of the allowable range
@@ -150,7 +148,7 @@ class AirConditionerSimple(Eud):
             return
 
         delta = self._current_temperature - self._set_point
-        self._logger.debug(self.build_log_notation(
+        self._logger.info(self.build_log_notation(
                            message="delta from setpoint: {}".format(delta), tag="delta_t", value=delta))
         if abs(delta) > self._temperature_max_delta:
             if delta > 0 and not self._compressor_is_on:
@@ -163,14 +161,12 @@ class AirConditionerSimple(Eud):
     def turn_on_compressor(self):
         """Turn on the compressor"""
         if self._in_operation:
-            self._logger.debug(self.build_log_notation(message="compressor_on", tag="compressor_on_off", value=1))
+            self._logger.info(self.build_log_notation(message="compressor_on", tag="compressor_on_off", value=1))
             self._compressor_is_on = True
-            # this should be 0
 
     def turn_off_compressor(self):
-        if self._time - self._last_total_energy_update_time > 900: # TODO: Why this?
-            self._compressor_is_on = False
-            self._logger.debug(self.build_log_notation(message="turn off compressor", tag="compressor_on_off", value=0))
+        self._compressor_is_on = False
+        self._logger.info(self.build_log_notation(message="turn off compressor", tag="compressor_on_off", value=0))
 
     def update_outdoor_temperature(self, new_temperature):
         self._current_outdoor_temperature = new_temperature
@@ -182,10 +178,27 @@ class AirConditionerSimple(Eud):
     def begin_internal_operation(self):
         pass
 
-    def calculate_desired_power_level(self):
+    def update_state(self):
         self.adjust_internal_temperature()
         self.reassess_setpoint()
-        self.precooling_update()
         self.control_compressor_operation()
+
+    def calculate_desired_power_level(self):
+        if self._compressor_is_on:
+            return self._compressor_operating_power
+        else:
+            return 0.0
+
+    # TODO: Change this to compressor_should_be_on variable instead, and have it work through request.
+    def respond_to_power(self, requested_power, received_power):
+        # We didn't get enough power to operate the compressor
+        if received_power < self._compressor_operating_power:
+            self._logger.info(self.build_log_notation(
+                message="insufficient power to run compressor", tag="insufficient power", value=received_power))
+            if self._compressor_is_on:
+                self.turn_off_compressor()
+
+    def device_specific_calcs(self):
+        pass
 
 

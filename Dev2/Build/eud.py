@@ -17,15 +17,16 @@
     it is connected to.
 """
 
-from Build.device import Device
+from Build.device import Device, SECONDS_IN_DAY, nonzero_power
+from Build.event import Event
 from Build.message import Message, MessageType
 from abc import abstractmethod
 
 
 class Eud(Device):
 
-    def __init__(self, device_id, device_type, supervisor, time=0, msg_latency=0, power_direct=False,
-                 schedule=None, connected_devices=None):
+    def __init__(self, device_id, device_type, supervisor, total_runtime, time=0, msg_latency=0, power_direct=False,
+                 modulation_interval=600, schedule=None, connected_devices=None):
         super().__init__(device_id, device_type, supervisor, time=time, msg_latency=msg_latency, schedule=schedule,
                          connected_devices=connected_devices)
         # Dictionary of devices and how much this EUD has been allocated by those devices. All values must be positive
@@ -37,6 +38,7 @@ class Eud(Device):
         self._in_operation = False
         # flag to determine whether we use request-allocate model or immediate power.
         self._power_direct = power_direct
+        self.setup_modulation_schedule(modulation_interval, total_runtime)
 
     # ___________________ BASIC FUNCTIONS ________________
 
@@ -89,6 +91,14 @@ class Eud(Device):
         else:
             self._allocated[device_id] = allocate_amt
 
+    ##
+    # The EUD will modulate its power every 10 minutes.
+    def setup_modulation_schedule(self, modulation_interval, total_runtime):
+        curr_time = self._time + modulation_interval  # start 1 interval in
+        while curr_time < total_runtime:
+            self.add_event(Event(self.modulate_power), curr_time)
+            curr_time += modulation_interval
+
     # ____________________MESSAGING FUNCTIONS___________________________
     ##
     # Method to be called when this EUD receives a power message. If there is an erroneous message suggesting
@@ -100,7 +110,7 @@ class Eud(Device):
         if new_power <= 0:
             self.set_power_in(-new_power)
             self._loads_in[sender_id] = -new_power
-            self.modulate_power()
+            self.modulate_power()  # Try to recalibrate with other sources of power to stay balanced
         else:
             self.send_power_message(sender_id, 0)
             self._logger.info(self.build_log_notation("ignored positive power message from {}".format(sender_id)))
@@ -176,12 +186,20 @@ class Eud(Device):
     def modulate_power(self):
         self.update_state()  # make sure we are updated before calculating any desired power
         desired_power_level = self.calculate_desired_power_level()
-        if desired_power_level > 0:
+        gcs = [device_id for device_id in self._connected_devices.keys() if device_id.startswith("gc")]
+
+        if desired_power_level == 0:
+            for gc in gcs:
+                if nonzero_power(self._loads_in.get(gc, 0)):
+                    self.send_power_message(gc, 0)
+                    self.change_load_in(gc, 0)
+
+        elif desired_power_level > 0:
             remaining = desired_power_level  # how much we have left to get (ignoring what we are getting already)
             total_power_taken = 0
 
             power_sources = []  # list of gcs we will get power from.
-            gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
+
             # TODO: Take in order of prices from the sources.
             # TODO: Move power direct into the top level for this decision.
             # gcs_by_price = sorted(gcs, key=lambda d: self._gc_prices.get(d, 1000.0))
@@ -189,8 +207,10 @@ class Eud(Device):
                 if device in gcs:
                     # take all up to what we've been allocated.
                     take_power = min(remaining, self._allocated[device])
-                    self.send_power_message(device, take_power)
-                    self.change_load_in(device, take_power)
+                    if nonzero_power(self._loads_in.get(device, 0) - take_power):
+                        # We currently aren't taking the correct amt, send a power message
+                        self.send_power_message(device, take_power)
+                        self.change_load_in(device, take_power)
                     remaining -= take_power
                     total_power_taken += take_power
                     if take_power:

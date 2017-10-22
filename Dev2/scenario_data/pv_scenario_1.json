@@ -53,7 +53,8 @@
                 "uuid": 3,
                 "eud_type": "light",
                 "max_operating_power": 500.0, 
-                "message_latency": 1,             
+                "message_latency": 1,     
+                "modulation_interval": 7200,         
                 "schedule": [
                     [0, "turn_on"], [6, "turn_off"], [8, "turn_on"], [18, "turn_off"], [24, "turn_on"], [30, "turn_off"], [32, "turn_on"], [42, "turn_off"]
                 ]

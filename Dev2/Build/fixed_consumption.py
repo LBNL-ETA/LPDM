@@ -6,8 +6,9 @@ from Build.eud import Eud
 
 class FixedConsumptionEud(Eud):
 
-    def __init__(self, device_id, supervisor, desired_power_level):
-        super().__init__(device_id=device_id, device_type="fixed_consumption", supervisor=supervisor)
+    def __init__(self, device_id, supervisor, desired_power_level, total_runtime, modulation_interval):
+        super().__init__(device_id=device_id, device_type="fixed_consumption", supervisor=supervisor,
+                         total_runtime=total_runtime, modulation_interval=modulation_interval)
         self._desired_power_level = desired_power_level
 
     ##
@@ -20,6 +21,9 @@ class FixedConsumptionEud(Eud):
         pass
 
     def end_internal_operation(self):
+        pass
+
+    def update_state(self):
         pass
 
     ##

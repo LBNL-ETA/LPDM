@@ -31,9 +31,10 @@ class AirConditionerSimple(Eud):
                  connected_devices=None, compressor_operating_power=500.0, initial_temp=25.0, temp_max_delta=0.5,
                  initial_set_point=23.0, price_to_setpoint=None, temperature_schedule=None, precooling_enabled=False,
                  precooling_price_threshold=None, compressor_cooling_rate=2.0, heat_exchange_rate=0.1,
-                 setpoint_interval=600, temperature_update_interval=300):
+                 modulation_interval=600, temperature_update_interval=300):
 
         super().__init__(device_id, "air_conditioner", supervisor, msg_latency=msg_latency, time=time,
+                         modulation_interval=modulation_interval, total_runtime=total_runtime,
                          schedule=schedule, connected_devices=connected_devices)
 
         self._compressor_operating_power = compressor_operating_power
@@ -46,7 +47,6 @@ class AirConditionerSimple(Eud):
         self._precooling_price_threshold = precooling_price_threshold
 
         self._set_point = initial_set_point  # The starting temperature set point
-        self._setpoint_interval = setpoint_interval
 
         self._price_to_setpoint = price_to_setpoint  # A list of tuples of (price, setpoint).
 
@@ -90,6 +90,9 @@ class AirConditionerSimple(Eud):
             self._logger.info(self.build_log_notation(
                 message="setpoint changed to {}".format(new_set_point), tag="set_point", value=new_set_point))
 
+    ##
+    # Returns the setpoint value from the given price by finding the next largest price-setpoint value in the
+    # input setpoint dictionary.
     def get_setpoint_from_price(self, price):
         if self._price_to_setpoint is None:
             return self._set_point
@@ -97,7 +100,7 @@ class AirConditionerSimple(Eud):
         for price_val, setpoint in sorted_by_price:
             if price <= price_val:
                 return setpoint
-        return sorted_by_price[-1][1]
+        return sorted_by_price[-1][1] # Price is higher than all in dictionary. Return the last value.
 
     def adjust_internal_temperature(self):
         """
@@ -141,15 +144,12 @@ class AirConditionerSimple(Eud):
     """
     # TODO: After equivalency test, change to compressor should be on.
     def control_compressor_operation(self):
-        """turn the compressor on/off when needed"""
-        # see if the current tempreature is outside of the allowable range
-        # and check if the ac is able to turn its compressor on
         if self._set_point is None or not self._in_operation:
             return
 
         delta = self._current_temperature - self._set_point
         self._logger.info(self.build_log_notation(
-                           message="delta from setpoint: {}".format(delta), tag="delta_t", value=delta))
+                          message="delta from setpoint: {}".format(delta), tag="delta_t", value=delta))
         if abs(delta) > self._temperature_max_delta:
             if delta > 0 and not self._compressor_is_on:
                 # if the current temperature is above the set point and compressor is off, turn it on
@@ -169,6 +169,8 @@ class AirConditionerSimple(Eud):
         self._logger.info(self.build_log_notation(message="turn off compressor", tag="compressor_on_off", value=0))
 
     def update_outdoor_temperature(self, new_temperature):
+        self._logger.info(self.build_log_notation(message="new outdoor temperature: {}".format(new_temperature),
+                                                  tag="new_temp", value=new_temperature))
         self._current_outdoor_temperature = new_temperature
 
     def end_internal_operation(self):

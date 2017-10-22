@@ -14,19 +14,20 @@ An implementation of a light EUD. The light functions such that
 
 """
 
-from Build.device import Device
+from Build.device import Device, SECONDS_IN_DAY
 from Build.eud import Eud
 
-# TODO: Add a current brightness field, so that we know what this device's current state is. On and off will
+# TODO: On and Off to replace the current turn_on, turn_off functions in the input.
 
 
 class Light(Eud):
 
-    def __init__(self, device_id, supervisor, msg_latency=0, time=0,
-                 schedule=None, connected_devices=None, max_operating_power=100.0, power_level_max=1.0,
-                 power_level_low=0.2, price_dim_start=0.1, price_dim_end=0.2, price_off=0.3):
-        super().__init__(device_id=device_id, device_type="light", supervisor=supervisor,
-                         msg_latency=msg_latency, time=time, schedule=schedule, connected_devices=connected_devices)
+    def __init__(self, device_id, supervisor, total_runtime=SECONDS_IN_DAY, modulation_interval=7200,
+                 msg_latency=0, time=0, schedule=None, connected_devices=None, max_operating_power=100.0,
+                 power_level_max=1.0, power_level_low=0.2, price_dim_start=0.1, price_dim_end=0.2, price_off=0.3):
+        super().__init__(device_id=device_id, device_type="light", supervisor=supervisor, total_runtime=total_runtime,
+                         modulation_interval=modulation_interval, msg_latency=msg_latency, time=time,
+                         schedule=schedule, connected_devices=connected_devices)
         self._max_operating_power = max_operating_power  # the device's ideal maximum power usage
         self._power_level_max = power_level_max  # percentage of power level to operate at when price is low
         self._power_level_low = power_level_low  # percent of power level to operate at when price is high.

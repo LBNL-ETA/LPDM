@@ -49,7 +49,7 @@ class Simulation:
             'air_conditioner': [AirConditionerSimple, 'compressor_operating_power', 'initial_temp', 'temp_max_delta',
                                 'initial_set_point', 'price_to_setpoint', 'temperature_schedule', 'precooling_enabled',
                                 'precooling_price_threshold', 'compressor_cooling_rate', 'heat_exchange_rate',
-                                'setpoint_interval', 'temperature_update_interval']
+                                'temperature_update_interval']
         }
 
     def read_config_file(self, filename):
@@ -221,7 +221,7 @@ class Simulation:
     # which has a list of the names of different unique construction parameters for each EUD, and then tries to find
     # the values for those
 
-    def read_euds(self, config, override_args):
+    def read_euds(self, config, total_runtime, override_args):
         connections = []
         if 'euds' not in config['devices'].keys():
             return connections
@@ -233,6 +233,8 @@ class Simulation:
             msg_latency = int(override_args.get('devices.{}.message_latency'.format(eud_id), msg_latency))
             start_time = eud.get('start_time', 0)
             start_time = int(override_args.get('devices.{}.start_time'.format(eud_id), start_time))
+            modulation_interval = eud.get('modulation_interval', 600)
+            modulation_interval = int(override_args.get('devices.{}.start_time'.format(eud_id), modulation_interval))
             connected_devices = eud.get('connected_devices', None)
             schedule = eud.get('schedule', None)
             if connected_devices:
@@ -264,6 +266,7 @@ class Simulation:
                         eud_specific_args[argument] = data
 
             new_eud = eud_class(device_id=eud_id, supervisor=self.supervisor, time=start_time, msg_latency=msg_latency,
+                                total_runtime=total_runtime, modulation_interval=modulation_interval,
                                 schedule=schedule, **eud_specific_args)
             self.supervisor.register_device(new_eud)
 
@@ -289,7 +292,8 @@ class Simulation:
         # reads in and creates all the simulation devices before registering them
         connections = [self.read_grid_controllers(self.config, self.end_time, overrides),
                        self.read_utility_meters(self.config, overrides),
-                       self.read_pvs(self.config, self.end_time, overrides), self.read_euds(self.config, overrides)]
+                       self.read_pvs(self.config, self.end_time, overrides),
+                       self.read_euds(self.config, self.end_time, overrides)]
 
         # TODO: Change this so that it takes into account them turning on, not just sending register messages.
         for connect_list in connections:

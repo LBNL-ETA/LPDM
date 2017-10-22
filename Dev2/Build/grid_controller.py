@@ -137,7 +137,7 @@ class GridController(Device):
     # @param[in] price_history_interval how frequently prices should be recalculated.
     # @param[in] total_runtime the total runtime of the simulation, this will setup events up until that time
     def setup_price_calc_schedule(self, price_history_interval, total_runtime):
-        curr_time = 0
+        curr_time = self._time
         while curr_time < total_runtime:
             self.add_event(Event(self.update_average_price_calcs), curr_time)
             curr_time += price_history_interval
@@ -147,7 +147,7 @@ class GridController(Device):
     # @param price_history_interval how frequently prices should be recalculated.
     # @param total_runtime the total runtime of the simulation, this will setup events up until that time
     def setup_battery_update_schedule(self, update_frequency, total_runtime):
-        curr_time = 0
+        curr_time = self._time
         while curr_time < total_runtime:
             self.add_event(Event(self.update_battery), curr_time)
             curr_time += update_frequency

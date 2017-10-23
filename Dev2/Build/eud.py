@@ -94,6 +94,8 @@ class Eud(Device):
     ##
     # The EUD will modulate its power every 10 minutes.
     def setup_modulation_schedule(self, modulation_interval, total_runtime):
+        if modulation_interval <= 0:
+            return
         curr_time = self._time + modulation_interval  # start 1 interval in
         while curr_time < total_runtime:
             self.add_event(Event(self.modulate_power), curr_time)

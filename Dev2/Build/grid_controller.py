@@ -139,6 +139,8 @@ class GridController(Device):
     # @param[in] total_runtime the total runtime of the simulation, this will setup events up until that time
     def setup_price_calc_schedule(self, price_history_interval, total_runtime):
         curr_time = self._time
+        if price_history_interval <= 0:
+            return
         while curr_time < total_runtime:
             self.add_event(Event(self.update_average_price_calcs), curr_time)
             curr_time += price_history_interval
@@ -149,6 +151,8 @@ class GridController(Device):
     # @param total_runtime the total runtime of the simulation, this will setup events up until that time
     def setup_battery_update_schedule(self, update_frequency, total_runtime):
         curr_time = self._time
+        if update_frequency <= 0:
+            return
         while curr_time < total_runtime:
             self.add_event(Event(self.update_battery), curr_time)
             curr_time += update_frequency
@@ -179,7 +183,7 @@ class GridController(Device):
         prev_power = self._loads[sender_id] if sender_id in self._loads.keys() else 0
         self.modulate_price()
         self.balance_power(sender_id, prev_power, -new_power)  # process new power from perspective of receiver.
-
+        #self.modulate_power()
     ##
     # Processes a price message received from another device, modifying its own price based on its price logic.
     #
@@ -298,13 +302,16 @@ class GridController(Device):
 
         # If the state is no longer possible (power drawn out with non-positive state-of-charge),
         # we must immediately reduce).
-        # TODO:
-        """
-        if self._battery.get_soc() <= 0 and self._battery.get_load() < 0:
-            reduce_amt = -self._battery.get_load() # how much we need to reduce our output by
+        curr_battery_load = self._battery.get_load()
+        if self._battery.get_current_soc() <= 0 and curr_battery_load < 0:
             self._battery.clear_load()
-            self.linear_reduce_power_output(reduce_amt)
-        """
+            for source, load in self._loads.copy().items():  # Copy so that we don't modify the dictionary during iter
+                if load < 0:
+                    # Treat each load like it is a new demand. Try to recalibrate without using the utility meter.
+                    self.balance_power(source, 0, load)
+
+    # TODO: If battery SOC is 1 and being charged into. What behavior?
+
 
     ##
     # Call this function every hour during the running of the simulation. This will reevaluate the current running
@@ -361,6 +368,8 @@ class GridController(Device):
                     new_utm_load = self._loads[utm]
                     self.send_power_message(utm, new_utm_load)
                     remaining -= (prev_utm_load - new_utm_load)
+                    if not nonzero_power(remaining): # An insignificant quantity is remaining. Stop talking to utms
+                        break
             elif power_change < 0:  # must provide more
                 if self._loads.get(utm, 0) < 0:
                     prev_utm_load = self._loads[utm]
@@ -368,6 +377,8 @@ class GridController(Device):
                     new_utm_load = self._loads[utm]
                     self.send_power_message(utm, new_utm_load)
                     remaining -= (prev_utm_load - new_utm_load)
+                    if not nonzero_power(remaining):
+                        break
 
         # Try adding all the remaining demand onto the battery
         if nonzero_power(remaining) and self._battery:
@@ -451,7 +462,6 @@ class GridController(Device):
     # This is the crux function that determines how a GC balances its power flows at a given time.
     # Called upon significant event changes and at regular intervals to help the GC balance its powerflows.
     #
-
     def modulate_power(self):
         # TODO: Read flow below. This is CRUX FUNCTION, HIGHLY COMPLICATED. CONSIDER DIFFERENT OPTIONS.
         # Equivalent to the recalc argument in the Grid Controller Operation and Messaging model.
@@ -461,74 +471,78 @@ class GridController(Device):
         net_load = self._power_in - self._power_out
         # modulate_target is the net load that the GC is seeking to charge or discharge the battery.
 
-        power_adjust = self._battery.get_optimal_charge_rate() - net_load  # how much to seek to adjust net load.
+        desired_net_load = self._battery.get_optimal_charge_rate()
+        power_adjust = desired_net_load - net_load  # Negative if seeking to distribute extra, positive if to accept.
+        if nonzero_power(power_adjust):
+            if power_adjust < 0:
+                self.seek_to_distribute_power(power_adjust)
+            if power_adjust > 0:
+                self.seek_to_obtain_power(power_adjust)
 
-        if power_adjust < 0:
-            self.seek_to_obtain_power(power_adjust)
-        if power_adjust > 0:
-            self.seek_to_distribute_power(power_adjust)
-
+    # TODO: This is temporary version
     def seek_to_obtain_power(self, power_adjust):
-        # Step 1: Increase all allocate values up to their maximum.
-
-        for device_id in self._allocated.keys():
-            pass
-        pass 
+        utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
+        if power_adjust <= 0:
+            return
+        remaining = power_adjust
+        for utm in utility_meters:
+            prev_utm_load = self._loads.get(utm, 0)
+            self.change_load(utm, prev_utm_load + remaining)
+            new_utm_load = self._loads[utm]
+            self.send_power_message(utm, new_utm_load)
+            remaining -= (new_utm_load - prev_utm_load)
+            if remaining <= 0:
+                break
 
     def seek_to_distribute_power(self, power_adjust):
-        pass
-
-
-    ##
-    # The GC is looking to provide or receive power.
-    """
-    def seek_to_sell_power(self, time, power_amt):
-        gcs = filter(lambda d : d.startswith('GC'), self._connected_devices.keys())
-        #assumes connected devices is device list.
-        if gcs:
-            for device in gcs:
-                ##SHOULD BE IN ORDER OF PRICE. MAYBE we should  separate into buy and provide power methods.
-                self.send_request_message(time, device, )
-                
-    def seek_to_buy_power(self, time, power_amt):
-        gcs = filter(lambda d: 
-    """
+        utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
+        if power_adjust >= 0:
+            return
+        remaining = power_adjust
+        for utm in utility_meters:
+            prev_utm_load = self._loads.get(utm, 0)
+            self.change_load(utm, prev_utm_load + remaining)
+            new_utm_load = self._loads[utm]
+            self.send_power_message(utm, new_utm_load)
+            remaining -= (prev_utm_load - new_utm_load)
+            if remaining >= 0:
+                break
 
     """
 
-PROPOSED ORDER OF PRIORITIES TO BALANCE POWER LEVELS SEEKING. 
-
-Called whenever 
-(1) A load changes
-(2) Internal price changes
-(3) Receives a request 
-(4) Is allocated power 
-(5) Also internally calculated every set period of time. 
-
-First priority: Are current levels in balance? 
-
---Step 1: Increase all values up to their current allocate limit. 
---Step 2: 
-    -Are you connected to utility? If so, use it to recallibrate. If not, step 3.
---Step 3: 
-    Can battery sustain the current deficit?
-    --Yes, within comfortable range (more than 20% charge): Raise Price Slightly. 
-    Request more power from all neighbors with price less than yours. 
-    Once you have received allocate messages, max out your requests starting from least
-    expensive to most expensive. 
+    PROPOSED ORDER OF PRIORITIES TO BALANCE POWER LEVELS SEEKING. 
     
-    --Yes, within critical range (less than 20%): Double Price. 
-    Request more power from all neighbors with price less than yours. 
-    Once you have received allocate messages, max out your requests starting from least
-    expensive to most expensive.
+    Called whenever 
+    (1) A load changes
+    (2) Internal price changes
+    (3) Receives a request 
+    (4) Is allocated power 
+    (5) Also internally calculated every set period of time. 
     
-    --NO: Double Price. Request power. Reduce your output to other GC's.  
+    First priority: Are current levels in balance? 
     
-    --STILL NO: REDUCE output to EUD's. 
-    
-    --STILL NO: SHUT DOWN. 
-    
-Second priority: Negotiation balances (new allocate received, new request received). 
+    --Step 1: Increase all values up to their current allocate limit. 
+    --Step 2: 
+        -Are you connected to utility? If so, use it to recallibrate. If not, step 3.
+    --Step 3: 
+        Can battery sustain the current deficit?
+        --Yes, within comfortable range (more than 20% charge): Raise Price Slightly. 
+        Request more power from all neighbors with price less than yours. 
+        Once you have received allocate messages, max out your requests starting from least
+        expensive to most expensive. 
+        
+        --Yes, within critical range (less than 20%): Double Price. 
+        Request more power from all neighbors with price less than yours. 
+        Once you have received allocate messages, max out your requests starting from least
+        expensive to most expensive.
+        
+        --NO: Double Price. Request power. Reduce your output to other GC's.  
+        
+        --STILL NO: REDUCE output to EUD's. 
+        
+        --STILL NO: SHUT DOWN. 
+        
+    Second priority: Negotiation balances (new allocate received, new request received). 
     
     
     def seek_to_sell_power(self, time, power_amt):
@@ -547,7 +561,9 @@ Second priority: Negotiation balances (new allocate received, new request receiv
 
     ##
     # The grid controller is also responsible for writing its batteries calculations. Additionally, the grid controller
-    # checks the turth
+    # checks the accuracy of its calculations by making sure the the difference in battery charge levels fully
+    # covers the difference in the power in and power out levels.
+
     def device_specific_calcs(self):
 
         MARGIN_OF_ERROR = .1

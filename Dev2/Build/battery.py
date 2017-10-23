@@ -38,10 +38,10 @@ class Battery(object):
     # @param preferred charge rate the preferred rate of charge for this battery. Defaults to max charge rate
     # @param preferred discharge rate the preferred discharge rate for this battery. Defaults to max discharge rate
     # @param starting_soc the state of charge on initialization. Default 50%
-    # @param update_frequency how frequently to update the state of this battery. Defaults to every 20 minutes (1200s)
+    # @param update_frequency how frequently to update the state of this battery. Defaults to every 5 minutes (300s)
 
     def __init__(self, battery_id, price_logic, capacity, max_charge_rate, max_discharge_rate,
-                 preferred_charge_rate=None, preferred_discharge_rate=None, starting_soc=0.5, update_frequency=1200):
+                 preferred_charge_rate=None, preferred_discharge_rate=None, starting_soc=1.0, update_frequency=300):
 
         self._battery_id = battery_id
         self._charging_preference = self.BatteryChargingPreference.NEUTRAL
@@ -171,7 +171,7 @@ class Battery(object):
     # @param price_stat the representative statistic to use to calculate it?
     def recalc_charge_preference(self):
 
-        BATTERY_LOG_FREQUENCY = 7200  # log battery state every two hours minimum
+        BATTERY_LOG_FREQUENCY = 7200  # log battery state every 10 min max.
         old_preference = self._charging_preference
 
         if type(self._price_logic) == BatteryPriceLogicA:
@@ -185,10 +185,16 @@ class Battery(object):
         if old_preference != self._charging_preference:
             self._logger.info(self.build_battery_log_notation(
                 "changed from {}".format(old_preference)))
+        else:
+            self._logger.info(self.build_battery_log_notation(
+                "unchanged charge preference"))
+        self._last_log_update_time = self._time
+        """
         elif self._time - self._last_log_update_time > BATTERY_LOG_FREQUENCY:
             self._logger.info(self.build_battery_log_notation(
                 "unchanged charge preference"))
             self._last_log_update_time = self._time
+        """
 
     # _____________________ BATTERY SPECIFIC LOGGING ________________________________ #
     ##

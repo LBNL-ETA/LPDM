@@ -115,7 +115,7 @@ class Simulation:
 
         DEFAULT_MAX_CHARGE_RATE = 1000.0  # 1000W default
         DEFAULT_MAX_DISCHARGE_RATE = 1000.0  # 1000W default
-        DEFAULT_UPDATE_RATE = 1200  # Update every 20 minutes by default
+        DEFAULT_UPDATE_RATE = 300  # Update every 5 minutes by default
         DEFAULT_CAPACITY = 10000.0  # Default battery capacity 10000 WH. (10 kWh)
         DEFAULT_STARTING_SOC = 0.5  # Default battery starts at 50% charge
 
@@ -235,7 +235,7 @@ class Simulation:
             msg_latency = int(override_args.get('devices.{}.message_latency'.format(eud_id), msg_latency))
             start_time = eud.get('start_time', 0)
             start_time = int(override_args.get('devices.{}.start_time'.format(eud_id), start_time))
-            modulation_interval = eud.get('modulation_interval', 600)
+            modulation_interval = eud.get('modulation_interval', 0)  # Default to 0 = do not use modulation.
             modulation_interval = int(override_args.get('devices.{}.modulation_interval'.format(eud_id),
                                                         modulation_interval))
             connected_devices = eud.get('connected_devices', None)

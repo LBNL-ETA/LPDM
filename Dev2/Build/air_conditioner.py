@@ -1,4 +1,4 @@
-################################################################################################################################
+########################################################################################################################
 # *** Copyright Notice ***
 #
 # "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v1.0"
@@ -7,7 +7,7 @@
 #
 # If you have questions about your rights to use or distribute this software, please contact
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
-################################################################################################################################
+########################################################################################################################
 
 """
 A simple model of a 'smart' air conditioner.
@@ -66,7 +66,6 @@ class AirConditionerSimple(Eud):
 
     ##
     # @param temperature_schedule a list of tuples of (time, temperature) for outdoor temperatures.
-    # TODO: Where is this? What do we do with it?
     def schedule_outdoor_temperature_events(self, temperature_schedule, total_runtime):
         curr_day = 0  # The current day in seconds
         while curr_day < total_runtime:
@@ -112,7 +111,7 @@ class AirConditionerSimple(Eud):
                 # if the compressor is on adjust the internal temperature due to cooling
                 delta_c = delta_t * self._compressor_cooling_rate
                 self._current_temperature -= delta_c
-                self._logger.debug(self.build_log_notation(
+                self._logger.info(self.build_log_notation(
                     message="compressor adjustment", tag="comp_delta_c", value=delta_c))
 
             # calculate the indoor delta_t due to the outdoor temperature
@@ -122,7 +121,7 @@ class AirConditionerSimple(Eud):
                 delta_indoor_outdoor = self._current_outdoor_temperature - self._current_temperature
                 delta_c = delta_t * delta_indoor_outdoor * self._heat_exchange_rate
                 self._current_temperature += delta_c
-                self._logger.debug(self.build_log_notation(
+                self._logger.info(self.build_log_notation(
                         message="Internal temperature", tag="internal_temperature", value=self._current_temperature))
 
             self._last_temperature_update_time = self._time

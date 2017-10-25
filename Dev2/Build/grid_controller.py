@@ -52,7 +52,7 @@ class GridController(Device):
 
         # dictionary of devices and requests that this device has received from them.
         # Only is added to when this grid controller could not provide the full quantity in response.
-        # TODO: Reevaluate this.
+        # TODO: Reevaluate this. Should it be full of all devices, some with 0?
         # Negative values are requests for this GC to provide, positive are for this GC to receive.
         self._requested = {}
 
@@ -66,6 +66,7 @@ class GridController(Device):
         self._threshold_alloc_in = min_alloc_response_threshold * battery.get_max_charge_rate()
         # the minimum allocate response to a positive request message (for this device to provide)
         self._threshold_alloc_out = min_alloc_response_threshold * battery.get_max_discharge_rate()
+        self._total_runtime = total_runtime
 
         if price_logic == "weighted_average":
             self._price_logic = GCWeightedAveragePriceLogic(price_logic_interval, starting_price,
@@ -80,6 +81,7 @@ class GridController(Device):
         self.setup_price_calc_schedule(self._price_logic.get_price_history_interval(), total_runtime)
 
         self.setup_battery_update_schedule(self._battery.get_update_frequency(), total_runtime)
+        self.setup_modulation_schedule(total_runtime)
 
     #  ______________________________________Maintenance Functions______________________________________ #
 
@@ -316,8 +318,13 @@ class GridController(Device):
                 if load < 0:
                     # Treat each load like it is a new demand. Try to recalibrate without using the utility meter.
                     self.balance_power(source, 0, load)
+        elif self._battery.get_current_soc() >= 1 and curr_battery_load > 0:
+            self._battery.clear_load()
+            for source, load in self._loads.copy().items():  # Copy so that we don't modify the dictionary during iter
+                if load > 0:
+                    # Treat each load like it is a new demand. Try to recalibrate without using the utility meter.
+                    self.balance_power(source, 0, load)
 
-    # TODO: If battery SOC is 1 and being charged into. What behavior?
 
 
     ##
@@ -475,7 +482,7 @@ class GridController(Device):
         # Returns a value, available, which is after load balancing how much it has available to distribute.
         # If it still is in need of power, this quantity will be 0.
 
-        net_load = self._power_in - self._power_out
+        net_load = self._power_in - self._power_out  # Should be equivalent to battery's current load.
         # modulate_target is the net load that the GC is seeking to charge or discharge the battery.
 
         desired_net_load = self._battery.get_optimal_charge_rate()
@@ -483,11 +490,11 @@ class GridController(Device):
         if nonzero_power(power_adjust):
             if power_adjust < 0:
                 self.seek_to_distribute_power(power_adjust)
-            if power_adjust > 0:
+            elif power_adjust > 0:
                 self.seek_to_obtain_power(power_adjust)
 
-    # TODO: This is temporary version
     def seek_to_obtain_power(self, power_adjust):
+
         utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
         if power_adjust <= 0:
             return
@@ -500,6 +507,8 @@ class GridController(Device):
             remaining -= (new_utm_load - prev_utm_load)
             if remaining <= 0:
                 break
+        self._battery.add_load(power_adjust - remaining)
+        # Set battery to whatever amount could be offset.
 
     def seek_to_distribute_power(self, power_adjust):
         utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
@@ -511,9 +520,10 @@ class GridController(Device):
             self.change_load(utm, prev_utm_load + remaining)
             new_utm_load = self._loads[utm]
             self.send_power_message(utm, new_utm_load)
-            remaining -= (prev_utm_load - new_utm_load)
+            remaining -= (new_utm_load - prev_utm_load)
             if remaining >= 0:
                 break
+        self._battery.add_load(power_adjust - remaining)
 
     """
 
@@ -573,7 +583,7 @@ class GridController(Device):
 
     def device_specific_calcs(self):
 
-        MARGIN_OF_ERROR = .1
+        MARGIN_OF_ERROR = .01 * self._total_runtime  # Allow for more accumulated error over the course of longer runs.
         # Write out all battery consumptions statistics
         if self._battery:
             self._logger.info(self.build_log_notation(

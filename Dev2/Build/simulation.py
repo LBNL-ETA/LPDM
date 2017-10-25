@@ -86,6 +86,9 @@ class Simulation:
             min_alloc_response_threshold = gc.get('threshold_alloc', 1)
             min_alloc_response_threshold = float(override_args.get('devices.{}.threshold_alloc'.format(gc_id),
                                                                    min_alloc_response_threshold))
+            price_announce_threshold = gc.get('price_announce_threshold', .01)
+            price_announce_threshold = float(override_args.get('devices.{}.threshold_alloc'.format(gc_id),
+                                                               price_announce_threshold))
 
             schedule = gc.get('schedule', None)
             connected_devices = gc.get('connected_devices', None)
@@ -99,7 +102,8 @@ class Simulation:
                 battery = None
             new_gc = GridController(device_id=gc_id, supervisor=self.supervisor, battery=battery,
                                     msg_latency=msg_latency, price_logic=price_logic, schedule=schedule,
-                                    min_alloc_response_threshold=min_alloc_response_threshold, total_runtime=runtime)
+                                    min_alloc_response_threshold=min_alloc_response_threshold,
+                                    price_announce_threshold=price_announce_threshold, total_runtime=runtime)
             # make a new grid controller and register it with the supervisor
             self.supervisor.register_device(new_gc)
         return connections

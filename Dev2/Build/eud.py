@@ -38,7 +38,11 @@ class Eud(Device):
         self._in_operation = False
         # flag to determine whether we use request-allocate model or immediate power.
         self._power_direct = power_direct
+        # Record when we get price messages. Avoid responding to flurries of messages unless significantly different.
+        self._last_price_message_time = 0
+        # Reevaluate this device's power and its sources at a given interval
         self.setup_modulation_schedule(modulation_interval, total_runtime)
+
 
     # ___________________ BASIC FUNCTIONS ________________
 
@@ -125,8 +129,14 @@ class Eud(Device):
     ##
     # Method to be called after the EUD receives a price message from a grid controller, immediately updating its price.
     def process_price_message(self, sender_id, new_price):
+        prev_price = self._price
+        price_delta = abs(new_price - prev_price)
         self._price = new_price  # EUD always updates its value to the price it receives.
-        self.modulate_power()
+
+        if (self._time - self._last_price_message_time > 1) or (price_delta > 0.02):
+            # Only modulate power if we haven't received a message recently or new price is verry different
+            self.modulate_power()
+        self._last_price_message_time = self._time
 
     ##
     # Method to be called once device has allocated to provide a given quantity of power to another device,

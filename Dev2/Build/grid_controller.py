@@ -40,7 +40,7 @@ class GridController(Device):
 
     def __init__(self, device_id, supervisor, time=0, msg_latency=0,
                  price_logic="", price_logic_interval=SECONDS_IN_HOUR, starting_price=0.1,
-                 price_announce_threshold=0.02, battery=None, min_alloc_response_threshold=1.0,
+                 price_announce_threshold=0.01, battery=None, min_alloc_response_threshold=1.0,
                  schedule=None, total_runtime=SECONDS_IN_DAY, connected_devices=None):
         # identifier = "gc{}".format(device_id)
         super().__init__(device_id=device_id, device_type="grid_controller", supervisor=supervisor,
@@ -185,14 +185,20 @@ class GridController(Device):
             self.send_price_message(sender_id, self._price)
 
     ##
+    # Processes a power message, indicating power flows have changed. First, instantaneously responds
+    # to that power flow with balance power. Then, adjusts its price based on new power flows, and
+    # finally tries to shift its power in a more optimal way.
     # @param sender_id the device which sent the power message
     # @param new_power the new power value from the perspective of the message sender.
 
     def process_power_message(self, sender_id, new_power):
+        min_delta = 2  # Don't recalculate prices for power changes smaller than this. TODO: Make this Trickle Power.
+
         prev_power = self._loads[sender_id] if sender_id in self._loads.keys() else 0
-        self.modulate_price()
         self.balance_power(sender_id, prev_power, -new_power)  # process new power from perspective of receiver.
-        self.modulate_power()
+        if abs(new_power - prev_power) > min_delta:
+            self.modulate_price()
+            self.modulate_power()
     ##
     # Processes a price message received from another device, modifying its own price based on its price logic.
     #
@@ -352,7 +358,8 @@ class GridController(Device):
             self._logger.info(self.build_log_notation(message="price changed to {}".format(self._price),
                                                       tag="price change", value=self._price))
             # broadcast only if significant change price.
-            if self._price - old_price >= self._price_logic.get_price_announce_threshold():
+            price_delta = abs(self._price - old_price)
+            if price_delta >= self._price_logic.get_price_announce_threshold():
                 self.broadcast_new_price(self._price)
 
     ##
@@ -776,7 +783,7 @@ class GCWeightedAveragePriceLogic(GridControllerPriceLogic):
             for source, load in loads.items():
                 if load > 0:  # receiving power from this entity
                     neighbor_price = neighbor_prices.get(source, 0)
-                    if neighbor_price:
+                    if neighbor_price >= 0:
                         total_load_in += load
                         sum_price += (neighbor_price * load)
             if total_load_in:

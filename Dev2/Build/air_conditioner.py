@@ -112,7 +112,7 @@ class AirConditionerSimple(Eud):
                 # if the compressor is on adjust the internal temperature due to cooling
                 delta_c = delta_t * self._compressor_cooling_rate
                 self._current_temperature -= delta_c
-                self._logger.info(self.build_log_notation(
+                self._logger.debug(self.build_log_notation(
                     message="compressor adjustment", tag="comp_delta_c", value=delta_c))
 
             # calculate the indoor delta_t due to the outdoor temperature
@@ -122,7 +122,7 @@ class AirConditionerSimple(Eud):
                 delta_indoor_outdoor = self._current_outdoor_temperature - self._current_temperature
                 delta_c = delta_t * delta_indoor_outdoor * self._heat_exchange_rate
                 self._current_temperature += delta_c
-                self._logger.info(self.build_log_notation(
+                self._logger.debug(self.build_log_notation(
                         message="Internal temperature", tag="internal_temperature", value=self._current_temperature))
 
             self._last_temperature_update_time = self._time
@@ -148,7 +148,7 @@ class AirConditionerSimple(Eud):
             return
 
         delta = self._current_temperature - self._set_point
-        self._logger.debug(self.build_log_notation(
+        self._logger.info(self.build_log_notation(
                           message="delta from setpoint: {}".format(delta), tag="delta_t", value=delta))
 
         if abs(delta) > self._temperature_max_delta:
@@ -205,9 +205,9 @@ class AirConditionerSimple(Eud):
     def respond_to_power(self, received_power):
         # We didn't get enough power to operate the compressor
         if received_power < self._compressor_operating_power:
-            self._logger.info(self.build_log_notation(
-                message="insufficient power to run compressor", tag="insufficient power", value=received_power))
             if self._compressor_is_on:
+                self._logger.info(self.build_log_notation(
+                    message="insufficient power to run compressor", tag="insufficient power", value=received_power))
                 self.turn_off_compressor()
 
     def device_specific_calcs(self):

@@ -157,6 +157,13 @@ class GridController(Device):
             self.add_event(Event(self.update_battery), curr_time)
             curr_time += update_frequency
 
+    def setup_modulation_schedule(self, total_runtime):
+        modulation_frequency = 300  # Default 5 Minutes.
+        curr_time = self._time
+        while curr_time < total_runtime:
+            self.add_event(Event(self.modulate_power), curr_time)
+            curr_time += modulation_frequency
+
     #  ______________________________________ Messaging/Interactive Functions_________________________________#
 
     ##
@@ -183,7 +190,7 @@ class GridController(Device):
         prev_power = self._loads[sender_id] if sender_id in self._loads.keys() else 0
         self.modulate_price()
         self.balance_power(sender_id, prev_power, -new_power)  # process new power from perspective of receiver.
-        #self.modulate_power()
+        self.modulate_power()
     ##
     # Processes a price message received from another device, modifying its own price based on its price logic.
     #
@@ -193,7 +200,7 @@ class GridController(Device):
     def process_price_message(self, sender_id, price):
         self._neighbor_prices[sender_id] = price
         self.modulate_price()  # if price significantly changed, will broadcast this price to all neighbors.
-        # self.modulate_power()  # TODO: THIS FUNCTION IS UNBUILT.
+        self.modulate_power()  # TODO: THIS FUNCTION IS UNBUILT.
 
     ##
     # Processes a request message from an EUD or another GC.
@@ -761,7 +768,7 @@ class GCWeightedAveragePriceLogic(GridControllerPriceLogic):
                     neighbor_price = neighbor_prices.get(source, 0)
                     if neighbor_price:
                         total_load_in += load
-                        sum_price += neighbor_price * load
+                        sum_price += (neighbor_price * load)
             if total_load_in:
                 return sum_price / total_load_in
         # insufficient information on neighbor prices or no current loads in, return starting price

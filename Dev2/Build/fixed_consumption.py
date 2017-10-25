@@ -7,10 +7,10 @@ from Build.eud import Eud
 class FixedConsumption(Eud):
 
     def __init__(self, device_id, supervisor, total_runtime, modulation_interval, desired_power_level,
-                 schedule=None, time=0, msg_latency=0):
+                 schedule=None, multiday=0, time=0, msg_latency=0):
         super().__init__(device_id=device_id, device_type="fixed_consumption", supervisor=supervisor,
                          time=time, msg_latency=msg_latency, schedule=schedule,
-                         total_runtime=total_runtime, modulation_interval=modulation_interval)
+                         total_runtime=total_runtime, multiday=multiday, modulation_interval=modulation_interval)
         self._desired_power_level = desired_power_level
 
     ##

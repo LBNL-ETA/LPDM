@@ -117,8 +117,8 @@ class Battery(object):
     # @param extra_load the load to add from battery's perspective (positive charge, negative discharge)
     # @param return whatever value was added to the battery's load (may not be full val.
     def add_load(self, extra_load):
-        if self._current_soc <= 0 and extra_load < 0:
-            return 0  # don't discharge when too low
+        if self._current_soc <= 0.0 and extra_load < 0:
+            return 0  # don't discharge when too low.
         if self._current_soc >= 1.0 and extra_load > 0:
             return 0  # don't charge when too high
         old_load = self._load

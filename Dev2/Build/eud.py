@@ -26,9 +26,9 @@ from abc import abstractmethod
 class Eud(Device):
 
     def __init__(self, device_id, device_type, supervisor, total_runtime, time=0, msg_latency=0, power_direct=False,
-                 modulation_interval=600, schedule=None, connected_devices=None):
+                 multiday=0, modulation_interval=600, schedule=None, connected_devices=None):
         super().__init__(device_id, device_type, supervisor, time=time, msg_latency=msg_latency, schedule=schedule,
-                         connected_devices=connected_devices)
+                         multiday=multiday, total_runtime=total_runtime, connected_devices=connected_devices)
         # Dictionary of devices and how much this EUD has been allocated by those devices. All values must be positive
         self._allocated = {}
         # Dictionary of devices and how much power this EUD is currently receiving from those entities

@@ -27,14 +27,15 @@ class AirConditionerSimple(Eud):
     # @param heat_exchange_rate the rate of change in temperature as a result of the difference between internal and
     # external temperature
     # @param price_to_setpoint a list of lists of price, setpoint for this device to modify setpoint based on price
-    def __init__(self, device_id, supervisor, msg_latency=0, schedule=None, total_runtime=SECONDS_IN_DAY, time=0,
+    def __init__(self, device_id, supervisor, msg_latency=0, schedule=None, multiday=0, total_runtime=SECONDS_IN_DAY,
+                 time=0,
                  connected_devices=None, compressor_operating_power=500.0, initial_temp=25.0, temp_max_delta=0.5,
                  initial_set_point=23.0, price_to_setpoint=None, temperature_schedule=None, precooling_enabled=False,
                  precooling_price_threshold=None, compressor_cooling_rate=2.0, heat_exchange_rate=0.1,
                  modulation_interval=600, temperature_update_interval=300):
 
         super().__init__(device_id, "air_conditioner", supervisor, msg_latency=msg_latency, time=time,
-                         modulation_interval=modulation_interval, total_runtime=total_runtime,
+                         modulation_interval=modulation_interval, total_runtime=total_runtime, multiday=multiday,
                          schedule=schedule, connected_devices=connected_devices)
 
         self._compressor_operating_power = compressor_operating_power

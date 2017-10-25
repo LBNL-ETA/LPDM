@@ -56,8 +56,8 @@ class Device(metaclass=ABCMeta):
     # @param msg_latency the delay time before this device processes a received message.
     # @param connected_devices a list of connected devices for this Device.
 
-    def __init__(self, device_id, device_type, supervisor, time=0, msg_latency=0, schedule=None,
-                 connected_devices=None):
+    def __init__(self, device_id, device_type, supervisor, time=0, msg_latency=0, schedule=None, multiday=0,
+                 total_runtime=SECONDS_IN_DAY, connected_devices=None):
 
         # TODO: Add all_devices dictionary, which is idea of physical connection. Will be a dictionary of devices to
         # TODO... wires. That device can then register at any point later on in the simulation.
@@ -80,7 +80,7 @@ class Device(metaclass=ABCMeta):
         self._sum_power_in = 0.0  # Record the total energy produced by this device (wH)
 
         if schedule:
-            self.setup_schedule(schedule)
+            self.setup_schedule(schedule, multiday=multiday, runtime=total_runtime)
 
         self._logger = logging.getLogger("lpdm")  # Setup logging
         self._logger.info(
@@ -360,16 +360,32 @@ class Device(metaclass=ABCMeta):
     # time(seconds), operation_name
     #
     # TODO: REVISE THIS.
-    def setup_schedule(self, scheduled_events):
-        for task in scheduled_events:
-            hour, operation_name = tuple(task)
-            if hasattr(self, operation_name):
-                func = getattr(self, operation_name)
-            else:
-                raise ValueError("Called the scheduler with an incorrectly named function")
-            event = Event(func)  # for now no arguments. TODO: list should be of tuples (time, func, args).
-            time_sec = hour * 3600
-            self.add_event(event, time_sec)
+    def setup_schedule(self, scheduled_events, runtime=SECONDS_IN_DAY, multiday=0):
+        curr_day = 0
+        if multiday:
+            while curr_day < runtime:
+                for task in scheduled_events:
+                    hour, operation_name = tuple(task)
+                    if hour > multiday * 24:
+                        break # Past our repeat interval
+                    if hasattr(self, operation_name):
+                        func = getattr(self, operation_name)
+                    else:
+                        raise ValueError("Called the scheduler with an incorrectly named function")
+                    event = Event(func)  # for now no arguments. TODO: list should be of tuples (time, func, args).
+                    time_sec = hour * 3600
+                    self.add_event(event, curr_day + time_sec)
+                curr_day += SECONDS_IN_DAY
+        else:
+            for task in scheduled_events:
+                hour, operation_name = tuple(task)
+                if hasattr(self, operation_name):
+                    func = getattr(self, operation_name)
+                else:
+                    raise ValueError("Called the scheduler with an incorrectly named function")
+                event = Event(func)  # for now no arguments. TODO: list should be of tuples (time, func, args).
+                time_sec = hour * 3600
+                self.add_event(event, time_sec)
 
     # _____________________________ LOGGING FUNCTIONALITY ____________________________ #
 
@@ -440,10 +456,8 @@ def nonzero_power(power_level):
 
 # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
-# TODO: Test that the PV is working.
-# TODO: Review price logics again.
-# TODO: Get Air Conditioner Fully Working (new file IO, etc.)
 # TODO: Change the EUD's so that turn_off and shut down are different functions.
+# TODO: Change back the Battery load adding function.
 # TODO: (2) SCHEDULING CHANGES:
     #  Change scheduling to allow for multiday schedules, etc.
 # TODO: (3.5) Utility meter communicates buy-sell price to GC.

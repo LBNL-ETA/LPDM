@@ -14,22 +14,22 @@
 
 """
 
-from Build.device import Device
+from Build.device import Device, SECONDS_IN_DAY
 from Build.event import Event
 from Build.message import Message, MessageType
 
 
 class UtilityMeter(Device):
 
-    def __init__(self, device_id, supervisor, msg_latency=0, schedule=None, price_schedule=None,
-                 connected_devices=None):
+    def __init__(self, device_id, supervisor, msg_latency=0, schedule=None, runtime=SECONDS_IN_DAY, multiday=0,
+                 price_schedule=None, price_multiday=0, connected_devices=None):
         super().__init__(device_id, "Utility Meter", supervisor, msg_latency=msg_latency, schedule=schedule,
-                         connected_devices=connected_devices)
+                         connected_devices=connected_devices, total_runtime=runtime, multiday=multiday)
         self._loads = {}  # dictionary of devices and loads to those devices.
         self._sell_price = 0
         self._buy_price = 0
         if price_schedule:
-            self.setup_price_schedule(price_schedule)
+            self.setup_price_schedule(price_schedule, multiday=price_multiday, runtime=runtime)
 
     # Turn the utility meter on.
     def turn_on(self):
@@ -56,11 +56,22 @@ class UtilityMeter(Device):
     # Adds a price schedule for this utility
     # @oaram price_schedule a list of price, hour tuples that the utility sets its price at
     #
-    def setup_price_schedule(self, price_schedule):
-        for hour, price in price_schedule:
-            price_event = Event(self.set_sell_price, price)
-            time_sec = int(hour) * 3600
-            self.add_event(price_event, time_sec)
+    def setup_price_schedule(self, price_schedule, multiday=0, runtime=SECONDS_IN_DAY):
+        curr_day = 0
+        if multiday:
+            while curr_day < runtime:
+                for hour, price in price_schedule:
+                    if hour > multiday * 24:
+                        break
+                    price_event = Event(self.set_sell_price, price)
+                    time_sec = int(hour) * 3600 + curr_day
+                    self.add_event(price_event, time_sec)
+                curr_day += multiday * SECONDS_IN_DAY
+        else:
+            for hour, price in price_schedule:
+                price_event = Event(self.set_sell_price, price)
+                time_sec = int(hour) * 3600
+                self.add_event(price_event, time_sec)
 
     # __________________________________ Messaging Functions _______________________ #
 

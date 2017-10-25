@@ -142,7 +142,7 @@ class Simulation:
     #  Make a new utility meter and registers it with supervisor, recording all of that device's connections
     # @param config the configuration dictionary derived from the input JSON file
     # @param override_args a dictionary of override arguments
-    def read_utility_meters(self, config, override_args):
+    def read_utility_meters(self, config, runtime, override_args):
         connections = []  # a list of tuples of (utm, [connections]) to initialize later once all devices are set.
 
         # TODO: Incorporate new scheduling
@@ -154,12 +154,19 @@ class Simulation:
             msg_latency = int(override_args.get('devices.{}.message_latency'.format(utm_id), msg_latency))
             connected_devices = utm.get('connected_devices', None)
             schedule = utm.get('schedule', None)
+            multiday = schedule.get('multiday', 0) if schedule else 0
+            schedule_items = schedule.get('items', None) if schedule else None
+
             price_schedule = utm.get('price_schedule', None)
+            price_multiday = price_schedule.get('multiday', 0) if price_schedule else 0
+            price_schedule_items = price_schedule.get('items', None) if price_schedule else None
             if connected_devices:
                 connections.append((utm_id, connected_devices))
 
             new_utm = UtilityMeter(device_id=utm_id, supervisor=self.supervisor,
-                                   msg_latency=msg_latency, schedule=schedule, price_schedule=price_schedule)
+                                   msg_latency=msg_latency, schedule=schedule_items, runtime=runtime,
+                                   multiday=multiday,
+                                   price_schedule=price_schedule_items, price_multiday=price_multiday)
             self.supervisor.register_device(new_utm)
         return connections
 
@@ -223,7 +230,7 @@ class Simulation:
     # which has a list of the names of different unique construction parameters for each EUD, and then tries to find
     # the values for those
 
-    def read_euds(self, config, total_runtime, override_args):
+    def read_euds(self, config, runtime, override_args):
         connections = []
         if 'euds' not in config['devices'].keys():
             return connections
@@ -240,6 +247,9 @@ class Simulation:
                                                         modulation_interval))
             connected_devices = eud.get('connected_devices', None)
             schedule = eud.get('schedule', None)
+            multiday = schedule.get('multiday', 0) if schedule else 0
+            schedule_items = schedule.get('items', None) if schedule else None
+
             if connected_devices:
                 connections.append((eud_id, connected_devices))
 
@@ -269,8 +279,8 @@ class Simulation:
                         eud_specific_args[argument] = data
 
             new_eud = eud_class(device_id=eud_id, supervisor=self.supervisor, time=start_time, msg_latency=msg_latency,
-                                total_runtime=total_runtime, modulation_interval=modulation_interval,
-                                schedule=schedule, **eud_specific_args)
+                                total_runtime=runtime, modulation_interval=modulation_interval,
+                                schedule=schedule_items, multiday=multiday, **eud_specific_args)
             self.supervisor.register_device(new_eud)
 
         return connections
@@ -293,10 +303,10 @@ class Simulation:
         self.end_time = 24 * 60 * 60 * run_time_days  # end time in seconds
 
         # reads in and creates all the simulation devices before registering them
-        connections = [self.read_grid_controllers(self.config, self.end_time, overrides),
-                       self.read_utility_meters(self.config, overrides),
-                       self.read_pvs(self.config, self.end_time, overrides),
-                       self.read_euds(self.config, self.end_time, overrides)]
+        connections = [self.read_grid_controllers(config=self.config, runtime=self.end_time, override_args=overrides),
+                       self.read_utility_meters(config=self.config, runtime=self.end_time, override_args=overrides),
+                       self.read_pvs(config=self.config, runtime=self.end_time, override_args=overrides),
+                       self.read_euds(config=self.config, runtime=self.end_time, override_args=overrides)]
 
         # TODO: Change this so that it takes into account them turning on, not just sending register messages.
         for connect_list in connections:

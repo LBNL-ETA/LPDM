@@ -1,5 +1,5 @@
 {
-    "run_time_days": 1,
+    "run_time_days": 101,
     "log_to_postgres": 1,
     "console_log_level": 20,
     "file_log_level": 20,
@@ -45,10 +45,9 @@
                     "multiday": 0, 
                     "items": [[0, "turn_on"]]
                 }, 
-                "price_schedule": 
-                {
-                    "multiday": 0, 
-                    "items": [[0, 0.1]]
+                "price_schedule": {
+                    "multiday": 1, 
+                    "items": [[0, 0.10], [11, 0.05], [15, 0.10], [17, 0.15], [23, 0.10]]
                 }
             }
         ],
@@ -62,7 +61,7 @@
                     "multiday": 0, 
                     "items": [[0, "turn_on"]] 
                 }, 
-                "price_to_setpoint": [[0.10, 22.0]], 
+                "price_to_setpoint": [[0.05, 18.0], [0.10, 22.0], [0.15, 30.0]], 
                 "compressor_operating_power": 1000.0,
                 "precooling_enabled": false,
                 "initial_temp": 25.0,
@@ -89,7 +88,7 @@
                 }, 
                 "compressor_operating_power": 500.0,
                 "precooling_enabled": false,
-                "price_to_setpoint": [[0.10, 21.0]],
+                "price_to_setpoint": [[0.05, 17.0], [0.10, 21.0], [0.15, 29.0]],
                 "initial_temp": 25.0,
                 "temp_max_delta": 0.5,
                 "initial_set_point": 23.0,

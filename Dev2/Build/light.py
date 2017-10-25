@@ -22,10 +22,11 @@ from Build.eud import Eud
 
 class Light(Eud):
 
-    def __init__(self, device_id, supervisor, total_runtime=SECONDS_IN_DAY, modulation_interval=7200,
+    def __init__(self, device_id, supervisor, total_runtime=SECONDS_IN_DAY, multiday=0, modulation_interval=7200,
                  msg_latency=0, time=0, schedule=None, connected_devices=None, max_operating_power=100.0,
                  power_level_max=1.0, power_level_low=0.2, price_dim_start=0.1, price_dim_end=0.2, price_off=0.3):
         super().__init__(device_id=device_id, device_type="light", supervisor=supervisor, total_runtime=total_runtime,
+                         multiday=multiday,
                          modulation_interval=modulation_interval, msg_latency=msg_latency, time=time,
                          schedule=schedule, connected_devices=connected_devices)
         self._max_operating_power = max_operating_power  # the device's ideal maximum power usage

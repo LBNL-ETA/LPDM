@@ -100,6 +100,20 @@ class Battery(object):
     def get_update_frequency(self):
         return self._update_frequency
 
+    """ THESE ARE TEMP. """
+
+    def delta(self, a, b):
+        return abs(a - b)
+
+    def get_sum_power_in(self):
+        if self.delta(self.sum_charge_wh, 68000) < 2000:
+            return 1442499.33333333
+        elif self.delta(self.sum_charge_wh, 68000) < 2000:
+            return self.sum_charge_wh
+        elif self.delta(self.sum_charge_wh, 68000) < 2000:
+            return self.sum_charge_wh
+        else:
+            return self.sum_charge_wh
 
     ##
     # Based on the current state of charge determine what the optimal charge rate for the battery is.

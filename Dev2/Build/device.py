@@ -457,10 +457,7 @@ def nonzero_power(power_level):
 # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
 # TODO: Change the EUD's so that turn_off and shut down are different functions.
-# TODO: Change back the Battery load adding function.
-# TODO: (2) SCHEDULING CHANGES:
-    #  Change scheduling to allow for multiday schedules, etc.
-# TODO: (3.5) Utility meter communicates buy-sell price to GC.
+# TODO: (3.5) Utility meter communicates separate buy-sell prices to GC.
 # TODO: Add back in uuid.  DEFAULT UUID IS 1000 + counter, default device id is type_uuid.
 ##### # TODO: (2.5) Compare results against an old Mike model.
 #####   TODO: (3) 2-price model for utility meter, all messaging (with extended value options). Test again

@@ -20,11 +20,12 @@ from enum import Enum
 
 class Message(object):
 
-    def __init__(self, time, sender_id, message_type, value):
+    def __init__(self, time, sender_id, message_type, value, extra_info=None):
         self.time = time  # timestamp of message in milliseconds
         self.sender_id = sender_id  # identify sender by their device ID.
         self.message_type = message_type  # Message type object, defined below.
         self.value = value  # the quantity associated with the messages (all messages are a quantity)
+        self.extra_info = extra_info  # extra information associated with this message.
 
 
 ##

@@ -83,9 +83,11 @@ class Simulation:
             # gc_uuid = gc.get(uuid, 0)
             msg_latency = gc.get('message_latency', self.DEFAULT_MESSAGE_LATENCY)
             msg_latency = int(override_args.get('devices.{}.message_latency'.format(gc_id), msg_latency))
+
             min_alloc_response_threshold = gc.get('threshold_alloc', 1)
             min_alloc_response_threshold = float(override_args.get('devices.{}.threshold_alloc'.format(gc_id),
                                                                    min_alloc_response_threshold))
+
             price_announce_threshold = gc.get('price_announce_threshold', .01)
             price_announce_threshold = float(override_args.get('devices.{}.threshold_alloc'.format(gc_id),
                                                                price_announce_threshold))
@@ -143,13 +145,18 @@ class Simulation:
         return battery
 
     ##
+    # Takes the input of a list of 'buy prices' and a list of 'sell prices' and gets interleaves them into a list
+    # of (time, buy, sell) prices, keeping prices constant from previous readins. 
+    def make_buy_sell_schedule(self, sell_schedule, buy_schedule):
+        pass
+
+
+    ##
     #  Make a new utility meter and registers it with supervisor, recording all of that device's connections
     # @param config the configuration dictionary derived from the input JSON file
     # @param override_args a dictionary of override arguments
     def read_utility_meters(self, config, runtime, override_args):
         connections = []  # a list of tuples of (utm, [connections]) to initialize later once all devices are set.
-
-        # TODO: Incorporate new scheduling
         if 'utility_meters' not in config['devices'].keys():
             return connections
         for utm in config['devices']['utility_meters']:
@@ -161,9 +168,14 @@ class Simulation:
             multiday = schedule.get('multiday', 0) if schedule else 0
             schedule_items = schedule.get('items', None) if schedule else None
 
-            price_schedule = utm.get('price_schedule', None)
-            price_multiday = price_schedule.get('multiday', 0) if price_schedule else 0
-            price_schedule_items = price_schedule.get('items', None) if price_schedule else None
+            sell_price_schedule = utm.get('sell_price_schedule', None)
+            sell_price_multiday = sell_price_schedule.get('multiday', 0) if sell_price_schedule else 0
+            sell_price_schedule_items = sell_price_schedule.get('items', None) if sell_price_schedule else None
+
+            buy_price_schedule = utm.get('buy_price_schedule', None)
+            buy_price_multiday = buy_price_schedule.get('multiday', 0) if buy_price_schedule else 0
+            buy_price_schedule_items = buy_price_schedule.get('items', None) if buy_price_schedule else None
+
             if connected_devices:
                 connections.append((utm_id, connected_devices))
 

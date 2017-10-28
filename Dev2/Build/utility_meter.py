@@ -35,41 +35,34 @@ class UtilityMeter(Device):
     def turn_on(self):
         self._logger.info(self.build_log_notation("Turning on utility meter", "turn_on", 1))
 
-    ##
-    # Sets the price of the utility meter, and then broadcasts that new price to all connected devices.
-    # @param price the new price to set it to.
-    #
-    def set_sell_price(self, sell_price):
-        self._sell_price = sell_price
-        self._logger.info(self.build_log_notation("set sell price", "set sell price", sell_price))
-        self.broadcast_price_levels(sell_price)  # TODO: Needs to communicate BOTH buy and sell prices.
-
-    ##
-    # Sets the buy price of the utility meter.
-
-    def set_buy_price(self, buy_price):
-        self._buy_price = buy_price
-        self._logger.info(self.build_log_notation("set buy price", "set buy price", buy_price))
-
+    def set_prices(self, sell_price=None, buy_price=None):
+        if sell_price:
+            self._sell_price = sell_price
+            self._logger.info(self.build_log_notation("set sell price", "set sell price", sell_price))
+        if buy_price:
+            self._buy_price = buy_price
+            self._logger.info(self.build_log_notation("set buy price", "set buy price", buy_price))
+        self.broadcast_price_levels(self._sell_price, self._buy_price)
 
     ##
     # Adds a price schedule for this utility
-    # @oaram price_schedule a list of price, hour tuples that the utility sets its price at
+    # @oaram price_schedule a list of hour, sell_price, buy_price tuples that the utility sets its price at
+    # @param multiday how many days of the scheduling to set as a repeating
     #
     def setup_price_schedule(self, price_schedule, multiday=0, runtime=SECONDS_IN_DAY):
         curr_day = 0
         if multiday:
             while curr_day < runtime:
-                for hour, price in price_schedule:
-                    if hour > multiday * 24:
+                for hour, sell_price, buy_price in price_schedule:
+                    if hour > (multiday * 24):
                         break
-                    price_event = Event(self.set_sell_price, price)
-                    time_sec = int(hour) * 3600 + curr_day
+                    price_event = Event(self.set_prices, sell_price, buy_price)
+                    time_sec = (int(hour) * 3600) + curr_day
                     self.add_event(price_event, time_sec)
                 curr_day += multiday * SECONDS_IN_DAY
         else:
-            for hour, price in price_schedule:
-                price_event = Event(self.set_sell_price, price)
+            for hour, sell_price, buy_price in price_schedule:
+                price_event = Event(self.set_prices, sell_price, buy_price)
                 time_sec = int(hour) * 3600
                 self.add_event(price_event, time_sec)
 
@@ -90,7 +83,7 @@ class UtilityMeter(Device):
     #
     # @param new_price the new price value
 
-    def process_price_message(self, sender_id, new_price):
+    def process_price_message(self, sender_id, new_price, extra_info):
         pass  # utility does not change its price based on prices of devices.
 
     ##
@@ -120,25 +113,25 @@ class UtilityMeter(Device):
 
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
-    def send_price_message(self, target_id, price):
+    def send_price_message(self, target_id, sell_price, buy_price):
         if target_id in self._connected_devices.keys():
             target = self._connected_devices[target_id]
         else:
             raise ValueError("This Utility Meter is connected to no such device")
 
         self._logger.info(self.build_log_notation(message="price msg to {}".format(target_id),
-                                                  tag="price message", value=price))
+                                                  tag="price message", value="{}, {}".format(sell_price, buy_price)))
 
-        target.receive_message(Message(self._time, self._device_id, MessageType.PRICE, price))
+        target.receive_message(Message(self._time, self._device_id, MessageType.PRICE,
+                                       value=sell_price, extra_info=buy_price))
 
     ##
     # Informs all connected devices of the utility meter's buy price
     # @param price the price to broadcast to all connected devices
-    # TODO: Broadcast both a separate buy and sell price.
 
-    def broadcast_price_levels(self, price):
+    def broadcast_price_levels(self, sell_price, buy_price):
         for device_id in self._connected_devices.keys():
-            self.send_price_message(device_id, price)
+            self.send_price_message(device_id, sell_price, buy_price)
     ##
     # TODO: Give the utm an average price statistic to calculate.
     #

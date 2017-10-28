@@ -58,8 +58,10 @@ class GridController(Device):
 
         # dictionary of devices and the current load of the GC with that device.
         self._loads = {}
-        # dictionary of connected device_id's and their most recent price value
+        # dictionary of connected device_id's and their most recent price value. For utility, this contains sell price.
         self._neighbor_prices = {}
+        # A dictionary of utilities to their sell and buy prices, respectively.
+        self._utility_prices={}
         # the battery contained within this grid controller.
         self._battery = battery
         # the minimum allocate response to a negative request message (for this device to receive)
@@ -205,7 +207,9 @@ class GridController(Device):
     # @param sender_id the sender of the message
     # @param price the local price received from the message sender
 
-    def process_price_message(self, sender_id, price):
+    def process_price_message(self, sender_id, price, extra_info):
+        if sender_id.startswith("utm"): # Incorporate differing buy and sell prices
+            self._utility_prices[sender_id] = (price, extra_info)
         self._neighbor_prices[sender_id] = price
         self.modulate_price()  # if price significantly changed, will broadcast this price to all neighbors.
         self.modulate_power()  # TODO: THIS FUNCTION IS UNBUILT.

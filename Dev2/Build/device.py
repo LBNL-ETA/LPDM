@@ -239,7 +239,7 @@ class Device(metaclass=ABCMeta):
                 if message.message_type == MessageType.POWER:
                     self.process_power_message(message.sender_id, message.value)
                 elif message.message_type == MessageType.PRICE:
-                    self.process_price_message(message.sender_id, message.value)
+                    self.process_price_message(message.sender_id, message.value, message.extra_info)
                 elif message.message_type == MessageType.ALLOCATE:
                     self.process_allocate_message(message.sender_id, message.value)
                 elif message.message_type == MessageType.REQUEST:
@@ -327,8 +327,10 @@ class Device(metaclass=ABCMeta):
     #
     # @param sender_id the sender of the message informing of the new price
     # @param new_price the new price value
+    # @param extra_info additional information contained in this price message. From the utility meter,
+    # this is its buy prices, from other devices this can be price forecast information.
     @abstractmethod
-    def process_price_message(self, sender_id, new_price):
+    def process_price_message(self, sender_id, new_price, extra_info):
         pass
 
     ##
@@ -480,3 +482,4 @@ def nonzero_power(power_level):
 # LONGER TERM:
 # TODO: (20) Finish considering GC load balance algorithm
 # TODO: (21) Reconsider price forecasts.
+

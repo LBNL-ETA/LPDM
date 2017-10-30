@@ -182,7 +182,7 @@ class Simulation:
             new_utm = UtilityMeter(device_id=utm_id, supervisor=self.supervisor,
                                    msg_latency=msg_latency, schedule=schedule_items, runtime=runtime,
                                    multiday=multiday,
-                                   price_schedule=price_schedule_items, price_multiday=price_multiday)
+                                   price_schedule=sell_price_schedule_items, price_multiday=sell_price_multiday)
             self.supervisor.register_device(new_utm)
         return connections
 

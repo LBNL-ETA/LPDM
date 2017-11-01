@@ -367,6 +367,7 @@ class Device(metaclass=ABCMeta):
         if multiday:
             while curr_day < runtime:
                 for task in scheduled_events:
+                    # TODO: hour, operation_name, *args = tuple(task)
                     hour, operation_name = tuple(task)
                     if hour > multiday * 24:
                         break # Past our repeat interval
@@ -374,7 +375,7 @@ class Device(metaclass=ABCMeta):
                         func = getattr(self, operation_name)
                     else:
                         raise ValueError("Called the scheduler with an incorrectly named function")
-                    event = Event(func)  # for now no arguments. TODO: list should be of tuples (time, func, args).
+                    event = Event(func)  # for now no arguments. TODO: Event(func, *args) if args else Event(func)
                     time_sec = hour * 3600
                     self.add_event(event, curr_day + time_sec)
                 curr_day += SECONDS_IN_DAY
@@ -459,27 +460,28 @@ def nonzero_power(power_level):
 # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
 # TODO: Change the EUD's so that turn_off and shut down are different functions.
-# TODO: (3.5) Utility meter communicates separate buy-sell prices to GC.
-# TODO: Add back in uuid.  DEFAULT UUID IS 1000 + counter, default device id is type_uuid.
-##### # TODO: (2.5) Compare results against an old Mike model.
-#####   TODO: (3) 2-price model for utility meter, all messaging (with extended value options). Test again
-# TODO: Incorporate the linear/nondirect power reduction done by the battery when overtextended
-
+# TODO: Change Grid Controller's input file "threshold_alloc" to "threshold
+# TODO: Add back in uuid.  DEFAULT UUID IS 1000 + counter, default device id is type_uuid.n
 # TODO: Redesign/Refactor EUD's modulate power value.
 # TODO: (11) Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
-# TODO: (11.5) Allow Device Setup Schedule to include arguments in its schedule list.
+# TODO: Change the
+# TODO: Allow for "precomputation" of temperature thresholds and update events in the future (Air conditioner)
 # TODO: (12) Refactor from "Build" to "Physical Layer" and "Simulation Library". Code cleanup. Documentation
-# TODO: (13) Add in "Fx" EUD.
 # TODO: (14) Add capability of adding physical layer connections to ensure that we can include wire connections.
 # TODO: (15) Then, change the input model so that register messages are not sent in creating simulation.
-# TODO: (16) Port in all other EUD's to be able to run all old tests (HVAC and Refrigerator not included)?
 # TODO: (17) Global variables of trickle power, power_direct.
-# TODO: (18) Get to some form of backwards compatibility with the dashboard.
+# TODO: (18) Get to some form of backwards compatibility with the dashboard (TODO: Mike). 
 # TODO: (19) If device wants to enter the grid at a later point in time, allow to add an "engage" to its schedule
 # TODO: (20) Maximum channel capacity for Grid Controllers.
 # TODO: (21) Air conditioner linear interpolate of price/set point
 
+# TODO: (22) MARGINAL PRICE LOGIC.
+
 # LONGER TERM:
+# TODO: Incorporate the linear/nondirect power reduction done by the battery when overtextended
 # TODO: (20) Finish considering GC load balance algorithm
 # TODO: (21) Reconsider price forecasts.
+# TODO: (11.5) Allow Device Setup Schedule to include arguments in its schedule list.
+# TODO: Start doing multiple GC test scenarios.
 
+# TODO: Change around

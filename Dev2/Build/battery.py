@@ -100,21 +100,6 @@ class Battery(object):
     def get_update_frequency(self):
         return self._update_frequency
 
-    """ THESE ARE TEMP. """
-
-    def delta(self, a, b):
-        return abs(a - b)
-
-    def get_sum_power_in(self):
-        if self.delta(self.sum_charge_wh, 68000) < 2000:
-            return 1442499.33333333
-        elif self.delta(self.sum_charge_wh, 68000) < 2000:
-            return self.sum_charge_wh
-        elif self.delta(self.sum_charge_wh, 68000) < 2000:
-            return self.sum_charge_wh
-        else:
-            return self.sum_charge_wh
-
     ##
     # Based on the current state of charge determine what the optimal charge rate for the battery is.
     def get_optimal_charge_rate(self):
@@ -185,7 +170,7 @@ class Battery(object):
     # @param price_stat the representative statistic to use to calculate it?
     def recalc_charge_preference(self):
 
-        BATTERY_LOG_FREQUENCY = 7200  # log battery state every 10 min max.
+        BATTERY_LOG_FREQUENCY = 7200  # log battery state every 2 hours maximum
         old_preference = self._charging_preference
 
         if type(self._price_logic) == BatteryPriceLogicA:
@@ -199,16 +184,10 @@ class Battery(object):
         if old_preference != self._charging_preference:
             self._logger.info(self.build_battery_log_notation(
                 "changed from {}".format(old_preference)))
-        else:
-            self._logger.info(self.build_battery_log_notation(
-                "unchanged charge preference"))
-        self._last_log_update_time = self._time
-        """
         elif self._time - self._last_log_update_time > BATTERY_LOG_FREQUENCY:
             self._logger.info(self.build_battery_log_notation(
                 "unchanged charge preference"))
             self._last_log_update_time = self._time
-        """
 
     # _____________________ BATTERY SPECIFIC LOGGING ________________________________ #
     ##

@@ -198,7 +198,7 @@ class Device(metaclass=ABCMeta):
             if time_stamp < self._time:
                 raise ValueError("Time was incremented while there was an unprocessed event.")
             while time_stamp == self._time and self.has_upcoming_event():
-                # process current events.
+                # process current events. Skylar was here.
                 self._queue.pop()
                 event.run_event()
                 if self.has_upcoming_event():
@@ -361,7 +361,7 @@ class Device(metaclass=ABCMeta):
     # @param a list of scheduled events to add to the device's queue, in the format of list of list of
     # time(seconds), operation_name
     #
-    # TODO: REVISE THIS.
+    # TODO: REVISE THIS. Also include non-hourly.
     def setup_schedule(self, scheduled_events, runtime=SECONDS_IN_DAY, multiday=0):
         curr_day = 0
         if multiday:
@@ -410,7 +410,8 @@ class Device(metaclass=ABCMeta):
         )
 
     ##
-    # Writes the calculations of total energy used in KwH to the database
+    # Writes the calculations of total energy in and out of this device in wH to the log file
+    # then writes any other calculations specific to the device-type.
 
     def write_calcs(self):
         self._logger.info(self.build_log_notation(
@@ -426,7 +427,7 @@ class Device(metaclass=ABCMeta):
         self.device_specific_calcs()
 
     ##
-    # All device specific power consumption statistics are added here
+    # All device specific power consumption/runtime statistics are added here
     @abstractmethod
     def device_specific_calcs(self):
         pass
@@ -441,47 +442,32 @@ class Device(metaclass=ABCMeta):
         self.set_power_out(0.0)
         self.write_calcs()
 
-
-MIN_NONZERO_POWER = 0.01  # minimum value for power levels to be considered nonzero (to avoid floating point error).
-
-##
-# All power requests, unsatisfied power responses, and fluctuations that occur in the range of less than
-# the min nonzero power are likely caused by floating point error and will be ignored by all devices.
-# @param power_level the power level to determine whether it is significantly large to be considered nonzero
-# @return a boolean value whether this power_level is significantly nonzero
-
-
-def nonzero_power(power_level):
-    return abs(power_level) > MIN_NONZERO_POWER
-
-
 # _____________________________________________________________________ #
 
 # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
+# TODO: Refactor ordering...
+# TODO: Fix events to have multiple arguments.
+# TODO: Reorder balance power battery add algorithm.
 # TODO: Change the EUD's so that turn_off and shut down are different functions.
-# TODO: Change Grid Controller's input file "threshold_alloc" to "threshold
-# TODO: Add back in uuid.  DEFAULT UUID IS 1000 + counter, default device id is type_uuid.n
+# TODO: Create a visual graph output for debugging purposes.
+# TODO: Change Grid Controller's input file "threshold_alloc" to "minimum allocate response".
+# TODO: Make it so the grid controller has a capacity limit, and this is the percentage that EUD gives as response.
+# TODO: Reevaluate the Request Response Algorithm? Simplify it for now.
+# TODO: MARGINAL PRICE LOGIC.
 # TODO: Redesign/Refactor EUD's modulate power value.
-# TODO: (11) Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
-# TODO: Change the
+# TODO: Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
 # TODO: Allow for "precomputation" of temperature thresholds and update events in the future (Air conditioner)
-# TODO: (12) Refactor from "Build" to "Physical Layer" and "Simulation Library". Code cleanup. Documentation
+# TODO: (12) Refactor from "Build" to "Physical Layer" and "Simulation Library".
 # TODO: (14) Add capability of adding physical layer connections to ensure that we can include wire connections.
-# TODO: (15) Then, change the input model so that register messages are not sent in creating simulation.
-# TODO: (17) Global variables of trickle power, power_direct.
-# TODO: (18) Get to some form of backwards compatibility with the dashboard (TODO: Mike). 
-# TODO: (19) If device wants to enter the grid at a later point in time, allow to add an "engage" to its schedule
-# TODO: (20) Maximum channel capacity for Grid Controllers.
 # TODO: (21) Air conditioner linear interpolate of price/set point
-
-# TODO: (22) MARGINAL PRICE LOGIC.
 
 # LONGER TERM:
 # TODO: Incorporate the linear/nondirect power reduction done by the battery when overtextended
 # TODO: (20) Finish considering GC load balance algorithm
 # TODO: (21) Reconsider price forecasts.
-# TODO: (11.5) Allow Device Setup Schedule to include arguments in its schedule list.
 # TODO: Start doing multiple GC test scenarios.
 
-# TODO: Change around
+# Daniel Changes:
+# TODO: Incorporate base class of Grid Controller. All other devices inherit from the grid controller.
+

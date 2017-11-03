@@ -23,3 +23,5 @@ if __name__ == "__main__":
         sim.run_simulation(sys.argv[1], [])
     else:
         raise FileNotFoundError("Must enter a configuration filename")
+
+    # TODO: Create a graphing function here.

@@ -17,7 +17,8 @@
     it is connected to.
 """
 
-from Build.device import Device, SECONDS_IN_DAY, nonzero_power
+from Build.device import Device
+from Build.support import SECONDS_IN_DAY, nonzero_power
 from Build.event import Event
 from Build.message import Message, MessageType
 from abc import abstractmethod
@@ -42,7 +43,6 @@ class Eud(Device):
         self._last_price_message_time = 0
         # Reevaluate this device's power and its sources at a given interval
         self.setup_modulation_schedule(modulation_interval, total_runtime)
-
 
     # ___________________ BASIC FUNCTIONS ________________
 
@@ -132,8 +132,8 @@ class Eud(Device):
         prev_price = self._price
         price_delta = abs(new_price - prev_price)
         self._price = new_price  # EUD always updates its value to the price it receives.
-
-        if self._time - self._last_price_message_time > 1 or price_delta > 0.02:
+        # TODO: Change this hardcoded value to somewhere
+        if self._time - self._last_price_message_time >= 5 or price_delta > 0.02:
             # Only modulate power if we haven't received a message recently or new price is very different
             self.modulate_power()
         self._last_price_message_time = self._time
@@ -288,6 +288,8 @@ class Eud(Device):
     def update_state(self):
         pass
 
+    ##
+    # All device specific end-of-simulation calculations are EUD-specific.
     @abstractmethod
     def device_specific_calcs(self):
         pass

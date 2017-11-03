@@ -1,9 +1,8 @@
 {
     "run_time_days": 101,
-    "log_to_postgres": 1,
     "console_log_level": 20,
     "file_log_level": 20,
-    "pg_log_level": 10,
+    "database_log_level": 10,
     "devices": {
         "grid_controllers": [
             {

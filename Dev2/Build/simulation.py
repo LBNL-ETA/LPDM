@@ -23,27 +23,27 @@ from Build.fixed_consumption import FixedConsumption
 from Build.simulation_logger import SimulationLogger
 from Build.pv import PV
 
+from Build.support import SECONDS_IN_DAY
 
 import json
 import logging
-import sys
 import os
 
 # TODO: GLOBAL VARIABLES FOR TRICKLE POWER. POWER DIRECT.
 
 
-class Simulation:
+class SimulationSetup:
 
-    DEFAULT_MESSAGE_LATENCY = 0
+    DEFAULT_MESSAGE_LATENCY = 0   # If not specified devices will have no message delay
 
     ##
-    # Create an instance of the
-    def __init__(self):
+    # Create an instance of the Simulation Setup class, which will contain the supervisor who will orchestrate
+    # the simulation
+    # @param supervisor the supervisor for this simulation
+    def __init__(self, supervisor):
         self.end_time = 0  # time until which to run simulation. Update this in setup_simulation.
-        self.log_manager = None
-        self.config = None
-        self.supervisor = None
-        # A dictionary of eud class names and their respective constructor input names to read from json (in order)
+        self.supervisor = supervisor   # Supervisor class orchestrating the simulation.
+        # A dictionary of eud class names and their respective constructor input names to read from the JSON file
         self.eud_dictionary = {
             'light': [Light, 'max_operating_power', 'power_level_max', 'power_level_low', 'price_dim_start',
                       'price_dim_end', 'price_off'],
@@ -54,24 +54,41 @@ class Simulation:
             'fixed_consumption': [FixedConsumption, 'desired_power_level']
         }
 
+    ##
+    # Reads in the configuration JSON and
     def read_config_file(self, filename):
         with open(filename, 'r') as config_file:
-            self.config = json.load(config_file)
-
-    def setup_logging(self, config_file, override_args):
-        self.log_manager = SimulationLogger(
-            console_log_level=self.config.get("console_log_level", logging.DEBUG),
-            file_log_level=self.config.get("file_log_level", logging.DEBUG),
-            pg_log_level=self.config.get("pg_log_level", logging.DEBUG),
-            log_to_postgres=self.config.get("log_to_postgres", False),
-            log_format=self.config.get("log_format", None)
-        )
-        self.log_manager.init(config_file, override_args)
+            return json.load(config_file)
 
     ##
-    #
-    # @param runtime the length of running the simulation, used for GC's to setup their price calc schedules and
-    def read_grid_controllers(self, config, runtime, override_args):
+    # Sets up the logging for the simulation by
+    # @param config_filename the name of the input JSON file to be
+
+    def setup_logging(self, config_filename, config, override_args):
+        log_manager = SimulationLogger(
+            console_log_level=config.get("console_log_level", logging.INFO),  # Default to less info at console
+            file_log_level=config.get("file_log_level", logging.DEBUG),
+            database_log_level=config.get("database_log_level", logging.DEBUG),
+            log_to_database=config.get("log_to_database", False),
+        )
+        log_manager.initialize_logging(config_filename, override_args)
+
+    #  ________________________JSON READ-IN/DEVICE-INITIALIZATION FUNCTIONS ____________________________________________
+
+    """ Below are a collection of read-in functions, which parse their respective portions of the JSON and create 
+    instances of their respective classes, report those devices to the simulation supervisor, 
+    and record all the connections between devices which will then be initiated after all the devices are created. 
+    """
+
+    ##
+    # Reads in information from the parameter dictionary, makes all specified grid controllers and registers them with
+    # the supervisor, recording each of their connections
+    # @param config the configuration dictionary derived from the input JSON file
+    # @param runtime duration of the simulation (used by grid controllers for internal scheduling).
+    # @param override_args a dictionary of override arguments
+    # @return list of tuples of GC_id's, list of that device's connected devices.
+
+    def make_grid_controllers(self, config, runtime, override_args):
 
         connections = []  # a list of tuples of (gc, [connections]) to initialize later once all devices are set.
         if 'grid_controllers' not in config['devices'].keys():
@@ -84,12 +101,12 @@ class Simulation:
             msg_latency = gc.get('message_latency', self.DEFAULT_MESSAGE_LATENCY)
             msg_latency = int(override_args.get('devices.{}.message_latency'.format(gc_id), msg_latency))
 
-            min_alloc_response_threshold = gc.get('threshold_alloc', 1)
+            min_alloc_response_threshold = gc.get('threshold_alloc', 1.0)
             min_alloc_response_threshold = float(override_args.get('devices.{}.threshold_alloc'.format(gc_id),
                                                                    min_alloc_response_threshold))
 
             price_announce_threshold = gc.get('price_announce_threshold', .01)
-            price_announce_threshold = float(override_args.get('devices.{}.threshold_alloc'.format(gc_id),
+            price_announce_threshold = float(override_args.get('devices.{}.price_announce_threshold'.format(gc_id),
                                                                price_announce_threshold))
 
             schedule = gc.get('schedule', None)
@@ -99,7 +116,7 @@ class Simulation:
 
             batt_info = gc.get('battery', None)
             if batt_info:
-                battery = self.read_batteries(battery_info=batt_info, gc_id=gc_id, override_args=override_args)
+                battery = self.make_battery(battery_info=batt_info, gc_id=gc_id, override_args=override_args)
             else:
                 battery = None
             new_gc = GridController(device_id=gc_id, supervisor=self.supervisor, battery=battery,
@@ -111,13 +128,14 @@ class Simulation:
         return connections
 
     ##
-    # Reads in the JSON information about a battery.
+    # Reads in the JSON information about a battery and creates a battery class.
     # @param battery_info a dictionary of parameter-value information about a battery retrieved from the
     # input JSON file.
     # @param gc_id the id of the grid controller to associate this battery with
-    # @param override args a dictionary of override values to change the specific values to
-    #
-    def read_batteries(self, battery_info, gc_id, override_args):
+    # @param override_args a dictionary of override arguments
+    # @return the newly created battery
+
+    def make_battery(self, battery_info, gc_id, override_args):
 
         DEFAULT_MAX_CHARGE_RATE = 1000.0  # 1000W default
         DEFAULT_MAX_DISCHARGE_RATE = 1000.0  # 1000W default
@@ -145,17 +163,13 @@ class Simulation:
         return battery
 
     ##
-    # Takes the input of a list of 'buy prices' and a list of 'sell prices' and gets interleaves them into a list
-    # of (time, buy, sell) prices, keeping prices constant from previous readins. 
-    def make_buy_sell_schedule(self, sell_schedule, buy_schedule):
-        pass
-
-
-    ##
-    #  Make a new utility meter and registers it with supervisor, recording all of that device's connections
+    # Reads in information from the parameter dictionary, makes all specified utility meters and registers them with
+    # the supervisor, recording each of their connections
     # @param config the configuration dictionary derived from the input JSON file
     # @param override_args a dictionary of override arguments
-    def read_utility_meters(self, config, runtime, override_args):
+    # @param runtime the duration of the simulation (in seconds)
+
+    def make_utility_meters(self, config, runtime, override_args):
         connections = []  # a list of tuples of (utm, [connections]) to initialize later once all devices are set.
         if 'utility_meters' not in config['devices'].keys():
             return connections
@@ -181,15 +195,18 @@ class Simulation:
 
             new_utm = UtilityMeter(device_id=utm_id, supervisor=self.supervisor,
                                    msg_latency=msg_latency, schedule=schedule_items, runtime=runtime,
-                                   multiday=multiday,
-                                   price_schedule=sell_price_schedule_items, price_multiday=sell_price_multiday)
+                                   multiday=multiday, sell_price_schedule=sell_price_schedule_items,
+                                   sell_price_multiday=sell_price_multiday, buy_price_schedule=buy_price_schedule_items,
+                                   buy_price_multiday=buy_price_multiday)
             self.supervisor.register_device(new_utm)
         return connections
 
     ##
     # Reads in the PV csv data containing information about the proportion of power used at different times during
     # the simulation.
-    #
+    # @param filename the input filename containing a list of times and associated percentages of peak power
+    # @return a list of tuples of time (seconds), and power produced (watts).
+
     def read_pv_data(self, filename):
         data_out = []  # list of tuples of time and power ratios
         pv_data = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
@@ -206,8 +223,14 @@ class Simulation:
         return data_out
 
     ##
-    # Reads in the PV data from the input JSON
-    def read_pvs(self, config, runtime, override_args):
+    # Reads in information from the parameter dictionary, makes all specified PV's and registers them with
+    # the supervisor, recording each of their connections
+    # @param config the configuration input dictionary derived from the JSON parameter file
+    # @param runtime the duration of the simulation, in seconds (necessary for PV's internal scheduling)
+    # @param override_args dictionary of override arguments
+    # @return list of tuples of PV_id's, list of that device's connected devices.
+
+    def make_pvs(self, config, runtime, override_args):
         connections = []
         if 'pvs' not in config['devices'].keys():
             return connections
@@ -227,6 +250,11 @@ class Simulation:
             self.supervisor.register_device(new_pv)
         return connections
 
+    ##
+    # Reads in the air conditioner temperature data
+    # @param filename the name of the input CSV file, containing times and associated temperatures
+    # @return a list of tuples of time(seconds) and temperature (celcius).
+
     def read_air_conditioner_data(self, filename):
         data_out = []  # list of tuples of time and temperature values
         ac_data = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
@@ -244,9 +272,13 @@ class Simulation:
     # Reads in all the information from the JSON about all listed EUD's and creates their connections.
     # Since each EUD might have a different construction signature, this function references the "Eud Dictionary"
     # which has a list of the names of different unique construction parameters for each EUD, and then tries to find
-    # the values for those
+    # the values for those parameters in the configuration file
+    # @param config the configuration input dictionary derived from the JSON parameter file
+    # @param runtime the duration of the simulation (in seconds)
+    # @param override_args the dictionary of override arguments
+    # @return list of tuples of EUD_id's, list of that device's connected devices.
 
-    def read_euds(self, config, runtime, override_args):
+    def make_euds(self, config, runtime, override_args):
         connections = []
         if 'euds' not in config['devices'].keys():
             return connections
@@ -254,7 +286,7 @@ class Simulation:
             eud_id = eud['device_id']
             eud_type = eud['eud_type']
 
-            msg_latency = eud.get('message_latency', 0)
+            msg_latency = eud.get('message_latency', self.DEFAULT_MESSAGE_LATENCY)
             msg_latency = int(override_args.get('devices.{}.message_latency'.format(eud_id), msg_latency))
             start_time = eud.get('start_time', 0)
             start_time = int(override_args.get('devices.{}.start_time'.format(eud_id), start_time))
@@ -303,28 +335,35 @@ class Simulation:
 
     ##
     # Reads in the simulation json file and any override parameters, creating all the devices which will participate
-    # in the simulation.
-    #
-    # @param config_file the list
+    # in the simulation and then registering all connected devices with each other.
+    # @param config_file the name of the input JSON file (will be parsed in this function)
+    # @param override_args_list the list of unparsed override arguments passed into simulation arguments (of format
+    # 'device_X.parameter_Y=Z'
 
-    def setup_simulation(self, config_file, override_args):
-        self.read_config_file(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
-                              "scenario_data/{}".format(config_file)))
-        self.setup_logging(config_file, override_args)
+    def setup_simulation(self, config_file, override_args_list):
+        # Read in the JSON and turn it into a dictionary
+        param_dict = self.read_config_file(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+                                           "scenario_data/{}".format(config_file)))
 
-        overrides = self.parse_inputs_to_dict(override_args)
+        self.setup_logging(config_filename=config_file, config=param_dict, override_args=override_args_list)
 
-        run_time_days = self.config["run_time_days"]
+        # Transform the override list into a dictionary of override key, value dictionary
+        overrides = self.parse_inputs_to_dict(override_args_list)
+
+        run_time_days = param_dict['run_time_days']
         run_time_days = int(overrides.get('run_time_days', run_time_days))
-        self.end_time = 24 * 60 * 60 * run_time_days  # end time in seconds
+        self.end_time = SECONDS_IN_DAY * run_time_days
 
-        # reads in and creates all the simulation devices before registering them
-        connections = [self.read_grid_controllers(config=self.config, runtime=self.end_time, override_args=overrides),
-                       self.read_utility_meters(config=self.config, runtime=self.end_time, override_args=overrides),
-                       self.read_pvs(config=self.config, runtime=self.end_time, override_args=overrides),
-                       self.read_euds(config=self.config, runtime=self.end_time, override_args=overrides)]
+        if 'devices' not in param_dict.keys():
+            raise ValueError("Tried to run a simulation with no devices!")
 
-        # TODO: Change this so that it takes into account them turning on, not just sending register messages.
+        # Makes a list of all device's connections before registering them
+        connections = [self.make_grid_controllers(config=param_dict, runtime=self.end_time, override_args=overrides),
+                       self.make_utility_meters(config=param_dict, runtime=self.end_time, override_args=overrides),
+                       self.make_pvs(config=param_dict, runtime=self.end_time, override_args=overrides),
+                       self.make_euds(config=param_dict, runtime=self.end_time, override_args=overrides)]
+
+        # For each connection, register those devices with each other
         for connect_list in connections:
             for this_device_id, connects in connect_list:
                 this_device = self.supervisor.get_device(this_device_id)
@@ -335,14 +374,16 @@ class Simulation:
 
     ##
     # Takes a list of keyword arguments in the form of strings such as 'key=value' and outputs them as
-    # a dictionary of string to float values. These inputs must be float override values.
+    # a dictionary of string to string values. Ignores whitespace.
+    # @param args
 
     def parse_inputs_to_dict(self, args):
         arg_dict = {}
         for arg in args:
-            key_val = arg.split('=')
-            if len(key_val) == 2:
-                key, val = key_val
+            key_value = arg.split('=')
+            if len(key_value) == 2:
+                key_val_no_space = map(str.strip, key_value)  # ignore whitespace
+                key, val = key_val_no_space
                 arg_dict[key] = val
         return arg_dict
 
@@ -355,13 +396,13 @@ class Simulation:
 
 def run_simulation(config_file, override_args):
 
-    sim = Simulation()
-    sim.supervisor = Supervisor()
+    sim = SimulationSetup(supervisor=Supervisor())
     sim.setup_simulation(config_file, override_args)
 
     while sim.supervisor.has_next_event():
         device_id, time_stamp = sim.supervisor.peek_next_event()
         if time_stamp > sim.end_time:
+            # Reached end of simulation. Stop processing events
             break
         sim.supervisor.occur_next_event()
 

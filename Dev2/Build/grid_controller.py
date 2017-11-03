@@ -16,7 +16,8 @@ power sources (such as Utility and PV), storage (batteries), and other grid cont
 (for the purposes of allocating power efficiently between them."""
 
 
-from Build.device import Device, nonzero_power, SECONDS_IN_DAY, SECONDS_IN_HOUR
+from Build.device import Device
+from Build.support import SECONDS_IN_DAY, SECONDS_IN_HOUR, nonzero_power
 from Build.message import Message, MessageType
 from Build.battery import Battery
 from Build.event import Event
@@ -161,6 +162,11 @@ class GridController(Device):
             self.add_event(Event(self.update_battery), curr_time)
             curr_time += update_frequency
 
+    ##
+    # Every 5 minutes, reevaluate this Grid Controller's loads with modulate power and seek to optimize
+    # the distribution.
+    #
+
     def setup_modulation_schedule(self, total_runtime):
         modulation_frequency = 300  # Default 5 Minutes.
         curr_time = self._time
@@ -208,11 +214,11 @@ class GridController(Device):
     # @param price the local price received from the message sender
 
     def process_price_message(self, sender_id, price, extra_info):
-        if sender_id.startswith("utm"): # Incorporate differing buy and sell prices
+        if sender_id.startswith("utm"):  # Remember sell price, buy_price pair from utility meters
             self._utility_prices[sender_id] = (price, extra_info)
         self._neighbor_prices[sender_id] = price
         self.modulate_price()  # if price significantly changed, will broadcast this price to all neighbors.
-        self.modulate_power()  # TODO: THIS FUNCTION IS UNBUILT.
+        self.modulate_power()
 
     ##
     # Processes a request message from an EUD or another GC.
@@ -230,11 +236,10 @@ class GridController(Device):
         self.send_allocate_message(sender_id, provide)  # negative if allocating to send, positive if to receive.
         self._requested[sender_id] = -request_amt
         self.modulate_price()
-        # TODO: self.modulate_power() --  or maybe wait on this function until a later moment.
 
     def process_allocate_message(self, sender_id, allocate_amt):
         self._allocated[sender_id] = allocate_amt  # so we can consume or provide up to that amount of power anytime
-        # TODO: self.modulate_power() -- still unbuilt
+        # TODO: self.modulate_power()?
 
     ##
     # Sends a power message to another device
@@ -246,7 +251,6 @@ class GridController(Device):
             target = self._connected_devices[target_id]
         else:
             raise ValueError("This GC is connected to no such device")
-            # LOG THIS ERROR AND ALL ERRORS.
         self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
                                                   tag="power_msg", value=power_amt))
 
@@ -258,7 +262,6 @@ class GridController(Device):
             target = self._connected_devices[target_id]
         else:
             raise ValueError("This GC is connected to no such device")
-            # LOG THIS ERROR AND ALL ERRORS.
         self._logger.info(self.build_log_notation(message="PRICE to {}".format(target_id),
                                                   tag="price_msg", value=price))
         target.receive_message(Message(self._time, self._device_id, MessageType.PRICE, price))
@@ -268,7 +271,6 @@ class GridController(Device):
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("This GC is connected to no such device")
-            # LOG THIS ERROR AND ALL ERRORS.
         self._logger.info(self.build_log_notation(message="REQUEST to {}".format(target_id),
                                                   tag="request_msg", value=request_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
@@ -278,7 +280,6 @@ class GridController(Device):
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("This GC is connected to no such device")
-            # LOG THIS ERROR AND ALL ERRORS.
         self._logger.info(self.build_log_notation(message="ALLOCATE to {}".format(target_id),
                                                   tag="allocate_msg", value=allocate_amt))
         self._allocated[target_id] = allocate_amt
@@ -292,24 +293,6 @@ class GridController(Device):
 
     #  ______________________________________Internal State Functions _________________________________#
 
-
-    ##
-    # Reduces the power output of the Grid Controller by a set quantity, and returns value equal to whatever could not
-    # be reduced. Goes through all devices in order of UUID to determine priority, and reduces power linearly in order
-    # of UUID.
-    # @param reduce_amt the amount to curtail the output from this device (positive value)
-    def linear_reduce_power_output(self, reduce_amt):
-        loads_out = {device_id: load for device_id, load in self._loads.items() if load < 0}
-        for device_id in loads_out.keys():
-            # TODO: sort the device_ids by UUID.
-            # TODO: self._connected_devices[device_id].get_uuid()
-            pass
-
-    ##
-    # Reduces the power by a percentage for each device until the necessary threshold is hit.
-    def skim_reduce_power_output(self, reduce_amt):
-        pass
-
     ##
     # Update the current state of the battery. Call this function every five minutes or on price change.
     # Informs the battery of its average prices and hourly prices so that the battery can determine its charge
@@ -319,8 +302,8 @@ class GridController(Device):
         self._battery.update_state(self._time, self._price, self._price_logic.get_average_price(),
                                    self._price_logic.get_interval_prices())
 
-        # If the state is no longer possible (power drawn out with non-positive state-of-charge),
-        # we must immediately reduce).
+        # If the state is no longer possible (power drawn out with non-positive state-of-charge, or charging at full
+        # charge, we must immediately reduce).
         curr_battery_load = self._battery.get_load()
         if self._battery.get_current_soc() <= 0 and curr_battery_load < 0:
             self._battery.clear_load()
@@ -335,14 +318,14 @@ class GridController(Device):
                     # Treat each load like it is a new demand. Try to recalibrate without using the utility meter.
                     self.balance_power(source, 0, load)
 
-
-
     ##
     # Call this function every hour during the running of the simulation. This will reevaluate the current running
     # hourly price and total average price statistics so that it can base its current price based on those.
     def update_average_price_calcs(self):
         self._price_logic.update_prices(self._time)
 
+    ##
+    # Recalculates the price with the Grid Controller's price logic, and then sets the current price value.
     def recalculate_price(self):
         self._price = self._price_logic.calc_price(neighbor_prices=self._neighbor_prices,
                                                    loads=self._loads, requested=self._requested,
@@ -405,6 +388,7 @@ class GridController(Device):
                     if not nonzero_power(remaining):
                         break
 
+        # TODO: Try raising all allocate values up to their limits. Move battery adjustment to lower on list.
         # Try adding all the remaining demand onto the battery
         if nonzero_power(remaining) and self._battery:
             self.update_battery()  # make sure we have updated state of charge
@@ -414,7 +398,7 @@ class GridController(Device):
             if len(utility_meters):
                 utm = utility_meters[0]
                 prev_utm_load = self._loads[utm] if utm in self._loads.keys() else 0
-                self.change_load(utm, prev_utm_load - remaining)
+                self.change_load(utm, prev_utm_load - remaining)  # Skylar was here
                 new_utm_load = self._loads[utm]
                 self.send_power_message(utm, new_utm_load)
 
@@ -476,10 +460,10 @@ class GridController(Device):
     def request_response(self, request_amt):
         self.update_battery()
         trickle_power = 50.0  # TODO: Change this to global grid controller variable.
-        if request_amt > 0:  # must provide a negative quantity (this device to distribute)
+        if request_amt > 0:  # This device is being asked to distribute
             desired_response = self._battery.get_optimal_charge_rate() - self.get_allocate_assets()
             return max(min(desired_response, -self._threshold_alloc_out, -trickle_power), -request_amt)
-        else:  # must provide positive quantity (this device to receive)
+        else:  # This device is being asked to receive.
             desired_response = self._battery.get_optimal_charge_rate() + self.get_allocate_liabilities()
             return min(max(desired_response, self._threshold_alloc_in, trickle_power), -request_amt)
 
@@ -594,7 +578,9 @@ class GridController(Device):
 
     def device_specific_calcs(self):
 
-        MARGIN_OF_ERROR = .01 * self._total_runtime  # Allow for more accumulated error over the course of longer runs.
+        # Allow for more accumulated error over the course of longer runs.
+        MARGIN_OF_ERROR = .01 * (self._total_runtime / SECONDS_IN_DAY)
+
         # Write out all battery consumptions statistics
         if self._battery:
             self._logger.info(self.build_log_notation(
@@ -611,7 +597,7 @@ class GridController(Device):
             # Ensure that the change in power is completely covered by the battery for valid calculations
             power_differential = (self._battery.sum_discharge_wh - self._battery.sum_charge_wh) - \
                                  (self._sum_power_out - self._sum_power_in)
-            valid_calc = (power_differential <= MARGIN_OF_ERROR)
+            valid_calc = abs(power_differential) <= MARGIN_OF_ERROR
             self._logger.info(self.build_log_notation(
                 message="valid power balance: {}".format(valid_calc),
                 tag="valid_calcs",

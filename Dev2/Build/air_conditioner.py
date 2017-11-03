@@ -1,8 +1,8 @@
 ########################################################################################################################
 # *** Copyright Notice ***
 #
-# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v1.0"
-# Copyright (c) 2016, The Regents of the University of California, through Lawrence Berkeley National Laboratory
+# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v2.0"
+# Copyright (c) 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory
 # (subject to receipt of any required approvals from the U.S. Dept. of Energy).  All rights reserved.
 #
 # If you have questions about your rights to use or distribute this software, please contact
@@ -127,34 +127,19 @@ class AirConditionerSimple(Eud):
 
             self._last_temperature_update_time = self._time
 
-    # TODO: Remove/Replace this after equality test.
-    """
-    def precooling_update(self):
-        if self._precooling_enabled and not self._in_operation:
-            if self._precooling_price_threshold is None or self._price < self._precooling_price_threshold:
-                self._logger.info(self.build_log_notation(
-                    message="precooling device, price {}".format(self._price), tag="precool_on_off", value=1))
-                self.turn_on()
-        elif self._precooling_enabled and self._in_operation:
-            # precooling is enabled and the device is on
-            if not self.should_be_in_operation() and self._price >= self._precooling_price_threshold:
-                self._logger.info(self.build_log_notation(
-                    message="precooling device, price {}".format(self._price), tag="precool_on_off", value=0))
-                self.turn_off()
-    """
     # TODO: After equivalency test, change to compressor should be on.
     def control_compressor_operation(self):
         if self._set_point is None or not self._in_operation:
             return
 
         delta = self._current_temperature - self._set_point
-        self._logger.info(self.build_log_notation(
+        self._logger.debug(self.build_log_notation(
                           message="delta from setpoint: {}".format(delta), tag="delta_t", value=delta))
 
         if abs(delta) > self._temperature_max_delta:
             if delta > 0 and not self._compressor_is_on:
                 # if the current temperature is above the set point and compressor is off, turn it on
-                self._logger.info(self.build_log_notation(
+                self._logger.debug(self.build_log_notation(
                     message="temp: {}, setpoint: {}, above delta threshold".format(
                         self._current_temperature, self._set_point), tag="above_delta_threshold", value=delta))
 
@@ -162,7 +147,7 @@ class AirConditionerSimple(Eud):
 
             elif delta < 0 and self._compressor_is_on:
                 # if current temperature is below the set point and compressor is on, turn it off
-                self._logger.info(self.build_log_notation(
+                self._logger.debug(self.build_log_notation(
                     message="temp: {}, setpoint: {}, below delta threshold".format(
                         self._current_temperature, self._set_point), tag="below_delta_threshold", value=delta))
 
@@ -180,7 +165,7 @@ class AirConditionerSimple(Eud):
 
     def update_outdoor_temperature(self, new_temperature):
         self._logger.debug(self.build_log_notation(message="new outdoor temperature: {}".format(new_temperature),
-                                                  tag="new_temp", value=new_temperature))
+                                                   tag="new_temp", value=new_temperature))
         self._current_outdoor_temperature = new_temperature
 
     def end_internal_operation(self):

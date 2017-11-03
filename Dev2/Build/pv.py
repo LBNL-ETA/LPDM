@@ -69,7 +69,7 @@ class PV(Device):
     #
     # @param sender_id the sender of the message informing of the new price
     # @param new_price the new price value
-    def process_price_message(self, sender_id, new_price):
+    def process_price_message(self, sender_id, new_price, extra_info):
         pass
 
     ##

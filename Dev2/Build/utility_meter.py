@@ -139,7 +139,7 @@ class UtilityMeter(Device):
     ##
     #
     def send_power_message(self, target_id, power_amt):
-        if target_id in self._connected_devices.keys():
+        if target_id in self._connected_devices:
             target = self._connected_devices[target_id]
         else:
             raise ValueError("This Utility Meter is connected to no such device")
@@ -150,7 +150,7 @@ class UtilityMeter(Device):
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
     def send_price_message(self, target_id, sell_price, buy_price):
-        if target_id in self._connected_devices.keys():
+        if target_id in self._connected_devices:
             target = self._connected_devices[target_id]
         else:
             raise ValueError("This Utility Meter is connected to no such device")

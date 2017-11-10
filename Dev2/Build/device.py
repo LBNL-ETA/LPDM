@@ -52,13 +52,16 @@ class Device(metaclass=ABCMeta):
     # @param uuid the device's emergency shutdown priority
     # @param time device's local time, in seconds. This will be updated by the supervisor.
     # @param msg_latency the delay time before this device processes a received message.
-    # @param connected_devices a list of connected devices for this Device.
+    # @param connected_devices a list of the names of connected devices for this device.
 
     def __init__(self, device_id, device_type, supervisor, time=0, msg_latency=0, schedule=None, multiday=0,
                  total_runtime=SECONDS_IN_DAY, connected_devices=None):
 
         # TODO: Add all_devices dictionary, which is idea of physical connection. Will be a dictionary of devices to
         # TODO... wires. That device can then register at any point later on in the simulation.
+        self._konnected_devices = {}
+
+
         if connected_devices is None:
             self._connected_devices = {}
         else:
@@ -233,7 +236,7 @@ class Device(metaclass=ABCMeta):
                 "Read {} from {} with value {}".format(message.message_type, message.sender_id, message.value)))
             if message.message_type == MessageType.REGISTER:
                 self.process_register_message(message.sender_id, message.value)
-            elif message.sender_id in self._connected_devices.keys():  # Only read other messages from verified devices.
+            elif message.sender_id in self._connected_devices:  # Only read other messages from verified devices.
                 if message.message_type == MessageType.POWER:
                     self.process_power_message(message.sender_id, message.value)
                 elif message.message_type == MessageType.PRICE:
@@ -244,6 +247,19 @@ class Device(metaclass=ABCMeta):
                     self.process_request_message(message.sender_id, message.value)
                 else:
                     raise NameError('Unverified Message Type')
+    ##
+    # Connects one device to another
+    #
+    def connect_device(self, wire_type, device):
+
+        self._konnected_devices[device] = wire_type
+
+    ##
+    #
+    #
+    def disconnect_device(self, device):
+        if device in self._konnected_devices:
+            del self._konnected_devices[device]
 
     ##
     # Registers or unregisters a given device from the device's connected device list
@@ -252,7 +268,7 @@ class Device(metaclass=ABCMeta):
     # @param value positive to register, 0 or negative to unregister
 
     def register_device(self, device, device_id, value):
-        if value > 0 and device_id not in self._connected_devices.keys():
+        if value > 0 and device_id not in self._connected_devices:
             self._connected_devices[device_id] = device
             self._logger.info(
                 self.build_log_notation("registered {}".format(device_id))
@@ -274,7 +290,7 @@ class Device(metaclass=ABCMeta):
     # @param value positive if sender is registering negative if unregistering
 
     def process_register_message(self, sender_id, value):
-        if sender_id in self._connected_devices.keys():
+        if sender_id in self._connected_devices:
             sender = self._connected_devices[sender_id]
         else:
             sender = self._supervisor.get_device(sender_id)  # not in local table. Ask supervisor for the pointer to it.
@@ -286,7 +302,7 @@ class Device(metaclass=ABCMeta):
     # @param value positive if registering negative if unregistering
 
     def send_register_message(self, target_id, value):
-        if target_id in self._connected_devices.keys():
+        if target_id in self._connected_devices:
             target = self._connected_devices[target_id]
         else:
             raise ValueError("This device is not connected to the message recipient")
@@ -304,7 +320,7 @@ class Device(metaclass=ABCMeta):
     def engage(self, device_list):
         for device in device_list:
             device_id = device.get_id()
-            if device_id not in self._connected_devices.keys():
+            if device_id not in self._connected_devices:
                 self._connected_devices[device_id] = device
             self.send_register_message(device_id, 1)
 
@@ -345,7 +361,7 @@ class Device(metaclass=ABCMeta):
     # or to receive a given quantity of power. Allocation should only ever occur after request messages
     # have been passed and processed.
     #
-    # @param allocated_amt the amount this device has been allocated to consume (must be positive).
+    # @param allocated_amt the amount this device has been allocated to receive (must be positive).
     @abstractmethod
     def process_allocate_message(self, sender_id, allocate_amt):
         pass
@@ -444,26 +460,24 @@ class Device(metaclass=ABCMeta):
 
 # TODO: Refactor ordering...
 # TODO: Fix events to have multiple arguments.
-# TODO: Reorder balance power battery add algorithm.
 # TODO: Change the EUD's so that turn_off and shut down are different functions.
 # TODO: Create a visual graph output for debugging purposes.
 # TODO: Change Grid Controller's input file "threshold_alloc" to "minimum allocate response".
 # TODO: Make it so the grid controller has a capacity limit, and this is the percentage that EUD gives as response.
-# TODO: Reevaluate the Request Response Algorithm? Simplify it for now.
-# TODO: MARGINAL PRICE LOGIC.
-# TODO: Redesign/Refactor EUD's modulate power value.
-# TODO: Consider Event Model. If we want to update, add __eq__ method to Event so that we can replace them.
+# TODO: Test marginal price logic.
+# TODO: Add event_id to
 # TODO: Allow for "precomputation" of temperature thresholds and update events in the future (Air conditioner)
 # TODO: (12) Refactor from "Build" to "Physical Layer" and "Simulation Library".
 # TODO: (14) Add capability of adding physical layer connections to ensure that we can include wire connections.
 # TODO: (21) Air conditioner linear interpolate of price/set point
 
+
 # LONGER TERM:
+# TODO: Redesign/Refactor EUD's modulate power value.
+# TODO: Reorder balance power battery add algorithm.
 # TODO: Incorporate the linear/nondirect power reduction done by the battery when overtextended
 # TODO: (20) Finish considering GC load balance algorithm
 # TODO: (21) Reconsider price forecasts.
 # TODO: Start doing multiple GC test scenarios.
 
-# Daniel Changes:
-# TODO: Incorporate base class of Grid Controller. All other devices inherit from the grid controller.
 

@@ -49,21 +49,22 @@ class GridController(Device):
                          time=time, msg_latency=msg_latency, schedule=schedule, connected_devices=connected_devices)
 
         # dictionary of devices and the amount the GC has allocated/been allocated by/to them.
-        # negative values are how much this GC has allocated to others, positive for this GC has been allocated to take.
+        # Negative values are how much this GC has allocated to others, positive for this GC has been allocated to take.
         self._allocated = {}
 
         # dictionary of devices and requests that this device has received from them.
         # Only is added to when this grid controller could not provide the full quantity in response.
         # TODO: Reevaluate this. Should it be full of all devices, some with 0?
-        # Negative values are requests for this GC to provide, positive are for this GC to receive.
+        # Negative values are requests this GC has been asked provide,
+        # positive are requests this GC has made to other devices.
         self._requested = {}
 
         # dictionary of devices and the current load of the GC with that device.
         self._loads = {}
-        # dictionary of connected device_id's and their most recent price value. For utility, this contains sell price.
+        # dictionary of connected device_id's and their most recent price value. For utm, this only contains sell price.
         self._neighbor_prices = {}
         # A dictionary of utilities to their sell and buy prices, respectively.
-        self._utility_prices={}
+        self._utility_prices = {}
         # the battery contained within this grid controller.
         self._battery = battery
 
@@ -132,7 +133,7 @@ class GridController(Device):
     # TODO: Add a maximum channel capacity for this load.
     # @return the amount added to the load
     def change_load(self, sender_id, new_load):
-        prev_load = self._loads[sender_id] if sender_id in self._loads.keys() else 0
+        prev_load = self._loads[sender_id] if sender_id in self._loads else 0
         self.recalc_sum_power(prev_load, new_load)
         self._loads[sender_id] = new_load
         self._logger.debug(self.build_log_notation(message="load changed for {} to {}".format(sender_id, new_load),
@@ -185,7 +186,7 @@ class GridController(Device):
     # @param value positive if sender is registering negative if unregistering
 
     def process_register_message(self, sender_id, value):
-        if sender_id in self._connected_devices.keys():
+        if sender_id in self._connected_devices:
             sender = self._connected_devices[sender_id]
         else:
             sender = self._supervisor.get_device(sender_id)  # not in local table. Ask supervisor for the pointer to it.
@@ -202,7 +203,7 @@ class GridController(Device):
 
     def process_power_message(self, sender_id, new_power):
 
-        prev_power = self._loads[sender_id] if sender_id in self._loads.keys() else 0
+        prev_power = self._loads[sender_id] if sender_id in self._loads else 0
         self.balance_power(sender_id, prev_power, -new_power)  # process new power from perspective of receiver.
         if delta(new_power, prev_power) > self.TRICKLE_POWER:  # don't recalibrate for power changes smaller than this
             self.modulate_price()
@@ -256,7 +257,7 @@ class GridController(Device):
     # @param power_amt the quantity of the new power flow from this device's perspective
 
     def send_power_message(self, target_id, power_amt):
-        if target_id in self._connected_devices.keys():
+        if target_id in self._connected_devices:
             target = self._connected_devices[target_id]
         else:
             raise ValueError("This GC is connected to no such device")
@@ -269,7 +270,7 @@ class GridController(Device):
     #
     # Informs another device of this grid controller's price
     def send_price_message(self, target_id, price):
-        if target_id in self._connected_devices.keys():
+        if target_id in self._connected_devices:
             target = self._connected_devices[target_id]
         else:
             raise ValueError("This GC is connected to no such device")
@@ -280,7 +281,7 @@ class GridController(Device):
     ##
     # Requests to receive a given amount of power from another device.
     def send_request_message(self, target_id, request_amt):
-        if target_id in self._connected_devices.keys():
+        if target_id in self._connected_devices:
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("This GC is connected to no such device")
@@ -292,7 +293,7 @@ class GridController(Device):
     ##
     # Allocates a given quantity of power to be provided to another device.
     def send_allocate_message(self, target_id, allocate_amt):
-        if target_id in self._connected_devices.keys():
+        if target_id in self._connected_devices:
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("This GC is connected to no such device")
@@ -413,7 +414,7 @@ class GridController(Device):
         if nonzero_power(remaining):
             if len(utility_meters):
                 utm = utility_meters[0]
-                prev_utm_load = self._loads[utm] if utm in self._loads.keys() else 0
+                prev_utm_load = self._loads[utm] if utm in self._loads else 0
                 self.change_load(utm, prev_utm_load - remaining)  # Skylar was here
                 new_utm_load = self._loads[utm]
                 self.send_power_message(utm, new_utm_load)

@@ -47,7 +47,7 @@ class PV(Device):
                 self.send_power_message(device_id, -self._power_out)
 
     def send_power_message(self, target_id, power_amt):
-        if target_id in self._connected_devices.keys():
+        if target_id in self._connected_devices:
             target = self._connected_devices[target_id]
         else:
             raise ValueError("This PV is connected to no such device")

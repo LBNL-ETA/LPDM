@@ -91,7 +91,7 @@ class SimulationSetup:
     def make_grid_controllers(self, config, runtime, override_args):
 
         connections = []  # a list of tuples of (gc, [connections]) to initialize later once all devices are set.
-        if 'grid_controllers' not in config['devices'].keys():
+        if 'grid_controllers' not in config['devices']:
             return connections
 
         for gc in config['devices']['grid_controllers']:
@@ -171,7 +171,7 @@ class SimulationSetup:
 
     def make_utility_meters(self, config, runtime, override_args):
         connections = []  # a list of tuples of (utm, [connections]) to initialize later once all devices are set.
-        if 'utility_meters' not in config['devices'].keys():
+        if 'utility_meters' not in config['devices']:
             return connections
         for utm in config['devices']['utility_meters']:
             utm_id = utm['device_id']
@@ -232,7 +232,7 @@ class SimulationSetup:
 
     def make_pvs(self, config, runtime, override_args):
         connections = []
-        if 'pvs' not in config['devices'].keys():
+        if 'pvs' not in config['devices']:
             return connections
         for pv in config['devices']['pvs']:
             pv_id = pv['device_id']
@@ -280,7 +280,7 @@ class SimulationSetup:
 
     def make_euds(self, config, runtime, override_args):
         connections = []
-        if 'euds' not in config['devices'].keys():
+        if 'euds' not in config['devices']:
             return connections
         for eud in config['devices']['euds']:
             eud_id = eud['device_id']
@@ -305,7 +305,7 @@ class SimulationSetup:
             # get all the arguments for the eud constructor.
             eud_specific_args = {}
             for cls_arg in self.eud_dictionary[eud_type][1:]:
-                if cls_arg in eud.keys():
+                if cls_arg in eud:
                     eud_specific_args[cls_arg] = eud[cls_arg]
 
             # look for override values
@@ -354,7 +354,7 @@ class SimulationSetup:
         run_time_days = int(overrides.get('run_time_days', run_time_days))
         self.end_time = SECONDS_IN_DAY * run_time_days
 
-        if 'devices' not in param_dict.keys():
+        if 'devices' not in param_dict:
             raise ValueError("Tried to run a simulation with no devices!")
 
         # Makes a list of all device's connections before registering them

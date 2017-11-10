@@ -30,7 +30,7 @@ class Supervisor:
     # device that they do not recognize.
 
     def get_device(self, device_id):
-        if device_id in self._devices.keys():
+        if device_id in self._devices:
             return self._devices[device_id]
         else:
             raise ValueError("There is no such requested device in the simulation")
@@ -64,7 +64,7 @@ class Supervisor:
 
     def occur_next_event(self):
         device_id, time_of_next_event = self._event_queue.pop()
-        if device_id in self._devices.keys():
+        if device_id in self._devices:
             device = self._devices[device_id]
             device.update_time(time_of_next_event)  # set the device's local time to the time of next event
             device.process_events()  # process all events at device's local time

@@ -50,24 +50,23 @@ class Eud(Device):
     # Turns on the EUD, seeking to update to its desired power level. Previous state functions such as price
     # are maintained.
     # TODO: Rename this to Start Up. Registers this device with all of its connected devices.
-    def turn_on(self):
+    def start_up(self):
         self._logger.info(self.build_log_notation(
             message="start up {}".format(self._device_id),
             tag="start_up",
             value=1
         ))
+        # TODO: self.engage()
         # Set power levels to update the power charge calculations.
         self._in_operation = True
         self.begin_internal_operation()
         self.modulate_power()
-        # self.set_power_in(0) this is a problem if things do not happen in the right order.
-        # self.set_power_out(0)
 
     # TODO: Rename this to Shut Down. Removes this device from the active grid.
     ##
     # Turns off the EUD. Reduces all power consumption to 0 and informs all connected grid controllers
     # of this change.
-    def turn_off(self):
+    def shut_down(self):
         self._logger.info(self.build_log_notation(
             message="shut down {}".format(self._device_id),
             tag="shut_down",
@@ -160,7 +159,7 @@ class Eud(Device):
     def send_request_message(self, target_id, request_amt):
         if request_amt < 0:
             raise ValueError("EUD cannot request to distribute power")
-        if target_id in self._connected_devices.keys() and target_id.startswith("gc"):  # cannot request from non-GC's
+        if target_id in self._connected_devices and target_id.startswith("gc"):  # cannot request from non-GC's
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("invalid target to request")
@@ -174,7 +173,7 @@ class Eud(Device):
     def send_power_message(self, target_id, power_amt):
         if power_amt < 0:
             raise ValueError("EUD cannot distribute power")
-        if target_id in self._connected_devices.keys() and target_id.startswith("gc"):  # cannot request from non-GC's
+        if target_id in self._connected_devices and target_id.startswith("gc"):  # cannot request from non-GC's
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("invalid target to request")

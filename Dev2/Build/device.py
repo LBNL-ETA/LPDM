@@ -38,10 +38,8 @@ from Build.event import Event
 from Build.message import Message, MessageType
 from Build import message_formatter
 from abc import ABCMeta, abstractmethod
+from Build.support import SECONDS_IN_DAY
 import logging
-
-SECONDS_IN_DAY = 86400
-SECONDS_IN_HOUR = 3600
 
 
 class Device(metaclass=ABCMeta):
@@ -337,7 +335,7 @@ class Device(metaclass=ABCMeta):
     # Method to be called when device receives a request message, indicating a device is requesting to
     # either provide or receive the requested quantity of power.
     #
-    # @param request_amt the amount the sending device is requesting to receive (positive) or send (negative)
+    # @param request_amt the amount the sending device is requesting to receive (must be positive)
     @abstractmethod
     def process_request_message(self, sender_id, request_amt):
         pass
@@ -347,9 +345,7 @@ class Device(metaclass=ABCMeta):
     # or to receive a given quantity of power. Allocation should only ever occur after request messages
     # have been passed and processed.
     #
-    # @param allocated_amt the amount allocated from perspective of message sender.
-    # Positive indicates this device is allocated to take, negative indicates this device is allocated to provide.
-    # device (negative).
+    # @param allocated_amt the amount this device has been allocated to consume (must be positive).
     @abstractmethod
     def process_allocate_message(self, sender_id, allocate_amt):
         pass

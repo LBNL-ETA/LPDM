@@ -130,10 +130,14 @@ class UtilityMeter(Device):
 
     ##
     # Utility Meter does not process allocate messages.
+    # @param sender_id the sender of the allocate message
+    # @param allocate_amt the quantity that this device has been allocated to consume
 
     def process_allocate_message(self, sender_id, allocate_amt):
         pass
 
+    ##
+    #
     def send_power_message(self, target_id, power_amt):
         if target_id in self._connected_devices.keys():
             target = self._connected_devices[target_id]

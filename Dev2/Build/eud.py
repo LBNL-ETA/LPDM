@@ -147,9 +147,9 @@ class Eud(Device):
     # cannot respond unless the value is negative, since the EUD only consumes power.
 
     def process_allocate_message(self, sender_id, allocate_amt):
-        if allocate_amt > 0:  # can not send power, so ignore this message
-            self._logger.info(self.build_log_notation("ignored positive allocate message from {}".format(sender_id)))
-        self.set_allocated(sender_id, -allocate_amt)  # records the amount this device has been allocate
+        if allocate_amt < 0:  # can not send power, so ignore this message
+            self._logger.info(self.build_log_notation("ignored negative allocate message from {}".format(sender_id)))
+        self.set_allocated(sender_id, allocate_amt)  # records the amount this device has been allocated
         self.modulate_power()
 
     ##

@@ -41,11 +41,10 @@ class Message(object):
 
 # A price message contains information about the sending device's local price.
 
-# A request message indicates that a device is seeking to obtain or sell a quantity of power to/from another device.
-# A positive value indicates that it wants to sell that amount, while a negative value indicates that it would like
-# to purchase that amount.
+# A request message indicates that a device is seeking to obtain power from another device. It must be a positive value.
 
-# An allocate message indicates that the device has sent back its response to a request message (the negotiated amount).
+# An allocate message indicates that how much a device is willing to provide to another device. It must be a positive
+# value.
 
 
 class MessageType(Enum):

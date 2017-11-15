@@ -33,13 +33,15 @@ All Utility Meter's Device ID"s must begin with UM.
 All PV Device ID's must begin with PV.
 """
 
-from Build.priority_queue import PriorityQueue
-from Build.event import Event
-from Build.message import Message, MessageType
-from Build import message_formatter
-from abc import ABCMeta, abstractmethod
-from Build.support import SECONDS_IN_DAY
 import logging
+from abc import ABCMeta, abstractmethod
+
+from Build.Simulation_Operation.message import Message, MessageType
+
+from Build.Simulation_Operation import simulation_logger
+from Build.Simulation_Operation.event import Event
+from Build.Simulation_Operation.priority_queue import PriorityQueue
+from Build.Simulation_Operation.support import SECONDS_IN_DAY
 
 
 class Device(metaclass=ABCMeta):
@@ -413,7 +415,7 @@ class Device(metaclass=ABCMeta):
     # @return a formatted string to include in the logger
     def build_log_notation(self, message="", tag="", value=None):
         """Build the log message string"""
-        return message_formatter.build_log_msg(
+        return simulation_logger.build_log_msg(
             time_seconds=self._time,
             message=message,
             tag=tag,

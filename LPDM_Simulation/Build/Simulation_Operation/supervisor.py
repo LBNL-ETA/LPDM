@@ -14,8 +14,9 @@ The supervisor's role is to
 
 """
 
-from Build.priority_queue import PriorityQueue
 import logging
+
+from Build.Simulation_Operation.priority_queue import PriorityQueue
 
 
 class Supervisor:

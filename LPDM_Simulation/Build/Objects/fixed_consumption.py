@@ -12,7 +12,7 @@
 """ A non-'smart' EUD that does not modulate its price based on any pricing information.
 Model of all the simplest EUD's. """
 
-from Build.eud import Eud
+from Build.Objects.eud import Eud
 
 
 class FixedConsumption(Eud):

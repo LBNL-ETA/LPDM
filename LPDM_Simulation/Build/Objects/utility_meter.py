@@ -10,13 +10,16 @@
 ########################################################################################################################
 
 """
-
-
+An implementation of the utility meter class. The Utility Meter is a grid entity which can both buy and sell power from
+the grid at a predetermined schedule of prices (unlike all other grid equipment entities, its buying price can be
+different than its sell price). The utility meter is a 'dumb' entity in the sense that it does no load optimization,
+nor does it try to modify or optimize its own state, it simply acts as an unlimited external power buyer and supplier.
 """
 
-from Build.device import Device, SECONDS_IN_DAY
-from Build.event import Event
-from Build.message import Message, MessageType
+from Build.Simulation_Operation.message import Message, MessageType
+
+from Build.Objects.device import Device, SECONDS_IN_DAY
+from Build.Simulation_Operation.event import Event
 
 
 class UtilityMeter(Device):
@@ -34,7 +37,8 @@ class UtilityMeter(Device):
                                    buy_price_schedule=buy_price_schedule, buy_price_multiday=buy_price_multiday,
                                    runtime=runtime)
 
-    # Turn the utility meter on.
+    ##
+    #  Turn the utility meter on.
     def turn_on(self):
         self._logger.info(self.build_log_notation("Turning on utility meter", "turn_on", 1))
 

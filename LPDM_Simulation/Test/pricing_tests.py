@@ -1,9 +1,9 @@
 import unittest
-from Build.supervisor import Supervisor
-from Build.grid_controller import GridController
-from Build.event import Event
-from Build.battery import Battery
-from Build.utility_meter import UtilityMeter
+
+from Build.Objects.battery import Battery
+from Build.Objects.grid_controller import GridController
+from Build.Simulation_Operation.supervisor import Supervisor
+
 
 class TestPricingModel(unittest.TestCase):
     def setUp(self):

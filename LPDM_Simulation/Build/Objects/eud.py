@@ -17,11 +17,12 @@
     it is connected to.
 """
 
-from Build.device import Device
-from Build.support import SECONDS_IN_DAY, nonzero_power
-from Build.event import Event
-from Build.message import Message, MessageType
 from abc import abstractmethod
+
+from Build.Simulation_Operation.message import Message, MessageType
+from Build.Simulation_Operation.event import Event
+from Build.Simulation_Operation.support import nonzero_power
+from Build.Objects.device import Device
 
 
 class Eud(Device):

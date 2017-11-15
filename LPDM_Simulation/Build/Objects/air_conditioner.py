@@ -14,9 +14,9 @@ A simple model of a 'smart' air conditioner.
 """
 
 
-from Build.eud import Eud
-from Build.event import Event
-from Build.device import SECONDS_IN_DAY
+from Build.Simulation_Operation.support import SECONDS_IN_DAY
+from Build.Simulation_Operation.event import Event
+from Build.Objects.eud import Eud
 
 
 class AirConditionerSimple(Eud):

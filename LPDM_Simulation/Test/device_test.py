@@ -1,6 +1,8 @@
 import unittest
-from Build.supervisor import Supervisor
-from Build.grid_controller import GridController
+
+from Build.Objects.grid_controller import GridController
+from Build.Simulation_Operation.supervisor import Supervisor
+
 
 # TODO: DO NOT USE. HAS NOT BEEN UPDATED.
 

@@ -14,8 +14,8 @@ An implementation of a light EUD. The light functions such that
 
 """
 
-from Build.device import Device, SECONDS_IN_DAY
-from Build.eud import Eud
+from Build.Simulation_Operation.support import SECONDS_IN_DAY
+from Build.Objects.eud import Eud
 
 # TODO: On and Off to replace the current turn_on, turn_off functions in the input.
 

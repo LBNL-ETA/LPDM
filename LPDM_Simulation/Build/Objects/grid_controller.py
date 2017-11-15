@@ -16,14 +16,14 @@ power sources (such as Utility and PV), storage (batteries), and other grid cont
 (for the purposes of allocating power efficiently between them."""
 
 
-from Build.device import Device
-from Build.support import SECONDS_IN_DAY, SECONDS_IN_HOUR, nonzero_power, delta
-from Build.message import Message, MessageType
-from Build.battery import Battery
-from Build.event import Event
-from abc import ABCMeta, abstractmethod
 # temporary, for debugging only.
 import logging
+from abc import ABCMeta, abstractmethod
+
+from Build.Simulation_Operation.message import Message, MessageType
+from Build.Simulation_Operation.event import Event
+from Build.Simulation_Operation.support import SECONDS_IN_DAY, SECONDS_IN_HOUR, nonzero_power, delta
+from Build.Objects.device import Device
 
 
 class GridController(Device):

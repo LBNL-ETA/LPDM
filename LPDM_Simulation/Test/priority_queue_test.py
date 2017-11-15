@@ -1,5 +1,6 @@
 import unittest
-from Build import priority_queue
+
+from Build.Simulation_Operation import priority_queue
 
 
 class TestPriorityQueue(unittest.TestCase):

@@ -1,8 +1,9 @@
 import unittest
-from Build.supervisor import Supervisor
-from Build.grid_controller import GridController
-from Build.event import Event
-from Build.priority_queue import PriorityQueue
+
+from Build.Objects.grid_controller import GridController
+from Build.Simulation_Operation.event import Event
+from Build.Simulation_Operation.priority_queue import PriorityQueue
+from Build.Simulation_Operation.supervisor import Supervisor
 
 
 # TODO: DO NOT USE. HAS NOT BEEN UPDATED.

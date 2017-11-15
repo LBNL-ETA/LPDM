@@ -13,8 +13,9 @@
 Main run portal for the simulation. Calls run simulation in simulation.py.
 """
 
-import Build.simulation as sim
 import sys
+
+import Build.Simulation_Operation.simulation as sim
 
 if __name__ == "__main__":
     if len(sys.argv) >= 3:

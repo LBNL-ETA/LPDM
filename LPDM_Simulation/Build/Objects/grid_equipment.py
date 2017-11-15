@@ -14,9 +14,10 @@
     Currently, there is no specific functionality.
 """
 
-from Build.device import Device
-from Build.support import SECONDS_IN_DAY
 from abc import ABCMeta
+
+from Build.Objects.device import Device
+from Build.Simulation_Operation.support import SECONDS_IN_DAY
 
 
 class GridEquipment(Device, metaclass=ABCMeta):

@@ -16,10 +16,11 @@ but instead power flows are instantaneous.
 Batteries encapsulate this behavior of a Grid Controller:
 """
 
-from enum import Enum
-from . import message_formatter
-from abc import ABCMeta, abstractmethod
 import logging
+from abc import ABCMeta, abstractmethod
+from enum import Enum
+
+from Build.Simulation_Operation.simulation_logger import build_log_msg
 
 
 class Battery(object):
@@ -200,7 +201,7 @@ class Battery(object):
 
     def build_battery_log_notation(self, message="", value=None):
         """Build the battery log message string"""
-        return message_formatter.build_log_msg(
+        return build_log_msg(
             time_seconds=self._time,
             message=message,
             tag="SOC {}, charge pref {}".format(self._current_soc, self._charging_preference),

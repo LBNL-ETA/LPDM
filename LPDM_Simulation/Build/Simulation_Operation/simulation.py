@@ -12,22 +12,21 @@
 
 """Simulation class for scenario data file IO and setting up the simulation, and functionality to run it."""
 
-from Build.supervisor import Supervisor
-from Build.grid_controller import GridController
-
-from Build.battery import Battery
-from Build.utility_meter import UtilityMeter
-from Build.light import Light
-from Build.air_conditioner import AirConditionerSimple
-from Build.fixed_consumption import FixedConsumption
-from Build.simulation_logger import SimulationLogger
-from Build.pv import PV
-
-from Build.support import SECONDS_IN_DAY
-
 import json
 import logging
 import os
+
+from Build.Objects.air_conditioner import AirConditionerSimple
+from Build.Objects.battery import Battery
+from Build.Objects.fixed_consumption import FixedConsumption
+from Build.Objects.grid_controller import GridController
+from Build.Objects.light import Light
+from Build.Objects.pv import PV
+from Build.Objects.utility_meter import UtilityMeter
+from Build.Simulation_Operation.simulation_logger import SimulationLogger
+from Build.Simulation_Operation.supervisor import Supervisor
+from Build.Simulation_Operation.support import SECONDS_IN_DAY
+
 
 # TODO: GLOBAL VARIABLES FOR TRICKLE POWER. POWER DIRECT.
 
@@ -210,7 +209,7 @@ class SimulationSetup:
 
     def read_pv_data(self, filename):
         data_out = []  # list of tuples of time and power ratios
-        pv_data = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+        pv_data = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
                                "scenario_data/pv_data/{}".format(filename))
         with open(pv_data, 'r') as data:
             for line in data:
@@ -258,7 +257,7 @@ class SimulationSetup:
 
     def read_air_conditioner_data(self, filename):
         data_out = []  # list of tuples of time and temperature values
-        ac_data = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+        ac_data = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
                                "scenario_data/air_conditioner_data/{}".format(filename))
         with open(ac_data, 'r') as data:
             for line in data:
@@ -342,9 +341,10 @@ class SimulationSetup:
     # 'device_X.parameter_Y=Z'
 
     def setup_simulation(self, config_file, override_args_list):
-        # Read in the JSON and turn it into a dictionary
-        param_dict = self.read_config_file(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
-                                           "scenario_data/{}".format(config_file)))
+        # Read in the JSON and turn it into a dictionary.
+        param_dict = self.read_config_file(os.path.join(
+                          os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
+                          "scenario_data/{}".format(config_file)))
 
         self.setup_logging(config_filename=config_file, config=param_dict, override_args=override_args_list)
 

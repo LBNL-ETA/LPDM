@@ -1,0 +1,166 @@
+\hypertarget{class_device_1_1_device}{}\section{Device.\+Device Class Reference}
+\label{class_device_1_1_device}\index{Device.\+Device@{Device.\+Device}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_device_1_1_device_a9466bb46f9466112557bd694db6ee0b9}\label{class_device_1_1_device_a9466bb46f9466112557bd694db6ee0b9}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self, device\+\_\+id, supervisor)
+\item 
+def \hyperlink{class_device_1_1_device_a48c0cd986e11f67d2373871ade40992e}{add\+\_\+event} (self, event, time\+\_\+stamp)
+\begin{DoxyCompactList}\small\item\em Adds an event to the device\textquotesingle{}s event queue and reports that event to the supervisor. \end{DoxyCompactList}\item 
+def \hyperlink{class_device_1_1_device_a3aef2a6e416795690e9b697b3fcf4d76}{get\+\_\+id} (self)
+\begin{DoxyCompactList}\small\item\em Getter for the \hyperlink{class_device_1_1_device}{Device}\textquotesingle{}s ID We maintain ID as a protected field to avoid external modifications during messaging. \end{DoxyCompactList}\item 
+def \hyperlink{class_device_1_1_device_afd1b29eb311904ffa8565fd2d2079967}{process\+\_\+events} (self, run\+\_\+time)
+\begin{DoxyCompactList}\small\item\em Process all events in the device\textquotesingle{}s queue with a given time\+\_\+stamp. \end{DoxyCompactList}\item 
+def \hyperlink{class_device_1_1_device_abb9e113d3aba9118bbd205198e656b7a}{report\+\_\+next\+\_\+event\+\_\+time} (self)
+\begin{DoxyCompactList}\small\item\em Report the time of the next earliest event in the device\textquotesingle{}s event queue. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_device_1_1_device_ab19f8e64e8a68ecd5316db800db01d46}\label{class_device_1_1_device_ab19f8e64e8a68ecd5316db800db01d46}} 
+def \hyperlink{class_device_1_1_device_ab19f8e64e8a68ecd5316db800db01d46}{receive\+\_\+message} (self, message)
+\begin{DoxyCompactList}\small\item\em Receiving a message is modelled as putting an event with the message 1 time step after the function call. \end{DoxyCompactList}\item 
+def \hyperlink{class_device_1_1_device_a1d4ccc0c3994e92d6c0cc22b0484801e}{read\+\_\+message} (self, message)
+\item 
+def \hyperlink{class_device_1_1_device_adc0a8678e0a0889ab254061e378be6fe}{register\+\_\+device} (self, device, value)
+\begin{DoxyCompactList}\small\item\em Registers or unregisters a given device from the device\textquotesingle{}s connected device list. \end{DoxyCompactList}\item 
+def \hyperlink{class_device_1_1_device_ac8cec0e5eee2635bc306f765e60c2f9c}{on\+\_\+power\+\_\+change} (self, new\+\_\+power)
+\begin{DoxyCompactList}\small\item\em Method to be called when the device receives a power message, indicating power flows have changed between two devices (either receiving or providing). \end{DoxyCompactList}\item 
+def \hyperlink{class_device_1_1_device_a2e57c6f8bccdf4644b7332284651e120}{on\+\_\+price\+\_\+change} (self, new\+\_\+price)
+\begin{DoxyCompactList}\small\item\em Method to be called when device receives a price message. \end{DoxyCompactList}\item 
+def \hyperlink{class_device_1_1_device_a5261b7396dd1581d649d629fccf3029c}{on\+\_\+request} (self)
+\begin{DoxyCompactList}\small\item\em Method to be called when device receives a request message, indicating a device is requesting to either provide or receive the requested quantity of power. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_device_1_1_device_a329080b5f36e73fe6b37096f408b07b7}\label{class_device_1_1_device_a329080b5f36e73fe6b37096f408b07b7}} 
+def {\bfseries on\+\_\+allocate} (self)
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_device_1_1_device_a48c0cd986e11f67d2373871ade40992e}\label{class_device_1_1_device_a48c0cd986e11f67d2373871ade40992e}} 
+\index{Device\+::\+Device@{Device\+::\+Device}!add\+\_\+event@{add\+\_\+event}}
+\index{add\+\_\+event@{add\+\_\+event}!Device\+::\+Device@{Device\+::\+Device}}
+\subsubsection{\texorpdfstring{add\+\_\+event()}{add\_event()}}
+{\footnotesize\ttfamily def Device.\+Device.\+add\+\_\+event (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{event,  }\item[{}]{time\+\_\+stamp }\end{DoxyParamCaption})}
+
+
+
+Adds an event to the device\textquotesingle{}s event queue and reports that event to the supervisor. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em event} & the event to add to the event queue \\
+\hline
+{\em time\+\_\+stamp} & the time to associate with the event in the queue \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_device_1_1_device_a3aef2a6e416795690e9b697b3fcf4d76}\label{class_device_1_1_device_a3aef2a6e416795690e9b697b3fcf4d76}} 
+\index{Device\+::\+Device@{Device\+::\+Device}!get\+\_\+id@{get\+\_\+id}}
+\index{get\+\_\+id@{get\+\_\+id}!Device\+::\+Device@{Device\+::\+Device}}
+\subsubsection{\texorpdfstring{get\+\_\+id()}{get\_id()}}
+{\footnotesize\ttfamily def Device.\+Device.\+get\+\_\+id (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Getter for the \hyperlink{class_device_1_1_device}{Device}\textquotesingle{}s ID We maintain ID as a protected field to avoid external modifications during messaging. 
+
+\begin{DoxyReturn}{Returns}
+the device\textquotesingle{}s ID 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_device_1_1_device_ac8cec0e5eee2635bc306f765e60c2f9c}\label{class_device_1_1_device_ac8cec0e5eee2635bc306f765e60c2f9c}} 
+\index{Device\+::\+Device@{Device\+::\+Device}!on\+\_\+power\+\_\+change@{on\+\_\+power\+\_\+change}}
+\index{on\+\_\+power\+\_\+change@{on\+\_\+power\+\_\+change}!Device\+::\+Device@{Device\+::\+Device}}
+\subsubsection{\texorpdfstring{on\+\_\+power\+\_\+change()}{on\_power\_change()}}
+{\footnotesize\ttfamily def Device.\+Device.\+on\+\_\+power\+\_\+change (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{new\+\_\+power }\end{DoxyParamCaption})}
+
+
+
+Method to be called when the device receives a power message, indicating power flows have changed between two devices (either receiving or providing). 
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+power} & the value of power flow, negative if receiving, positive if providing. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_device_1_1_device_a2e57c6f8bccdf4644b7332284651e120}\label{class_device_1_1_device_a2e57c6f8bccdf4644b7332284651e120}} 
+\index{Device\+::\+Device@{Device\+::\+Device}!on\+\_\+price\+\_\+change@{on\+\_\+price\+\_\+change}}
+\index{on\+\_\+price\+\_\+change@{on\+\_\+price\+\_\+change}!Device\+::\+Device@{Device\+::\+Device}}
+\subsubsection{\texorpdfstring{on\+\_\+price\+\_\+change()}{on\_price\_change()}}
+{\footnotesize\ttfamily def Device.\+Device.\+on\+\_\+price\+\_\+change (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{new\+\_\+price }\end{DoxyParamCaption})}
+
+
+
+Method to be called when device receives a price message. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+price} & the new price value \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_device_1_1_device_a5261b7396dd1581d649d629fccf3029c}\label{class_device_1_1_device_a5261b7396dd1581d649d629fccf3029c}} 
+\index{Device\+::\+Device@{Device\+::\+Device}!on\+\_\+request@{on\+\_\+request}}
+\index{on\+\_\+request@{on\+\_\+request}!Device\+::\+Device@{Device\+::\+Device}}
+\subsubsection{\texorpdfstring{on\+\_\+request()}{on\_request()}}
+{\footnotesize\ttfamily def Device.\+Device.\+on\+\_\+request (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Method to be called when device receives a request message, indicating a device is requesting to either provide or receive the requested quantity of power. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+price} & the new price value \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_device_1_1_device_afd1b29eb311904ffa8565fd2d2079967}\label{class_device_1_1_device_afd1b29eb311904ffa8565fd2d2079967}} 
+\index{Device\+::\+Device@{Device\+::\+Device}!process\+\_\+events@{process\+\_\+events}}
+\index{process\+\_\+events@{process\+\_\+events}!Device\+::\+Device@{Device\+::\+Device}}
+\subsubsection{\texorpdfstring{process\+\_\+events()}{process\_events()}}
+{\footnotesize\ttfamily def Device.\+Device.\+process\+\_\+events (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{run\+\_\+time }\end{DoxyParamCaption})}
+
+
+
+Process all events in the device\textquotesingle{}s queue with a given time\+\_\+stamp. 
+
+This function should be called after advance\+\_\+time has been called by the supervisor. \mbox{\Hypertarget{class_device_1_1_device_a1d4ccc0c3994e92d6c0cc22b0484801e}\label{class_device_1_1_device_a1d4ccc0c3994e92d6c0cc22b0484801e}} 
+\index{Device\+::\+Device@{Device\+::\+Device}!read\+\_\+message@{read\+\_\+message}}
+\index{read\+\_\+message@{read\+\_\+message}!Device\+::\+Device@{Device\+::\+Device}}
+\subsubsection{\texorpdfstring{read\+\_\+message()}{read\_message()}}
+{\footnotesize\ttfamily def Device.\+Device.\+read\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{message }\end{DoxyParamCaption})}
+
+
+\begin{DoxyParams}{Parameters}
+{\em message} & a message to be read (must be a message object) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_device_1_1_device_adc0a8678e0a0889ab254061e378be6fe}\label{class_device_1_1_device_adc0a8678e0a0889ab254061e378be6fe}} 
+\index{Device\+::\+Device@{Device\+::\+Device}!register\+\_\+device@{register\+\_\+device}}
+\index{register\+\_\+device@{register\+\_\+device}!Device\+::\+Device@{Device\+::\+Device}}
+\subsubsection{\texorpdfstring{register\+\_\+device()}{register\_device()}}
+{\footnotesize\ttfamily def Device.\+Device.\+register\+\_\+device (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device,  }\item[{}]{value }\end{DoxyParamCaption})}
+
+
+
+Registers or unregisters a given device from the device\textquotesingle{}s connected device list. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em device} & the device to register or unregister from connected devices \\
+\hline
+{\em value} & positive to register, 0 or negative to unregister \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_device_1_1_device_abb9e113d3aba9118bbd205198e656b7a}\label{class_device_1_1_device_abb9e113d3aba9118bbd205198e656b7a}} 
+\index{Device\+::\+Device@{Device\+::\+Device}!report\+\_\+next\+\_\+event\+\_\+time@{report\+\_\+next\+\_\+event\+\_\+time}}
+\index{report\+\_\+next\+\_\+event\+\_\+time@{report\+\_\+next\+\_\+event\+\_\+time}!Device\+::\+Device@{Device\+::\+Device}}
+\subsubsection{\texorpdfstring{report\+\_\+next\+\_\+event\+\_\+time()}{report\_next\_event\_time()}}
+{\footnotesize\ttfamily def Device.\+Device.\+report\+\_\+next\+\_\+event\+\_\+time (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Report the time of the next earliest event in the device\textquotesingle{}s event queue. 
+
+\begin{DoxyReturn}{Returns}
+a tuple of device\textquotesingle{}s ID and the time of its next event 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/Device.\+py\end{DoxyCompactItemize}

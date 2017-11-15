@@ -1,0 +1,79 @@
+\hypertarget{class_priority__queue_1_1_priority_queue}{}\section{Priority\+\_\+queue.\+Priority\+Queue Class Reference}
+\label{class_priority__queue_1_1_priority_queue}\index{Priority\+\_\+queue.\+Priority\+Queue@{Priority\+\_\+queue.\+Priority\+Queue}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_priority__queue_1_1_priority_queue_aa64e91440263bad56792ef1a94ef8c60}\label{class_priority__queue_1_1_priority_queue_aa64e91440263bad56792ef1a94ef8c60}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self)
+\item 
+def \hyperlink{class_priority__queue_1_1_priority_queue_a4655c59199cd1a181db01b265c0bd84d}{add} (self, task, priority=0)
+\item 
+def \hyperlink{class_priority__queue_1_1_priority_queue_a311e92d0a6c8a26393d9122b159d6b17}{remove} (self, task)
+\item 
+def \hyperlink{class_priority__queue_1_1_priority_queue_a27e13435b664d05b800751e19d46f21b}{pop} (self)
+\item 
+def \hyperlink{class_priority__queue_1_1_priority_queue_a4b386d64866a20d763f7b79a52885944}{peek} (self)
+\item 
+\mbox{\Hypertarget{class_priority__queue_1_1_priority_queue_a9e12dce7378509e268c66bca36c68714}\label{class_priority__queue_1_1_priority_queue_a9e12dce7378509e268c66bca36c68714}} 
+def {\bfseries is\+\_\+empty} (self)
+\item 
+def \hyperlink{class_priority__queue_1_1_priority_queue_ad2dff608b7de6455848f3266557b0f17}{clear} (self)
+\item 
+def \hyperlink{class_priority__queue_1_1_priority_queue_a19c99c56b8204a717b12b3a32301a7d8}{shift} (self, offset)
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_priority__queue_1_1_priority_queue_aad34a4d1ea26a02c02bb6bb5cf9c732a}\label{class_priority__queue_1_1_priority_queue_aad34a4d1ea26a02c02bb6bb5cf9c732a}} 
+string {\bfseries R\+E\+M\+O\+V\+ED} = \textquotesingle{}$<$removed-\/task$>$\textquotesingle{}
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_priority__queue_1_1_priority_queue_a4655c59199cd1a181db01b265c0bd84d}\label{class_priority__queue_1_1_priority_queue_a4655c59199cd1a181db01b265c0bd84d}} 
+\index{Priority\+\_\+queue\+::\+Priority\+Queue@{Priority\+\_\+queue\+::\+Priority\+Queue}!add@{add}}
+\index{add@{add}!Priority\+\_\+queue\+::\+Priority\+Queue@{Priority\+\_\+queue\+::\+Priority\+Queue}}
+\subsubsection{\texorpdfstring{add()}{add()}}
+{\footnotesize\ttfamily def Priority\+\_\+queue.\+Priority\+Queue.\+add (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{task,  }\item[{}]{priority = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Add a new task or update the priority of an existing task\end{DoxyVerb}
+ \mbox{\Hypertarget{class_priority__queue_1_1_priority_queue_ad2dff608b7de6455848f3266557b0f17}\label{class_priority__queue_1_1_priority_queue_ad2dff608b7de6455848f3266557b0f17}} 
+\index{Priority\+\_\+queue\+::\+Priority\+Queue@{Priority\+\_\+queue\+::\+Priority\+Queue}!clear@{clear}}
+\index{clear@{clear}!Priority\+\_\+queue\+::\+Priority\+Queue@{Priority\+\_\+queue\+::\+Priority\+Queue}}
+\subsubsection{\texorpdfstring{clear()}{clear()}}
+{\footnotesize\ttfamily def Priority\+\_\+queue.\+Priority\+Queue.\+clear (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}clear the priority queue\end{DoxyVerb}
+ \mbox{\Hypertarget{class_priority__queue_1_1_priority_queue_a4b386d64866a20d763f7b79a52885944}\label{class_priority__queue_1_1_priority_queue_a4b386d64866a20d763f7b79a52885944}} 
+\index{Priority\+\_\+queue\+::\+Priority\+Queue@{Priority\+\_\+queue\+::\+Priority\+Queue}!peek@{peek}}
+\index{peek@{peek}!Priority\+\_\+queue\+::\+Priority\+Queue@{Priority\+\_\+queue\+::\+Priority\+Queue}}
+\subsubsection{\texorpdfstring{peek()}{peek()}}
+{\footnotesize\ttfamily def Priority\+\_\+queue.\+Priority\+Queue.\+peek (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Returns the lowest priority task and its priority without removing. Raise KeyError if empty.\end{DoxyVerb}
+ \mbox{\Hypertarget{class_priority__queue_1_1_priority_queue_a27e13435b664d05b800751e19d46f21b}\label{class_priority__queue_1_1_priority_queue_a27e13435b664d05b800751e19d46f21b}} 
+\index{Priority\+\_\+queue\+::\+Priority\+Queue@{Priority\+\_\+queue\+::\+Priority\+Queue}!pop@{pop}}
+\index{pop@{pop}!Priority\+\_\+queue\+::\+Priority\+Queue@{Priority\+\_\+queue\+::\+Priority\+Queue}}
+\subsubsection{\texorpdfstring{pop()}{pop()}}
+{\footnotesize\ttfamily def Priority\+\_\+queue.\+Priority\+Queue.\+pop (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Remove and return the lowest priority task and its priority. Raise KeyError if empty.\end{DoxyVerb}
+ \mbox{\Hypertarget{class_priority__queue_1_1_priority_queue_a311e92d0a6c8a26393d9122b159d6b17}\label{class_priority__queue_1_1_priority_queue_a311e92d0a6c8a26393d9122b159d6b17}} 
+\index{Priority\+\_\+queue\+::\+Priority\+Queue@{Priority\+\_\+queue\+::\+Priority\+Queue}!remove@{remove}}
+\index{remove@{remove}!Priority\+\_\+queue\+::\+Priority\+Queue@{Priority\+\_\+queue\+::\+Priority\+Queue}}
+\subsubsection{\texorpdfstring{remove()}{remove()}}
+{\footnotesize\ttfamily def Priority\+\_\+queue.\+Priority\+Queue.\+remove (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{task }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Mark an existing task as REMOVED.  Raise KeyError if not found.\end{DoxyVerb}
+ \mbox{\Hypertarget{class_priority__queue_1_1_priority_queue_a19c99c56b8204a717b12b3a32301a7d8}\label{class_priority__queue_1_1_priority_queue_a19c99c56b8204a717b12b3a32301a7d8}} 
+\index{Priority\+\_\+queue\+::\+Priority\+Queue@{Priority\+\_\+queue\+::\+Priority\+Queue}!shift@{shift}}
+\index{shift@{shift}!Priority\+\_\+queue\+::\+Priority\+Queue@{Priority\+\_\+queue\+::\+Priority\+Queue}}
+\subsubsection{\texorpdfstring{shift()}{shift()}}
+{\footnotesize\ttfamily def Priority\+\_\+queue.\+Priority\+Queue.\+shift (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{offset }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Shifts all the priorities of the priority queue __down__ by a specified offset\end{DoxyVerb}
+ 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/Priority\+\_\+queue.\+py\end{DoxyCompactItemize}

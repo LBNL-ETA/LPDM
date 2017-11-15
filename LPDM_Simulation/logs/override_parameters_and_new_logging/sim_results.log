@@ -1,0 +1,43 @@
+2017-09-04T16:46:20.584242-07:00
+basic_discharge_multiday.json
+Override values: run_time_days=1
+
+0 00:00:00; 0; gc_1; ; None; initialize gc_1 - grid_controller
+0 00:00:00; 0; utm_1; ; None; initialize utm_1 - Utility Meter
+0 00:00:00; 0; eud_1; ; None; initialize eud_1 - light
+0 00:00:00; 0; gc_1; ; None; registered utm_1
+0 00:00:00; 0; utm_1; ; None; registered gc_1
+0 00:00:00; 0; gc_1; ; None; registered eud_1
+0 00:00:00; 0; eud_1; ; None; registered gc_1
+0 00:00:00; 0; utm_1; turn_on; 1; Turning on utility meter
+0 00:00:00; 0; eud_1; turn_on; 1; turn on eud_1
+0 00:00:00; 0; eud_1; request_msg; 500.0; REQUEST to gc_1
+0 00:00:01; 1; gc_1; ; None; Read MessageType.REQUEST from eud_1 with value 500.0
+0 00:00:01; 1; battery_1; current soc 0.5, current charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+0 00:00:01; 1; gc_1; allocate_msg; -500.0; ALLOCATE to eud_1
+0 00:00:02; 2; eud_1; ; None; Read MessageType.ALLOCATE from gc_1 with value -500.0
+0 00:00:02; 2; eud_1; power_msg; 500.0; POWER to gc_1
+0 00:00:03; 3; gc_1; ; None; Read MessageType.POWER from eud_1 with value 500.0
+0 00:00:03; 3; battery_1; current soc 0.5, current charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+0 06:00:00; 21600; eud_1; turn_off; 0; turn off eud_1
+0 06:00:00; 21600; eud_1; power_msg; 0; POWER to gc_1
+0 06:00:01; 21601; gc_1; ; None; Read MessageType.POWER from eud_1 with value 0
+0 06:00:01; 21601; battery_1; current soc 0.44000555555555554, current charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+0 08:00:00; 28800; eud_1; turn_on; 1; turn on eud_1
+0 08:00:00; 28800; eud_1; power_msg; 500.0; POWER to gc_1
+0 08:00:01; 28801; gc_1; ; None; Read MessageType.POWER from eud_1 with value 500.0
+0 08:00:01; 28801; battery_1; current soc 0.44000555555555554, current charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+0 18:00:00; 64800; eud_1; turn_off; 0; turn off eud_1
+0 18:00:00; 64800; eud_1; power_msg; 0; POWER to gc_1
+0 18:00:01; 64801; gc_1; ; None; Read MessageType.POWER from eud_1 with value 0
+0 18:00:01; 64801; battery_1; current soc 0.34000555555555556, current charge pref BatteryChargingPreference.NEUTRAL; None; unchanged charge preference
+1 00:00:00; 86400; eud_1; turn_on; 1; turn on eud_1
+1 00:00:00; 86400; eud_1; power_msg; 500.0; POWER to gc_1
+1 00:00:00; 86400; gc_1; power calcs; 7999.722222222223; sum Wh out
+1 00:00:00; 86400; gc_1; power calcs; 0.0; sum Wh in
+1 00:00:00; 86400; gc_1; power_calcs; 0.0; battery sum charge Wh
+1 00:00:00; 86400; gc_1; power_calcs; 7999.722222222223; battery sum discharge Wh
+1 00:00:00; 86400; utm_1; power calcs; 0.0; sum Wh out
+1 00:00:00; 86400; utm_1; power calcs; 0.0; sum Wh in
+1 00:00:00; 86400; eud_1; power calcs; 0.0; sum Wh out
+1 00:00:00; 86400; eud_1; power calcs; 7999.722222222223; sum Wh in

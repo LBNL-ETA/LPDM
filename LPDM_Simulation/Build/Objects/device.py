@@ -31,6 +31,7 @@ All GC's Device ID's must begin with 'GC'.
 All EUD's Device ID's must begin with 'EUD'.
 All Utility Meter's Device ID"s must begin with UM.
 All PV Device ID's must begin with PV.
+
 """
 
 import logging
@@ -249,6 +250,8 @@ class Device(metaclass=ABCMeta):
                     self.process_request_message(message.sender_id, message.value)
                 else:
                     raise NameError('Unverified Message Type')
+
+    # TODO!!!
     ##
     # Connects one device to another
     #
@@ -460,27 +463,27 @@ class Device(metaclass=ABCMeta):
 
 # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
-# TODO: Fix the input JSONs to all be in the correct ordering.
 # TODO: Fix events to have multiple arguments.
 # TODO: Implement the new Wire class, etc.
 # TODO: Change Grid Controller's input file "threshold_alloc" to "minimum allocate response".
+# TODO: Linear interpolation in Air Conditioner?
 
 
-
+""" LONG TERM TODOs"""
 # TODO: Make it so the grid controller has a capacity limit, and this is the percentage that EUD gives as response.
 # TODO: Change it so that PV takes input Watts as variable in.
 # TODO: Utility meter maximum capacity
-# TODO: Add event_id to events?
+# TODO: Add a unique event_id to each event (could do this with an event creator class)?
 # TODO: Allow for "precomputation" of temperature thresholds and update events in the future (Air conditioner)
-
+# TODO: Fix the current device_id concept. Needs to be auto-assigned variable at creation to ensure correctness? UUID?
+# TODO: Incorporate the concept of Grid Equipment, and define individual functionality. 
+# TODO: Allow for PV to take in pure watts data.
 
 # LONGER TERM:
-# TODO: Redesign/Refactor EUD's modulate power value.
+# TODO: Redesign EUD's modulate power to shift onto less expensive GC's.
 # TODO: Create a visual graph output for debugging purposes.
 # TODO: Reorder balance power battery add algorithm.
-# TODO: Incorporate the linear/nondirect power reduction done by the battery when overtextended
-# TODO: (20) Finish considering GC load balance algorithm
-# TODO: (21) Reconsider price forecasts.
+# TODO: Reconsider price forecasts/communicating them/etc.
 # TODO: Start doing multiple GC test scenarios.
 
 

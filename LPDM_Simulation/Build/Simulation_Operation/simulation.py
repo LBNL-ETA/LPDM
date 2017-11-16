@@ -28,9 +28,6 @@ from Build.Simulation_Operation.supervisor import Supervisor
 from Build.Simulation_Operation.support import SECONDS_IN_DAY
 
 
-# TODO: Global variable for POWER DIRECT flag?
-
-
 class SimulationSetup:
 
     DEFAULT_MESSAGE_LATENCY = 0   # If not specified devices will have no message delay
@@ -97,7 +94,7 @@ class SimulationSetup:
             gc_id = gc['device_id']
             price_logic = gc['price_logic']
             price_logic = override_args.get('devices.{}.price_logic'.format(gc_id), price_logic)
-            # gc_uuid = gc.get(uuid, 0)
+
             msg_latency = gc.get('message_latency', self.DEFAULT_MESSAGE_LATENCY)
             msg_latency = int(override_args.get('devices.{}.message_latency'.format(gc_id), msg_latency))
 

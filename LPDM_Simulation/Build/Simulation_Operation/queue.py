@@ -29,6 +29,8 @@ class PriorityQueue:
 
     ##
     # Adds a new task to the priority queue, or if that task already exists, updates that tasks priority.
+    # @param task the task to add to the priority queue
+    # @param priority the priority to assign to this task. Default to 0
 
     def add(self, task, priority=0):
         if task in self._entry_finder:
@@ -40,6 +42,9 @@ class PriorityQueue:
 
     ##
     # Updates all tasks with a given task_attribute equal to an attribute_value to have a new priority.
+    # @param task_attribute an attribute of the task to identify it
+    # @param attribute_value the value of that attribute that we want to isolate
+    # @param new_priority the new priority value to assign to the tasks that have the desired attribute value
     def update_by_attribute(self, task_attribute, attribute_value, new_priority=0):
         for task in self._entry_finder:
             if getattr(task, task_attribute) == attribute_value:
@@ -49,7 +54,6 @@ class PriorityQueue:
                 self._entry_finder[task] = entry
                 heapq.heappush(self._pq, entry)
 
-
     ##
     # Marks an existing task as REMOVED in the heap. When this value is encountered later in a pop or peek,
     # it will be removed for good from the heap. Raises a KeyError if that task is not found.
@@ -58,7 +62,7 @@ class PriorityQueue:
         entry[-1] = self.REMOVED
 
     ##
-    # remove and return the lowest priority task and its priority. Raise KeyError if queue is empty.
+    # Remove and return the lowest priority task and its priority. Raise KeyError if queue is empty.
     # @return tuple of task with lowest priority and that priority
     def pop(self):
         while self._pq:  # Must loop in case front of queue is 'REMOVED'
@@ -83,7 +87,7 @@ class PriorityQueue:
     ##
     # Returns whether the queue is empty.
     def is_empty(self):
-        # Implementation note: heap may still contain items, but they are all classified as 'REMOVED'.
+        # Implementation note: pq heap may still contain items, but they are all classified as 'REMOVED'.
         return len(self._entry_finder) == 0
 
     ##

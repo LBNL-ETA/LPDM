@@ -16,8 +16,6 @@ power sources (such as Utility and PV), storage (batteries), and other grid cont
 (for the purposes of allocating power efficiently between them."""
 
 
-# temporary, for debugging only.
-import logging
 from abc import ABCMeta, abstractmethod
 
 from Build.Simulation_Operation.message import Message, MessageType
@@ -31,7 +29,7 @@ class GridController(Device):
     TRICKLE_POWER = 2  # Allow fluctuations of power within 2 watts without rebalancing. All devices can consume this.
 
     # TODO: Add some notion of individual transmit/receive capacity
-    # @param device_id a unique id for this device. "gc" will be prefix for the provided id. Caller is responsible
+    # @param device_id a unique id for this device, must begin with "gc". Creator is responsible
     # for ensuring the uniqueness of this id.
     # @param price logic a string name of a grid controller price logic class, which contains an initial price as well
     # as a differential threshold for when a GC should broadcast changes in price
@@ -54,7 +52,6 @@ class GridController(Device):
 
         # dictionary of devices and requests that this device has received from them.
         # Only is added to when this grid controller could not provide the full quantity in response.
-        # TODO: Reevaluate this. Should it be full of all devices, some with 0?
         # Negative values are requests this GC has been asked provide,
         # positive are requests this GC has made to other devices.
         self._requested = {}
@@ -223,13 +220,12 @@ class GridController(Device):
         self.modulate_power()
 
     ##
-    # Processes a request message from an EUD or another GC.
-    # Allocates to receive/provide at minimum an amount of trickle power, and rest equal to what is has available.
+    # Processes a request message from an EUD or another GC, and allocates in response whatever matches its
     # @param sender_id the sender of the request message
     # @param request_amt the quantity of power requested from perspective of message sender
     def process_request_message(self, sender_id, request_amt):
         if request_amt < 0:
-            return # Invalid request. Must be positive.
+            return  # Invalid request. Must be positive.
         if request_amt == 0:
             self.send_allocate_message(sender_id, 0)  # always allow power flows to cease
             return
@@ -484,7 +480,7 @@ class GridController(Device):
             return 0
 
     ##
-    # This is the crux function that determines how a GC balances its power flows at a given time.
+    # This function determines how the Grid Controller tries to optimize its loads to satisfy its battery preference
     # Called upon significant event changes and at regular intervals to help the GC balance its powerflows.
     #
     def modulate_power(self):
@@ -498,7 +494,7 @@ class GridController(Device):
                 self.seek_to_distribute_power(-power_adjust)
             elif power_adjust > 0:
                 self.seek_to_obtain_power(power_adjust)
-
+        # TODO: Add a load shifting component that optimizes existing loads.
     ##
     # Grid controller is seeking to obtain the remaining amount of power for itself to consume.
     # Currently, only goes to the utility meters if it is connected and tries to shift power onto them,
@@ -567,12 +563,8 @@ class GridController(Device):
         
         --NO: Double Price. Request power. Reduce your output to other GC's.  
         
-        --STILL NO: REDUCE output to EUD's. 
-        
-        --STILL NO: SHUT DOWN. 
-        
-    Second priority: Negotiation balances (new allocate received, new request received). 
-    
+        --STILL NO: REDUCE output to EUD's in order of their priority. 
+            
     """
 
     # ________________________________LOGGING SPECIFIC FUNCTIONALITY______________________________#
@@ -610,8 +602,6 @@ class GridController(Device):
                 value=valid_calc
             ))
 
-    """ A class to determine the Grid Controller's Price Logic"""
-
     #  _______________________________ PRICE LOGICS ________________________________________________#
 
 ##
@@ -622,6 +612,7 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
 
     ##
     # @param price_history_interval the length of the interval to calculate the average price for and store in memory
+    # (e.g. if 3600, then store hourly average prices).
     # @param initial price the initial price of this grid controller
     # @param price_announce_threshold the difference in prices before announcing your new local price to neighbors
 
@@ -632,9 +623,6 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
         self._price_announce_threshold = price_announce_threshold
         self._current_price = self._initial_price
         self._price_history_interval = price_history_interval
-
-        ## TODO: This is temporary
-        self._logger = logging.getLogger("lpdm")
 
         # calculate rounded up number of intervals
         daily_price_history_len, rem = divmod(SECONDS_IN_DAY, price_history_interval)
@@ -653,7 +641,6 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
     ##
     # A method to determine the minimum price difference which should cause the grid controller to broadcast
     # its new price to a specified subset of its connected devices.
-    # TODO: Return tuple of price and time_diff to determine minimum time change before announcing
     def get_price_announce_threshold(self):
         return self._price_announce_threshold
 
@@ -670,8 +657,9 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
         return self._price_history_interval
 
     ##
-    # Given the current time of the device, sets the interval prices of the GC accordingly.
+    # Given the current time of the device, uses the current price to set the interval prices of the GC accordingly.
     # This function should be called every interval duration by the GC, as well as when the GC's price changes.
+    # @param the current time of the device
     def update_interval_prices(self, time):
         # Calculate which interval we are in and how many seconds into that interval we are
         (day, seconds) = divmod(time, SECONDS_IN_DAY)
@@ -696,11 +684,9 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
         else:
             self._interval_prices[interval_num] = self._current_price
 
-        # TODO: THIS IS FOR DEBUGGING. REMOVE L8R.
-        #self._logger.info("current interval prices: {}".format(", ".join(map(str, self._interval_prices))))
-
     ##
     # Updates the average time of the grid controller
+    # @param time the current time of the device
     def update_average_price(self, time):
         if time:
             time_diff = time - self._last_price_update_time
@@ -708,7 +694,6 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
             self._total_average_price = (prev_sum_price + (time_diff * self._current_price)) / time
         else:
             self._total_average_price = self._current_price
-        #self._logger.info("current average price: {}".format(self._total_average_price))
 
     ##
     # Returns the interval prices of this grid controller.

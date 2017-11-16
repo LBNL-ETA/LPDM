@@ -33,17 +33,26 @@ class UtilityMeter(Device):
         self._loads = {}  # dictionary of devices and loads to those devices.
         self._sell_price = 0
         self._buy_price = 0
+        self._in_operation = False
         self.setup_price_schedules(sell_price_schedule=sell_price_schedule, sell_price_multiday=sell_price_multiday,
                                    buy_price_schedule=buy_price_schedule, buy_price_multiday=buy_price_multiday,
                                    runtime=runtime)
 
     ##
-    #  Turn the utility meter on.
+    # Turn the utility meter on so that it can provide and receive power.
     def turn_on(self):
+        self._in_operation = True
         self._logger.info(self.build_log_notation("Turning on utility meter", "turn_on", 1))
 
     ##
+    # Turn the utility meter off so that it can no longer provide and receive power.
+    def turn_off(self):
+        self._in_operation = False
+        self._logger.info(self.build_log_notation("Turning off utility meter", "turn_off", 0))
+
+    ##
     # Change the sell price for this utility meter
+    # @param sell_price the sell price to set the value to
     def set_sell_price(self, sell_price):
         prev_sell_price = self._sell_price
         self._sell_price = sell_price
@@ -51,6 +60,9 @@ class UtilityMeter(Device):
         if self._sell_price != prev_sell_price:
             self.broadcast_price_levels(sell_price=self._sell_price, buy_price=self._buy_price)
 
+    ##
+    # Sets the buy price for this utility meter
+    # @param buy_price the buy price to set the value to
     def set_buy_price(self, buy_price):
         prev_buy_price = self._buy_price
         self._buy_price = buy_price
@@ -60,7 +72,7 @@ class UtilityMeter(Device):
 
     ##
     # Adds a price schedule for this utility
-    # @oaram price_schedule a list of hour, sell_price, buy_price tuples that the utility sets its price at
+    # @oaram sell_price_schedule the list of hour, sell_price tuples in
     # @param multiday how many days of the scheduling to set as a repeating
     #
     def setup_price_schedules(self, sell_price_schedule, buy_price_schedule, sell_price_multiday=0,
@@ -105,14 +117,21 @@ class UtilityMeter(Device):
     # __________________________________ Messaging Functions _______________________ #
 
     ##
-    # Process a power message from a grid controller. Always provide what is demanded,
-    # assuming less than maximum output capacity.
+    # Process a power message from a grid controller. If this utility meter is operational,
+    # always provide what is demanded, assuming amount less than maximum output capacity.
+    # @param sender_id the
     # @param new_power the new power from the sender's perspective
 
     def process_power_message(self, sender_id, new_power):
         prev_power = self._loads[sender_id] if sender_id in self._loads.keys() else 0
-        self._loads[sender_id] = -new_power
-        self.recalc_sum_power(prev_power, -new_power)
+        if self._in_operation:
+            self._loads[sender_id] = -new_power
+            self.recalc_sum_power(prev_power, -new_power)
+        else:
+            # Not in operation. Respond with 0 power
+            self._loads[sender_id] = 0
+            self.send_power_message(sender_id, 0)
+            self.recalc_sum_power(prev_power, 0)
 
     ##
     # Method to be called when device receives a price message
@@ -128,7 +147,7 @@ class UtilityMeter(Device):
     #
     # @param request_amt the amount the sender is requesting to provide (positive) or to receive (negative).
     def process_request_message(self, sender_id, request_amt):
-        """provide the sender exactly what they request"""
+        # provide the sender exactly what they request
         self._loads[sender_id] = -request_amt
         self.send_power_message(sender_id, -request_amt)
 
@@ -142,14 +161,13 @@ class UtilityMeter(Device):
 
     ##
     # This utility meter sends a power message to another device indicating that a certain quantity
-    # of power is now flowing across the link. This message should only be sent to inform another
-    # device of a capacity
+    # of power is now flowing across the link. This message should only be in response to receiving a power msg
+    # to inform that it must provide a different amount than what was asked.
     def send_power_message(self, target_id, power_amt):
         if target_id in self._connected_devices:
             target = self._connected_devices[target_id]
         else:
             raise ValueError("This Utility Meter is connected to no such device")
-
         self._logger.info(self.build_log_notation(message="power msg to {}".format(target_id),
                                                   tag="power message", value=power_amt))
 

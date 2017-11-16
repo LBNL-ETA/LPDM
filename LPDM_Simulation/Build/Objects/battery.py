@@ -20,7 +20,7 @@ import logging
 from abc import ABCMeta, abstractmethod
 from enum import Enum
 
-from Build.Simulation_Operation.simulation_logger import build_log_msg
+from Build.Simulation_Operation.logger import build_log_msg
 
 
 class Battery(object):

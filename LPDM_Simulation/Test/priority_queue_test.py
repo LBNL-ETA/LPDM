@@ -1,13 +1,13 @@
 import unittest
 
-from Build.Simulation_Operation import priority_queue
+from Build.Simulation_Operation import queue
 
 
 class TestPriorityQueue(unittest.TestCase):
 
 
     def setUp(self):
-        self.pq = priority_queue.PriorityQueue()
+        self.pq = queue.PriorityQueue()
 
     def tearDown(self):
         self.pq.clear()

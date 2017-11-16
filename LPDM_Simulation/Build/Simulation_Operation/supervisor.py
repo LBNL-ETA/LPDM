@@ -16,7 +16,7 @@ The supervisor's role is to
 
 import logging
 
-from Build.Simulation_Operation.priority_queue import PriorityQueue
+from Build.Simulation_Operation.queue import PriorityQueue
 
 
 class Supervisor:

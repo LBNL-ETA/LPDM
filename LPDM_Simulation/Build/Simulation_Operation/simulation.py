@@ -23,12 +23,12 @@ from Build.Objects.grid_controller import GridController
 from Build.Objects.light import Light
 from Build.Objects.pv import PV
 from Build.Objects.utility_meter import UtilityMeter
-from Build.Simulation_Operation.simulation_logger import SimulationLogger
+from Build.Simulation_Operation.logger import SimulationLogger
 from Build.Simulation_Operation.supervisor import Supervisor
 from Build.Simulation_Operation.support import SECONDS_IN_DAY
 
 
-# TODO: GLOBAL VARIABLES FOR TRICKLE POWER. POWER DIRECT.
+# TODO: Global variable for POWER DIRECT flag?
 
 
 class SimulationSetup:
@@ -110,6 +110,9 @@ class SimulationSetup:
                                                                price_announce_threshold))
 
             schedule = gc.get('schedule', None)
+            multiday = schedule.get('multiday', 0) if schedule else 0
+            schedule_items = schedule.get('items', None) if schedule else None
+
             connected_devices = gc.get('connected_devices', None)
             if connected_devices:
                 connections.append((gc_id, connected_devices))
@@ -120,7 +123,7 @@ class SimulationSetup:
             else:
                 battery = None
             new_gc = GridController(device_id=gc_id, supervisor=self.supervisor, battery=battery,
-                                    msg_latency=msg_latency, price_logic=price_logic, schedule=schedule,
+                                    msg_latency=msg_latency, price_logic=price_logic, schedule=schedule_items,
                                     min_alloc_response_threshold=min_alloc_response_threshold,
                                     price_announce_threshold=price_announce_threshold, total_runtime=runtime)
             # make a new grid controller and register it with the supervisor
@@ -344,7 +347,7 @@ class SimulationSetup:
         # Read in the JSON and turn it into a dictionary.
         param_dict = self.read_config_file(os.path.join(
                           os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
-                          "scenario_data/{}".format(config_file)))
+                          "scenario_data/configuration_files/{}".format(config_file)))
 
         self.setup_logging(config_filename=config_file, config=param_dict, override_args=override_args_list)
 
@@ -376,7 +379,7 @@ class SimulationSetup:
     ##
     # Takes a list of keyword arguments in the form of strings such as 'key=value' and outputs them as
     # a dictionary of string to string values. Ignores whitespace.
-    # @param args
+    # @param args the list of keyword inputs to separate into a dictionary
 
     def parse_inputs_to_dict(self, args):
         arg_dict = {}

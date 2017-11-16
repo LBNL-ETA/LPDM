@@ -45,23 +45,31 @@ class Eud(Device):
         # Reevaluate this device's power and its sources at a given interval
         self.setup_modulation_schedule(modulation_interval, total_runtime)
 
+        # Time in seconds within which this EUD will not readjust its power levels in response to new price messages
+        # unless the price change is larger than PRICE_RECALIBRATION_INTERVAL (defined below).
+        self.power_recalibration_interval = 5
+
+        # Minimum price change which will cause this EUD to reevaluate its power levels if it occurs within the
+        # recalibration interval
+        self.price_recalibration_interval = 0.02
+
     # ___________________ BASIC FUNCTIONS ________________
 
     ##
     # Turns on the EUD, seeking to update to its desired power level. Previous state functions such as price
-    # are maintained.
-    # TODO: Rename this to Start Up. Registers this device with all of its connected devices.
+    # are maintained. If EUD is already on, does not do anything.
     def start_up(self):
-        self._logger.info(self.build_log_notation(
-            message="start up {}".format(self._device_id),
-            tag="start_up",
-            value=1
-        ))
-        # TODO: self.engage()
-        # Set power levels to update the power charge calculations.
-        self._in_operation = True
-        self.begin_internal_operation()
-        self.modulate_power()
+        if not self._in_operation:
+            self._logger.info(self.build_log_notation(
+                message="start up {}".format(self._device_id),
+                tag="start_up",
+                value=1
+            ))
+            # TODO: self.engage()
+            # Set power levels to update the power charge calculations.
+            self._in_operation = True
+            self.begin_internal_operation()
+            self.modulate_power()
 
     ##
     # Turns off the EUD. Reduces all power consumption to 0 and informs all connected grid controllers
@@ -131,8 +139,8 @@ class Eud(Device):
         prev_price = self._price
         price_delta = abs(new_price - prev_price)
         self._price = new_price  # EUD always updates its value to the price it receives.
-        # TODO: Change this hardcoded value to somewhere
-        if self._time - self._last_price_message_time >= 5 or price_delta > 0.02:
+        if self._time - self._last_price_message_time >= self.power_recalibration_interval or \
+           price_delta > self.price_recalibration_interval:
             # Only modulate power if we haven't received a message recently or new price is very different
             self.modulate_power()
         self._last_price_message_time = self._time

@@ -141,7 +141,9 @@ class UtilityMeter(Device):
         pass
 
     ##
-    #
+    # This utility meter sends a power message to another device indicating that a certain quantity
+    # of power is now flowing across the link. This message should only be sent to inform another
+    # device of a capacity
     def send_power_message(self, target_id, power_amt):
         if target_id in self._connected_devices:
             target = self._connected_devices[target_id]
@@ -152,6 +154,9 @@ class UtilityMeter(Device):
                                                   tag="power message", value=power_amt))
 
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
+    ##
+    # This utility meter informs another device of both its current buy price and its current sell price.
+    # The buy price information is contained in the message's extra_info field.
 
     def send_price_message(self, target_id, sell_price, buy_price):
         if target_id in self._connected_devices:
@@ -173,23 +178,8 @@ class UtilityMeter(Device):
     def broadcast_price_levels(self, sell_price, buy_price):
         for device_id in self._connected_devices.keys():
             self.send_price_message(target_id=device_id, sell_price=sell_price, buy_price=buy_price)
+
     ##
-    # TODO: Give the utm an average price statistic to calculate.
-    #
-
+    # Utility meter currently does not have any specific device calculations to add to the log file
     def device_specific_calcs(self):
-
-        """
-        self._logger.info(self.build_log_notation(
-            message="average price sold energy",
-            tag="average sell price",
-            value=self._battery.sum_charge_wh
-        ))
-
-        self._logger.info(self.build_log_notation(
-            message="average price purchased energy",
-            tag="battery sum discharge wh",
-            value=self._battery.sum_charge_wh
-        ))
-        """
         pass

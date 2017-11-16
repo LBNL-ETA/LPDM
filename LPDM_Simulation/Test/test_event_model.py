@@ -2,7 +2,7 @@ import unittest
 
 from Build.Objects.grid_controller import GridController
 from Build.Simulation_Operation.event import Event
-from Build.Simulation_Operation.priority_queue import PriorityQueue
+from Build.Simulation_Operation.queue import PriorityQueue
 from Build.Simulation_Operation.supervisor import Supervisor
 
 

@@ -38,9 +38,9 @@ from abc import ABCMeta, abstractmethod
 
 from Build.Simulation_Operation.message import Message, MessageType
 
-from Build.Simulation_Operation import simulation_logger
+from Build.Simulation_Operation import logger
 from Build.Simulation_Operation.event import Event
-from Build.Simulation_Operation.priority_queue import PriorityQueue
+from Build.Simulation_Operation.queue import PriorityQueue
 from Build.Simulation_Operation.support import SECONDS_IN_DAY
 
 
@@ -415,7 +415,7 @@ class Device(metaclass=ABCMeta):
     # @return a formatted string to include in the logger
     def build_log_notation(self, message="", tag="", value=None):
         """Build the log message string"""
-        return simulation_logger.build_log_msg(
+        return logger.build_log_msg(
             time_seconds=self._time,
             message=message,
             tag=tag,
@@ -460,23 +460,23 @@ class Device(metaclass=ABCMeta):
 
 # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
-# TODO: Refactor ordering...
 # TODO: Fix the input JSONs to all be in the correct ordering.
-# TODO: Implement the new Wire class, etc.
 # TODO: Fix events to have multiple arguments.
-# TODO: Create a visual graph output for debugging purposes.
+# TODO: Implement the new Wire class, etc.
 # TODO: Change Grid Controller's input file "threshold_alloc" to "minimum allocate response".
+
+
+
 # TODO: Make it so the grid controller has a capacity limit, and this is the percentage that EUD gives as response.
-# TODO: Test marginal price logic.
-# TODO: Add event_id to
+# TODO: Change it so that PV takes input Watts as variable in.
+# TODO: Utility meter maximum capacity
+# TODO: Add event_id to events?
 # TODO: Allow for "precomputation" of temperature thresholds and update events in the future (Air conditioner)
-# TODO: (12) Refactor from "Build" to "Physical Layer" and "Simulation Library".
-# TODO: (14) Add capability of adding physical layer connections to ensure that we can include wire connections.
-# TODO: (21) Air conditioner linear interpolate of price/set point
 
 
 # LONGER TERM:
 # TODO: Redesign/Refactor EUD's modulate power value.
+# TODO: Create a visual graph output for debugging purposes.
 # TODO: Reorder balance power battery add algorithm.
 # TODO: Incorporate the linear/nondirect power reduction done by the battery when overtextended
 # TODO: (20) Finish considering GC load balance algorithm

@@ -11,7 +11,7 @@
 
 """
     Grid Equipment is a subset of all Devices that does not include EUD's.
-    Currently, there is no specific functionality.
+    Currently, there is no specific functionality, but this can be expanded later.
 """
 
 from abc import ABCMeta
@@ -28,9 +28,5 @@ class GridEquipment(Device, metaclass=ABCMeta):
                  total_runtime=SECONDS_IN_DAY, connected_devices=None):
         super().__init__(device_id, device_type, supervisor, time, msg_latency, schedule, multiday,
                          total_runtime, connected_devices)
-
-    # Grid equipment specific functionality of sending power messages when power flows are now occurring.
-    def send_power_message(self, target_id, power_amt):
-        pass
 
 

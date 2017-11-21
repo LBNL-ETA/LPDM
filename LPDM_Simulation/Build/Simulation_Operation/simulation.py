@@ -44,14 +44,14 @@ class SimulationSetup:
             'light': [Light, 'max_operating_power', 'power_level_max', 'power_level_low', 'price_dim_start',
                       'price_dim_end', 'price_off'],
             'air_conditioner': [AirConditionerSimple, 'compressor_operating_power', 'initial_temp', 'temp_max_delta',
-                                'initial_set_point', 'price_to_setpoint', 'temperature_schedule', 'precooling_enabled',
-                                'precooling_price_threshold', 'compressor_cooling_rate', 'heat_exchange_rate',
-                                'temperature_update_interval'],
+                                'initial_set_point', 'price_to_setpoint', 'temperature_schedule',
+                                'precooling_price_threshold', 'compressor_cooling_rate', 'heat_exchange_rate'],
             'fixed_consumption': [FixedConsumption, 'desired_power_level']
         }
 
     ##
-    # Reads in the configuration JSON and
+    # Reads in the configuration JSON and returns the dictionary parsed from it
+    # @return a parsed key-value dictionary from the json
     def read_config_file(self, filename):
         with open(filename, 'r') as config_file:
             return json.load(config_file)

@@ -2,6 +2,8 @@
 A default 'utility' file containing extra support functions and variables to be freely used by all classes.
 """
 
+import datetime
+
 SECONDS_IN_DAY = 86400
 SECONDS_IN_HOUR = 3600
 SECONDS_IN_MINUTE = 60
@@ -25,3 +27,16 @@ def delta(a, b):
     return abs(a - b)
 
 
+##
+# Given a time in seconds, return a date in human readable format in the form of D HH:MM:SS
+# where D = Day, HH = Hour, MM = Minute, SS = Seconds
+# @param time_seconds the time in the simulation in seconds
+
+def format_time_from_seconds(seconds):
+    if seconds is None:
+        return None
+    (days, seconds) = divmod(seconds, SECONDS_IN_DAY)
+    (hours, seconds) = divmod(seconds, SECONDS_IN_HOUR)
+    (minutes, seconds) = divmod(seconds, SECONDS_IN_MINUTE)
+    t_format = datetime.time(hour=hours, minute=minutes, second=seconds).isoformat()
+    return "{} {}".format(days, t_format)

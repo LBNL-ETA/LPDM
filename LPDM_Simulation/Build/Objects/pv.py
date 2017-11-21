@@ -26,9 +26,10 @@ class PV(Device):
         self.setup_power_schedule(power_profile, peak_power, total_runtime)
 
     ##
-    # Sets up the power generation schedule for this PV.
-    # Takes input of a daily power generation schedule.
-    # TODO NOTE: assumes total_runtime is in days, and schedule is at most one day long. make more robust?
+    # Sets up the power generation schedule for this PV. Takes input of a daily power generation schedule.
+    # Power
+    # TODO: assumes total_runtime is in days, and schedule is at most one day long, and schedule is
+    # TODO: in percentage of peak power. Make this more robust?
     def setup_power_schedule(self, power_profile, peak_power, total_runtime):
         curr_day = int(self._time / SECONDS_IN_DAY)  # Current day in seconds
         while curr_day < total_runtime:
@@ -41,12 +42,16 @@ class PV(Device):
     # Changes the amount of power that this device is producing and
     # If this PV is connected to multiple devices, it evenly distributes its load amongst them.
     def update_power_status(self, peak_power, power_percent):
-        for device_id in self._connected_devices.keys():
-            power_amt = peak_power * power_percent
-            if power_amt != self._power_out:
-                self.set_power_out(power_amt)
-                self.send_power_message(device_id, -self._power_out)
+        num_connections = len(self._connected_devices)
+        power_amt = (peak_power * power_percent)
+        if power_amt != self._power_out:
+            for device_id in self._connected_devices.keys():
+                send_power = power_amt / num_connections
+                self.send_power_message(device_id, -send_power)
+            self.set_power_out(power_amt)
 
+    ##
+    # This PV will provide the power it , informing another device of the quantity by
     def send_power_message(self, target_id, power_amt):
         if target_id in self._connected_devices:
             target = self._connected_devices[target_id]
@@ -89,10 +94,8 @@ class PV(Device):
     def process_allocate_message(self, sender_id, allocate_amt):
         pass
 
-
     ##
     # PV does not calculate any new usage information besides sum power out
-
     def device_specific_calcs(self):
         pass
 

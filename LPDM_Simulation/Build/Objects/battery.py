@@ -19,9 +19,7 @@ Batteries encapsulate this behavior of a Grid Controller:
 import logging
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-
-from Build.Simulation_Operation.logger import build_log_msg
-
+from Build.Simulation_Operation.support import format_time_from_seconds
 
 class Battery(object):
 
@@ -196,18 +194,12 @@ class Battery(object):
     # preference.
     # @param message the message to add to logger
     # @param value the value add to the logger
-
     # @return a formatted string to include in the logger
 
     def build_battery_log_notation(self, message="", value=None):
-        """Build the battery log message string"""
-        return build_log_msg(
-            time_seconds=self._time,
-            message=message,
-            tag="SOC {}, charge pref {}".format(self._current_soc, self._charging_preference),
-            value=value,
-            device_id=self._battery_id
-        )
+        return "{}; {}; {}; SOC {}, charge pref {}; {}; {}".format(
+            format_time_from_seconds(self._time), self._time, self._battery_id, self._current_soc,
+            self._charging_preference, value, message)
 
 
 """

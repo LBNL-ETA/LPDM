@@ -17,8 +17,6 @@ An implementation of a light EUD. The light functions such that
 from Build.Simulation_Operation.support import SECONDS_IN_DAY
 from Build.Objects.eud import Eud
 
-# TODO: On and Off to replace the current turn_on, turn_off functions in the input.
-
 
 class Light(Eud):
 
@@ -39,20 +37,21 @@ class Light(Eud):
         self._on = False  # Whether the light is on
 
     ##
-    # Calculate the desired power level in based on the price (watts)
+    # Calculate the desired power level in based on the price (watts). Algorithm is described in
+    # software documentation.
     #
     def calculate_desired_power_level(self):
         if self._in_operation and self._on:
             if self._price <= self._price_dim_start:
+                # Operate at maximum capacity when below this threshold
                 return self._power_level_max * self._max_operating_power
             elif self._price <= self._price_dim_end:
                 # Linearly reduce power consumption
                 power_reduce_ratio = (self._price - self._price_dim_start) / (self._price_dim_end - self._price_dim_start)
-                power_level_reduced = self._power_level_max - (
-                                     (self._power_level_max - self._power_level_low) * power_reduce_ratio)
+                power_level_reduced = self._power_level_max - ((self._power_level_max - self._power_level_low) * power_reduce_ratio)
                 return self._max_operating_power * power_level_reduced
-
             elif self._price <= self._price_off:
+                # In this price range operate in low power mode
                 return self._power_level_low * self._max_operating_power
         return 0.0  # not in operation or price too high.
 
@@ -75,7 +74,10 @@ class Light(Eud):
         self.set_power_in(0)
         self.set_power_out(0)
 
-    # TODO: Make it so that this device changes its brightness accordingly.
+    ##
+    # The light modulates its brightness based on how much power is received.
+    # Brightness is ratio of received power to maximum operating power.
+    # @param received_power how much power this light received to operate
     def respond_to_power(self, received_power):
         self._brightness = received_power / self._max_operating_power
         self._logger.info(self.build_log_notation(

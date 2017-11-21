@@ -12,7 +12,7 @@
 import os
 import re
 import logging
-import datetime
+from datetime import datetime, timezone
 
 from Build.Simulation_Operation.support import SECONDS_IN_DAY, SECONDS_IN_HOUR, SECONDS_IN_MINUTE
 
@@ -95,21 +95,21 @@ class SimulationLogger:
     ##
     # Creates the simulation logger by
     # @param config_file the name of configuration file, to be included in the top of the simulation description.
+    # @param override_args an optional list override arguments to include in the header of the file
 
-    def create_simulation_logger(self, config_file, override_args):
+    def create_simulation_logger(self, config_file, override_args=None):
 
         self.logger = logging.getLogger(self.app_name)
         self.logger.setLevel(logging.DEBUG)  # Set debug as minimum logging level. Debug and higher can be logged.
 
         # Create the header to include at the top of the file
-        if len(override_args):
+        if override_args:
             # Record override arguments at top of file in addition to input JSON and time
             log_override_vals = "Override values: {}".format(", ".join(override_args))
-            header = "{}\n{}\n{}\n".format(datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat(),
+            header = "{}\n{}\n{}\n".format(datetime.now(timezone.utc).astimezone().isoformat(),
                                            config_file, log_override_vals)
         else:
-            header = "{}\n{}\n".format(datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat(),
-                                       config_file)
+            header = "{}\n{}\n".format(datetime.now(timezone.utc).astimezone().isoformat(), config_file)
 
         # create file handler for the output log file
         fh = logging.FileHandler(os.path.join(self.simulation_log_path(), 'sim_results.log'), mode='w')
@@ -128,33 +128,7 @@ class SimulationLogger:
         self.logger.addHandler(ch)
         self.logger.addHandler(fh)
 
-""" Functionality for creating the information format to be included in the log file """
 
 
-##
-# Given a time in seconds, return a date in human readable format in the form of D HH:MM:SS
-# where D = Day, HH = Hour, MM = Minute, SS = Seconds
-# @param time_seconds the time in the simulation in seconds
-
-def format_time_from_seconds(seconds):
-    if seconds is None:
-        return None
-    (days, seconds) = divmod(seconds, SECONDS_IN_DAY)
-    (hours, seconds) = divmod(seconds, SECONDS_IN_HOUR)
-    (minutes, seconds) = divmod(seconds, SECONDS_IN_MINUTE)
-    t_format = datetime.time(hour=hours, minute=minutes, second=seconds).isoformat()
-    return "{} {}".format(days, t_format)
 
 
-##
-# Builds a message string to include in the logger
-# @param message the message to include in the logging string
-# @param time seconds the time of the message
-# @param device_id the device id
-# @param tag the tag value to include in log
-# @param value the value to include in message
-
-def build_log_msg(message="", time_seconds=None, device_id="", tag="", value=""):
-
-    return "{}; {}; {}; {}; {}; {}".format(
-        format_time_from_seconds(time_seconds), time_seconds, device_id, tag, value, message)

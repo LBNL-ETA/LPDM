@@ -11,10 +11,7 @@
 ########################################################################################################################
 
 """
-    Implementation of a general EUD device, which requests and consumes certain amounts of power.
-    For current simplicity, the EUD maintains up to one connection with a grid controller at a time
-    and is connected to no other devices. Hence, its only messaging occurs with the Grid Controller
-    it is connected to.
+    Implementation of a general EUD device, which only consumes power based on its internal state.
 """
 
 from abc import abstractmethod
@@ -28,7 +25,7 @@ from Build.Objects.device import Device
 class Eud(Device):
 
     def __init__(self, device_id, device_type, supervisor, total_runtime, time=0, msg_latency=0, power_direct=False,
-                 multiday=0, modulation_interval=600, schedule=None, connected_devices=None):
+                 modulation_interval=600, schedule=None, multiday=0, connected_devices=None):
         super().__init__(device_id, device_type, supervisor, time=time, msg_latency=msg_latency, schedule=schedule,
                          multiday=multiday, total_runtime=total_runtime, connected_devices=connected_devices)
         # Dictionary of devices and how much this EUD has been allocated by those devices. All values must be positive

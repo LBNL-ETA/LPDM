@@ -39,7 +39,7 @@ from abc import ABCMeta, abstractmethod
 
 from Build.Simulation_Operation.message import Message, MessageType
 
-from Build.Simulation_Operation import logger
+from Build.Simulation_Operation.support import format_time_from_seconds
 from Build.Simulation_Operation.event import Event
 from Build.Simulation_Operation.queue import PriorityQueue
 from Build.Simulation_Operation.support import SECONDS_IN_DAY
@@ -61,9 +61,9 @@ class Device(metaclass=ABCMeta):
                  total_runtime=SECONDS_IN_DAY, connected_devices=None):
 
         # TODO: Add all_devices dictionary, which is idea of physical connection. Will be a dictionary of devices to
-        # TODO... wires. That device can then register at any point later on in the simulation.
+        # TODO... wires. That device can then register at any point later on in the simulation. This is Konnected
+        # Devices.
         self._konnected_devices = {}
-
 
         if connected_devices is None:
             self._connected_devices = {}
@@ -378,32 +378,30 @@ class Device(metaclass=ABCMeta):
     # @param a list of scheduled events to add to the device's queue, in the format of list of list of
     # time(seconds), operation_name
     #
-    # TODO: REVISE THIS. Also include non-hourly.
     def setup_schedule(self, scheduled_events, runtime=SECONDS_IN_DAY, multiday=0):
         curr_day = 0
         if multiday:
             while curr_day < runtime:
                 for task in scheduled_events:
-                    # TODO: hour, operation_name, *args = tuple(task)
-                    hour, operation_name = tuple(task)
+                    hour, operation_name, *args = tuple(task)
                     if hour > multiday * 24:
-                        break # Past our repeat interval
+                        break  # Past our repeat interval
                     if hasattr(self, operation_name):
                         func = getattr(self, operation_name)
                     else:
                         raise ValueError("Called the scheduler with an incorrectly named function")
-                    event = Event(func)  # for now no arguments. TODO: Event(func, *args) if args else Event(func)
+                    event = Event(func, *args) if args else Event(func)
                     time_sec = hour * 3600
                     self.add_event(event, curr_day + time_sec)
                 curr_day += SECONDS_IN_DAY
         else:
             for task in scheduled_events:
-                hour, operation_name = tuple(task)
+                hour, operation_name, *args = tuple(task)
                 if hasattr(self, operation_name):
                     func = getattr(self, operation_name)
                 else:
                     raise ValueError("Called the scheduler with an incorrectly named function")
-                event = Event(func)  # for now no arguments. TODO: list should be of tuples (time, func, args).
+                event = Event(func, *args) if args else Event(func)
                 time_sec = hour * 3600
                 self.add_event(event, time_sec)
 
@@ -412,19 +410,13 @@ class Device(metaclass=ABCMeta):
     ##
     # Builds a logging message from a message, tag, and value, which also includes time and device_id
     # @param message the message to add to logger
-    # @param tag the tag to add to the logger
-    # @param value the value add to the logger
+    # @param tag the tag to associate with this message to add to the logger
+    # @param value the value for this message to add to the logger
 
     # @return a formatted string to include in the logger
     def build_log_notation(self, message="", tag="", value=None):
-        """Build the log message string"""
-        return logger.build_log_msg(
-            time_seconds=self._time,
-            message=message,
-            tag=tag,
-            value=value,
-            device_id=self._device_id
-        )
+        return "{}; {}; {}; {}; {}; {}".format(
+            format_time_from_seconds(self._time), self._time, self._device_id, tag, value, message)
 
     ##
     # Writes the calculations of total energy in and out of this device in wH to the log file
@@ -463,27 +455,11 @@ class Device(metaclass=ABCMeta):
 
 # INFRASTRUCTURE NECESSARY FOR TESTING ALGORITHMS.
 
-# TODO: Fix events to have multiple arguments.
 # TODO: Implement the new Wire class, etc.
 # TODO: Change Grid Controller's input file "threshold_alloc" to "minimum allocate response".
 # TODO: Linear interpolation in Air Conditioner?
 
 
-""" LONG TERM TODOs"""
-# TODO: Make it so the grid controller has a capacity limit, and this is the percentage that EUD gives as response.
-# TODO: Change it so that PV takes input Watts as variable in.
-# TODO: Utility meter maximum capacity
-# TODO: Add a unique event_id to each event (could do this with an event creator class)?
-# TODO: Allow for "precomputation" of temperature thresholds and update events in the future (Air conditioner)
-# TODO: Fix the current device_id concept. Needs to be auto-assigned variable at creation to ensure correctness? UUID?
-# TODO: Incorporate the concept of Grid Equipment, and define individual functionality. 
-# TODO: Allow for PV to take in pure watts data.
 
-# LONGER TERM:
-# TODO: Redesign EUD's modulate power to shift onto less expensive GC's.
-# TODO: Create a visual graph output for debugging purposes.
-# TODO: Reorder balance power battery add algorithm.
-# TODO: Reconsider price forecasts/communicating them/etc.
-# TODO: Start doing multiple GC test scenarios.
 
 

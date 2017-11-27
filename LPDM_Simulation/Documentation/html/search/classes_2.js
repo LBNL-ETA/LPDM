@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['message',['Message',['../class_message_1_1_message.html',1,'Message']]],
-  ['messagetype',['MessageType',['../class_message_1_1_message_type.html',1,'Message']]]
+  ['device',['Device',['../class_build_1_1_objects_1_1device_1_1_device.html',1,'Build::Objects::device']]]
 ];

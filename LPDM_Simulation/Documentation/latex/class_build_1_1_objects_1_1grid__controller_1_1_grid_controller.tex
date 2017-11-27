@@ -1,0 +1,452 @@
+\hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller}{}\section{Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller Class Reference}
+\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller}\index{Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller@{Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller}}
+Inheritance diagram for Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a3ce9369664b081a2fbfb03252d00e3f0}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a3ce9369664b081a2fbfb03252d00e3f0}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self, device\+\_\+id, supervisor, time=0, msg\+\_\+latency=0, price\+\_\+logic=\char`\"{}\char`\"{}, price\+\_\+logic\+\_\+interval=S\+E\+C\+O\+N\+D\+S\+\_\+\+I\+N\+\_\+\+H\+O\+UR, starting\+\_\+price=0.\+1, price\+\_\+announce\+\_\+threshold=0.\+01, battery=None, min\+\_\+alloc\+\_\+response\+\_\+threshold=1.\+0, schedule=None, total\+\_\+runtime=S\+E\+C\+O\+N\+D\+S\+\_\+\+I\+N\+\_\+\+D\+AY, connected\+\_\+devices=None)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a9c3ee1f54a453b5008d1118d9da1b8ed}{disengage} (self)
+\begin{DoxyCompactList}\small\item\em Method to be called when device is leaving the grid, and is seeking to unregister with other devices. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a024c6220ba4e03dca547d99e1f3a39be}{turn\+\_\+on} (self, connected\+\_\+devices=None)
+\begin{DoxyCompactList}\small\item\em Turns the grid controller on, registering it with all of its connected devices. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_afdea3e05f02d0c838ee8647a8f60ddf7}{turn\+\_\+off} (self)
+\begin{DoxyCompactList}\small\item\em Shuts down the grid controller. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a672af7e3a1bfe6ec323cd2d5a9e2b85a}{change\+\_\+load} (self, sender\+\_\+id, new\+\_\+load)
+\begin{DoxyCompactList}\small\item\em Changes a load with a registered device. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a5dedc78f6eca0253e0395ca38c74c4b0}{setup\+\_\+price\+\_\+calc\+\_\+schedule} (self, price\+\_\+history\+\_\+interval, total\+\_\+runtime)
+\begin{DoxyCompactList}\small\item\em Recalculates the average price history at every given interval. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a03876bc3ddc4c92dfa5e80e74978169a}{setup\+\_\+battery\+\_\+update\+\_\+schedule} (self, update\+\_\+frequency, total\+\_\+runtime)
+\begin{DoxyCompactList}\small\item\em Sets up the events to recalculate the battery\textquotesingle{}s charge preference every certain period of time. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_af818cf547695cc3dbb126112cac8f453}{setup\+\_\+modulation\+\_\+schedule} (self, total\+\_\+runtime)
+\begin{DoxyCompactList}\small\item\em Every 5 minutes, reevaluate this Grid Controller\textquotesingle{}s loads with modulate power and seek to optimize the distribution. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_aedf7e56f24b97d1fa1d4ff68d23cd987}{process\+\_\+register\+\_\+message} (self, sender\+\_\+id, value)
+\begin{DoxyCompactList}\small\item\em Override of the device register message function. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a7a07bb8716ac48899b8f0c1ee2e2f6fe}{process\+\_\+power\+\_\+message} (self, sender\+\_\+id, new\+\_\+power)
+\begin{DoxyCompactList}\small\item\em Processes a power message, indicating power flows have changed. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a7133aa43a9d19e42fad9c6deca385fe2}{process\+\_\+price\+\_\+message} (self, sender\+\_\+id, price, extra\+\_\+info)
+\begin{DoxyCompactList}\small\item\em Processes a price message received from another device, modifying its own price based on its price logic. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a70878c4f7a8a7cb46cc1b0097e0d91fd}{process\+\_\+request\+\_\+message} (self, sender\+\_\+id, request\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em Processes a request message from an E\+UD or another GC, and allocates in response whatever matches its. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ad917e30e3b828571c02657d8052cf075}{process\+\_\+allocate\+\_\+message} (self, sender\+\_\+id, allocate\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em Process an allocate message from another grid controller. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a2d1690b10f41cdef2d74895c2a971b58}{send\+\_\+power\+\_\+message} (self, target\+\_\+id, power\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em Sends a power message to another device. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ac6aa57134d55af7248149fdf9a661ffd}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ac6aa57134d55af7248149fdf9a661ffd}} 
+def {\bfseries send\+\_\+price\+\_\+message} (self, target\+\_\+id, price)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a0eb0f617f66e5dc0c1f2f4d853251c3c}{send\+\_\+request\+\_\+message} (self, target\+\_\+id, request\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em Requests to receive a given amount of power from another device. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a5ff206d2afccf703eef39dafadce5124}{send\+\_\+allocate\+\_\+message} (self, target\+\_\+id, allocate\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em Allocates a given quantity of power to be provided to another device. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_aada18b526f6576563d549b9efee182df}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_aada18b526f6576563d549b9efee182df}} 
+def {\bfseries broadcast\+\_\+new\+\_\+price} (self, new\+\_\+price)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_aa6a44013053b81ae9996aa21a44fac1d}{update\+\_\+battery} (self)
+\begin{DoxyCompactList}\small\item\em Update the current state of the battery. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a51734204cdfcff80c9ba18eacec07dde}{update\+\_\+average\+\_\+price\+\_\+calcs} (self)
+\begin{DoxyCompactList}\small\item\em Call this function every hour during the running of the simulation. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a59529d68b87e1814512a8c03d908d797}{recalculate\+\_\+price} (self)
+\begin{DoxyCompactList}\small\item\em Recalculates the price with the Grid Controller\textquotesingle{}s price logic, and then sets the current price value. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a8613a7012fcafee53dafc0abe1d71919}{modulate\+\_\+price} (self)
+\begin{DoxyCompactList}\small\item\em Calculate this after a device has received a price message. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_aa099c2aaa311e87adde7bc663efc0779}{balance\+\_\+power} (self, source\+\_\+id, prev\+\_\+source\+\_\+power, source\+\_\+demanded\+\_\+power)
+\begin{DoxyCompactList}\small\item\em Instantaneous supply-\/demand balance function, so that the net load at any given time remains at zero. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a739bdc06f47603df13fa105dfcfaea10}{get\+\_\+allocate\+\_\+assets} (self)
+\begin{DoxyCompactList}\small\item\em Sees what the GC has freely available to increase from its existing allocates compared to existing loads. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ad984f42fc7530884d3c95fd1d4e5067e}{get\+\_\+allocate\+\_\+liabilities} (self)
+\begin{DoxyCompactList}\small\item\em Sees what the GC is liable to provide other devices because of its allocation to other devices that are not being fully utilized in current loads. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ad0475d0ecec8bd9541c940fb5e779dd1}{request\+\_\+response} (self, request\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em Determines how much this GC responds to a power request. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a41968b1bd392919861dbc0de7f153f2f}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a41968b1bd392919861dbc0de7f153f2f}} 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a41968b1bd392919861dbc0de7f153f2f}{modulate\+\_\+power} (self)
+\begin{DoxyCompactList}\small\item\em This function determines how the Grid Controller tries to optimize its loads to satisfy its battery preference Called upon significant event changes and at regular intervals to help the GC balance its powerflows. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ade27791e0e81bcb55583e7e711b9b5d0}{seek\+\_\+to\+\_\+obtain\+\_\+power} (self, power\+\_\+to\+\_\+obtain)
+\begin{DoxyCompactList}\small\item\em Grid controller is seeking to obtain the remaining amount of power for itself to consume. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ad85f2d1459669fe5be0d3c046c23a54b}{seek\+\_\+to\+\_\+distribute\+\_\+power} (self, power\+\_\+to\+\_\+distribute)
+\begin{DoxyCompactList}\small\item\em The grid controller is seeking to distribute some quantity of power to its connected devices. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ae5087a1b8b5278e6340b027a860353dd}{device\+\_\+specific\+\_\+calcs} (self)
+\begin{DoxyCompactList}\small\item\em The grid controller is also responsible for writing its batteries calculations. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_af614a04e6d4ec6c8724676c541621095}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_af614a04e6d4ec6c8724676c541621095}} 
+int {\bfseries T\+R\+I\+C\+K\+L\+E\+\_\+\+P\+O\+W\+ER} = 2
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_aa099c2aaa311e87adde7bc663efc0779}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_aa099c2aaa311e87adde7bc663efc0779}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!balance\+\_\+power@{balance\+\_\+power}}
+\index{balance\+\_\+power@{balance\+\_\+power}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{balance\+\_\+power()}{balance\_power()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+balance\+\_\+power (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{source\+\_\+id,  }\item[{}]{prev\+\_\+source\+\_\+power,  }\item[{}]{source\+\_\+demanded\+\_\+power }\end{DoxyParamCaption})}
+
+
+
+Instantaneous supply-\/demand balance function, so that the net load at any given time remains at zero. 
+
+To be called after this GC receives a power message, indicating external power flows have changed. The GC may not provide the entire requested amount of power if it is not able. See docs for an in-\/depth description of reasoning of this algorithm.
+
+
+\begin{DoxyParams}{Parameters}
+{\em source\+\_\+id} & the sender of the new amount of power. \\
+\hline
+{\em prev\+\_\+source\+\_\+power} & previous amount of a power flow from this GC\textquotesingle{}s perspective \\
+\hline
+{\em source\+\_\+demanded\+\_\+power} & the new amount of the power flow from this GC\textquotesingle{}s perspective. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a672af7e3a1bfe6ec323cd2d5a9e2b85a}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a672af7e3a1bfe6ec323cd2d5a9e2b85a}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!change\+\_\+load@{change\+\_\+load}}
+\index{change\+\_\+load@{change\+\_\+load}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{change\+\_\+load()}{change\_load()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+change\+\_\+load (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{new\+\_\+load }\end{DoxyParamCaption})}
+
+
+
+Changes a load with a registered device. 
+
+Call this before sending a power message so as to calculate the load you can actually handle considering capacities. 
+\begin{DoxyParams}{Parameters}
+{\em sender\+\_\+id} & the device to associate the load with \\
+\hline
+{\em new\+\_\+load} & the value of the new load T\+O\+DO\+: Add a maximum channel capacity for this load. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the amount added to the load 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ae5087a1b8b5278e6340b027a860353dd}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ae5087a1b8b5278e6340b027a860353dd}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!device\+\_\+specific\+\_\+calcs@{device\+\_\+specific\+\_\+calcs}}
+\index{device\+\_\+specific\+\_\+calcs@{device\+\_\+specific\+\_\+calcs}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{device\+\_\+specific\+\_\+calcs()}{device\_specific\_calcs()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+device\+\_\+specific\+\_\+calcs (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+The grid controller is also responsible for writing its batteries calculations. 
+
+Additionally, the grid controller checks the accuracy of its calculations by making sure the the difference in battery charge levels fully covers the difference in the power in and power out levels. \mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a9c3ee1f54a453b5008d1118d9da1b8ed}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a9c3ee1f54a453b5008d1118d9da1b8ed}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!disengage@{disengage}}
+\index{disengage@{disengage}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{disengage()}{disengage()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+disengage (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Method to be called when device is leaving the grid, and is seeking to unregister with other devices. 
+
+Clears all other devices\textquotesingle{} records for this device before requesting to unregister and stop receiving messages. \mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a739bdc06f47603df13fa105dfcfaea10}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a739bdc06f47603df13fa105dfcfaea10}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!get\+\_\+allocate\+\_\+assets@{get\+\_\+allocate\+\_\+assets}}
+\index{get\+\_\+allocate\+\_\+assets@{get\+\_\+allocate\+\_\+assets}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{get\+\_\+allocate\+\_\+assets()}{get\_allocate\_assets()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+get\+\_\+allocate\+\_\+assets (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Sees what the GC has freely available to increase from its existing allocates compared to existing loads. 
+
+\begin{DoxyReturn}{Returns}
+quantity of freely available power from existing allocates 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ad984f42fc7530884d3c95fd1d4e5067e}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ad984f42fc7530884d3c95fd1d4e5067e}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!get\+\_\+allocate\+\_\+liabilities@{get\+\_\+allocate\+\_\+liabilities}}
+\index{get\+\_\+allocate\+\_\+liabilities@{get\+\_\+allocate\+\_\+liabilities}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{get\+\_\+allocate\+\_\+liabilities()}{get\_allocate\_liabilities()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+get\+\_\+allocate\+\_\+liabilities (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Sees what the GC is liable to provide other devices because of its allocation to other devices that are not being fully utilized in current loads. 
+
+\begin{DoxyReturn}{Returns}
+quantity of excess allocate liabilities 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a8613a7012fcafee53dafc0abe1d71919}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a8613a7012fcafee53dafc0abe1d71919}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!modulate\+\_\+price@{modulate\+\_\+price}}
+\index{modulate\+\_\+price@{modulate\+\_\+price}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{modulate\+\_\+price()}{modulate\_price()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+modulate\+\_\+price (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Calculate this after a device has received a price message. 
+
+Iterates through the current prices of its neighbors and finds what its local price should be. \mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ad917e30e3b828571c02657d8052cf075}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ad917e30e3b828571c02657d8052cf075}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!process\+\_\+allocate\+\_\+message@{process\+\_\+allocate\+\_\+message}}
+\index{process\+\_\+allocate\+\_\+message@{process\+\_\+allocate\+\_\+message}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{process\+\_\+allocate\+\_\+message()}{process\_allocate\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+process\+\_\+allocate\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{allocate\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+Process an allocate message from another grid controller. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a7a07bb8716ac48899b8f0c1ee2e2f6fe}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a7a07bb8716ac48899b8f0c1ee2e2f6fe}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!process\+\_\+power\+\_\+message@{process\+\_\+power\+\_\+message}}
+\index{process\+\_\+power\+\_\+message@{process\+\_\+power\+\_\+message}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{process\+\_\+power\+\_\+message()}{process\_power\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+process\+\_\+power\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{new\+\_\+power }\end{DoxyParamCaption})}
+
+
+
+Processes a power message, indicating power flows have changed. 
+
+First, instantaneously responds to that power flow with balance power. Then, adjusts its price based on new power flows, and finally tries to shift its power in a more optimal way. 
+\begin{DoxyParams}{Parameters}
+{\em sender\+\_\+id} & the device which sent the power message \\
+\hline
+{\em new\+\_\+power} & the new power value from the perspective of the message sender. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a7133aa43a9d19e42fad9c6deca385fe2}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a7133aa43a9d19e42fad9c6deca385fe2}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!process\+\_\+price\+\_\+message@{process\+\_\+price\+\_\+message}}
+\index{process\+\_\+price\+\_\+message@{process\+\_\+price\+\_\+message}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{process\+\_\+price\+\_\+message()}{process\_price\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+process\+\_\+price\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{price,  }\item[{}]{extra\+\_\+info }\end{DoxyParamCaption})}
+
+
+
+Processes a price message received from another device, modifying its own price based on its price logic. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sender\+\_\+id} & the sender of the message \\
+\hline
+{\em price} & the local price received from the message sender \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_aedf7e56f24b97d1fa1d4ff68d23cd987}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_aedf7e56f24b97d1fa1d4ff68d23cd987}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!process\+\_\+register\+\_\+message@{process\+\_\+register\+\_\+message}}
+\index{process\+\_\+register\+\_\+message@{process\+\_\+register\+\_\+message}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{process\+\_\+register\+\_\+message()}{process\_register\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+process\+\_\+register\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{value }\end{DoxyParamCaption})}
+
+
+
+Override of the device register message function. 
+
+When it receives a register message, also responds with information about this GC\textquotesingle{}s price.
+
+
+\begin{DoxyParams}{Parameters}
+{\em sender\+\_\+id} & the sender of the message informing of registering. \\
+\hline
+{\em value} & positive if sender is registering negative if unregistering \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a70878c4f7a8a7cb46cc1b0097e0d91fd}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a70878c4f7a8a7cb46cc1b0097e0d91fd}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!process\+\_\+request\+\_\+message@{process\+\_\+request\+\_\+message}}
+\index{process\+\_\+request\+\_\+message@{process\+\_\+request\+\_\+message}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{process\+\_\+request\+\_\+message()}{process\_request\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+process\+\_\+request\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{request\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+Processes a request message from an E\+UD or another GC, and allocates in response whatever matches its. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sender\+\_\+id} & the sender of the request message \\
+\hline
+{\em request\+\_\+amt} & the quantity of power requested from perspective of message sender \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a59529d68b87e1814512a8c03d908d797}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a59529d68b87e1814512a8c03d908d797}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!recalculate\+\_\+price@{recalculate\+\_\+price}}
+\index{recalculate\+\_\+price@{recalculate\+\_\+price}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{recalculate\+\_\+price()}{recalculate\_price()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+recalculate\+\_\+price (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Recalculates the price with the Grid Controller\textquotesingle{}s price logic, and then sets the current price value. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ad0475d0ecec8bd9541c940fb5e779dd1}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ad0475d0ecec8bd9541c940fb5e779dd1}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!request\+\_\+response@{request\+\_\+response}}
+\index{request\+\_\+response@{request\+\_\+response}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{request\+\_\+response()}{request\_response()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+request\+\_\+response (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{request\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+Determines how much this GC responds to a power request. 
+
+See documentation for reasoning. \begin{DoxyReturn}{Returns}
+how much this device will provide in respond to that request message (negative value) 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ad85f2d1459669fe5be0d3c046c23a54b}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ad85f2d1459669fe5be0d3c046c23a54b}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!seek\+\_\+to\+\_\+distribute\+\_\+power@{seek\+\_\+to\+\_\+distribute\+\_\+power}}
+\index{seek\+\_\+to\+\_\+distribute\+\_\+power@{seek\+\_\+to\+\_\+distribute\+\_\+power}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{seek\+\_\+to\+\_\+distribute\+\_\+power()}{seek\_to\_distribute\_power()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+seek\+\_\+to\+\_\+distribute\+\_\+power (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{power\+\_\+to\+\_\+distribute }\end{DoxyParamCaption})}
+
+
+
+The grid controller is seeking to distribute some quantity of power to its connected devices. 
+
+Currently, only tries to sell it off the utility meter, and whatever cannot be distributed is added back to battery.
+
+
+\begin{DoxyParams}{Parameters}
+{\em power\+\_\+to\+\_\+distribute} & the amount of power that this grid controller would like to distribute to other sources must be a positive value. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ade27791e0e81bcb55583e7e711b9b5d0}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_ade27791e0e81bcb55583e7e711b9b5d0}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!seek\+\_\+to\+\_\+obtain\+\_\+power@{seek\+\_\+to\+\_\+obtain\+\_\+power}}
+\index{seek\+\_\+to\+\_\+obtain\+\_\+power@{seek\+\_\+to\+\_\+obtain\+\_\+power}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{seek\+\_\+to\+\_\+obtain\+\_\+power()}{seek\_to\_obtain\_power()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+seek\+\_\+to\+\_\+obtain\+\_\+power (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{power\+\_\+to\+\_\+obtain }\end{DoxyParamCaption})}
+
+
+
+Grid controller is seeking to obtain the remaining amount of power for itself to consume. 
+
+Currently, only goes to the utility meters if it is connected and tries to shift power onto them, does not do any shifting on less expensive power sources/grid controller optimization. 
+\begin{DoxyParams}{Parameters}
+{\em power\+\_\+to\+\_\+obtain} & the amount of power this grid controller would like to obtain from other sources. Must be positive. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a5ff206d2afccf703eef39dafadce5124}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a5ff206d2afccf703eef39dafadce5124}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!send\+\_\+allocate\+\_\+message@{send\+\_\+allocate\+\_\+message}}
+\index{send\+\_\+allocate\+\_\+message@{send\+\_\+allocate\+\_\+message}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{send\+\_\+allocate\+\_\+message()}{send\_allocate\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+send\+\_\+allocate\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{target\+\_\+id,  }\item[{}]{allocate\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+Allocates a given quantity of power to be provided to another device. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a2d1690b10f41cdef2d74895c2a971b58}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a2d1690b10f41cdef2d74895c2a971b58}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!send\+\_\+power\+\_\+message@{send\+\_\+power\+\_\+message}}
+\index{send\+\_\+power\+\_\+message@{send\+\_\+power\+\_\+message}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{send\+\_\+power\+\_\+message()}{send\_power\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+send\+\_\+power\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{target\+\_\+id,  }\item[{}]{power\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+Sends a power message to another device. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em target\+\_\+id} & the recipient of the power message \\
+\hline
+{\em power\+\_\+amt} & the quantity of the new power flow from this device\textquotesingle{}s perspective \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a0eb0f617f66e5dc0c1f2f4d853251c3c}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a0eb0f617f66e5dc0c1f2f4d853251c3c}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!send\+\_\+request\+\_\+message@{send\+\_\+request\+\_\+message}}
+\index{send\+\_\+request\+\_\+message@{send\+\_\+request\+\_\+message}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{send\+\_\+request\+\_\+message()}{send\_request\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+send\+\_\+request\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{target\+\_\+id,  }\item[{}]{request\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+Requests to receive a given amount of power from another device. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a03876bc3ddc4c92dfa5e80e74978169a}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a03876bc3ddc4c92dfa5e80e74978169a}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!setup\+\_\+battery\+\_\+update\+\_\+schedule@{setup\+\_\+battery\+\_\+update\+\_\+schedule}}
+\index{setup\+\_\+battery\+\_\+update\+\_\+schedule@{setup\+\_\+battery\+\_\+update\+\_\+schedule}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{setup\+\_\+battery\+\_\+update\+\_\+schedule()}{setup\_battery\_update\_schedule()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+setup\+\_\+battery\+\_\+update\+\_\+schedule (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{update\+\_\+frequency,  }\item[{}]{total\+\_\+runtime }\end{DoxyParamCaption})}
+
+
+
+Sets up the events to recalculate the battery\textquotesingle{}s charge preference every certain period of time. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em update\+\_\+frequency} & how frequently prices should be recalculated. \\
+\hline
+{\em total\+\_\+runtime} & the total runtime of the simulation, this will setup events up until that time \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_af818cf547695cc3dbb126112cac8f453}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_af818cf547695cc3dbb126112cac8f453}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!setup\+\_\+modulation\+\_\+schedule@{setup\+\_\+modulation\+\_\+schedule}}
+\index{setup\+\_\+modulation\+\_\+schedule@{setup\+\_\+modulation\+\_\+schedule}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{setup\+\_\+modulation\+\_\+schedule()}{setup\_modulation\_schedule()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+setup\+\_\+modulation\+\_\+schedule (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{total\+\_\+runtime }\end{DoxyParamCaption})}
+
+
+
+Every 5 minutes, reevaluate this Grid Controller\textquotesingle{}s loads with modulate power and seek to optimize the distribution. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em total\+\_\+runtime} & the length of the simulation in seconds. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a5dedc78f6eca0253e0395ca38c74c4b0}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a5dedc78f6eca0253e0395ca38c74c4b0}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!setup\+\_\+price\+\_\+calc\+\_\+schedule@{setup\+\_\+price\+\_\+calc\+\_\+schedule}}
+\index{setup\+\_\+price\+\_\+calc\+\_\+schedule@{setup\+\_\+price\+\_\+calc\+\_\+schedule}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{setup\+\_\+price\+\_\+calc\+\_\+schedule()}{setup\_price\_calc\_schedule()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+setup\+\_\+price\+\_\+calc\+\_\+schedule (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{price\+\_\+history\+\_\+interval,  }\item[{}]{total\+\_\+runtime }\end{DoxyParamCaption})}
+
+
+
+Recalculates the average price history at every given interval. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em price\+\_\+history\+\_\+interval} & how frequently prices should be recalculated. \\
+\hline
+\mbox{\tt in}  & {\em total\+\_\+runtime} & the total runtime of the simulation, this will setup events up until that time \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_afdea3e05f02d0c838ee8647a8f60ddf7}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_afdea3e05f02d0c838ee8647a8f60ddf7}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!turn\+\_\+off@{turn\+\_\+off}}
+\index{turn\+\_\+off@{turn\+\_\+off}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{turn\+\_\+off()}{turn\_off()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+turn\+\_\+off (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Shuts down the grid controller. 
+
+Stop power flows. Send messages to all connected devices to reset their negotiations with this grid controller to zero. \mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a024c6220ba4e03dca547d99e1f3a39be}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a024c6220ba4e03dca547d99e1f3a39be}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!turn\+\_\+on@{turn\+\_\+on}}
+\index{turn\+\_\+on@{turn\+\_\+on}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{turn\+\_\+on()}{turn\_on()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+turn\+\_\+on (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{connected\+\_\+devices = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Turns the grid controller on, registering it with all of its connected devices. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em connected\+\_\+devices} & the devices that this GC is connected to (default to already connected devices) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a51734204cdfcff80c9ba18eacec07dde}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_a51734204cdfcff80c9ba18eacec07dde}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!update\+\_\+average\+\_\+price\+\_\+calcs@{update\+\_\+average\+\_\+price\+\_\+calcs}}
+\index{update\+\_\+average\+\_\+price\+\_\+calcs@{update\+\_\+average\+\_\+price\+\_\+calcs}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{update\+\_\+average\+\_\+price\+\_\+calcs()}{update\_average\_price\_calcs()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+update\+\_\+average\+\_\+price\+\_\+calcs (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Call this function every hour during the running of the simulation. 
+
+This will reevaluate the current running hourly price and total average price statistics so that it can base its current price based on those. \mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_aa6a44013053b81ae9996aa21a44fac1d}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_aa6a44013053b81ae9996aa21a44fac1d}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}!update\+\_\+battery@{update\+\_\+battery}}
+\index{update\+\_\+battery@{update\+\_\+battery}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller}}
+\subsubsection{\texorpdfstring{update\+\_\+battery()}{update\_battery()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller.\+update\+\_\+battery (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Update the current state of the battery. 
+
+Call this function every five minutes or on price change. Informs the battery of its average prices and hourly prices so that the battery can determine its charge preference accordingly, and recalculate its current state of charge 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Objects/grid\+\_\+controller.\+py\end{DoxyCompactItemize}

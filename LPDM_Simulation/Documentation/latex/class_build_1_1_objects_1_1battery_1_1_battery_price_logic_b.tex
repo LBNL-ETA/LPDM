@@ -1,0 +1,50 @@
+\hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_b}{}\section{Build.\+Objects.\+battery.\+Battery\+Price\+LogicB Class Reference}
+\label{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_b}\index{Build.\+Objects.\+battery.\+Battery\+Price\+LogicB@{Build.\+Objects.\+battery.\+Battery\+Price\+LogicB}}
+
+
+\hyperlink{class_build_1_1_objects_1_1battery_1_1_battery}{Battery} price logic class which uses the battery\textquotesingle{}s average price over its entire runtime to determine the desired upper and lower charging thresholds.  
+
+
+Inheritance diagram for Build.\+Objects.\+battery.\+Battery\+Price\+LogicB\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_b}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_b_af3b7c19792092798fbbb822cdfa1291d}\label{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_b_af3b7c19792092798fbbb822cdfa1291d}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self, starting\+\_\+price=0.\+1)
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_b_a071e4c7da71f4a5aabd385d4a3bb1bb8}\label{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_b_a071e4c7da71f4a5aabd385d4a3bb1bb8}} 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_b_a071e4c7da71f4a5aabd385d4a3bb1bb8}{adjust\+\_\+price\+\_\+thresholds} (self, avg\+\_\+price)
+\begin{DoxyCompactList}\small\item\em Sets the thresholds which help determine the battery charging preference, based on direct comparison to the moving average price. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_b_a3b4c1f397cc4ac0d2ae39a7ccc9bccbe}{calc\+\_\+charge\+\_\+preference} (self, current\+\_\+soc, current\+\_\+price, average\+\_\+price, price\+\_\+history=None)
+\begin{DoxyCompactList}\small\item\em Calculates the battery\textquotesingle{}s charging preference based on current price in relation to the calculated price thresholds and absolute charge levels. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{class_build_1_1_objects_1_1battery_1_1_battery}{Battery} price logic class which uses the battery\textquotesingle{}s average price over its entire runtime to determine the desired upper and lower charging thresholds. 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_b_a3b4c1f397cc4ac0d2ae39a7ccc9bccbe}\label{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_b_a3b4c1f397cc4ac0d2ae39a7ccc9bccbe}} 
+\index{Build\+::\+Objects\+::battery\+::\+Battery\+Price\+LogicB@{Build\+::\+Objects\+::battery\+::\+Battery\+Price\+LogicB}!calc\+\_\+charge\+\_\+preference@{calc\+\_\+charge\+\_\+preference}}
+\index{calc\+\_\+charge\+\_\+preference@{calc\+\_\+charge\+\_\+preference}!Build\+::\+Objects\+::battery\+::\+Battery\+Price\+LogicB@{Build\+::\+Objects\+::battery\+::\+Battery\+Price\+LogicB}}
+\subsubsection{\texorpdfstring{calc\+\_\+charge\+\_\+preference()}{calc\_charge\_preference()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+battery.\+Battery\+Price\+Logic\+B.\+calc\+\_\+charge\+\_\+preference (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{current\+\_\+soc,  }\item[{}]{current\+\_\+price,  }\item[{}]{average\+\_\+price,  }\item[{}]{price\+\_\+history = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Calculates the battery\textquotesingle{}s charging preference based on current price in relation to the calculated price thresholds and absolute charge levels. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em price\+\_\+history} & a measure of average price for this battery \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Objects/battery.\+py\end{DoxyCompactItemize}

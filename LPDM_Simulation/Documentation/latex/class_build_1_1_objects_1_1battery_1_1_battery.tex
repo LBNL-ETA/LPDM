@@ -1,0 +1,171 @@
+\hypertarget{class_build_1_1_objects_1_1battery_1_1_battery}{}\section{Build.\+Objects.\+battery.\+Battery Class Reference}
+\label{class_build_1_1_objects_1_1battery_1_1_battery}\index{Build.\+Objects.\+battery.\+Battery@{Build.\+Objects.\+battery.\+Battery}}
+Inheritance diagram for Build.\+Objects.\+battery.\+Battery\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_build_1_1_objects_1_1battery_1_1_battery}
+\end{center}
+\end{figure}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_1_1_battery_charging_preference}{Battery\+Charging\+Preference}
+\begin{DoxyCompactList}\small\item\em \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery}{Battery} charging preference is based on the batteries current state of charge (soc). \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_a4f033824699b9a467a337561a41f024a}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self, battery\+\_\+id, price\+\_\+logic, capacity, max\+\_\+charge\+\_\+rate, max\+\_\+discharge\+\_\+rate, preferred\+\_\+charge\+\_\+rate=None, preferred\+\_\+discharge\+\_\+rate=None, starting\+\_\+soc=1.\+0, update\+\_\+frequency=300)
+\begin{DoxyCompactList}\small\item\em Initializes the battery to be contained within a grid controller. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_ac493263e624c98ce6688973e35cd745b}\label{class_build_1_1_objects_1_1battery_1_1_battery_ac493263e624c98ce6688973e35cd745b}} 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_ac493263e624c98ce6688973e35cd745b}{get\+\_\+load} (self)
+\begin{DoxyCompactList}\small\item\em Returns the current load on the battery. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_a111980cd30f418ba49e64ca9b89313d4}\label{class_build_1_1_objects_1_1battery_1_1_battery_a111980cd30f418ba49e64ca9b89313d4}} 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_a111980cd30f418ba49e64ca9b89313d4}{get\+\_\+current\+\_\+soc} (self)
+\begin{DoxyCompactList}\small\item\em Returns the batteries current state of charge. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_a7f98f0d9fb7608837c17618b799c7e55}\label{class_build_1_1_objects_1_1battery_1_1_battery_a7f98f0d9fb7608837c17618b799c7e55}} 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_a7f98f0d9fb7608837c17618b799c7e55}{get\+\_\+charging\+\_\+preference} (self)
+\begin{DoxyCompactList}\small\item\em Returns the value of the current batteries charging preference (1 if discharge, 0 if neutral, -\/1 if discharge) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_ace39c87e0ab087c9f7d07c8a5f645fc4}\label{class_build_1_1_objects_1_1battery_1_1_battery_ace39c87e0ab087c9f7d07c8a5f645fc4}} 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_ace39c87e0ab087c9f7d07c8a5f645fc4}{get\+\_\+max\+\_\+charge\+\_\+rate} (self)
+\begin{DoxyCompactList}\small\item\em Getter for max charge rate. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_a506889af4ebe7834352be77633a4a6f0}\label{class_build_1_1_objects_1_1battery_1_1_battery_a506889af4ebe7834352be77633a4a6f0}} 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_a506889af4ebe7834352be77633a4a6f0}{get\+\_\+max\+\_\+discharge\+\_\+rate} (self)
+\begin{DoxyCompactList}\small\item\em Getter for max discharge rate. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_a36c84b4ac8194d64a0a319b626514e0f}\label{class_build_1_1_objects_1_1battery_1_1_battery_a36c84b4ac8194d64a0a319b626514e0f}} 
+def {\bfseries get\+\_\+update\+\_\+frequency} (self)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_a8f464a9edbd9a2efbe609477d004ccb1}{get\+\_\+optimal\+\_\+charge\+\_\+rate} (self)
+\begin{DoxyCompactList}\small\item\em Based on the current state of charge determine what the optimal charge rate for the battery is. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_a246c9aa9c3d54e71519b0a20a8ea350b}{add\+\_\+load} (self, extra\+\_\+load)
+\begin{DoxyCompactList}\small\item\em Tries to add a new load to the battery, never exceeding the battery\textquotesingle{}s maximum discharge or charge rate. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_a1820a5bff8f3d5d46f8d32ff73e1006c}\label{class_build_1_1_objects_1_1battery_1_1_battery_a1820a5bff8f3d5d46f8d32ff73e1006c}} 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_a1820a5bff8f3d5d46f8d32ff73e1006c}{clear\+\_\+load} (self)
+\begin{DoxyCompactList}\small\item\em Resets the battery load to zero. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_a246d8921279b7cb78a0f6b33f2309085}{update\+\_\+state} (self, time, price, average\+\_\+price, price\+\_\+history)
+\begin{DoxyCompactList}\small\item\em Updates the state of charge and power levels of the battery reflecting current time. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_a2c343f81c849a4b8d6de5de9f19ebc98}{recalc\+\_\+charge\+\_\+preference} (self)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_aa4838ab445d5c20f9c27752ffc911c6e}{build\+\_\+battery\+\_\+log\+\_\+notation} (self, message=\char`\"{}\char`\"{}, value=None)
+\begin{DoxyCompactList}\small\item\em Builds a logging message for this battery, always including information about its state of charge and battery preference. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_afa91328477ff0492e6676ad1f0f02cb3}\label{class_build_1_1_objects_1_1battery_1_1_battery_afa91328477ff0492e6676ad1f0f02cb3}} 
+{\bfseries sum\+\_\+charge\+\_\+wh}
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_a29e1aeb292abeb444b5fb2ca05749c96}\label{class_build_1_1_objects_1_1battery_1_1_battery_a29e1aeb292abeb444b5fb2ca05749c96}} 
+{\bfseries sum\+\_\+discharge\+\_\+wh}
+\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_a4f033824699b9a467a337561a41f024a}\label{class_build_1_1_objects_1_1battery_1_1_battery_a4f033824699b9a467a337561a41f024a}} 
+\index{Build\+::\+Objects\+::battery\+::\+Battery@{Build\+::\+Objects\+::battery\+::\+Battery}!\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}!Build\+::\+Objects\+::battery\+::\+Battery@{Build\+::\+Objects\+::battery\+::\+Battery}}
+\subsubsection{\texorpdfstring{\+\_\+\+\_\+init\+\_\+\+\_\+()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+battery.\+Battery.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{battery\+\_\+id,  }\item[{}]{price\+\_\+logic,  }\item[{}]{capacity,  }\item[{}]{max\+\_\+charge\+\_\+rate,  }\item[{}]{max\+\_\+discharge\+\_\+rate,  }\item[{}]{preferred\+\_\+charge\+\_\+rate = {\ttfamily None},  }\item[{}]{preferred\+\_\+discharge\+\_\+rate = {\ttfamily None},  }\item[{}]{starting\+\_\+soc = {\ttfamily 1.0},  }\item[{}]{update\+\_\+frequency = {\ttfamily 300} }\end{DoxyParamCaption})}
+
+
+
+Initializes the battery to be contained within a grid controller. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em capacity} & the maximum charge capacity of the battery. Must be a double. \\
+\hline
+{\em preferred} & charge rate the preferred rate of charge for this battery. Defaults to max charge rate \\
+\hline
+{\em preferred} & discharge rate the preferred discharge rate for this battery. Defaults to max discharge rate \\
+\hline
+{\em starting\+\_\+soc} & the state of charge on initialization. Default 50\% \\
+\hline
+{\em update\+\_\+frequency} & how frequently to update the state of this battery. Defaults to every 5 minutes (300s) \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_a246c9aa9c3d54e71519b0a20a8ea350b}\label{class_build_1_1_objects_1_1battery_1_1_battery_a246c9aa9c3d54e71519b0a20a8ea350b}} 
+\index{Build\+::\+Objects\+::battery\+::\+Battery@{Build\+::\+Objects\+::battery\+::\+Battery}!add\+\_\+load@{add\+\_\+load}}
+\index{add\+\_\+load@{add\+\_\+load}!Build\+::\+Objects\+::battery\+::\+Battery@{Build\+::\+Objects\+::battery\+::\+Battery}}
+\subsubsection{\texorpdfstring{add\+\_\+load()}{add\_load()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+battery.\+Battery.\+add\+\_\+load (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{extra\+\_\+load }\end{DoxyParamCaption})}
+
+
+
+Tries to add a new load to the battery, never exceeding the battery\textquotesingle{}s maximum discharge or charge rate. 
+
+Call update state first to ensure valid state of charge and to update charging calculations before modification. 
+\begin{DoxyParams}{Parameters}
+{\em extra\+\_\+load} & the load to add from battery\textquotesingle{}s perspective (positive charge, negative discharge) \\
+\hline
+{\em return} & whatever value was added to the battery\textquotesingle{}s load (may not be full val. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_aa4838ab445d5c20f9c27752ffc911c6e}\label{class_build_1_1_objects_1_1battery_1_1_battery_aa4838ab445d5c20f9c27752ffc911c6e}} 
+\index{Build\+::\+Objects\+::battery\+::\+Battery@{Build\+::\+Objects\+::battery\+::\+Battery}!build\+\_\+battery\+\_\+log\+\_\+notation@{build\+\_\+battery\+\_\+log\+\_\+notation}}
+\index{build\+\_\+battery\+\_\+log\+\_\+notation@{build\+\_\+battery\+\_\+log\+\_\+notation}!Build\+::\+Objects\+::battery\+::\+Battery@{Build\+::\+Objects\+::battery\+::\+Battery}}
+\subsubsection{\texorpdfstring{build\+\_\+battery\+\_\+log\+\_\+notation()}{build\_battery\_log\_notation()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+battery.\+Battery.\+build\+\_\+battery\+\_\+log\+\_\+notation (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{message = {\ttfamily \char`\"{}\char`\"{}},  }\item[{}]{value = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Builds a logging message for this battery, always including information about its state of charge and battery preference. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em message} & the message to add to logger \\
+\hline
+{\em value} & the value add to the logger \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+a formatted string to include in the logger 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_a8f464a9edbd9a2efbe609477d004ccb1}\label{class_build_1_1_objects_1_1battery_1_1_battery_a8f464a9edbd9a2efbe609477d004ccb1}} 
+\index{Build\+::\+Objects\+::battery\+::\+Battery@{Build\+::\+Objects\+::battery\+::\+Battery}!get\+\_\+optimal\+\_\+charge\+\_\+rate@{get\+\_\+optimal\+\_\+charge\+\_\+rate}}
+\index{get\+\_\+optimal\+\_\+charge\+\_\+rate@{get\+\_\+optimal\+\_\+charge\+\_\+rate}!Build\+::\+Objects\+::battery\+::\+Battery@{Build\+::\+Objects\+::battery\+::\+Battery}}
+\subsubsection{\texorpdfstring{get\+\_\+optimal\+\_\+charge\+\_\+rate()}{get\_optimal\_charge\_rate()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+battery.\+Battery.\+get\+\_\+optimal\+\_\+charge\+\_\+rate (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Based on the current state of charge determine what the optimal charge rate for the battery is. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_a2c343f81c849a4b8d6de5de9f19ebc98}\label{class_build_1_1_objects_1_1battery_1_1_battery_a2c343f81c849a4b8d6de5de9f19ebc98}} 
+\index{Build\+::\+Objects\+::battery\+::\+Battery@{Build\+::\+Objects\+::battery\+::\+Battery}!recalc\+\_\+charge\+\_\+preference@{recalc\+\_\+charge\+\_\+preference}}
+\index{recalc\+\_\+charge\+\_\+preference@{recalc\+\_\+charge\+\_\+preference}!Build\+::\+Objects\+::battery\+::\+Battery@{Build\+::\+Objects\+::battery\+::\+Battery}}
+\subsubsection{\texorpdfstring{recalc\+\_\+charge\+\_\+preference()}{recalc\_charge\_preference()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+battery.\+Battery.\+recalc\+\_\+charge\+\_\+preference (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+\begin{DoxyParams}{Parameters}
+{\em price\+\_\+stat} & the representative statistic to use to calculate it? \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_a246d8921279b7cb78a0f6b33f2309085}\label{class_build_1_1_objects_1_1battery_1_1_battery_a246d8921279b7cb78a0f6b33f2309085}} 
+\index{Build\+::\+Objects\+::battery\+::\+Battery@{Build\+::\+Objects\+::battery\+::\+Battery}!update\+\_\+state@{update\+\_\+state}}
+\index{update\+\_\+state@{update\+\_\+state}!Build\+::\+Objects\+::battery\+::\+Battery@{Build\+::\+Objects\+::battery\+::\+Battery}}
+\subsubsection{\texorpdfstring{update\+\_\+state()}{update\_state()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+battery.\+Battery.\+update\+\_\+state (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{time,  }\item[{}]{price,  }\item[{}]{average\+\_\+price,  }\item[{}]{price\+\_\+history }\end{DoxyParamCaption})}
+
+
+
+Updates the state of charge and power levels of the battery reflecting current time. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em the} & time to update the battery\textquotesingle{}s local time to \\
+\hline
+{\em price} & the local price of the associated grid controller \\
+\hline
+{\em average} & price information on the average price of the grid controller \\
+\hline
+{\em hourly} & prices information on the hourly prices of the grid controller \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Objects/battery.\+py\end{DoxyCompactItemize}

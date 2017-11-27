@@ -1,0 +1,468 @@
+\hypertarget{class_build_1_1_objects_1_1device_1_1_device}{}\section{Build.\+Objects.\+device.\+Device Class Reference}
+\label{class_build_1_1_objects_1_1device_1_1_device}\index{Build.\+Objects.\+device.\+Device@{Build.\+Objects.\+device.\+Device}}
+Inheritance diagram for Build.\+Objects.\+device.\+Device\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=1.204301cm]{class_build_1_1_objects_1_1device_1_1_device}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a6e8b7318d7bce8142f9c482c1852e744}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self, device\+\_\+id, device\+\_\+type, supervisor, time=0, msg\+\_\+latency=0, schedule=None, multiday=0, total\+\_\+runtime=S\+E\+C\+O\+N\+D\+S\+\_\+\+I\+N\+\_\+\+D\+AY, connected\+\_\+devices=None)
+\begin{DoxyCompactList}\small\item\em Initialize a device. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a9cf14b880ef9cf103ba68554d3653593}{get\+\_\+id} (self)
+\begin{DoxyCompactList}\small\item\em Getter for the \hyperlink{class_build_1_1_objects_1_1device_1_1_device}{Device}\textquotesingle{}s ID We maintain ID as a protected field to avoid external modifications during messaging. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a0e0df5ad1dc3572210290c9c613777d4}\label{class_build_1_1_objects_1_1device_1_1_device_a0e0df5ad1dc3572210290c9c613777d4}} 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a0e0df5ad1dc3572210290c9c613777d4}{get\+\_\+type} (self)
+\begin{DoxyCompactList}\small\item\em Getter for the \hyperlink{class_build_1_1_objects_1_1device_1_1_device}{Device}\textquotesingle{}s type. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a12de2674ec41c3cfb31689fde187f6e0}{update\+\_\+time} (self, new\+\_\+time)
+\begin{DoxyCompactList}\small\item\em Updates the local time of the device. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a1cfab902786e2a6caf3a4b22341e9641}{set\+\_\+power\+\_\+in} (self, power\+\_\+in)
+\begin{DoxyCompactList}\small\item\em Sets the power level into the device. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a75d4f47040d95f6e5adb6238cf9e2463}{set\+\_\+power\+\_\+out} (self, power\+\_\+out)
+\begin{DoxyCompactList}\small\item\em Sets the power level out of the device. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a576ceef658b74d05291b3dbc2b1ba1da}{recalc\+\_\+sum\+\_\+power} (self, prev\+\_\+power, new\+\_\+power)
+\begin{DoxyCompactList}\small\item\em After a device has changed the quantity of power it is sending/receiving, modify the power in and power out. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_acbaf978b589fe80b8d4da2f25b266b32}{sum\+\_\+power\+\_\+out} (self)
+\begin{DoxyCompactList}\small\item\em Keeps a running total of the energy output by the device Call this method whenever power\+\_\+out level changes. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a6a7287bc43dacb4ab23d04dbd8c01d2f}{sum\+\_\+power\+\_\+in} (self)
+\begin{DoxyCompactList}\small\item\em Keeps a running total of the energy consumed by the device Call this method whenever power\+\_\+in level changes. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a8e39400d2e8cf584f912ee9fcccddd2b}{add\+\_\+event} (self, event, time\+\_\+stamp)
+\begin{DoxyCompactList}\small\item\em Adds an event to the device\textquotesingle{}s event queue and reports that event to the supervisor Will replace any existing event with the new value. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a49c8b4c3d1c3ca5cc2a070bf6761af8a}{process\+\_\+events} (self)
+\begin{DoxyCompactList}\small\item\em Process all events in the device\textquotesingle{}s queue with a given time\+\_\+stamp. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_ad06156227c33b40f30bcfbc7ae7508b1}\label{class_build_1_1_objects_1_1device_1_1_device_ad06156227c33b40f30bcfbc7ae7508b1}} 
+def {\bfseries has\+\_\+upcoming\+\_\+event} (self)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a5e3fa6ca689529fcf25650e94dcedc62}{report\+\_\+next\+\_\+event\+\_\+time} (self)
+\begin{DoxyCompactList}\small\item\em Report the time of the next earliest event in the device\textquotesingle{}s event queue Assumes the event queue is not empty. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a015f4cfeb779c8c6338c65bab7e314ec}{receive\+\_\+message} (self, message)
+\begin{DoxyCompactList}\small\item\em Receiving a message is modelled as putting an event with the message a certain delay after the function call. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a65e13b5bb4b33acdd37a084167829056}{read\+\_\+message} (self, message)
+\begin{DoxyCompactList}\small\item\em Reads a message and responds based on its message type. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_afdb3d3a5fc6220f50c025cd0cfed306d}\label{class_build_1_1_objects_1_1device_1_1_device_afdb3d3a5fc6220f50c025cd0cfed306d}} 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_afdb3d3a5fc6220f50c025cd0cfed306d}{connect\+\_\+device} (self, wire\+\_\+type, device)
+\begin{DoxyCompactList}\small\item\em Connects one device to another. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_ae349c3bea0d657c805dda47748572dc0}\label{class_build_1_1_objects_1_1device_1_1_device_ae349c3bea0d657c805dda47748572dc0}} 
+def {\bfseries disconnect\+\_\+device} (self, device)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a8ff05d4817a653460ef0873554e3ac87}{register\+\_\+device} (self, device, device\+\_\+id, value)
+\begin{DoxyCompactList}\small\item\em Registers or unregisters a given device from the device\textquotesingle{}s connected device list. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_ac665d015021b9efa42b734d0cc637304}{process\+\_\+register\+\_\+message} (self, sender\+\_\+id, value)
+\begin{DoxyCompactList}\small\item\em Method to be called when the device receives a register message, indicating a device is seeking to register or unregister. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a0acf2d71b9378f7f59e99c1b06c3c23a}{send\+\_\+register\+\_\+message} (self, target\+\_\+id, value)
+\begin{DoxyCompactList}\small\item\em Method to be called when the device wants to register or unregister with another device. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a3c71e4e2948f82a8444b2bcb3e6be504}{engage} (self, device\+\_\+list)
+\begin{DoxyCompactList}\small\item\em Method to be called when device is entering the grid, and is seeking to register with other devices. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_af90a8b21aab7e60dc6ca1dcd7fe00b6f}{process\+\_\+power\+\_\+message} (self, sender\+\_\+id, new\+\_\+power)
+\begin{DoxyCompactList}\small\item\em Method to be called when the device receives a power message, indicating power flows have changed between two devices (either receiving or providing). \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_ab4a83ea60755c15f89dcbff7a10f55cc}{process\+\_\+price\+\_\+message} (self, sender\+\_\+id, new\+\_\+price, extra\+\_\+info)
+\begin{DoxyCompactList}\small\item\em Method to be called when device receives a price message. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a83c4bc3f6628bc2ba3343b96c5a441f8}{process\+\_\+request\+\_\+message} (self, sender\+\_\+id, request\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em Method to be called when device receives a request message, indicating a device is requesting to either provide or receive the requested quantity of power. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_af80aeef7fa18bef428cb622fc9d23d2c}{process\+\_\+allocate\+\_\+message} (self, sender\+\_\+id, allocate\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em Method to be called once device has allocated to provide a given quantity of power to another device, or to receive a given quantity of power. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a06ffd25b07e6361e4ecb1e3432cff477}{setup\+\_\+schedule} (self, scheduled\+\_\+events, runtime=S\+E\+C\+O\+N\+D\+S\+\_\+\+I\+N\+\_\+\+D\+AY, multiday=0)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a94094fa08f506cd2f02e0d4a9611153d}{build\+\_\+log\+\_\+notation} (self, message=\char`\"{}\char`\"{}, tag=\char`\"{}\char`\"{}, value=None)
+\begin{DoxyCompactList}\small\item\em Builds a logging message from a message, tag, and value, which also includes time and device\+\_\+id. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_aff92b20a263ce0f7a715789305ca0d30}{write\+\_\+calcs} (self)
+\begin{DoxyCompactList}\small\item\em Writes the calculations of total energy in and out of this device in wH to the log file then writes any other calculations specific to the device-\/type. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a1027097a4c8bedb6abf9d52f41e194f9}\label{class_build_1_1_objects_1_1device_1_1_device_a1027097a4c8bedb6abf9d52f41e194f9}} 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a1027097a4c8bedb6abf9d52f41e194f9}{device\+\_\+specific\+\_\+calcs} (self)
+\begin{DoxyCompactList}\small\item\em All device specific power consumption/runtime statistics are added here. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1device_1_1_device_a0eb251de12fe74493c71a50713b5ac3a}{finish} (self, end\+\_\+time)
+\begin{DoxyCompactList}\small\item\em Method to be called at end of simulation resetting power levels and calculating end\+\_\+time the time to update the local time to. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a6e8b7318d7bce8142f9c482c1852e744}\label{class_build_1_1_objects_1_1device_1_1_device_a6e8b7318d7bce8142f9c482c1852e744}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{\+\_\+\+\_\+init\+\_\+\+\_\+()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device\+\_\+id,  }\item[{}]{device\+\_\+type,  }\item[{}]{supervisor,  }\item[{}]{time = {\ttfamily 0},  }\item[{}]{msg\+\_\+latency = {\ttfamily 0},  }\item[{}]{schedule = {\ttfamily None},  }\item[{}]{multiday = {\ttfamily 0},  }\item[{}]{total\+\_\+runtime = {\ttfamily SECONDS\+\_\+IN\+\_\+DAY},  }\item[{}]{connected\+\_\+devices = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Initialize a device. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em device\+\_\+id} & unique device ID. Must begin with type of device (see documentation). \\
+\hline
+{\em device\+\_\+type} & the type of this device (the most specific class descriptor) \\
+\hline
+{\em uuid} & the device\textquotesingle{}s emergency shutdown priority \\
+\hline
+{\em time} & device\textquotesingle{}s local time, in seconds. This will be updated by the supervisor. \\
+\hline
+{\em msg\+\_\+latency} & the delay time before this device processes a received message. \\
+\hline
+{\em connected\+\_\+devices} & a list of the names of connected devices for this device. \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a8e39400d2e8cf584f912ee9fcccddd2b}\label{class_build_1_1_objects_1_1device_1_1_device_a8e39400d2e8cf584f912ee9fcccddd2b}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!add\+\_\+event@{add\+\_\+event}}
+\index{add\+\_\+event@{add\+\_\+event}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{add\+\_\+event()}{add\_event()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+add\+\_\+event (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{event,  }\item[{}]{time\+\_\+stamp }\end{DoxyParamCaption})}
+
+
+
+Adds an event to the device\textquotesingle{}s event queue and reports that event to the supervisor Will replace any existing event with the new value. 
+
+Hence, only one event type at a time 
+\begin{DoxyParams}{Parameters}
+{\em event} & the event to add to the event queue \\
+\hline
+{\em time\+\_\+stamp} & the time to associate with the event in the queue \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a94094fa08f506cd2f02e0d4a9611153d}\label{class_build_1_1_objects_1_1device_1_1_device_a94094fa08f506cd2f02e0d4a9611153d}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!build\+\_\+log\+\_\+notation@{build\+\_\+log\+\_\+notation}}
+\index{build\+\_\+log\+\_\+notation@{build\+\_\+log\+\_\+notation}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{build\+\_\+log\+\_\+notation()}{build\_log\_notation()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+build\+\_\+log\+\_\+notation (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{message = {\ttfamily \char`\"{}\char`\"{}},  }\item[{}]{tag = {\ttfamily \char`\"{}\char`\"{}},  }\item[{}]{value = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Builds a logging message from a message, tag, and value, which also includes time and device\+\_\+id. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em message} & the message to add to logger \\
+\hline
+{\em tag} & the tag to associate with this message to add to the logger \\
+\hline
+{\em value} & the value for this message to add to the logger \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a3c71e4e2948f82a8444b2bcb3e6be504}\label{class_build_1_1_objects_1_1device_1_1_device_a3c71e4e2948f82a8444b2bcb3e6be504}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!engage@{engage}}
+\index{engage@{engage}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{engage()}{engage()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+engage (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device\+\_\+list }\end{DoxyParamCaption})}
+
+
+
+Method to be called when device is entering the grid, and is seeking to register with other devices. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em device\+\_\+list} & the connected list of devices to add to its connected device list and to inform it has registered. Must be devices themselves (not ID\textquotesingle{}s). \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a0eb251de12fe74493c71a50713b5ac3a}\label{class_build_1_1_objects_1_1device_1_1_device_a0eb251de12fe74493c71a50713b5ac3a}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!finish@{finish}}
+\index{finish@{finish}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{finish()}{finish()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+finish (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{end\+\_\+time }\end{DoxyParamCaption})}
+
+
+
+Method to be called at end of simulation resetting power levels and calculating end\+\_\+time the time to update the local time to. 
+
+\begin{DoxyVerb}"Gets called at the end of the simulation\end{DoxyVerb}
+ \mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a9cf14b880ef9cf103ba68554d3653593}\label{class_build_1_1_objects_1_1device_1_1_device_a9cf14b880ef9cf103ba68554d3653593}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!get\+\_\+id@{get\+\_\+id}}
+\index{get\+\_\+id@{get\+\_\+id}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{get\+\_\+id()}{get\_id()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+get\+\_\+id (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Getter for the \hyperlink{class_build_1_1_objects_1_1device_1_1_device}{Device}\textquotesingle{}s ID We maintain ID as a protected field to avoid external modifications during messaging. 
+
+\begin{DoxyReturn}{Returns}
+the device\textquotesingle{}s ID 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_af80aeef7fa18bef428cb622fc9d23d2c}\label{class_build_1_1_objects_1_1device_1_1_device_af80aeef7fa18bef428cb622fc9d23d2c}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!process\+\_\+allocate\+\_\+message@{process\+\_\+allocate\+\_\+message}}
+\index{process\+\_\+allocate\+\_\+message@{process\+\_\+allocate\+\_\+message}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{process\+\_\+allocate\+\_\+message()}{process\_allocate\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+process\+\_\+allocate\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{allocate\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+Method to be called once device has allocated to provide a given quantity of power to another device, or to receive a given quantity of power. 
+
+Allocation should only ever occur after request messages have been passed and processed.
+
+
+\begin{DoxyParams}{Parameters}
+{\em allocated\+\_\+amt} & the amount this device has been allocated to receive (must be positive). \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a49c8b4c3d1c3ca5cc2a070bf6761af8a}\label{class_build_1_1_objects_1_1device_1_1_device_a49c8b4c3d1c3ca5cc2a070bf6761af8a}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!process\+\_\+events@{process\+\_\+events}}
+\index{process\+\_\+events@{process\+\_\+events}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{process\+\_\+events()}{process\_events()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+process\+\_\+events (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Process all events in the device\textquotesingle{}s queue with a given time\+\_\+stamp. 
+
+This function should be called after advance\+\_\+time has been called by the supervisor. \mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_af90a8b21aab7e60dc6ca1dcd7fe00b6f}\label{class_build_1_1_objects_1_1device_1_1_device_af90a8b21aab7e60dc6ca1dcd7fe00b6f}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!process\+\_\+power\+\_\+message@{process\+\_\+power\+\_\+message}}
+\index{process\+\_\+power\+\_\+message@{process\+\_\+power\+\_\+message}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{process\+\_\+power\+\_\+message()}{process\_power\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+process\+\_\+power\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{new\+\_\+power }\end{DoxyParamCaption})}
+
+
+
+Method to be called when the device receives a power message, indicating power flows have changed between two devices (either receiving or providing). 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sender} & the sender of the message providing or receiving the new power \\
+\hline
+{\em new\+\_\+power} & the value of power flow from sender\textquotesingle{}s perspective positive if sender is receiving, negative if sender is providing. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_ab4a83ea60755c15f89dcbff7a10f55cc}\label{class_build_1_1_objects_1_1device_1_1_device_ab4a83ea60755c15f89dcbff7a10f55cc}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!process\+\_\+price\+\_\+message@{process\+\_\+price\+\_\+message}}
+\index{process\+\_\+price\+\_\+message@{process\+\_\+price\+\_\+message}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{process\+\_\+price\+\_\+message()}{process\_price\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+process\+\_\+price\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{new\+\_\+price,  }\item[{}]{extra\+\_\+info }\end{DoxyParamCaption})}
+
+
+
+Method to be called when device receives a price message. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sender\+\_\+id} & the sender of the message informing of the new price \\
+\hline
+{\em new\+\_\+price} & the new price value \\
+\hline
+{\em extra\+\_\+info} & additional information contained in this price message. From the utility meter, this is its buy prices, from other devices this can be price forecast information. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_ac665d015021b9efa42b734d0cc637304}\label{class_build_1_1_objects_1_1device_1_1_device_ac665d015021b9efa42b734d0cc637304}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!process\+\_\+register\+\_\+message@{process\+\_\+register\+\_\+message}}
+\index{process\+\_\+register\+\_\+message@{process\+\_\+register\+\_\+message}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{process\+\_\+register\+\_\+message()}{process\_register\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+process\+\_\+register\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{value }\end{DoxyParamCaption})}
+
+
+
+Method to be called when the device receives a register message, indicating a device is seeking to register or unregister. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sender} & the sender of the message informing of registering. \\
+\hline
+{\em value} & positive if sender is registering negative if unregistering \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a83c4bc3f6628bc2ba3343b96c5a441f8}\label{class_build_1_1_objects_1_1device_1_1_device_a83c4bc3f6628bc2ba3343b96c5a441f8}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!process\+\_\+request\+\_\+message@{process\+\_\+request\+\_\+message}}
+\index{process\+\_\+request\+\_\+message@{process\+\_\+request\+\_\+message}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{process\+\_\+request\+\_\+message()}{process\_request\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+process\+\_\+request\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{request\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+Method to be called when device receives a request message, indicating a device is requesting to either provide or receive the requested quantity of power. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em request\+\_\+amt} & the amount the sending device is requesting to receive (must be positive) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a65e13b5bb4b33acdd37a084167829056}\label{class_build_1_1_objects_1_1device_1_1_device_a65e13b5bb4b33acdd37a084167829056}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!read\+\_\+message@{read\+\_\+message}}
+\index{read\+\_\+message@{read\+\_\+message}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{read\+\_\+message()}{read\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+read\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{message }\end{DoxyParamCaption})}
+
+
+
+Reads a message and responds based on its message type. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em message} & a message to be read (must be a message object) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a576ceef658b74d05291b3dbc2b1ba1da}\label{class_build_1_1_objects_1_1device_1_1_device_a576ceef658b74d05291b3dbc2b1ba1da}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!recalc\+\_\+sum\+\_\+power@{recalc\+\_\+sum\+\_\+power}}
+\index{recalc\+\_\+sum\+\_\+power@{recalc\+\_\+sum\+\_\+power}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{recalc\+\_\+sum\+\_\+power()}{recalc\_sum\_power()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+recalc\+\_\+sum\+\_\+power (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{prev\+\_\+power,  }\item[{}]{new\+\_\+power }\end{DoxyParamCaption})}
+
+
+
+After a device has changed the quantity of power it is sending/receiving, modify the power in and power out. 
+
+Call whenever a load has been changed on this device. 
+\begin{DoxyParams}{Parameters}
+{\em prev\+\_\+power} & the previous power flow from this device\textquotesingle{}s perspective (in positive, out negative) \\
+\hline
+{\em new\+\_\+power} & the new power flow from this device\textquotesingle{}s perspective (in positive, out negative) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a015f4cfeb779c8c6338c65bab7e314ec}\label{class_build_1_1_objects_1_1device_1_1_device_a015f4cfeb779c8c6338c65bab7e314ec}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!receive\+\_\+message@{receive\+\_\+message}}
+\index{receive\+\_\+message@{receive\+\_\+message}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{receive\+\_\+message()}{receive\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+receive\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{message }\end{DoxyParamCaption})}
+
+
+
+Receiving a message is modelled as putting an event with the message a certain delay after the function call. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em message} & the message to receive. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a8ff05d4817a653460ef0873554e3ac87}\label{class_build_1_1_objects_1_1device_1_1_device_a8ff05d4817a653460ef0873554e3ac87}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!register\+\_\+device@{register\+\_\+device}}
+\index{register\+\_\+device@{register\+\_\+device}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{register\+\_\+device()}{register\_device()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+register\+\_\+device (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device,  }\item[{}]{device\+\_\+id,  }\item[{}]{value }\end{DoxyParamCaption})}
+
+
+
+Registers or unregisters a given device from the device\textquotesingle{}s connected device list. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em device} & the device to register or unregister from connected devices \\
+\hline
+{\em that} & device\textquotesingle{}s id \\
+\hline
+{\em value} & positive to register, 0 or negative to unregister \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a5e3fa6ca689529fcf25650e94dcedc62}\label{class_build_1_1_objects_1_1device_1_1_device_a5e3fa6ca689529fcf25650e94dcedc62}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!report\+\_\+next\+\_\+event\+\_\+time@{report\+\_\+next\+\_\+event\+\_\+time}}
+\index{report\+\_\+next\+\_\+event\+\_\+time@{report\+\_\+next\+\_\+event\+\_\+time}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{report\+\_\+next\+\_\+event\+\_\+time()}{report\_next\_event\_time()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+report\+\_\+next\+\_\+event\+\_\+time (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Report the time of the next earliest event in the device\textquotesingle{}s event queue Assumes the event queue is not empty. 
+
+Call has\+\_\+upcoming\+\_\+event first. \begin{DoxyReturn}{Returns}
+a tuple of device\textquotesingle{}s ID and the time of its next event 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a0acf2d71b9378f7f59e99c1b06c3c23a}\label{class_build_1_1_objects_1_1device_1_1_device_a0acf2d71b9378f7f59e99c1b06c3c23a}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!send\+\_\+register\+\_\+message@{send\+\_\+register\+\_\+message}}
+\index{send\+\_\+register\+\_\+message@{send\+\_\+register\+\_\+message}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{send\+\_\+register\+\_\+message()}{send\_register\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+send\+\_\+register\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{target\+\_\+id,  }\item[{}]{value }\end{DoxyParamCaption})}
+
+
+
+Method to be called when the device wants to register or unregister with another device. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em target\+\_\+id} & the device to receive the register message \\
+\hline
+{\em value} & positive if registering negative if unregistering \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a1cfab902786e2a6caf3a4b22341e9641}\label{class_build_1_1_objects_1_1device_1_1_device_a1cfab902786e2a6caf3a4b22341e9641}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!set\+\_\+power\+\_\+in@{set\+\_\+power\+\_\+in}}
+\index{set\+\_\+power\+\_\+in@{set\+\_\+power\+\_\+in}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{set\+\_\+power\+\_\+in()}{set\_power\_in()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+set\+\_\+power\+\_\+in (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{power\+\_\+in }\end{DoxyParamCaption})}
+
+
+
+Sets the power level into the device. 
+
+Call this method when setting absolute power levels e.\+g. turning the device off
+
+
+\begin{DoxyParams}{Parameters}
+{\em power\+\_\+in} & the new amount of power in to device (non-\/negative). \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a75d4f47040d95f6e5adb6238cf9e2463}\label{class_build_1_1_objects_1_1device_1_1_device_a75d4f47040d95f6e5adb6238cf9e2463}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!set\+\_\+power\+\_\+out@{set\+\_\+power\+\_\+out}}
+\index{set\+\_\+power\+\_\+out@{set\+\_\+power\+\_\+out}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{set\+\_\+power\+\_\+out()}{set\_power\_out()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+set\+\_\+power\+\_\+out (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{power\+\_\+out }\end{DoxyParamCaption})}
+
+
+
+Sets the power level out of the device. 
+
+Call this method when setting absolute power levels e.\+g. turning the device off
+
+
+\begin{DoxyParams}{Parameters}
+{\em power\+\_\+in} & the new amount of power in to device (non-\/negative). \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a06ffd25b07e6361e4ecb1e3432cff477}\label{class_build_1_1_objects_1_1device_1_1_device_a06ffd25b07e6361e4ecb1e3432cff477}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!setup\+\_\+schedule@{setup\+\_\+schedule}}
+\index{setup\+\_\+schedule@{setup\+\_\+schedule}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{setup\+\_\+schedule()}{setup\_schedule()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+setup\+\_\+schedule (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{scheduled\+\_\+events,  }\item[{}]{runtime = {\ttfamily SECONDS\+\_\+IN\+\_\+DAY},  }\item[{}]{multiday = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+\begin{DoxyParams}{Parameters}
+{\em a} & list of scheduled events to add to the device\textquotesingle{}s queue, in the format of list of list of time(seconds), operation\+\_\+name \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a6a7287bc43dacb4ab23d04dbd8c01d2f}\label{class_build_1_1_objects_1_1device_1_1_device_a6a7287bc43dacb4ab23d04dbd8c01d2f}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!sum\+\_\+power\+\_\+in@{sum\+\_\+power\+\_\+in}}
+\index{sum\+\_\+power\+\_\+in@{sum\+\_\+power\+\_\+in}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{sum\+\_\+power\+\_\+in()}{sum\_power\_in()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+sum\+\_\+power\+\_\+in (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Keeps a running total of the energy consumed by the device Call this method whenever power\+\_\+in level changes. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_acbaf978b589fe80b8d4da2f25b266b32}\label{class_build_1_1_objects_1_1device_1_1_device_acbaf978b589fe80b8d4da2f25b266b32}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!sum\+\_\+power\+\_\+out@{sum\+\_\+power\+\_\+out}}
+\index{sum\+\_\+power\+\_\+out@{sum\+\_\+power\+\_\+out}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{sum\+\_\+power\+\_\+out()}{sum\_power\_out()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+sum\+\_\+power\+\_\+out (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Keeps a running total of the energy output by the device Call this method whenever power\+\_\+out level changes. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_a12de2674ec41c3cfb31689fde187f6e0}\label{class_build_1_1_objects_1_1device_1_1_device_a12de2674ec41c3cfb31689fde187f6e0}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!update\+\_\+time@{update\+\_\+time}}
+\index{update\+\_\+time@{update\+\_\+time}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{update\+\_\+time()}{update\_time()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+update\+\_\+time (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{new\+\_\+time }\end{DoxyParamCaption})}
+
+
+
+Updates the local time of the device. 
+
+This method is only called by the Supervisor once it is about to process a next initial event. 
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+time} & the time to update to \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1device_1_1_device_aff92b20a263ce0f7a715789305ca0d30}\label{class_build_1_1_objects_1_1device_1_1_device_aff92b20a263ce0f7a715789305ca0d30}} 
+\index{Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}!write\+\_\+calcs@{write\+\_\+calcs}}
+\index{write\+\_\+calcs@{write\+\_\+calcs}!Build\+::\+Objects\+::device\+::\+Device@{Build\+::\+Objects\+::device\+::\+Device}}
+\subsubsection{\texorpdfstring{write\+\_\+calcs()}{write\_calcs()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+device.\+Device.\+write\+\_\+calcs (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Writes the calculations of total energy in and out of this device in wH to the log file then writes any other calculations specific to the device-\/type. 
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Objects/device.\+py\end{DoxyCompactItemize}

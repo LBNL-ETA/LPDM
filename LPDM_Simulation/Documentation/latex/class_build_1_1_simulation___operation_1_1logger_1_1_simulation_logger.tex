@@ -1,0 +1,107 @@
+\hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger}{}\section{Build.\+Simulation\+\_\+\+Operation.\+logger.\+Simulation\+Logger Class Reference}
+\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger}\index{Build.\+Simulation\+\_\+\+Operation.\+logger.\+Simulation\+Logger@{Build.\+Simulation\+\_\+\+Operation.\+logger.\+Simulation\+Logger}}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_1_1_formatter_with_header}{Formatter\+With\+Header}
+\begin{DoxyCompactList}\small\item\em A custom logging formatter which for the first time it is called, prepends a header to the file, before switching back to the original format style. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_aa58accfe7d2e3c46e20a3ed805ada6d9}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_aa58accfe7d2e3c46e20a3ed805ada6d9}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self, console\+\_\+log\+\_\+level=logging.\+I\+N\+FO, file\+\_\+log\+\_\+level=logging.\+D\+E\+B\+UG, database\+\_\+log\+\_\+level=logging.\+D\+E\+B\+UG, log\+\_\+to\+\_\+database=False)
+\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a4eeb0628ec65481e5c3c625c85723b80}{initialize\+\_\+logging} (self, config\+\_\+file, override\+\_\+args)
+\begin{DoxyCompactList}\small\item\em Creates a unique folder for this simulation log, and then sets up the streams to the console, file, and database for all log messages. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a596e3f475ff2a31b5ac647e47aa86b41}{generate\+\_\+log\+\_\+id} (self)
+\begin{DoxyCompactList}\small\item\em Searches through all of the existing log folder names and finds a unique simulation ID to use for this logging session, to avoid overwriting files. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_ae1a333d5f65efb622ad579772ce46d64}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_ae1a333d5f65efb622ad579772ce46d64}} 
+def \hyperlink{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_ae1a333d5f65efb622ad579772ce46d64}{simulation\+\_\+log\+\_\+path} (self)
+\begin{DoxyCompactList}\small\item\em Returns the directory path of the where the simulation log will output to. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a9aff48a11c74720cea423a8183896b7d}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a9aff48a11c74720cea423a8183896b7d}} 
+def \hyperlink{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a9aff48a11c74720cea423a8183896b7d}{create\+\_\+simulation\+\_\+log\+\_\+folder} (self)
+\begin{DoxyCompactList}\small\item\em Makes the folder for the simulation log. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_ae86da1b584efaa040ea62d793fe47c55}{create\+\_\+simulation\+\_\+logger} (self, config\+\_\+file, override\+\_\+args=None)
+\begin{DoxyCompactList}\small\item\em Creates the simulation logger by. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_abdf30be7de243787e4dd43b15833d58d}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_abdf30be7de243787e4dd43b15833d58d}} 
+{\bfseries app\+\_\+name}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a532f3ae4ee4454b5d10f9531c1502766}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a532f3ae4ee4454b5d10f9531c1502766}} 
+{\bfseries base\+\_\+path}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a4382cc5790fae8884e62b62e89fad367}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a4382cc5790fae8884e62b62e89fad367}} 
+{\bfseries folder}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a6ae171c069d09f5ae17cf8a458919c7c}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a6ae171c069d09f5ae17cf8a458919c7c}} 
+{\bfseries log\+\_\+id}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a0e0c3611e5fe782f41f82f18b0f746be}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a0e0c3611e5fe782f41f82f18b0f746be}} 
+{\bfseries logger}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a76ed3c19b1a3a536275195aa9f71a2fe}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a76ed3c19b1a3a536275195aa9f71a2fe}} 
+{\bfseries console\+\_\+log\+\_\+level}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a40a6f478fdd91de0c40b68de9152a696}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a40a6f478fdd91de0c40b68de9152a696}} 
+{\bfseries file\+\_\+log\+\_\+level}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_ab61cd8a7e8f9946b3476d51e5ea05c19}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_ab61cd8a7e8f9946b3476d51e5ea05c19}} 
+{\bfseries database\+\_\+log\+\_\+level}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a878185276d0062ad4d576eb96e9b8acd}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a878185276d0062ad4d576eb96e9b8acd}} 
+{\bfseries log\+\_\+to\+\_\+database}
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_ae86da1b584efaa040ea62d793fe47c55}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_ae86da1b584efaa040ea62d793fe47c55}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::logger\+::\+Simulation\+Logger@{Build\+::\+Simulation\+\_\+\+Operation\+::logger\+::\+Simulation\+Logger}!create\+\_\+simulation\+\_\+logger@{create\+\_\+simulation\+\_\+logger}}
+\index{create\+\_\+simulation\+\_\+logger@{create\+\_\+simulation\+\_\+logger}!Build\+::\+Simulation\+\_\+\+Operation\+::logger\+::\+Simulation\+Logger@{Build\+::\+Simulation\+\_\+\+Operation\+::logger\+::\+Simulation\+Logger}}
+\subsubsection{\texorpdfstring{create\+\_\+simulation\+\_\+logger()}{create\_simulation\_logger()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+logger.\+Simulation\+Logger.\+create\+\_\+simulation\+\_\+logger (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{config\+\_\+file,  }\item[{}]{override\+\_\+args = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Creates the simulation logger by. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em config\+\_\+file} & the name of configuration file, to be included in the top of the simulation description. \\
+\hline
+{\em override\+\_\+args} & an optional list override arguments to include in the header of the file \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a596e3f475ff2a31b5ac647e47aa86b41}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a596e3f475ff2a31b5ac647e47aa86b41}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::logger\+::\+Simulation\+Logger@{Build\+::\+Simulation\+\_\+\+Operation\+::logger\+::\+Simulation\+Logger}!generate\+\_\+log\+\_\+id@{generate\+\_\+log\+\_\+id}}
+\index{generate\+\_\+log\+\_\+id@{generate\+\_\+log\+\_\+id}!Build\+::\+Simulation\+\_\+\+Operation\+::logger\+::\+Simulation\+Logger@{Build\+::\+Simulation\+\_\+\+Operation\+::logger\+::\+Simulation\+Logger}}
+\subsubsection{\texorpdfstring{generate\+\_\+log\+\_\+id()}{generate\_log\_id()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+logger.\+Simulation\+Logger.\+generate\+\_\+log\+\_\+id (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Searches through all of the existing log folder names and finds a unique simulation ID to use for this logging session, to avoid overwriting files. 
+
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a4eeb0628ec65481e5c3c625c85723b80}\label{class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger_a4eeb0628ec65481e5c3c625c85723b80}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::logger\+::\+Simulation\+Logger@{Build\+::\+Simulation\+\_\+\+Operation\+::logger\+::\+Simulation\+Logger}!initialize\+\_\+logging@{initialize\+\_\+logging}}
+\index{initialize\+\_\+logging@{initialize\+\_\+logging}!Build\+::\+Simulation\+\_\+\+Operation\+::logger\+::\+Simulation\+Logger@{Build\+::\+Simulation\+\_\+\+Operation\+::logger\+::\+Simulation\+Logger}}
+\subsubsection{\texorpdfstring{initialize\+\_\+logging()}{initialize\_logging()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+logger.\+Simulation\+Logger.\+initialize\+\_\+logging (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{config\+\_\+file,  }\item[{}]{override\+\_\+args }\end{DoxyParamCaption})}
+
+
+
+Creates a unique folder for this simulation log, and then sets up the streams to the console, file, and database for all log messages. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em config\+\_\+file} & the the name of the input J\+S\+ON specifying the logging levels we will use \\
+\hline
+{\em override\+\_\+args} & a list of override arguments provided as arguments to log at the top of file \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Simulation\+\_\+\+Operation/logger.\+py\end{DoxyCompactItemize}

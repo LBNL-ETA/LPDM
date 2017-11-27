@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>LPDM Nanogrid Simulation: Class Members - Functions</title>
+<title>LPDM_Simulation: Class Members - Functions</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,9 +21,8 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">LPDM Nanogrid Simulation
+   <div id="projectname">LPDM_Simulation
    </div>
-   <div id="projectbrief">Develop 2 API</div>
   </td>
  </tr>
  </tbody>
@@ -59,67 +58,523 @@ $(function() {
 </div>
 
 <div class="contents">
-&#160;<ul>
+&#160;
+
+<h3><a id="index__"></a>- _ -</h3><ul>
 <li>__init__()
-: <a class="el" href="class_event_1_1_event.html#a59dde669156fd5abc94b3800ece49b36">Event.Event</a>
+: <a class="el" href="class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#a851cc811958a860f2796cbb5af4f40da">Build.Objects.air_conditioner.AirConditionerSimple</a>
+, <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery.html#a4f033824699b9a467a337561a41f024a">Build.Objects.battery.Battery</a>
+, <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a6e8b7318d7bce8142f9c482c1852e744">Build.Objects.device.Device</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_g_c_marginal_price_logic.html#a5435c8f548b19bbc4ef6b596f49ea6ce">Build.Objects.grid_controller.GCMarginalPriceLogic</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_g_c_marginal_price_logic_b.html#a74e1d712f6e032bd45240d28d892c368">Build.Objects.grid_controller.GCMarginalPriceLogicB</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_g_c_weighted_average_price_logic.html#ad7ea6d4ac784744d0f2a4f0bdf6c5735">Build.Objects.grid_controller.GCWeightedAveragePriceLogic</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#ad41a0d1f0d453c278938a1615352a2a3">Build.Objects.grid_controller.GridControllerPriceLogic</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__equipment_1_1_grid_equipment.html#ad25af93202f0bb0c326516f4725b92a8">Build.Objects.grid_equipment.GridEquipment</a>
+, <a class="el" href="class_build_1_1_simulation___operation_1_1event_1_1_event.html#a9453491fff56e3d46eff942d308d4c87">Build.Simulation_Operation.event.Event</a>
+, <a class="el" href="class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup.html#a28c30509115384851598b77663c44d1f">Build.Simulation_Operation.simulation.SimulationSetup</a>
 </li>
+</ul>
+
+
+<h3><a id="index_a"></a>- a -</h3><ul>
 <li>add()
-: <a class="el" href="class_priority__queue_1_1_priority_queue.html#a4655c59199cd1a181db01b265c0bd84d">Priority_queue.PriorityQueue</a>
+: <a class="el" href="class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue.html#a042956dd1eaf2317965630e8deed80b3">Build.Simulation_Operation.queue.PriorityQueue</a>
 </li>
 <li>add_event()
-: <a class="el" href="class_device_1_1_device.html#a48c0cd986e11f67d2373871ade40992e">Device.Device</a>
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a8e39400d2e8cf584f912ee9fcccddd2b">Build.Objects.device.Device</a>
+</li>
+<li>add_load()
+: <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery.html#a246c9aa9c3d54e71519b0a20a8ea350b">Build.Objects.battery.Battery</a>
+</li>
+<li>adjust_internal_temperature()
+: <a class="el" href="class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#a641bfc9644a25a253f17c0e508ffa1ae">Build.Objects.air_conditioner.AirConditionerSimple</a>
+</li>
+<li>adjust_price_thresholds()
+: <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a.html#a2253d32097370a29c9110248042dbc86">Build.Objects.battery.BatteryPriceLogicA</a>
+, <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery_price_logic_b.html#a071e4c7da71f4a5aabd385d4a3bb1bb8">Build.Objects.battery.BatteryPriceLogicB</a>
+</li>
+<li>all_devices()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor.html#a906a09a9bb5acf8b1a4ed4cda6d91661">Build.Simulation_Operation.supervisor.Supervisor</a>
+</li>
+</ul>
+
+
+<h3><a id="index_b"></a>- b -</h3><ul>
+<li>balance_power()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#aa099c2aaa311e87adde7bc663efc0779">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>begin_internal_operation()
+: <a class="el" href="class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#a33d8fdca95127232bd3183d42d83c941">Build.Objects.air_conditioner.AirConditionerSimple</a>
+, <a class="el" href="class_build_1_1_objects_1_1light_1_1_light.html#ad11a8dcdfa51caa4133e2e3b68ee2e3f">Build.Objects.light.Light</a>
+</li>
+<li>broadcast_price_levels()
+: <a class="el" href="class_build_1_1_objects_1_1utility__meter_1_1_utility_meter.html#a6d5719f08ebc1a80f95a33f77de27a7c">Build.Objects.utility_meter.UtilityMeter</a>
+</li>
+<li>build_battery_log_notation()
+: <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery.html#aa4838ab445d5c20f9c27752ffc911c6e">Build.Objects.battery.Battery</a>
+</li>
+<li>build_log_notation()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a94094fa08f506cd2f02e0d4a9611153d">Build.Objects.device.Device</a>
+</li>
+</ul>
+
+
+<h3><a id="index_c"></a>- c -</h3><ul>
+<li>calc_average_price()
+: <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a.html#af0520a01ff896c884f8fbdd241c560ab">Build.Objects.battery.BatteryPriceLogicA</a>
+</li>
+<li>calc_charge_preference()
+: <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery_price_logic.html#a1a8b8b9981e6bd1cc42d65968cb07c33">Build.Objects.battery.BatteryPriceLogic</a>
+, <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a.html#a958d6290df78fa626a89c2ee74c5764b">Build.Objects.battery.BatteryPriceLogicA</a>
+, <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery_price_logic_b.html#a3b4c1f397cc4ac0d2ae39a7ccc9bccbe">Build.Objects.battery.BatteryPriceLogicB</a>
+</li>
+<li>calc_price()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_g_c_marginal_price_logic.html#a9a5f8b1d25f916868bf8da79e12406ed">Build.Objects.grid_controller.GCMarginalPriceLogic</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_g_c_marginal_price_logic_b.html#a3f0d251ac1acb87e09895cffbbe364f2">Build.Objects.grid_controller.GCMarginalPriceLogicB</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_g_c_weighted_average_price_logic.html#af7a4032b9379b1d65783cbe7008e5eed">Build.Objects.grid_controller.GCWeightedAveragePriceLogic</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#ae4599f832b461c8fdbb66d90b95dd115">Build.Objects.grid_controller.GridControllerPriceLogic</a>
+</li>
+<li>calculate_desired_power_level()
+: <a class="el" href="class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#ad127746965293e7973e69a00a701e54d">Build.Objects.air_conditioner.AirConditionerSimple</a>
+, <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#a690ec54ec92b3d2373858fe460013730">Build.Objects.eud.Eud</a>
+, <a class="el" href="class_build_1_1_objects_1_1fixed__consumption_1_1_fixed_consumption.html#a16b7133c71492ac7e61a58d1c20676c7">Build.Objects.fixed_consumption.FixedConsumption</a>
+, <a class="el" href="class_build_1_1_objects_1_1light_1_1_light.html#ab2bf34ef61021a564a4be74f618453ce">Build.Objects.light.Light</a>
+</li>
+<li>change_load()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a672af7e3a1bfe6ec323cd2d5a9e2b85a">Build.Objects.grid_controller.GridController</a>
 </li>
 <li>clear()
-: <a class="el" href="class_priority__queue_1_1_priority_queue.html#ad2dff608b7de6455848f3266557b0f17">Priority_queue.PriorityQueue</a>
+: <a class="el" href="class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue.html#aeac0d1993374ae61b482b14cfe824473">Build.Simulation_Operation.queue.PriorityQueue</a>
+</li>
+<li>clear_load()
+: <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery.html#a1820a5bff8f3d5d46f8d32ff73e1006c">Build.Objects.battery.Battery</a>
+</li>
+<li>connect_device()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#afdb3d3a5fc6220f50c025cd0cfed306d">Build.Objects.device.Device</a>
+</li>
+<li>control_compressor_operation()
+: <a class="el" href="class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#a16c1867273e35cce644563ed0a33fcc9">Build.Objects.air_conditioner.AirConditionerSimple</a>
+</li>
+<li>create_simulation_log_folder()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger.html#a9aff48a11c74720cea423a8183896b7d">Build.Simulation_Operation.logger.SimulationLogger</a>
+</li>
+<li>create_simulation_logger()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger.html#ae86da1b584efaa040ea62d793fe47c55">Build.Simulation_Operation.logger.SimulationLogger</a>
+</li>
+</ul>
+
+
+<h3><a id="index_d"></a>- d -</h3><ul>
+<li>device_specific_calcs()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a1027097a4c8bedb6abf9d52f41e194f9">Build.Objects.device.Device</a>
+, <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#a4d6c3c842206a1738efd24319ddc2176">Build.Objects.eud.Eud</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#ae5087a1b8b5278e6340b027a860353dd">Build.Objects.grid_controller.GridController</a>
+, <a class="el" href="class_build_1_1_objects_1_1light_1_1_light.html#a5b2b078fd97d8bc80262f57d1e97377d">Build.Objects.light.Light</a>
+, <a class="el" href="class_build_1_1_objects_1_1pv_1_1_p_v.html#a6ef12cbd9bbcaeba45203b355d434b81">Build.Objects.pv.PV</a>
+, <a class="el" href="class_build_1_1_objects_1_1utility__meter_1_1_utility_meter.html#af364127959babff26c2385e52c915f46">Build.Objects.utility_meter.UtilityMeter</a>
+</li>
+<li>disengage()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a9c3ee1f54a453b5008d1118d9da1b8ed">Build.Objects.grid_controller.GridController</a>
+</li>
+</ul>
+
+
+<h3><a id="index_e"></a>- e -</h3><ul>
+<li>end_internal_operation()
+: <a class="el" href="class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#aa9fa855099f3b2d1db0726cc639c5026">Build.Objects.air_conditioner.AirConditionerSimple</a>
+, <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#a82b817dc748e1b5db87f4e47755b64ec">Build.Objects.eud.Eud</a>
+, <a class="el" href="class_build_1_1_objects_1_1light_1_1_light.html#a42cd8cee6c1f83d8ef053f095f852056">Build.Objects.light.Light</a>
+</li>
+<li>engage()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a3c71e4e2948f82a8444b2bcb3e6be504">Build.Objects.device.Device</a>
+</li>
+</ul>
+
+
+<h3><a id="index_f"></a>- f -</h3><ul>
+<li>finish()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a0eb251de12fe74493c71a50713b5ac3a">Build.Objects.device.Device</a>
+</li>
+<li>finish_all()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor.html#aeffb9fb0fc359bc0be65cbc8b23b1deb">Build.Simulation_Operation.supervisor.Supervisor</a>
+</li>
+</ul>
+
+
+<h3><a id="index_g"></a>- g -</h3><ul>
+<li>generate_log_id()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger.html#a596e3f475ff2a31b5ac647e47aa86b41">Build.Simulation_Operation.logger.SimulationLogger</a>
+</li>
+<li>get_allocate_assets()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a739bdc06f47603df13fa105dfcfaea10">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>get_allocate_liabilities()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#ad984f42fc7530884d3c95fd1d4e5067e">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>get_average_price()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#a2efaa2e5ead1f5d0d7d3d006940bfeba">Build.Objects.grid_controller.GridControllerPriceLogic</a>
+</li>
+<li>get_charging_preference()
+: <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery.html#a7f98f0d9fb7608837c17618b799c7e55">Build.Objects.battery.Battery</a>
+</li>
+<li>get_current_soc()
+: <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery.html#a111980cd30f418ba49e64ca9b89313d4">Build.Objects.battery.Battery</a>
+</li>
+<li>get_device()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor.html#afbe9013693a4d24151e3063a6f05a13e">Build.Simulation_Operation.supervisor.Supervisor</a>
+</li>
+<li>get_forecast_price()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#abfafee704233af88153846874f1c7d98">Build.Objects.grid_controller.GridControllerPriceLogic</a>
 </li>
 <li>get_id()
-: <a class="el" href="class_device_1_1_device.html#a3aef2a6e416795690e9b697b3fcf4d76">Device.Device</a>
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a9cf14b880ef9cf103ba68554d3653593">Build.Objects.device.Device</a>
 </li>
+<li>get_initial_price()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#afa3d44f846108a1c8be4818b50347597">Build.Objects.grid_controller.GridControllerPriceLogic</a>
+</li>
+<li>get_interval_prices()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#a4448f422b18640d1d00b1b43cc73d149">Build.Objects.grid_controller.GridControllerPriceLogic</a>
+</li>
+<li>get_load()
+: <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery.html#ac493263e624c98ce6688973e35cd745b">Build.Objects.battery.Battery</a>
+</li>
+<li>get_max_charge_rate()
+: <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery.html#ace39c87e0ab087c9f7d07c8a5f645fc4">Build.Objects.battery.Battery</a>
+</li>
+<li>get_max_discharge_rate()
+: <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery.html#a506889af4ebe7834352be77633a4a6f0">Build.Objects.battery.Battery</a>
+</li>
+<li>get_optimal_charge_rate()
+: <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery.html#a8f464a9edbd9a2efbe609477d004ccb1">Build.Objects.battery.Battery</a>
+</li>
+<li>get_price_announce_threshold()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#a311d9e78fc37960b0404f60259ac92f3">Build.Objects.grid_controller.GridControllerPriceLogic</a>
+</li>
+<li>get_price_history_interval()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#a58470569ce8fe9ce1907e3f8784426a5">Build.Objects.grid_controller.GridControllerPriceLogic</a>
+</li>
+<li>get_setpoint_from_price()
+: <a class="el" href="class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#ac637b8d11556eea36880d3947b5c00c0">Build.Objects.air_conditioner.AirConditionerSimple</a>
+</li>
+<li>get_type()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a0e0df5ad1dc3572210290c9c613777d4">Build.Objects.device.Device</a>
+</li>
+</ul>
+
+
+<h3><a id="index_h"></a>- h -</h3><ul>
+<li>has_next_event()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor.html#afc3f4f66bc91c1bf381bdfdcfea064f7">Build.Simulation_Operation.supervisor.Supervisor</a>
+</li>
+</ul>
+
+
+<h3><a id="index_i"></a>- i -</h3><ul>
+<li>initialize_logging()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger.html#a4eeb0628ec65481e5c3c625c85723b80">Build.Simulation_Operation.logger.SimulationLogger</a>
+</li>
+<li>is_empty()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue.html#a62ca97541bd2863177111afa2ebf01f0">Build.Simulation_Operation.queue.PriorityQueue</a>
+</li>
+</ul>
+
+
+<h3><a id="index_m"></a>- m -</h3><ul>
+<li>make_battery()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup.html#a39338a11ff1a79a8d628f074d2b35b99">Build.Simulation_Operation.simulation.SimulationSetup</a>
+</li>
+<li>make_euds()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup.html#af80258397fde04bafc05f5b2f6bac3fe">Build.Simulation_Operation.simulation.SimulationSetup</a>
+</li>
+<li>make_grid_controllers()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup.html#a88f3f878c48354cc928642aa93e91aba">Build.Simulation_Operation.simulation.SimulationSetup</a>
+</li>
+<li>make_pvs()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup.html#ae27369e558bd5994d0288113e1d617fa">Build.Simulation_Operation.simulation.SimulationSetup</a>
+</li>
+<li>make_utility_meters()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup.html#aaab107d97bd6080dee5ddb95e57346af">Build.Simulation_Operation.simulation.SimulationSetup</a>
+</li>
+<li>modulate_power()
+: <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#a11d57b7f91d22bd696f2b29a8ac93044">Build.Objects.eud.Eud</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a41968b1bd392919861dbc0de7f153f2f">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>modulate_price()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a8613a7012fcafee53dafc0abe1d71919">Build.Objects.grid_controller.GridController</a>
+</li>
+</ul>
+
+
+<h3><a id="index_o"></a>- o -</h3><ul>
 <li>occur_next_event()
-: <a class="el" href="class_supervisor_1_1_supervisor.html#a93a80c2aa032144e4bdc3fb1183335c8">Supervisor.Supervisor</a>
+: <a class="el" href="class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor.html#a8a8141714cc3cafb919978e5297d3071">Build.Simulation_Operation.supervisor.Supervisor</a>
 </li>
-<li>on_power_change()
-: <a class="el" href="class_device_1_1_device.html#ac8cec0e5eee2635bc306f765e60c2f9c">Device.Device</a>
+<li>off()
+: <a class="el" href="class_build_1_1_objects_1_1light_1_1_light.html#a1a7479e6107f3aa664936a234d66c689">Build.Objects.light.Light</a>
 </li>
-<li>on_price_change()
-: <a class="el" href="class_device_1_1_device.html#a2e57c6f8bccdf4644b7332284651e120">Device.Device</a>
+<li>on()
+: <a class="el" href="class_build_1_1_objects_1_1light_1_1_light.html#a12a3c2afe2f8f97aa1d5e28da9059c4e">Build.Objects.light.Light</a>
 </li>
-<li>on_request()
-: <a class="el" href="class_device_1_1_device.html#a5261b7396dd1581d649d629fccf3029c">Device.Device</a>
+</ul>
+
+
+<h3><a id="index_p"></a>- p -</h3><ul>
+<li>parse_inputs_to_dict()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup.html#a7102754ff7f6788bd69dcd5fa08e530b">Build.Simulation_Operation.simulation.SimulationSetup</a>
 </li>
 <li>peek()
-: <a class="el" href="class_priority__queue_1_1_priority_queue.html#a4b386d64866a20d763f7b79a52885944">Priority_queue.PriorityQueue</a>
+: <a class="el" href="class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue.html#aae2cb79110fbe3917ede657052bb3976">Build.Simulation_Operation.queue.PriorityQueue</a>
+</li>
+<li>peek_next_event()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor.html#a6b25fce4bb7e5845c17427db1cbdd6fe">Build.Simulation_Operation.supervisor.Supervisor</a>
 </li>
 <li>pop()
-: <a class="el" href="class_priority__queue_1_1_priority_queue.html#a27e13435b664d05b800751e19d46f21b">Priority_queue.PriorityQueue</a>
+: <a class="el" href="class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue.html#aff0c9a1aefbac68dd00cb274adb1d739">Build.Simulation_Operation.queue.PriorityQueue</a>
+</li>
+<li>process_allocate_message()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#af80aeef7fa18bef428cb622fc9d23d2c">Build.Objects.device.Device</a>
+, <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#af02e4338062f37389c04e87d9d5f9f63">Build.Objects.eud.Eud</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#ad917e30e3b828571c02657d8052cf075">Build.Objects.grid_controller.GridController</a>
+, <a class="el" href="class_build_1_1_objects_1_1pv_1_1_p_v.html#aabdf52b13172ff2c632d7f7cde732191">Build.Objects.pv.PV</a>
+, <a class="el" href="class_build_1_1_objects_1_1utility__meter_1_1_utility_meter.html#a8b7c3c518352e0a41555a1a9e70b460c">Build.Objects.utility_meter.UtilityMeter</a>
 </li>
 <li>process_events()
-: <a class="el" href="class_device_1_1_device.html#afd1b29eb311904ffa8565fd2d2079967">Device.Device</a>
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a49c8b4c3d1c3ca5cc2a070bf6761af8a">Build.Objects.device.Device</a>
+</li>
+<li>process_power_message()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#af90a8b21aab7e60dc6ca1dcd7fe00b6f">Build.Objects.device.Device</a>
+, <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#a5105203c22df5b2e9c1754b8889563df">Build.Objects.eud.Eud</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a7a07bb8716ac48899b8f0c1ee2e2f6fe">Build.Objects.grid_controller.GridController</a>
+, <a class="el" href="class_build_1_1_objects_1_1pv_1_1_p_v.html#a4e7810d5ba27d6414abca31af54d8949">Build.Objects.pv.PV</a>
+, <a class="el" href="class_build_1_1_objects_1_1utility__meter_1_1_utility_meter.html#a498d637ea147a783280bc68594ef0069">Build.Objects.utility_meter.UtilityMeter</a>
+</li>
+<li>process_price_message()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#ab4a83ea60755c15f89dcbff7a10f55cc">Build.Objects.device.Device</a>
+, <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#abef38cebc5b66f6cb03f58f2900b9a93">Build.Objects.eud.Eud</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a7133aa43a9d19e42fad9c6deca385fe2">Build.Objects.grid_controller.GridController</a>
+, <a class="el" href="class_build_1_1_objects_1_1pv_1_1_p_v.html#a5f41b238d5d48ac989782e1c6fffaa54">Build.Objects.pv.PV</a>
+, <a class="el" href="class_build_1_1_objects_1_1utility__meter_1_1_utility_meter.html#a44b7bc4b09471d2529d4fef6c07abc42">Build.Objects.utility_meter.UtilityMeter</a>
+</li>
+<li>process_register_message()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#ac665d015021b9efa42b734d0cc637304">Build.Objects.device.Device</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#aedf7e56f24b97d1fa1d4ff68d23cd987">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>process_request_message()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a83c4bc3f6628bc2ba3343b96c5a441f8">Build.Objects.device.Device</a>
+, <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#a4e9b1ca4c510a1f405f5d16b31215cbe">Build.Objects.eud.Eud</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a70878c4f7a8a7cb46cc1b0097e0d91fd">Build.Objects.grid_controller.GridController</a>
+, <a class="el" href="class_build_1_1_objects_1_1pv_1_1_p_v.html#ab560ae3ebbbb4c57382daa39d39fe654">Build.Objects.pv.PV</a>
+, <a class="el" href="class_build_1_1_objects_1_1utility__meter_1_1_utility_meter.html#ae450ec6bdd72caebb6163ae05490a1f8">Build.Objects.utility_meter.UtilityMeter</a>
+</li>
+</ul>
+
+
+<h3><a id="index_r"></a>- r -</h3><ul>
+<li>read_air_conditioner_data()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup.html#a05dcf54f3c290997fe904079bf438e12">Build.Simulation_Operation.simulation.SimulationSetup</a>
+</li>
+<li>read_config_file()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup.html#a7b0667f9c521eecef17941c07b091fa2">Build.Simulation_Operation.simulation.SimulationSetup</a>
 </li>
 <li>read_message()
-: <a class="el" href="class_device_1_1_device.html#a1d4ccc0c3994e92d6c0cc22b0484801e">Device.Device</a>
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a65e13b5bb4b33acdd37a084167829056">Build.Objects.device.Device</a>
+</li>
+<li>read_pv_data()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup.html#a230e156e1023bed3e0c80510989a98ff">Build.Simulation_Operation.simulation.SimulationSetup</a>
+</li>
+<li>reassess_setpoint()
+: <a class="el" href="class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#ace754a3c9581817b5bbce2394da2163a">Build.Objects.air_conditioner.AirConditionerSimple</a>
+</li>
+<li>recalc_charge_preference()
+: <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery.html#a2c343f81c849a4b8d6de5de9f19ebc98">Build.Objects.battery.Battery</a>
+</li>
+<li>recalc_sum_power()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a576ceef658b74d05291b3dbc2b1ba1da">Build.Objects.device.Device</a>
+</li>
+<li>recalculate_price()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a59529d68b87e1814512a8c03d908d797">Build.Objects.grid_controller.GridController</a>
 </li>
 <li>receive_message()
-: <a class="el" href="class_device_1_1_device.html#ab19f8e64e8a68ecd5316db800db01d46">Device.Device</a>
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a015f4cfeb779c8c6338c65bab7e314ec">Build.Objects.device.Device</a>
 </li>
 <li>register_device()
-: <a class="el" href="class_device_1_1_device.html#adc0a8678e0a0889ab254061e378be6fe">Device.Device</a>
-, <a class="el" href="class_supervisor_1_1_supervisor.html#abcfeed6e2cf6aec51fd85133dcc7668d">Supervisor.Supervisor</a>
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a8ff05d4817a653460ef0873554e3ac87">Build.Objects.device.Device</a>
+, <a class="el" href="class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor.html#a832a95fccf9b01f2a3126f554e172adb">Build.Simulation_Operation.supervisor.Supervisor</a>
 </li>
 <li>register_event()
-: <a class="el" href="class_supervisor_1_1_supervisor.html#aa2199e82392a38e22e391e03885fb4c2">Supervisor.Supervisor</a>
+: <a class="el" href="class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor.html#aaa1358b86023cb1cdb458103f2981025">Build.Simulation_Operation.supervisor.Supervisor</a>
 </li>
 <li>remove()
-: <a class="el" href="class_priority__queue_1_1_priority_queue.html#a311e92d0a6c8a26393d9122b159d6b17">Priority_queue.PriorityQueue</a>
+: <a class="el" href="class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue.html#a86faaf2d1f76eb146b6e1d5a55df09ba">Build.Simulation_Operation.queue.PriorityQueue</a>
 </li>
 <li>report_next_event_time()
-: <a class="el" href="class_device_1_1_device.html#abb9e113d3aba9118bbd205198e656b7a">Device.Device</a>
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a5e3fa6ca689529fcf25650e94dcedc62">Build.Objects.device.Device</a>
+</li>
+<li>request_response()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#ad0475d0ecec8bd9541c940fb5e779dd1">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>respond_to_power()
+: <a class="el" href="class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#af810a3fced1cc73099a33e4f4020a65e">Build.Objects.air_conditioner.AirConditionerSimple</a>
+, <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#a89a88154fdd5e8a4c9c1207eb3cb3f2f">Build.Objects.eud.Eud</a>
+, <a class="el" href="class_build_1_1_objects_1_1fixed__consumption_1_1_fixed_consumption.html#adc5b45c93ea370e11aecc8f87e2eebbc">Build.Objects.fixed_consumption.FixedConsumption</a>
+, <a class="el" href="class_build_1_1_objects_1_1light_1_1_light.html#aabf8b9ee88178489130e5e612d22f7d0">Build.Objects.light.Light</a>
 </li>
 <li>run_event()
-: <a class="el" href="class_event_1_1_event.html#a06520d9b62a64266891af59f31c5ccad">Event.Event</a>
+: <a class="el" href="class_build_1_1_simulation___operation_1_1event_1_1_event.html#a0714e3275d4c67cd5e1757e846fc3dbf">Build.Simulation_Operation.event.Event</a>
 </li>
-<li>shift()
-: <a class="el" href="class_priority__queue_1_1_priority_queue.html#a19c99c56b8204a717b12b3a32301a7d8">Priority_queue.PriorityQueue</a>
+</ul>
+
+
+<h3><a id="index_s"></a>- s -</h3><ul>
+<li>schedule_outdoor_temperature_events()
+: <a class="el" href="class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#a780672ba57c94495b1203d5da8715ec8">Build.Objects.air_conditioner.AirConditionerSimple</a>
+</li>
+<li>seek_to_distribute_power()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#ad85f2d1459669fe5be0d3c046c23a54b">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>seek_to_obtain_power()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#ade27791e0e81bcb55583e7e711b9b5d0">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>send_allocate_message()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a5ff206d2afccf703eef39dafadce5124">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>send_power_message()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a2d1690b10f41cdef2d74895c2a971b58">Build.Objects.grid_controller.GridController</a>
+, <a class="el" href="class_build_1_1_objects_1_1pv_1_1_p_v.html#acbeb8820230c1c317e553db544b38286">Build.Objects.pv.PV</a>
+, <a class="el" href="class_build_1_1_objects_1_1utility__meter_1_1_utility_meter.html#adc1f007ca7702f7db08c7238e2cead00">Build.Objects.utility_meter.UtilityMeter</a>
+</li>
+<li>send_price_message()
+: <a class="el" href="class_build_1_1_objects_1_1utility__meter_1_1_utility_meter.html#adc776ffbce82fa1dc11ed6ec012d768d">Build.Objects.utility_meter.UtilityMeter</a>
+</li>
+<li>send_register_message()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a0acf2d71b9378f7f59e99c1b06c3c23a">Build.Objects.device.Device</a>
+</li>
+<li>send_request_message()
+: <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#a13b6abd062b9b88597dc83c9c7813fdc">Build.Objects.eud.Eud</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a0eb0f617f66e5dc0c1f2f4d853251c3c">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>set_allocated()
+: <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#a7a4ea640840f7c33015a204d83cc0b59">Build.Objects.eud.Eud</a>
+</li>
+<li>set_buy_price()
+: <a class="el" href="class_build_1_1_objects_1_1utility__meter_1_1_utility_meter.html#a251bb69419a9885a8e867d8b5932c044">Build.Objects.utility_meter.UtilityMeter</a>
+</li>
+<li>set_current_price()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#a83a87f838ab54ca0dbd4cb3924994c7b">Build.Objects.grid_controller.GridControllerPriceLogic</a>
+</li>
+<li>set_power_in()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a1cfab902786e2a6caf3a4b22341e9641">Build.Objects.device.Device</a>
+</li>
+<li>set_power_out()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a75d4f47040d95f6e5adb6238cf9e2463">Build.Objects.device.Device</a>
+</li>
+<li>set_sell_price()
+: <a class="el" href="class_build_1_1_objects_1_1utility__meter_1_1_utility_meter.html#a3fddd94d0a6ca8646c64a5684e447e0d">Build.Objects.utility_meter.UtilityMeter</a>
+</li>
+<li>setup_battery_update_schedule()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a03876bc3ddc4c92dfa5e80e74978169a">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>setup_logging()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup.html#a62de4c30581cb63c774eef81689b0448">Build.Simulation_Operation.simulation.SimulationSetup</a>
+</li>
+<li>setup_modulation_schedule()
+: <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#a6f7982b4d798f0a26222ec4a96366b9a">Build.Objects.eud.Eud</a>
+, <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#af818cf547695cc3dbb126112cac8f453">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>setup_power_schedule()
+: <a class="el" href="class_build_1_1_objects_1_1pv_1_1_p_v.html#a8c06b93d9d13ee9b6991c3b498bf469e">Build.Objects.pv.PV</a>
+</li>
+<li>setup_price_calc_schedule()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a5dedc78f6eca0253e0395ca38c74c4b0">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>setup_price_schedules()
+: <a class="el" href="class_build_1_1_objects_1_1utility__meter_1_1_utility_meter.html#a197ab2ab7f5abe14619a2ae15898b074">Build.Objects.utility_meter.UtilityMeter</a>
+</li>
+<li>setup_schedule()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a06ffd25b07e6361e4ecb1e3432cff477">Build.Objects.device.Device</a>
+</li>
+<li>setup_simulation()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup.html#ab84075cdf159c767ccfc52549c9578ce">Build.Simulation_Operation.simulation.SimulationSetup</a>
+</li>
+<li>shut_down()
+: <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#afc9354486371abba2f70e6a1605459e3">Build.Objects.eud.Eud</a>
+</li>
+<li>simulation_log_path()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger.html#ae1a333d5f65efb622ad579772ce46d64">Build.Simulation_Operation.logger.SimulationLogger</a>
+</li>
+<li>start_up()
+: <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#a8601f950b8b11f28f9ec0e80965c8b25">Build.Objects.eud.Eud</a>
+</li>
+<li>sum_power_in()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a6a7287bc43dacb4ab23d04dbd8c01d2f">Build.Objects.device.Device</a>
+</li>
+<li>sum_power_out()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#acbaf978b589fe80b8d4da2f25b266b32">Build.Objects.device.Device</a>
+</li>
+</ul>
+
+
+<h3><a id="index_t"></a>- t -</h3><ul>
+<li>total_calcs()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor.html#a27f0aa77cedb9b74d8d8d93ab702b01a">Build.Simulation_Operation.supervisor.Supervisor</a>
+</li>
+<li>turn_off()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#afdea3e05f02d0c838ee8647a8f60ddf7">Build.Objects.grid_controller.GridController</a>
+, <a class="el" href="class_build_1_1_objects_1_1utility__meter_1_1_utility_meter.html#a33fc2489dff8710a37e6067238f30305">Build.Objects.utility_meter.UtilityMeter</a>
+</li>
+<li>turn_off_compressor()
+: <a class="el" href="class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#affced4fc3f6e8260d31c1690a8b5614d">Build.Objects.air_conditioner.AirConditionerSimple</a>
+</li>
+<li>turn_on()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a024c6220ba4e03dca547d99e1f3a39be">Build.Objects.grid_controller.GridController</a>
+, <a class="el" href="class_build_1_1_objects_1_1utility__meter_1_1_utility_meter.html#a426b005fc2ad0ce41094d80e324a251f">Build.Objects.utility_meter.UtilityMeter</a>
+</li>
+<li>turn_on_compressor()
+: <a class="el" href="class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#aa758ea8ab27c611b7e661f3eea7df4e6">Build.Objects.air_conditioner.AirConditionerSimple</a>
+</li>
+</ul>
+
+
+<h3><a id="index_u"></a>- u -</h3><ul>
+<li>update_average_price()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#a241ac9f19af131870e9bad6dd2b3cbc3">Build.Objects.grid_controller.GridControllerPriceLogic</a>
+</li>
+<li>update_average_price_calcs()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a51734204cdfcff80c9ba18eacec07dde">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>update_battery()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#aa6a44013053b81ae9996aa21a44fac1d">Build.Objects.grid_controller.GridController</a>
+</li>
+<li>update_by_attribute()
+: <a class="el" href="class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue.html#af953e022ce390c5090ebe7de4f1ea6ec">Build.Simulation_Operation.queue.PriorityQueue</a>
+</li>
+<li>update_interval_prices()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#a9c0d6f8e499488e3ae75ad3779876cfd">Build.Objects.grid_controller.GridControllerPriceLogic</a>
+</li>
+<li>update_outdoor_temperature()
+: <a class="el" href="class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#aafc4201ae9e6e9f297df07fc03f89be2">Build.Objects.air_conditioner.AirConditionerSimple</a>
+</li>
+<li>update_power_status()
+: <a class="el" href="class_build_1_1_objects_1_1pv_1_1_p_v.html#a0c27298b51f1e227cee28bb3f6528742">Build.Objects.pv.PV</a>
+</li>
+<li>update_prices()
+: <a class="el" href="class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#a8772b6c6be3c37e2249c257f8ac5e82a">Build.Objects.grid_controller.GridControllerPriceLogic</a>
+</li>
+<li>update_state()
+: <a class="el" href="class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#ae44edec63419de6b2bb9ea0bd93161e0">Build.Objects.air_conditioner.AirConditionerSimple</a>
+, <a class="el" href="class_build_1_1_objects_1_1battery_1_1_battery.html#a246d8921279b7cb78a0f6b33f2309085">Build.Objects.battery.Battery</a>
+, <a class="el" href="class_build_1_1_objects_1_1eud_1_1_eud.html#ac807e57f20360c9e828046a38aaa7db6">Build.Objects.eud.Eud</a>
+, <a class="el" href="class_build_1_1_objects_1_1light_1_1_light.html#a2658c7e30fc3fa388033e2bb4ff14442">Build.Objects.light.Light</a>
+</li>
+<li>update_time()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#a12de2674ec41c3cfb31689fde187f6e0">Build.Objects.device.Device</a>
+</li>
+</ul>
+
+
+<h3><a id="index_w"></a>- w -</h3><ul>
+<li>write_calcs()
+: <a class="el" href="class_build_1_1_objects_1_1device_1_1_device.html#aff92b20a263ce0f7a715789305ca0d30">Build.Objects.device.Device</a>
 </li>
 </ul>
 </div><!-- contents -->

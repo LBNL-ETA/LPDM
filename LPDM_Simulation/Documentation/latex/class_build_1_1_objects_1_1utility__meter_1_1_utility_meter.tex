@@ -1,0 +1,213 @@
+\hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter}{}\section{Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter Class Reference}
+\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter}\index{Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter@{Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter}}
+Inheritance diagram for Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a641edf1c1c911d9e2cffe710d139782c}\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a641edf1c1c911d9e2cffe710d139782c}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self, device\+\_\+id, supervisor, msg\+\_\+latency=0, schedule=None, runtime=S\+E\+C\+O\+N\+D\+S\+\_\+\+I\+N\+\_\+\+D\+AY, multiday=0, sell\+\_\+price\+\_\+schedule=None, sell\+\_\+price\+\_\+multiday=0, buy\+\_\+price\+\_\+schedule=None, buy\+\_\+price\+\_\+multiday=0, connected\+\_\+devices=None)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a426b005fc2ad0ce41094d80e324a251f}{turn\+\_\+on} (self)
+\begin{DoxyCompactList}\small\item\em Turn the utility meter on so that it can provide and receive power. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a33fc2489dff8710a37e6067238f30305}{turn\+\_\+off} (self)
+\begin{DoxyCompactList}\small\item\em Turn the utility meter off so that it can no longer provide and receive power. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a3fddd94d0a6ca8646c64a5684e447e0d}{set\+\_\+sell\+\_\+price} (self, sell\+\_\+price)
+\begin{DoxyCompactList}\small\item\em Change the sell price for this utility meter. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a251bb69419a9885a8e867d8b5932c044}{set\+\_\+buy\+\_\+price} (self, buy\+\_\+price)
+\begin{DoxyCompactList}\small\item\em Sets the buy price for this utility meter. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a197ab2ab7f5abe14619a2ae15898b074}{setup\+\_\+price\+\_\+schedules} (self, sell\+\_\+price\+\_\+schedule, buy\+\_\+price\+\_\+schedule, sell\+\_\+price\+\_\+multiday=0, buy\+\_\+price\+\_\+multiday=0, runtime=S\+E\+C\+O\+N\+D\+S\+\_\+\+I\+N\+\_\+\+D\+AY)
+\begin{DoxyCompactList}\small\item\em Adds a price schedule for this utility  sell\+\_\+price\+\_\+schedule the list of hour, sell\+\_\+price tuples in. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a498d637ea147a783280bc68594ef0069}{process\+\_\+power\+\_\+message} (self, sender\+\_\+id, new\+\_\+power)
+\begin{DoxyCompactList}\small\item\em Process a power message from a grid controller. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a44b7bc4b09471d2529d4fef6c07abc42}{process\+\_\+price\+\_\+message} (self, sender\+\_\+id, new\+\_\+price, extra\+\_\+info)
+\begin{DoxyCompactList}\small\item\em Method to be called when device receives a price message. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_ae450ec6bdd72caebb6163ae05490a1f8}{process\+\_\+request\+\_\+message} (self, sender\+\_\+id, request\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em Method to be called when device receives a request message, indicating a device is requesting to either provide or receive the requested quantity of power. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a8b7c3c518352e0a41555a1a9e70b460c}{process\+\_\+allocate\+\_\+message} (self, sender\+\_\+id, allocate\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em Utility Meter does not process allocate messages. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_adc1f007ca7702f7db08c7238e2cead00}{send\+\_\+power\+\_\+message} (self, target\+\_\+id, power\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em This utility meter sends a power message to another device indicating that a certain quantity of power is now flowing across the link. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_adc776ffbce82fa1dc11ed6ec012d768d}{send\+\_\+price\+\_\+message} (self, target\+\_\+id, sell\+\_\+price, buy\+\_\+price)
+\begin{DoxyCompactList}\small\item\em This utility meter informs another device of both its current buy price and its current sell price. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a6d5719f08ebc1a80f95a33f77de27a7c}{broadcast\+\_\+price\+\_\+levels} (self, sell\+\_\+price, buy\+\_\+price)
+\begin{DoxyCompactList}\small\item\em Informs all connected devices of the utility meter\textquotesingle{}s buy price. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_af364127959babff26c2385e52c915f46}\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_af364127959babff26c2385e52c915f46}} 
+def \hyperlink{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_af364127959babff26c2385e52c915f46}{device\+\_\+specific\+\_\+calcs} (self)
+\begin{DoxyCompactList}\small\item\em Utility meter currently does not have any specific device calculations to add to the log file. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a6d5719f08ebc1a80f95a33f77de27a7c}\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a6d5719f08ebc1a80f95a33f77de27a7c}} 
+\index{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}!broadcast\+\_\+price\+\_\+levels@{broadcast\+\_\+price\+\_\+levels}}
+\index{broadcast\+\_\+price\+\_\+levels@{broadcast\+\_\+price\+\_\+levels}!Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}}
+\subsubsection{\texorpdfstring{broadcast\+\_\+price\+\_\+levels()}{broadcast\_price\_levels()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter.\+broadcast\+\_\+price\+\_\+levels (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sell\+\_\+price,  }\item[{}]{buy\+\_\+price }\end{DoxyParamCaption})}
+
+
+
+Informs all connected devices of the utility meter\textquotesingle{}s buy price. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em price} & the price to broadcast to all connected devices \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a8b7c3c518352e0a41555a1a9e70b460c}\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a8b7c3c518352e0a41555a1a9e70b460c}} 
+\index{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}!process\+\_\+allocate\+\_\+message@{process\+\_\+allocate\+\_\+message}}
+\index{process\+\_\+allocate\+\_\+message@{process\+\_\+allocate\+\_\+message}!Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}}
+\subsubsection{\texorpdfstring{process\+\_\+allocate\+\_\+message()}{process\_allocate\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter.\+process\+\_\+allocate\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{allocate\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+Utility Meter does not process allocate messages. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sender\+\_\+id} & the sender of the allocate message \\
+\hline
+{\em allocate\+\_\+amt} & the quantity that this device has been allocated to consume \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a498d637ea147a783280bc68594ef0069}\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a498d637ea147a783280bc68594ef0069}} 
+\index{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}!process\+\_\+power\+\_\+message@{process\+\_\+power\+\_\+message}}
+\index{process\+\_\+power\+\_\+message@{process\+\_\+power\+\_\+message}!Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}}
+\subsubsection{\texorpdfstring{process\+\_\+power\+\_\+message()}{process\_power\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter.\+process\+\_\+power\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{new\+\_\+power }\end{DoxyParamCaption})}
+
+
+
+Process a power message from a grid controller. 
+
+If this utility meter is operational, always provide what is demanded, assuming amount less than maximum output capacity. 
+\begin{DoxyParams}{Parameters}
+{\em sender\+\_\+id} & the \\
+\hline
+{\em new\+\_\+power} & the new power from the sender\textquotesingle{}s perspective \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a44b7bc4b09471d2529d4fef6c07abc42}\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a44b7bc4b09471d2529d4fef6c07abc42}} 
+\index{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}!process\+\_\+price\+\_\+message@{process\+\_\+price\+\_\+message}}
+\index{process\+\_\+price\+\_\+message@{process\+\_\+price\+\_\+message}!Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}}
+\subsubsection{\texorpdfstring{process\+\_\+price\+\_\+message()}{process\_price\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter.\+process\+\_\+price\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{new\+\_\+price,  }\item[{}]{extra\+\_\+info }\end{DoxyParamCaption})}
+
+
+
+Method to be called when device receives a price message. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+price} & the new price value \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_ae450ec6bdd72caebb6163ae05490a1f8}\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_ae450ec6bdd72caebb6163ae05490a1f8}} 
+\index{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}!process\+\_\+request\+\_\+message@{process\+\_\+request\+\_\+message}}
+\index{process\+\_\+request\+\_\+message@{process\+\_\+request\+\_\+message}!Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}}
+\subsubsection{\texorpdfstring{process\+\_\+request\+\_\+message()}{process\_request\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter.\+process\+\_\+request\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{request\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+Method to be called when device receives a request message, indicating a device is requesting to either provide or receive the requested quantity of power. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em request\+\_\+amt} & the amount the sender is requesting to provide (positive) or to receive (negative). \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_adc1f007ca7702f7db08c7238e2cead00}\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_adc1f007ca7702f7db08c7238e2cead00}} 
+\index{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}!send\+\_\+power\+\_\+message@{send\+\_\+power\+\_\+message}}
+\index{send\+\_\+power\+\_\+message@{send\+\_\+power\+\_\+message}!Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}}
+\subsubsection{\texorpdfstring{send\+\_\+power\+\_\+message()}{send\_power\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter.\+send\+\_\+power\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{target\+\_\+id,  }\item[{}]{power\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+This utility meter sends a power message to another device indicating that a certain quantity of power is now flowing across the link. 
+
+This message should only be in response to receiving a power msg to inform that it must provide a different amount than what was asked. \mbox{\Hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_adc776ffbce82fa1dc11ed6ec012d768d}\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_adc776ffbce82fa1dc11ed6ec012d768d}} 
+\index{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}!send\+\_\+price\+\_\+message@{send\+\_\+price\+\_\+message}}
+\index{send\+\_\+price\+\_\+message@{send\+\_\+price\+\_\+message}!Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}}
+\subsubsection{\texorpdfstring{send\+\_\+price\+\_\+message()}{send\_price\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter.\+send\+\_\+price\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{target\+\_\+id,  }\item[{}]{sell\+\_\+price,  }\item[{}]{buy\+\_\+price }\end{DoxyParamCaption})}
+
+
+
+This utility meter informs another device of both its current buy price and its current sell price. 
+
+The buy price information is contained in the message\textquotesingle{}s extra\+\_\+info field. \mbox{\Hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a251bb69419a9885a8e867d8b5932c044}\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a251bb69419a9885a8e867d8b5932c044}} 
+\index{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}!set\+\_\+buy\+\_\+price@{set\+\_\+buy\+\_\+price}}
+\index{set\+\_\+buy\+\_\+price@{set\+\_\+buy\+\_\+price}!Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}}
+\subsubsection{\texorpdfstring{set\+\_\+buy\+\_\+price()}{set\_buy\_price()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter.\+set\+\_\+buy\+\_\+price (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{buy\+\_\+price }\end{DoxyParamCaption})}
+
+
+
+Sets the buy price for this utility meter. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em buy\+\_\+price} & the buy price to set the value to \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a3fddd94d0a6ca8646c64a5684e447e0d}\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a3fddd94d0a6ca8646c64a5684e447e0d}} 
+\index{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}!set\+\_\+sell\+\_\+price@{set\+\_\+sell\+\_\+price}}
+\index{set\+\_\+sell\+\_\+price@{set\+\_\+sell\+\_\+price}!Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}}
+\subsubsection{\texorpdfstring{set\+\_\+sell\+\_\+price()}{set\_sell\_price()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter.\+set\+\_\+sell\+\_\+price (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sell\+\_\+price }\end{DoxyParamCaption})}
+
+
+
+Change the sell price for this utility meter. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sell\+\_\+price} & the sell price to set the value to \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a197ab2ab7f5abe14619a2ae15898b074}\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a197ab2ab7f5abe14619a2ae15898b074}} 
+\index{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}!setup\+\_\+price\+\_\+schedules@{setup\+\_\+price\+\_\+schedules}}
+\index{setup\+\_\+price\+\_\+schedules@{setup\+\_\+price\+\_\+schedules}!Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}}
+\subsubsection{\texorpdfstring{setup\+\_\+price\+\_\+schedules()}{setup\_price\_schedules()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter.\+setup\+\_\+price\+\_\+schedules (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sell\+\_\+price\+\_\+schedule,  }\item[{}]{buy\+\_\+price\+\_\+schedule,  }\item[{}]{sell\+\_\+price\+\_\+multiday = {\ttfamily 0},  }\item[{}]{buy\+\_\+price\+\_\+multiday = {\ttfamily 0},  }\item[{}]{runtime = {\ttfamily SECONDS\+\_\+IN\+\_\+DAY} }\end{DoxyParamCaption})}
+
+
+
+Adds a price schedule for this utility  sell\+\_\+price\+\_\+schedule the list of hour, sell\+\_\+price tuples in. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em multiday} & how many days of the scheduling to set as a repeating \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a33fc2489dff8710a37e6067238f30305}\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a33fc2489dff8710a37e6067238f30305}} 
+\index{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}!turn\+\_\+off@{turn\+\_\+off}}
+\index{turn\+\_\+off@{turn\+\_\+off}!Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}}
+\subsubsection{\texorpdfstring{turn\+\_\+off()}{turn\_off()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter.\+turn\+\_\+off (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Turn the utility meter off so that it can no longer provide and receive power. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a426b005fc2ad0ce41094d80e324a251f}\label{class_build_1_1_objects_1_1utility__meter_1_1_utility_meter_a426b005fc2ad0ce41094d80e324a251f}} 
+\index{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}!turn\+\_\+on@{turn\+\_\+on}}
+\index{turn\+\_\+on@{turn\+\_\+on}!Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter@{Build\+::\+Objects\+::utility\+\_\+meter\+::\+Utility\+Meter}}
+\subsubsection{\texorpdfstring{turn\+\_\+on()}{turn\_on()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+utility\+\_\+meter.\+Utility\+Meter.\+turn\+\_\+on (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Turn the utility meter on so that it can provide and receive power. 
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Objects/utility\+\_\+meter.\+py\end{DoxyCompactItemize}

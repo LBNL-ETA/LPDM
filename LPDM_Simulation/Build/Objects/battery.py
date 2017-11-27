@@ -21,6 +21,7 @@ from abc import ABCMeta, abstractmethod
 from enum import Enum
 from Build.Simulation_Operation.support import format_time_from_seconds
 
+
 class Battery(object):
 
     ##

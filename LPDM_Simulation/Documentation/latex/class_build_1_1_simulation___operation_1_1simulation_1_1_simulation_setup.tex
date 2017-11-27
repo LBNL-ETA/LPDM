@@ -1,0 +1,276 @@
+\hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup}{}\section{Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup Class Reference}
+\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup}\index{Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup@{Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a28c30509115384851598b77663c44d1f}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self, supervisor)
+\begin{DoxyCompactList}\small\item\em Create an instance of the Simulation Setup class, which will contain the supervisor who will orchestrate the simulation. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a7b0667f9c521eecef17941c07b091fa2}{read\+\_\+config\+\_\+file} (self, filename)
+\begin{DoxyCompactList}\small\item\em Reads in the configuration J\+S\+ON and returns the dictionary parsed from it. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a62de4c30581cb63c774eef81689b0448}{setup\+\_\+logging} (self, config\+\_\+filename, config, override\+\_\+args)
+\begin{DoxyCompactList}\small\item\em Sets up the logging for the simulation by. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a88f3f878c48354cc928642aa93e91aba}{make\+\_\+grid\+\_\+controllers} (self, config, runtime, override\+\_\+args)
+\begin{DoxyCompactList}\small\item\em Reads in information from the parameter dictionary, makes all specified grid controllers and registers them with the supervisor, recording each of their connections. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a39338a11ff1a79a8d628f074d2b35b99}{make\+\_\+battery} (self, battery\+\_\+info, gc\+\_\+id, override\+\_\+args)
+\begin{DoxyCompactList}\small\item\em Reads in the J\+S\+ON information about a battery and creates a battery class. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_aaab107d97bd6080dee5ddb95e57346af}{make\+\_\+utility\+\_\+meters} (self, config, runtime, override\+\_\+args)
+\begin{DoxyCompactList}\small\item\em Reads in information from the parameter dictionary, makes all specified utility meters and registers them with the supervisor, recording each of their connections. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a230e156e1023bed3e0c80510989a98ff}{read\+\_\+pv\+\_\+data} (self, filename)
+\begin{DoxyCompactList}\small\item\em Reads in the PV csv data containing information about the proportion of power used at different times during the simulation. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_ae27369e558bd5994d0288113e1d617fa}{make\+\_\+pvs} (self, config, runtime, override\+\_\+args)
+\begin{DoxyCompactList}\small\item\em Reads in information from the parameter dictionary, makes all specified PV\textquotesingle{}s and registers them with the supervisor, recording each of their connections. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a05dcf54f3c290997fe904079bf438e12}{read\+\_\+air\+\_\+conditioner\+\_\+data} (self, filename)
+\begin{DoxyCompactList}\small\item\em Reads in the air conditioner temperature data. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_af80258397fde04bafc05f5b2f6bac3fe}{make\+\_\+euds} (self, config, runtime, override\+\_\+args)
+\begin{DoxyCompactList}\small\item\em Reads in all the information from the J\+S\+ON about all listed E\+UD\textquotesingle{}s and creates their connections. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_ab84075cdf159c767ccfc52549c9578ce}{setup\+\_\+simulation} (self, config\+\_\+file, override\+\_\+args\+\_\+list)
+\begin{DoxyCompactList}\small\item\em Reads in the simulation json file and any override parameters, creating all the devices which will participate in the simulation and then registering all connected devices with each other. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a7102754ff7f6788bd69dcd5fa08e530b}{parse\+\_\+inputs\+\_\+to\+\_\+dict} (self, args)
+\begin{DoxyCompactList}\small\item\em Takes a list of keyword arguments in the form of strings such as \textquotesingle{}key=value\textquotesingle{} and outputs them as a dictionary of string to string values. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a8c337374126df47d0fa7e596cb5cd2d5}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a8c337374126df47d0fa7e596cb5cd2d5}} 
+{\bfseries end\+\_\+time}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a0260870db8fb3663315fbdff7e073d8e}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a0260870db8fb3663315fbdff7e073d8e}} 
+{\bfseries supervisor}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_ae6b222d0c0f67d5c71c7949f07c262e5}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_ae6b222d0c0f67d5c71c7949f07c262e5}} 
+{\bfseries eud\+\_\+dictionary}
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a0224fb07b15747a6fd9375480d47a964}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a0224fb07b15747a6fd9375480d47a964}} 
+int {\bfseries D\+E\+F\+A\+U\+L\+T\+\_\+\+M\+E\+S\+S\+A\+G\+E\+\_\+\+L\+A\+T\+E\+N\+CY} = 0
+\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a28c30509115384851598b77663c44d1f}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a28c30509115384851598b77663c44d1f}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}!\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}!Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}}
+\subsubsection{\texorpdfstring{\+\_\+\+\_\+init\+\_\+\+\_\+()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{supervisor }\end{DoxyParamCaption})}
+
+
+
+Create an instance of the Simulation Setup class, which will contain the supervisor who will orchestrate the simulation. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em supervisor} & the supervisor for this simulation \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a39338a11ff1a79a8d628f074d2b35b99}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a39338a11ff1a79a8d628f074d2b35b99}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}!make\+\_\+battery@{make\+\_\+battery}}
+\index{make\+\_\+battery@{make\+\_\+battery}!Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}}
+\subsubsection{\texorpdfstring{make\+\_\+battery()}{make\_battery()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup.\+make\+\_\+battery (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{battery\+\_\+info,  }\item[{}]{gc\+\_\+id,  }\item[{}]{override\+\_\+args }\end{DoxyParamCaption})}
+
+
+
+Reads in the J\+S\+ON information about a battery and creates a battery class. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em battery\+\_\+info} & a dictionary of parameter-\/value information about a battery retrieved from the input J\+S\+ON file. \\
+\hline
+{\em gc\+\_\+id} & the id of the grid controller to associate this battery with \\
+\hline
+{\em override\+\_\+args} & a dictionary of override arguments \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the newly created battery 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_af80258397fde04bafc05f5b2f6bac3fe}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_af80258397fde04bafc05f5b2f6bac3fe}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}!make\+\_\+euds@{make\+\_\+euds}}
+\index{make\+\_\+euds@{make\+\_\+euds}!Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}}
+\subsubsection{\texorpdfstring{make\+\_\+euds()}{make\_euds()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup.\+make\+\_\+euds (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{config,  }\item[{}]{runtime,  }\item[{}]{override\+\_\+args }\end{DoxyParamCaption})}
+
+
+
+Reads in all the information from the J\+S\+ON about all listed E\+UD\textquotesingle{}s and creates their connections. 
+
+Since each E\+UD might have a different construction signature, this function references the \char`\"{}\+Eud Dictionary\char`\"{} which has a list of the names of different unique construction parameters for each E\+UD, and then tries to find the values for those parameters in the configuration file 
+\begin{DoxyParams}{Parameters}
+{\em config} & the configuration input dictionary derived from the J\+S\+ON parameter file \\
+\hline
+{\em runtime} & the duration of the simulation (in seconds) \\
+\hline
+{\em override\+\_\+args} & the dictionary of override arguments \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+list of tuples of E\+U\+D\+\_\+id\textquotesingle{}s, list of that device\textquotesingle{}s connected devices. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a88f3f878c48354cc928642aa93e91aba}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a88f3f878c48354cc928642aa93e91aba}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}!make\+\_\+grid\+\_\+controllers@{make\+\_\+grid\+\_\+controllers}}
+\index{make\+\_\+grid\+\_\+controllers@{make\+\_\+grid\+\_\+controllers}!Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}}
+\subsubsection{\texorpdfstring{make\+\_\+grid\+\_\+controllers()}{make\_grid\_controllers()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup.\+make\+\_\+grid\+\_\+controllers (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{config,  }\item[{}]{runtime,  }\item[{}]{override\+\_\+args }\end{DoxyParamCaption})}
+
+
+
+Reads in information from the parameter dictionary, makes all specified grid controllers and registers them with the supervisor, recording each of their connections. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em config} & the configuration dictionary derived from the input J\+S\+ON file \\
+\hline
+{\em runtime} & duration of the simulation (used by grid controllers for internal scheduling). \\
+\hline
+{\em override\+\_\+args} & a dictionary of override arguments \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+list of tuples of G\+C\+\_\+id\textquotesingle{}s, list of that device\textquotesingle{}s connected devices. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_ae27369e558bd5994d0288113e1d617fa}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_ae27369e558bd5994d0288113e1d617fa}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}!make\+\_\+pvs@{make\+\_\+pvs}}
+\index{make\+\_\+pvs@{make\+\_\+pvs}!Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}}
+\subsubsection{\texorpdfstring{make\+\_\+pvs()}{make\_pvs()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup.\+make\+\_\+pvs (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{config,  }\item[{}]{runtime,  }\item[{}]{override\+\_\+args }\end{DoxyParamCaption})}
+
+
+
+Reads in information from the parameter dictionary, makes all specified PV\textquotesingle{}s and registers them with the supervisor, recording each of their connections. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em config} & the configuration input dictionary derived from the J\+S\+ON parameter file \\
+\hline
+{\em runtime} & the duration of the simulation, in seconds (necessary for PV\textquotesingle{}s internal scheduling) \\
+\hline
+{\em override\+\_\+args} & dictionary of override arguments \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+list of tuples of P\+V\+\_\+id\textquotesingle{}s, list of that device\textquotesingle{}s connected devices. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_aaab107d97bd6080dee5ddb95e57346af}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_aaab107d97bd6080dee5ddb95e57346af}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}!make\+\_\+utility\+\_\+meters@{make\+\_\+utility\+\_\+meters}}
+\index{make\+\_\+utility\+\_\+meters@{make\+\_\+utility\+\_\+meters}!Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}}
+\subsubsection{\texorpdfstring{make\+\_\+utility\+\_\+meters()}{make\_utility\_meters()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup.\+make\+\_\+utility\+\_\+meters (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{config,  }\item[{}]{runtime,  }\item[{}]{override\+\_\+args }\end{DoxyParamCaption})}
+
+
+
+Reads in information from the parameter dictionary, makes all specified utility meters and registers them with the supervisor, recording each of their connections. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em config} & the configuration dictionary derived from the input J\+S\+ON file \\
+\hline
+{\em override\+\_\+args} & a dictionary of override arguments \\
+\hline
+{\em runtime} & the duration of the simulation (in seconds) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a7102754ff7f6788bd69dcd5fa08e530b}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a7102754ff7f6788bd69dcd5fa08e530b}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}!parse\+\_\+inputs\+\_\+to\+\_\+dict@{parse\+\_\+inputs\+\_\+to\+\_\+dict}}
+\index{parse\+\_\+inputs\+\_\+to\+\_\+dict@{parse\+\_\+inputs\+\_\+to\+\_\+dict}!Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}}
+\subsubsection{\texorpdfstring{parse\+\_\+inputs\+\_\+to\+\_\+dict()}{parse\_inputs\_to\_dict()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup.\+parse\+\_\+inputs\+\_\+to\+\_\+dict (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{args }\end{DoxyParamCaption})}
+
+
+
+Takes a list of keyword arguments in the form of strings such as \textquotesingle{}key=value\textquotesingle{} and outputs them as a dictionary of string to string values. 
+
+Ignores whitespace. 
+\begin{DoxyParams}{Parameters}
+{\em args} & the list of keyword inputs to separate into a dictionary \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a05dcf54f3c290997fe904079bf438e12}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a05dcf54f3c290997fe904079bf438e12}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}!read\+\_\+air\+\_\+conditioner\+\_\+data@{read\+\_\+air\+\_\+conditioner\+\_\+data}}
+\index{read\+\_\+air\+\_\+conditioner\+\_\+data@{read\+\_\+air\+\_\+conditioner\+\_\+data}!Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}}
+\subsubsection{\texorpdfstring{read\+\_\+air\+\_\+conditioner\+\_\+data()}{read\_air\_conditioner\_data()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup.\+read\+\_\+air\+\_\+conditioner\+\_\+data (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{filename }\end{DoxyParamCaption})}
+
+
+
+Reads in the air conditioner temperature data. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em filename} & the name of the input C\+SV file, containing times and associated temperatures \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+a list of tuples of time(seconds) and temperature (celcius). 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a7b0667f9c521eecef17941c07b091fa2}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a7b0667f9c521eecef17941c07b091fa2}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}!read\+\_\+config\+\_\+file@{read\+\_\+config\+\_\+file}}
+\index{read\+\_\+config\+\_\+file@{read\+\_\+config\+\_\+file}!Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}}
+\subsubsection{\texorpdfstring{read\+\_\+config\+\_\+file()}{read\_config\_file()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup.\+read\+\_\+config\+\_\+file (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{filename }\end{DoxyParamCaption})}
+
+
+
+Reads in the configuration J\+S\+ON and returns the dictionary parsed from it. 
+
+\begin{DoxyReturn}{Returns}
+a parsed key-\/value dictionary from the json 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a230e156e1023bed3e0c80510989a98ff}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a230e156e1023bed3e0c80510989a98ff}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}!read\+\_\+pv\+\_\+data@{read\+\_\+pv\+\_\+data}}
+\index{read\+\_\+pv\+\_\+data@{read\+\_\+pv\+\_\+data}!Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}}
+\subsubsection{\texorpdfstring{read\+\_\+pv\+\_\+data()}{read\_pv\_data()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup.\+read\+\_\+pv\+\_\+data (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{filename }\end{DoxyParamCaption})}
+
+
+
+Reads in the PV csv data containing information about the proportion of power used at different times during the simulation. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em filename} & the input filename containing a list of times and associated percentages of peak power \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+a list of tuples of time (seconds), and power produced (watts). 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a62de4c30581cb63c774eef81689b0448}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_a62de4c30581cb63c774eef81689b0448}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}!setup\+\_\+logging@{setup\+\_\+logging}}
+\index{setup\+\_\+logging@{setup\+\_\+logging}!Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}}
+\subsubsection{\texorpdfstring{setup\+\_\+logging()}{setup\_logging()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup.\+setup\+\_\+logging (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{config\+\_\+filename,  }\item[{}]{config,  }\item[{}]{override\+\_\+args }\end{DoxyParamCaption})}
+
+
+
+Sets up the logging for the simulation by. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em config\+\_\+filename} & the name of the input J\+S\+ON file to be \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_ab84075cdf159c767ccfc52549c9578ce}\label{class_build_1_1_simulation___operation_1_1simulation_1_1_simulation_setup_ab84075cdf159c767ccfc52549c9578ce}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}!setup\+\_\+simulation@{setup\+\_\+simulation}}
+\index{setup\+\_\+simulation@{setup\+\_\+simulation}!Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup@{Build\+::\+Simulation\+\_\+\+Operation\+::simulation\+::\+Simulation\+Setup}}
+\subsubsection{\texorpdfstring{setup\+\_\+simulation()}{setup\_simulation()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+simulation.\+Simulation\+Setup.\+setup\+\_\+simulation (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{config\+\_\+file,  }\item[{}]{override\+\_\+args\+\_\+list }\end{DoxyParamCaption})}
+
+
+
+Reads in the simulation json file and any override parameters, creating all the devices which will participate in the simulation and then registering all connected devices with each other. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em config\+\_\+file} & the name of the input J\+S\+ON file (will be parsed in this function) \\
+\hline
+{\em override\+\_\+args\+\_\+list} & the list of unparsed override arguments passed into simulation arguments (of format \textquotesingle{}device\+\_\+\+X.\+parameter\+\_\+Y=Z\textquotesingle{} \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Simulation\+\_\+\+Operation/simulation.\+py\end{DoxyCompactItemize}

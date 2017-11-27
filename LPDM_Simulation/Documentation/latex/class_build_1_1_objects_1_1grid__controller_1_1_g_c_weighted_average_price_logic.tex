@@ -1,0 +1,62 @@
+\hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_g_c_weighted_average_price_logic}{}\section{Build.\+Objects.\+grid\+\_\+controller.\+G\+C\+Weighted\+Average\+Price\+Logic Class Reference}
+\label{class_build_1_1_objects_1_1grid__controller_1_1_g_c_weighted_average_price_logic}\index{Build.\+Objects.\+grid\+\_\+controller.\+G\+C\+Weighted\+Average\+Price\+Logic@{Build.\+Objects.\+grid\+\_\+controller.\+G\+C\+Weighted\+Average\+Price\+Logic}}
+Inheritance diagram for Build.\+Objects.\+grid\+\_\+controller.\+G\+C\+Weighted\+Average\+Price\+Logic\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.295082cm]{class_build_1_1_objects_1_1grid__controller_1_1_g_c_weighted_average_price_logic}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_g_c_weighted_average_price_logic_ad7ea6d4ac784744d0f2a4f0bdf6c5735}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self, price\+\_\+history\+\_\+interval, initial\+\_\+price, price\+\_\+announce\+\_\+threshold)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_g_c_weighted_average_price_logic_af7a4032b9379b1d65783cbe7008e5eed}{calc\+\_\+price} (self, neighbor\+\_\+prices=None, loads=None, requested=None, allocated=None)
+\begin{DoxyCompactList}\small\item\em Calculates this GC\textquotesingle{}s Price as a function of the prices of its power sources, weighted by the fraction of this GC\textquotesingle{}s total power in that device is providing. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_g_c_weighted_average_price_logic_ad7ea6d4ac784744d0f2a4f0bdf6c5735}\label{class_build_1_1_objects_1_1grid__controller_1_1_g_c_weighted_average_price_logic_ad7ea6d4ac784744d0f2a4f0bdf6c5735}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Weighted\+Average\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Weighted\+Average\+Price\+Logic}!\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Weighted\+Average\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Weighted\+Average\+Price\+Logic}}
+\subsubsection{\texorpdfstring{\+\_\+\+\_\+init\+\_\+\+\_\+()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+G\+C\+Weighted\+Average\+Price\+Logic.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{price\+\_\+history\+\_\+interval,  }\item[{}]{initial\+\_\+price,  }\item[{}]{price\+\_\+announce\+\_\+threshold }\end{DoxyParamCaption})}
+
+
+\begin{DoxyParams}{Parameters}
+{\em price\+\_\+history\+\_\+interval} & the length of the interval to calculate the average price for and store in memory \\
+\hline
+{\em initial} & price the initial price of this grid controller \\
+\hline
+{\em price\+\_\+announce\+\_\+threshold} & the difference in prices before announcing your new local price to neighbors \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_g_c_weighted_average_price_logic_af7a4032b9379b1d65783cbe7008e5eed}\label{class_build_1_1_objects_1_1grid__controller_1_1_g_c_weighted_average_price_logic_af7a4032b9379b1d65783cbe7008e5eed}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Weighted\+Average\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Weighted\+Average\+Price\+Logic}!calc\+\_\+price@{calc\+\_\+price}}
+\index{calc\+\_\+price@{calc\+\_\+price}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Weighted\+Average\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Weighted\+Average\+Price\+Logic}}
+\subsubsection{\texorpdfstring{calc\+\_\+price()}{calc\_price()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+G\+C\+Weighted\+Average\+Price\+Logic.\+calc\+\_\+price (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{neighbor\+\_\+prices = {\ttfamily None},  }\item[{}]{loads = {\ttfamily None},  }\item[{}]{requested = {\ttfamily None},  }\item[{}]{allocated = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Calculates this GC\textquotesingle{}s Price as a function of the prices of its power sources, weighted by the fraction of this GC\textquotesingle{}s total power in that device is providing. 
+
+If there are no current loads in, defaults to the initial price 
+\begin{DoxyParams}{Parameters}
+{\em neighbor\+\_\+prices} & the dictionary of connected device id\textquotesingle{}s and their prices \\
+\hline
+{\em loads} & dictionary of connected device id\textquotesingle{}s and current loads with those devices \\
+\hline
+{\em requested} & dictionary of connected device id\textquotesingle{}s and current requests to and from those devices \\
+\hline
+{\em allocated} & the dictionary of connected device id\textquotesingle{}s and allocated by and to those devices. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Objects/grid\+\_\+controller.\+py\end{DoxyCompactItemize}

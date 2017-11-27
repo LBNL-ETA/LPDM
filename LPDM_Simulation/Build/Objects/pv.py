@@ -31,10 +31,10 @@ class PV(Device):
     # TODO: assumes total_runtime is in days, and schedule is at most one day long, and schedule is
     # TODO: in percentage of peak power. Make this more robust?
     def setup_power_schedule(self, power_profile, peak_power, total_runtime):
-        curr_day = int(self._time / SECONDS_IN_DAY)  # Current day in seconds
+        curr_day = int(self._time / SECONDS_IN_DAY)  # Current day in seconds. Starts at the PV's initial time.
         while curr_day < total_runtime:
-            for time, power_percent in power_profile:
-                power_event = Event(self.update_power_status, peak_power, power_percent)
+            for time, power_proportion in power_profile:
+                power_event = Event(self.update_power_status, peak_power, power_proportion)
                 self.add_event(power_event, time + curr_day)
             curr_day += SECONDS_IN_DAY
 

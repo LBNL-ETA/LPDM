@@ -1,0 +1,43 @@
+\hypertarget{class_build_1_1_simulation___operation_1_1message_1_1_message_type}{}\section{Build.\+Simulation\+\_\+\+Operation.\+message.\+Message\+Type Class Reference}
+\label{class_build_1_1_simulation___operation_1_1message_1_1_message_type}\index{Build.\+Simulation\+\_\+\+Operation.\+message.\+Message\+Type@{Build.\+Simulation\+\_\+\+Operation.\+message.\+Message\+Type}}
+
+
+Messages can be of five types\+: Register, power, price, request, and allocate.  
+
+
+Inheritance diagram for Build.\+Simulation\+\_\+\+Operation.\+message.\+Message\+Type\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_build_1_1_simulation___operation_1_1message_1_1_message_type}
+\end{center}
+\end{figure}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1message_1_1_message_type_a518eb650dfc94f31142b07f0caa5ac09}\label{class_build_1_1_simulation___operation_1_1message_1_1_message_type_a518eb650dfc94f31142b07f0caa5ac09}} 
+int {\bfseries R\+E\+G\+I\+S\+T\+ER} = 1
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1message_1_1_message_type_abc56c6f1776929c18f8b6fc8b74001fe}\label{class_build_1_1_simulation___operation_1_1message_1_1_message_type_abc56c6f1776929c18f8b6fc8b74001fe}} 
+int {\bfseries P\+O\+W\+ER} = 2
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1message_1_1_message_type_a68afec66af746b54718007bf8d059943}\label{class_build_1_1_simulation___operation_1_1message_1_1_message_type_a68afec66af746b54718007bf8d059943}} 
+int {\bfseries P\+R\+I\+CE} = 3
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1message_1_1_message_type_a60bbbb6d2d9a92e2021e20485288c011}\label{class_build_1_1_simulation___operation_1_1message_1_1_message_type_a60bbbb6d2d9a92e2021e20485288c011}} 
+int {\bfseries R\+E\+Q\+U\+E\+ST} = 4
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1message_1_1_message_type_aa0b29a936d5282d2da064604df74db7b}\label{class_build_1_1_simulation___operation_1_1message_1_1_message_type_aa0b29a936d5282d2da064604df74db7b}} 
+int {\bfseries A\+L\+L\+O\+C\+A\+TE} = 5
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Messages can be of five types\+: Register, power, price, request, and allocate. 
+
+A register message indicates that a device is seeking to register or unregister a connection with another device; a positive value with Register indicates that it would like to be registered under that device\textquotesingle{}s connected devices, while a negative value indicates that it is requesting to disconnect.
+
+A power message informs another device that power is now flowing between them in a certain direction. Once a device has received a power message with a certain quantity, that power flow must now exists between them -- there is no further negotiation. 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Simulation\+\_\+\+Operation/message.\+py\end{DoxyCompactItemize}

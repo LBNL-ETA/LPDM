@@ -1,0 +1,191 @@
+\hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple}{}\section{Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple Class Reference}
+\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple}\index{Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple@{Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple}}
+Inheritance diagram for Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.648208cm]{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a851cc811958a860f2796cbb5af4f40da}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self, device\+\_\+id, supervisor, msg\+\_\+latency=0, schedule=None, multiday=0, total\+\_\+runtime=S\+E\+C\+O\+N\+D\+S\+\_\+\+I\+N\+\_\+\+D\+AY, time=0, connected\+\_\+devices=None, compressor\+\_\+operating\+\_\+power=500.\+0, initial\+\_\+temp=25.\+0, temp\+\_\+max\+\_\+delta=0.\+5, initial\+\_\+set\+\_\+point=23.\+0, price\+\_\+to\+\_\+setpoint=None, temperature\+\_\+schedule=None, compressor\+\_\+cooling\+\_\+rate=2.\+0, heat\+\_\+exchange\+\_\+rate=0.\+1, modulation\+\_\+interval=300)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a780672ba57c94495b1203d5da8715ec8}{schedule\+\_\+outdoor\+\_\+temperature\+\_\+events} (self, temperature\+\_\+schedule, total\+\_\+runtime)
+\begin{DoxyCompactList}\small\item\em Schedules all of the temperature change events each day for the entire duration of the simulation. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_ace754a3c9581817b5bbce2394da2163a}{reassess\+\_\+setpoint} (self)
+\begin{DoxyCompactList}\small\item\em Given the current price of the device, determine what the current temperature setpoint should be. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_ac637b8d11556eea36880d3947b5c00c0}{get\+\_\+setpoint\+\_\+from\+\_\+price} (self, price)
+\begin{DoxyCompactList}\small\item\em Returns the setpoint value from the given price by finding the next largest price-\/setpoint value in the input setpoint dictionary. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a641bfc9644a25a253f17c0e508ffa1ae}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a641bfc9644a25a253f17c0e508ffa1ae}} 
+def \hyperlink{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a641bfc9644a25a253f17c0e508ffa1ae}{adjust\+\_\+internal\+\_\+temperature} (self)
+\begin{DoxyCompactList}\small\item\em Adjusts the internal temperature of the a/c based on the indoor/outdoor temperature difference. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a16c1867273e35cce644563ed0a33fcc9}{control\+\_\+compressor\+\_\+operation} (self)
+\begin{DoxyCompactList}\small\item\em Given the current internal temperature of the air conditioner and the desired setpoint, determine whether the compressor should be on. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_aa758ea8ab27c611b7e661f3eea7df4e6}{turn\+\_\+on\+\_\+compressor} (self)
+\begin{DoxyCompactList}\small\item\em Turns on the compressor. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_affced4fc3f6e8260d31c1690a8b5614d}{turn\+\_\+off\+\_\+compressor} (self)
+\begin{DoxyCompactList}\small\item\em Turns off the compressor. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_aafc4201ae9e6e9f297df07fc03f89be2}{update\+\_\+outdoor\+\_\+temperature} (self, new\+\_\+temperature)
+\begin{DoxyCompactList}\small\item\em Refresh the current outdoor temperature value. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_aa9fa855099f3b2d1db0726cc639c5026}{end\+\_\+internal\+\_\+operation} (self)
+\begin{DoxyCompactList}\small\item\em Air conditioner will shut off compressor whenever device shuts off. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a33d8fdca95127232bd3183d42d83c941}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a33d8fdca95127232bd3183d42d83c941}} 
+def \hyperlink{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a33d8fdca95127232bd3183d42d83c941}{begin\+\_\+internal\+\_\+operation} (self)
+\begin{DoxyCompactList}\small\item\em Air conditioner does not have startup behavior. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_ae44edec63419de6b2bb9ea0bd93161e0}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_ae44edec63419de6b2bb9ea0bd93161e0}} 
+def \hyperlink{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_ae44edec63419de6b2bb9ea0bd93161e0}{update\+\_\+state} (self)
+\begin{DoxyCompactList}\small\item\em Updates the state of the air conditioner by determining its internal temperature, desired setpoint, and hence desired. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_ad127746965293e7973e69a00a701e54d}{calculate\+\_\+desired\+\_\+power\+\_\+level} (self)
+\begin{DoxyCompactList}\small\item\em This air conditioner consumes what it requires to run the compressor if the compressor should be on. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_af810a3fced1cc73099a33e4f4020a65e}{respond\+\_\+to\+\_\+power} (self, received\+\_\+power)
+\begin{DoxyCompactList}\small\item\em When this Air Conditioner receives power, if it is sufficient for its needs it turns the compressor on. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a13cb6a7cf5b10f62aaabd50ad902a756}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a13cb6a7cf5b10f62aaabd50ad902a756}} 
+def {\bfseries device\+\_\+specific\+\_\+calcs} (self)
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a851cc811958a860f2796cbb5af4f40da}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a851cc811958a860f2796cbb5af4f40da}} 
+\index{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}!\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}!Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}}
+\subsubsection{\texorpdfstring{\+\_\+\+\_\+init\+\_\+\+\_\+()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device\+\_\+id,  }\item[{}]{supervisor,  }\item[{}]{msg\+\_\+latency = {\ttfamily 0},  }\item[{}]{schedule = {\ttfamily None},  }\item[{}]{multiday = {\ttfamily 0},  }\item[{}]{total\+\_\+runtime = {\ttfamily SECONDS\+\_\+IN\+\_\+DAY},  }\item[{}]{time = {\ttfamily 0},  }\item[{}]{connected\+\_\+devices = {\ttfamily None},  }\item[{}]{compressor\+\_\+operating\+\_\+power = {\ttfamily 500.0},  }\item[{}]{initial\+\_\+temp = {\ttfamily 25.0},  }\item[{}]{temp\+\_\+max\+\_\+delta = {\ttfamily 0.5},  }\item[{}]{initial\+\_\+set\+\_\+point = {\ttfamily 23.0},  }\item[{}]{price\+\_\+to\+\_\+setpoint = {\ttfamily None},  }\item[{}]{temperature\+\_\+schedule = {\ttfamily None},  }\item[{}]{compressor\+\_\+cooling\+\_\+rate = {\ttfamily 2.0},  }\item[{}]{heat\+\_\+exchange\+\_\+rate = {\ttfamily 0.1},  }\item[{}]{modulation\+\_\+interval = {\ttfamily 300} }\end{DoxyParamCaption})}
+
+
+\begin{DoxyParams}{Parameters}
+{\em compressor\+\_\+operating\+\_\+power} & how much energy the device requires to keep the compressor in operation \\
+\hline
+{\em compressor\+\_\+temp\+\_\+rate} & the cooling rate at the air conditioner (degrees C / hour). \\
+\hline
+{\em initial\+\_\+temp} & The initial internal temperature of the air conditioner \\
+\hline
+{\em initial\+\_\+setpoint} & initial setpoint of this device \\
+\hline
+{\em heat\+\_\+exchange\+\_\+rate} & the rate of change in temperature as a result of the difference between internal and external temperature \\
+\hline
+{\em price\+\_\+to\+\_\+setpoint} & a list of lists of price, setpoint for this device to modify setpoint based on price \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_ad127746965293e7973e69a00a701e54d}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_ad127746965293e7973e69a00a701e54d}} 
+\index{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}!calculate\+\_\+desired\+\_\+power\+\_\+level@{calculate\+\_\+desired\+\_\+power\+\_\+level}}
+\index{calculate\+\_\+desired\+\_\+power\+\_\+level@{calculate\+\_\+desired\+\_\+power\+\_\+level}!Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}}
+\subsubsection{\texorpdfstring{calculate\+\_\+desired\+\_\+power\+\_\+level()}{calculate\_desired\_power\_level()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple.\+calculate\+\_\+desired\+\_\+power\+\_\+level (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+This air conditioner consumes what it requires to run the compressor if the compressor should be on. 
+
+\begin{DoxyReturn}{Returns}
+the amount of power this a/c would like to consume 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a16c1867273e35cce644563ed0a33fcc9}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a16c1867273e35cce644563ed0a33fcc9}} 
+\index{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}!control\+\_\+compressor\+\_\+operation@{control\+\_\+compressor\+\_\+operation}}
+\index{control\+\_\+compressor\+\_\+operation@{control\+\_\+compressor\+\_\+operation}!Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}}
+\subsubsection{\texorpdfstring{control\+\_\+compressor\+\_\+operation()}{control\_compressor\_operation()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple.\+control\+\_\+compressor\+\_\+operation (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Given the current internal temperature of the air conditioner and the desired setpoint, determine whether the compressor should be on. 
+
+If the compressor should not be on, turn it off. If it should be, record that so we can request the necessary power in order to turn it on. \mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_aa9fa855099f3b2d1db0726cc639c5026}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_aa9fa855099f3b2d1db0726cc639c5026}} 
+\index{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}!end\+\_\+internal\+\_\+operation@{end\+\_\+internal\+\_\+operation}}
+\index{end\+\_\+internal\+\_\+operation@{end\+\_\+internal\+\_\+operation}!Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}}
+\subsubsection{\texorpdfstring{end\+\_\+internal\+\_\+operation()}{end\_internal\_operation()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple.\+end\+\_\+internal\+\_\+operation (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Air conditioner will shut off compressor whenever device shuts off. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_ac637b8d11556eea36880d3947b5c00c0}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_ac637b8d11556eea36880d3947b5c00c0}} 
+\index{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}!get\+\_\+setpoint\+\_\+from\+\_\+price@{get\+\_\+setpoint\+\_\+from\+\_\+price}}
+\index{get\+\_\+setpoint\+\_\+from\+\_\+price@{get\+\_\+setpoint\+\_\+from\+\_\+price}!Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}}
+\subsubsection{\texorpdfstring{get\+\_\+setpoint\+\_\+from\+\_\+price()}{get\_setpoint\_from\_price()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple.\+get\+\_\+setpoint\+\_\+from\+\_\+price (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{price }\end{DoxyParamCaption})}
+
+
+
+Returns the setpoint value from the given price by finding the next largest price-\/setpoint value in the input setpoint dictionary. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_ace754a3c9581817b5bbce2394da2163a}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_ace754a3c9581817b5bbce2394da2163a}} 
+\index{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}!reassess\+\_\+setpoint@{reassess\+\_\+setpoint}}
+\index{reassess\+\_\+setpoint@{reassess\+\_\+setpoint}!Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}}
+\subsubsection{\texorpdfstring{reassess\+\_\+setpoint()}{reassess\_setpoint()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple.\+reassess\+\_\+setpoint (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Given the current price of the device, determine what the current temperature setpoint should be. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_af810a3fced1cc73099a33e4f4020a65e}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_af810a3fced1cc73099a33e4f4020a65e}} 
+\index{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}!respond\+\_\+to\+\_\+power@{respond\+\_\+to\+\_\+power}}
+\index{respond\+\_\+to\+\_\+power@{respond\+\_\+to\+\_\+power}!Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}}
+\subsubsection{\texorpdfstring{respond\+\_\+to\+\_\+power()}{respond\_to\_power()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple.\+respond\+\_\+to\+\_\+power (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{received\+\_\+power }\end{DoxyParamCaption})}
+
+
+
+When this Air Conditioner receives power, if it is sufficient for its needs it turns the compressor on. 
+
+Otherwise, if the compressor can no longer operate turn it off. \mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a780672ba57c94495b1203d5da8715ec8}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_a780672ba57c94495b1203d5da8715ec8}} 
+\index{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}!schedule\+\_\+outdoor\+\_\+temperature\+\_\+events@{schedule\+\_\+outdoor\+\_\+temperature\+\_\+events}}
+\index{schedule\+\_\+outdoor\+\_\+temperature\+\_\+events@{schedule\+\_\+outdoor\+\_\+temperature\+\_\+events}!Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}}
+\subsubsection{\texorpdfstring{schedule\+\_\+outdoor\+\_\+temperature\+\_\+events()}{schedule\_outdoor\_temperature\_events()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple.\+schedule\+\_\+outdoor\+\_\+temperature\+\_\+events (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{temperature\+\_\+schedule,  }\item[{}]{total\+\_\+runtime }\end{DoxyParamCaption})}
+
+
+
+Schedules all of the temperature change events each day for the entire duration of the simulation. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em temperature\+\_\+schedule} & a list of tuples of (time, temperature) for outdoor temperatures. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_affced4fc3f6e8260d31c1690a8b5614d}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_affced4fc3f6e8260d31c1690a8b5614d}} 
+\index{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}!turn\+\_\+off\+\_\+compressor@{turn\+\_\+off\+\_\+compressor}}
+\index{turn\+\_\+off\+\_\+compressor@{turn\+\_\+off\+\_\+compressor}!Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}}
+\subsubsection{\texorpdfstring{turn\+\_\+off\+\_\+compressor()}{turn\_off\_compressor()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple.\+turn\+\_\+off\+\_\+compressor (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Turns off the compressor. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_aa758ea8ab27c611b7e661f3eea7df4e6}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_aa758ea8ab27c611b7e661f3eea7df4e6}} 
+\index{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}!turn\+\_\+on\+\_\+compressor@{turn\+\_\+on\+\_\+compressor}}
+\index{turn\+\_\+on\+\_\+compressor@{turn\+\_\+on\+\_\+compressor}!Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}}
+\subsubsection{\texorpdfstring{turn\+\_\+on\+\_\+compressor()}{turn\_on\_compressor()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple.\+turn\+\_\+on\+\_\+compressor (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Turns on the compressor. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_aafc4201ae9e6e9f297df07fc03f89be2}\label{class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple_aafc4201ae9e6e9f297df07fc03f89be2}} 
+\index{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}!update\+\_\+outdoor\+\_\+temperature@{update\+\_\+outdoor\+\_\+temperature}}
+\index{update\+\_\+outdoor\+\_\+temperature@{update\+\_\+outdoor\+\_\+temperature}!Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple@{Build\+::\+Objects\+::air\+\_\+conditioner\+::\+Air\+Conditioner\+Simple}}
+\subsubsection{\texorpdfstring{update\+\_\+outdoor\+\_\+temperature()}{update\_outdoor\_temperature()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+air\+\_\+conditioner.\+Air\+Conditioner\+Simple.\+update\+\_\+outdoor\+\_\+temperature (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{new\+\_\+temperature }\end{DoxyParamCaption})}
+
+
+
+Refresh the current outdoor temperature value. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+temperature} & the new outdoor temperature value \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Objects/air\+\_\+conditioner.\+py\end{DoxyCompactItemize}

@@ -1,0 +1,59 @@
+\hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a}{}\section{Build.\+Objects.\+battery.\+Battery\+Price\+LogicA Class Reference}
+\label{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a}\index{Build.\+Objects.\+battery.\+Battery\+Price\+LogicA@{Build.\+Objects.\+battery.\+Battery\+Price\+LogicA}}
+
+
+\hyperlink{class_build_1_1_objects_1_1battery_1_1_battery}{Battery} price logic class which utilizes the average past 24 hourly prices to determine the optimal \char`\"{}threshold price\char`\"{} which influences when a battery prefers to discharge or charge given its current local price.  
+
+
+Inheritance diagram for Build.\+Objects.\+battery.\+Battery\+Price\+LogicA\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a_a0134a6435cd19197d759260aef5b7f37}\label{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a_a0134a6435cd19197d759260aef5b7f37}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self, starting\+\_\+price=0.\+1)
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a_af0520a01ff896c884f8fbdd241c560ab}\label{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a_af0520a01ff896c884f8fbdd241c560ab}} 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a_af0520a01ff896c884f8fbdd241c560ab}{calc\+\_\+average\+\_\+price} (self, price\+\_\+history)
+\begin{DoxyCompactList}\small\item\em Calculates the average price across the. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a_a2253d32097370a29c9110248042dbc86}{adjust\+\_\+price\+\_\+thresholds} (self, current\+\_\+soc, price\+\_\+history)
+\begin{DoxyCompactList}\small\item\em Method to calculate the price thresholds which help determine the battery\textquotesingle{}s charging preference. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a_a958d6290df78fa626a89c2ee74c5764b}{calc\+\_\+charge\+\_\+preference} (self, current\+\_\+soc, current\+\_\+price, price\+\_\+history, average\+\_\+price=None)
+\begin{DoxyCompactList}\small\item\em Calculates the battery\textquotesingle{}s charging preference based on current price in relation to the calculated price thresholds and absolute charge levels. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{class_build_1_1_objects_1_1battery_1_1_battery}{Battery} price logic class which utilizes the average past 24 hourly prices to determine the optimal \char`\"{}threshold price\char`\"{} which influences when a battery prefers to discharge or charge given its current local price. 
+
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a_a2253d32097370a29c9110248042dbc86}\label{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a_a2253d32097370a29c9110248042dbc86}} 
+\index{Build\+::\+Objects\+::battery\+::\+Battery\+Price\+LogicA@{Build\+::\+Objects\+::battery\+::\+Battery\+Price\+LogicA}!adjust\+\_\+price\+\_\+thresholds@{adjust\+\_\+price\+\_\+thresholds}}
+\index{adjust\+\_\+price\+\_\+thresholds@{adjust\+\_\+price\+\_\+thresholds}!Build\+::\+Objects\+::battery\+::\+Battery\+Price\+LogicA@{Build\+::\+Objects\+::battery\+::\+Battery\+Price\+LogicA}}
+\subsubsection{\texorpdfstring{adjust\+\_\+price\+\_\+thresholds()}{adjust\_price\_thresholds()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+battery.\+Battery\+Price\+Logic\+A.\+adjust\+\_\+price\+\_\+thresholds (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{current\+\_\+soc,  }\item[{}]{price\+\_\+history }\end{DoxyParamCaption})}
+
+
+
+Method to calculate the price thresholds which help determine the battery\textquotesingle{}s charging preference. 
+
+Interprets the past 24 hours average price and sets thresholds relative to the minimum, average, and maximum prices. \mbox{\Hypertarget{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a_a958d6290df78fa626a89c2ee74c5764b}\label{class_build_1_1_objects_1_1battery_1_1_battery_price_logic_a_a958d6290df78fa626a89c2ee74c5764b}} 
+\index{Build\+::\+Objects\+::battery\+::\+Battery\+Price\+LogicA@{Build\+::\+Objects\+::battery\+::\+Battery\+Price\+LogicA}!calc\+\_\+charge\+\_\+preference@{calc\+\_\+charge\+\_\+preference}}
+\index{calc\+\_\+charge\+\_\+preference@{calc\+\_\+charge\+\_\+preference}!Build\+::\+Objects\+::battery\+::\+Battery\+Price\+LogicA@{Build\+::\+Objects\+::battery\+::\+Battery\+Price\+LogicA}}
+\subsubsection{\texorpdfstring{calc\+\_\+charge\+\_\+preference()}{calc\_charge\_preference()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+battery.\+Battery\+Price\+Logic\+A.\+calc\+\_\+charge\+\_\+preference (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{current\+\_\+soc,  }\item[{}]{current\+\_\+price,  }\item[{}]{price\+\_\+history,  }\item[{}]{average\+\_\+price = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Calculates the battery\textquotesingle{}s charging preference based on current price in relation to the calculated price thresholds and absolute charge levels. 
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Objects/battery.\+py\end{DoxyCompactItemize}

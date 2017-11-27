@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['occur_5fnext_5fevent',['occur_next_event',['../class_supervisor_1_1_supervisor.html#a93a80c2aa032144e4bdc3fb1183335c8',1,'Supervisor::Supervisor']]],
-  ['on_5fpower_5fchange',['on_power_change',['../class_device_1_1_device.html#ac8cec0e5eee2635bc306f765e60c2f9c',1,'Device::Device']]],
-  ['on_5fprice_5fchange',['on_price_change',['../class_device_1_1_device.html#a2e57c6f8bccdf4644b7332284651e120',1,'Device::Device']]],
-  ['on_5frequest',['on_request',['../class_device_1_1_device.html#a5261b7396dd1581d649d629fccf3029c',1,'Device::Device']]]
+  ['delta',['delta',['../namespace_build_1_1_simulation___operation_1_1support.html#aff63e620df123c8bfaf59153da574355',1,'Build::Simulation_Operation::support']]],
+  ['device_5fspecific_5fcalcs',['device_specific_calcs',['../class_build_1_1_objects_1_1device_1_1_device.html#a1027097a4c8bedb6abf9d52f41e194f9',1,'Build.Objects.device.Device.device_specific_calcs()'],['../class_build_1_1_objects_1_1eud_1_1_eud.html#a4d6c3c842206a1738efd24319ddc2176',1,'Build.Objects.eud.Eud.device_specific_calcs()'],['../class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#ae5087a1b8b5278e6340b027a860353dd',1,'Build.Objects.grid_controller.GridController.device_specific_calcs()'],['../class_build_1_1_objects_1_1light_1_1_light.html#a5b2b078fd97d8bc80262f57d1e97377d',1,'Build.Objects.light.Light.device_specific_calcs()'],['../class_build_1_1_objects_1_1pv_1_1_p_v.html#a6ef12cbd9bbcaeba45203b355d434b81',1,'Build.Objects.pv.PV.device_specific_calcs()'],['../class_build_1_1_objects_1_1utility__meter_1_1_utility_meter.html#af364127959babff26c2385e52c915f46',1,'Build.Objects.utility_meter.UtilityMeter.device_specific_calcs()']]],
+  ['disengage',['disengage',['../class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a9c3ee1f54a453b5008d1118d9da1b8ed',1,'Build::Objects::grid_controller::GridController']]]
 ];

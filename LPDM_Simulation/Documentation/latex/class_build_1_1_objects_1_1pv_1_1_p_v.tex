@@ -1,0 +1,124 @@
+\hypertarget{class_build_1_1_objects_1_1pv_1_1_p_v}{}\section{Build.\+Objects.\+pv.\+PV Class Reference}
+\label{class_build_1_1_objects_1_1pv_1_1_p_v}\index{Build.\+Objects.\+pv.\+PV@{Build.\+Objects.\+pv.\+PV}}
+Inheritance diagram for Build.\+Objects.\+pv.\+PV\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_build_1_1_objects_1_1pv_1_1_p_v}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1pv_1_1_p_v_ab85f5c9b0dbc579445834b47f344e9d7}\label{class_build_1_1_objects_1_1pv_1_1_p_v_ab85f5c9b0dbc579445834b47f344e9d7}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self, device\+\_\+id, supervisor, power\+\_\+profile, peak\+\_\+power, time=0, msg\+\_\+latency=0, schedule=None, connected\+\_\+devices=None, total\+\_\+runtime=S\+E\+C\+O\+N\+D\+S\+\_\+\+I\+N\+\_\+\+D\+AY)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v_a8c06b93d9d13ee9b6991c3b498bf469e}{setup\+\_\+power\+\_\+schedule} (self, power\+\_\+profile, peak\+\_\+power, total\+\_\+runtime)
+\begin{DoxyCompactList}\small\item\em Sets up the power generation schedule for this \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v}{PV}. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v_a0c27298b51f1e227cee28bb3f6528742}{update\+\_\+power\+\_\+status} (self, peak\+\_\+power, power\+\_\+percent)
+\begin{DoxyCompactList}\small\item\em Changes the amount of power that this device is producing and If this \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v}{PV} is connected to multiple devices, it evenly distributes its load amongst them. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1pv_1_1_p_v_acbeb8820230c1c317e553db544b38286}\label{class_build_1_1_objects_1_1pv_1_1_p_v_acbeb8820230c1c317e553db544b38286}} 
+def \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v_acbeb8820230c1c317e553db544b38286}{send\+\_\+power\+\_\+message} (self, target\+\_\+id, power\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em This \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v}{PV} will provide the power it , informing another device of the quantity by. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v_a4e7810d5ba27d6414abca31af54d8949}{process\+\_\+power\+\_\+message} (self, sender\+\_\+id, new\+\_\+power)
+\begin{DoxyCompactList}\small\item\em \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v}{PV} does not respond to external power messages. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v_a5f41b238d5d48ac989782e1c6fffaa54}{process\+\_\+price\+\_\+message} (self, sender\+\_\+id, new\+\_\+price, extra\+\_\+info)
+\begin{DoxyCompactList}\small\item\em \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v}{PV} does not respond to price information. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v_ab560ae3ebbbb4c57382daa39d39fe654}{process\+\_\+request\+\_\+message} (self, sender\+\_\+id, request\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v}{PV} does not respond to request information. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v_aabdf52b13172ff2c632d7f7cde732191}{process\+\_\+allocate\+\_\+message} (self, sender\+\_\+id, allocate\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v}{PV} does not respond to allocate messages. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1pv_1_1_p_v_a6ef12cbd9bbcaeba45203b355d434b81}\label{class_build_1_1_objects_1_1pv_1_1_p_v_a6ef12cbd9bbcaeba45203b355d434b81}} 
+def \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v_a6ef12cbd9bbcaeba45203b355d434b81}{device\+\_\+specific\+\_\+calcs} (self)
+\begin{DoxyCompactList}\small\item\em \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v}{PV} does not calculate any new usage information besides sum power out. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1pv_1_1_p_v_aabdf52b13172ff2c632d7f7cde732191}\label{class_build_1_1_objects_1_1pv_1_1_p_v_aabdf52b13172ff2c632d7f7cde732191}} 
+\index{Build\+::\+Objects\+::pv\+::\+PV@{Build\+::\+Objects\+::pv\+::\+PV}!process\+\_\+allocate\+\_\+message@{process\+\_\+allocate\+\_\+message}}
+\index{process\+\_\+allocate\+\_\+message@{process\+\_\+allocate\+\_\+message}!Build\+::\+Objects\+::pv\+::\+PV@{Build\+::\+Objects\+::pv\+::\+PV}}
+\subsubsection{\texorpdfstring{process\+\_\+allocate\+\_\+message()}{process\_allocate\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+pv.\+P\+V.\+process\+\_\+allocate\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{allocate\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+\hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v}{PV} does not respond to allocate messages. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em allocated\+\_\+amt} & the amount allocated from perspective of message sender. Positive indicates this device is allocated to take, negative indicates this device is allocated to provide. device (negative). \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1pv_1_1_p_v_a4e7810d5ba27d6414abca31af54d8949}\label{class_build_1_1_objects_1_1pv_1_1_p_v_a4e7810d5ba27d6414abca31af54d8949}} 
+\index{Build\+::\+Objects\+::pv\+::\+PV@{Build\+::\+Objects\+::pv\+::\+PV}!process\+\_\+power\+\_\+message@{process\+\_\+power\+\_\+message}}
+\index{process\+\_\+power\+\_\+message@{process\+\_\+power\+\_\+message}!Build\+::\+Objects\+::pv\+::\+PV@{Build\+::\+Objects\+::pv\+::\+PV}}
+\subsubsection{\texorpdfstring{process\+\_\+power\+\_\+message()}{process\_power\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+pv.\+P\+V.\+process\+\_\+power\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{new\+\_\+power }\end{DoxyParamCaption})}
+
+
+
+\hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v}{PV} does not respond to external power messages. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sender} & the sender of the message providing or receiving the new power \\
+\hline
+{\em new\+\_\+power} & the value of power flow from sender\textquotesingle{}s perspective positive if sender is receiving, negative if sender is providing. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1pv_1_1_p_v_a5f41b238d5d48ac989782e1c6fffaa54}\label{class_build_1_1_objects_1_1pv_1_1_p_v_a5f41b238d5d48ac989782e1c6fffaa54}} 
+\index{Build\+::\+Objects\+::pv\+::\+PV@{Build\+::\+Objects\+::pv\+::\+PV}!process\+\_\+price\+\_\+message@{process\+\_\+price\+\_\+message}}
+\index{process\+\_\+price\+\_\+message@{process\+\_\+price\+\_\+message}!Build\+::\+Objects\+::pv\+::\+PV@{Build\+::\+Objects\+::pv\+::\+PV}}
+\subsubsection{\texorpdfstring{process\+\_\+price\+\_\+message()}{process\_price\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+pv.\+P\+V.\+process\+\_\+price\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{new\+\_\+price,  }\item[{}]{extra\+\_\+info }\end{DoxyParamCaption})}
+
+
+
+\hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v}{PV} does not respond to price information. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sender\+\_\+id} & the sender of the message informing of the new price \\
+\hline
+{\em new\+\_\+price} & the new price value \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1pv_1_1_p_v_ab560ae3ebbbb4c57382daa39d39fe654}\label{class_build_1_1_objects_1_1pv_1_1_p_v_ab560ae3ebbbb4c57382daa39d39fe654}} 
+\index{Build\+::\+Objects\+::pv\+::\+PV@{Build\+::\+Objects\+::pv\+::\+PV}!process\+\_\+request\+\_\+message@{process\+\_\+request\+\_\+message}}
+\index{process\+\_\+request\+\_\+message@{process\+\_\+request\+\_\+message}!Build\+::\+Objects\+::pv\+::\+PV@{Build\+::\+Objects\+::pv\+::\+PV}}
+\subsubsection{\texorpdfstring{process\+\_\+request\+\_\+message()}{process\_request\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+pv.\+P\+V.\+process\+\_\+request\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{request\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+\hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v}{PV} does not respond to request information. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em request\+\_\+amt} & the amount the sending device is requesting to receive (positive) or send (negative) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1pv_1_1_p_v_a8c06b93d9d13ee9b6991c3b498bf469e}\label{class_build_1_1_objects_1_1pv_1_1_p_v_a8c06b93d9d13ee9b6991c3b498bf469e}} 
+\index{Build\+::\+Objects\+::pv\+::\+PV@{Build\+::\+Objects\+::pv\+::\+PV}!setup\+\_\+power\+\_\+schedule@{setup\+\_\+power\+\_\+schedule}}
+\index{setup\+\_\+power\+\_\+schedule@{setup\+\_\+power\+\_\+schedule}!Build\+::\+Objects\+::pv\+::\+PV@{Build\+::\+Objects\+::pv\+::\+PV}}
+\subsubsection{\texorpdfstring{setup\+\_\+power\+\_\+schedule()}{setup\_power\_schedule()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+pv.\+P\+V.\+setup\+\_\+power\+\_\+schedule (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{power\+\_\+profile,  }\item[{}]{peak\+\_\+power,  }\item[{}]{total\+\_\+runtime }\end{DoxyParamCaption})}
+
+
+
+Sets up the power generation schedule for this \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v}{PV}. 
+
+Takes input of a daily power generation schedule. Power T\+O\+DO\+: assumes total\+\_\+runtime is in days, and schedule is at most one day long, and schedule is T\+O\+DO\+: in percentage of peak power. Make this more robust? \mbox{\Hypertarget{class_build_1_1_objects_1_1pv_1_1_p_v_a0c27298b51f1e227cee28bb3f6528742}\label{class_build_1_1_objects_1_1pv_1_1_p_v_a0c27298b51f1e227cee28bb3f6528742}} 
+\index{Build\+::\+Objects\+::pv\+::\+PV@{Build\+::\+Objects\+::pv\+::\+PV}!update\+\_\+power\+\_\+status@{update\+\_\+power\+\_\+status}}
+\index{update\+\_\+power\+\_\+status@{update\+\_\+power\+\_\+status}!Build\+::\+Objects\+::pv\+::\+PV@{Build\+::\+Objects\+::pv\+::\+PV}}
+\subsubsection{\texorpdfstring{update\+\_\+power\+\_\+status()}{update\_power\_status()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+pv.\+P\+V.\+update\+\_\+power\+\_\+status (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{peak\+\_\+power,  }\item[{}]{power\+\_\+percent }\end{DoxyParamCaption})}
+
+
+
+Changes the amount of power that this device is producing and If this \hyperlink{class_build_1_1_objects_1_1pv_1_1_p_v}{PV} is connected to multiple devices, it evenly distributes its load amongst them. 
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Objects/pv.\+py\end{DoxyCompactItemize}

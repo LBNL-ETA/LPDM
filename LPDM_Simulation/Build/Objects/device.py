@@ -458,7 +458,7 @@ class Device(metaclass=ABCMeta):
 # TODO: Implement the new Wire class, etc.
 # TODO: Change Grid Controller's input file "threshold_alloc" to "minimum allocate response".
 # TODO: Linear interpolation in Air Conditioner?
-
+# TODO: Loads->Powerflows 
 
 
 

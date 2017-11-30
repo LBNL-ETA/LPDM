@@ -30,7 +30,8 @@ from Build.Simulation_Operation.support import SECONDS_IN_DAY
 
 class SimulationSetup:
 
-    DEFAULT_MESSAGE_LATENCY = 0   # If not specified devices will have no message delay
+    DEFAULT_MESSAGE_LATENCY = 1   # If not specified devices will have a 1 second message processing delay
+    DEFAULT_MULTIDAY = 1  # If not specified, all schedules will repeat on a daily basis
 
     ##
     # Create an instance of the Simulation Setup class, which will contain the supervisor who will orchestrate
@@ -107,7 +108,7 @@ class SimulationSetup:
                                                                price_announce_threshold))
 
             schedule = gc.get('schedule', None)
-            multiday = schedule.get('multiday', 0) if schedule else 0
+            multiday = schedule.get('multiday', self.DEFAULT_MULTIDAY) if schedule else 0
             schedule_items = schedule.get('items', None) if schedule else None
 
             connected_devices = gc.get('connected_devices', None)
@@ -183,11 +184,11 @@ class SimulationSetup:
             schedule_items = schedule.get('items', None) if schedule else None
 
             sell_price_schedule = utm.get('sell_price_schedule', None)
-            sell_price_multiday = sell_price_schedule.get('multiday', 0) if sell_price_schedule else 0
+            sell_price_multiday = sell_price_schedule.get('multiday', self.DEFAULT_MULTIDAY) if sell_price_schedule else 0
             sell_price_schedule_items = sell_price_schedule.get('items', None) if sell_price_schedule else None
 
             buy_price_schedule = utm.get('buy_price_schedule', None)
-            buy_price_multiday = buy_price_schedule.get('multiday', 0) if buy_price_schedule else 0
+            buy_price_multiday = buy_price_schedule.get('multiday', self.DEFAULT_MULTIDAY) if buy_price_schedule else 0
             buy_price_schedule_items = buy_price_schedule.get('items', None) if buy_price_schedule else None
 
             if connected_devices:
@@ -295,7 +296,7 @@ class SimulationSetup:
                                                         modulation_interval))
             connected_devices = eud.get('connected_devices', None)
             schedule = eud.get('schedule', None)
-            multiday = schedule.get('multiday', 0) if schedule else 0
+            multiday = schedule.get('multiday', self.DEFAULT_MULTIDAY) if schedule else 0
             schedule_items = schedule.get('items', None) if schedule else None
 
             if connected_devices:

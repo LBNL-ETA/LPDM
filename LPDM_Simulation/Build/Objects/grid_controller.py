@@ -370,7 +370,7 @@ class GridController(Device):
     #
     # @param source_id the sender of the new amount of power.
     # @param prev_source_power previous amount of a power flow from this GC's perspective
-    # @param source_demanded_power the new amount of the power flow from this GC's perspective.
+    # @param source_demanded_power the new amount of the power flow to another device from this GC's perspective.
 
     def balance_power(self, source_id, prev_source_power, source_demanded_power):
         power_change = source_demanded_power - prev_source_power
@@ -381,6 +381,7 @@ class GridController(Device):
         utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
         # If there is power in from utility and the power change is positive (must accept more), reduce that utm flow.
         # Likewise, if we are selling to utm and power change is negative, reduce how much we sell.
+        """ THIS WAS AN OPTIMIZATION. CAN BE REMOVED OR PUT IN FLAGGED LOGIC"""
         for utm in utility_meters:
             if power_change > 0:  # must accept more.
                 if self._loads.get(utm, 0) > 0:

@@ -1,0 +1,118 @@
+\hypertarget{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor}{}\section{Build.\+Simulation\+\_\+\+Operation.\+supervisor.\+Supervisor Class Reference}
+\label{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor}\index{Build.\+Simulation\+\_\+\+Operation.\+supervisor.\+Supervisor@{Build.\+Simulation\+\_\+\+Operation.\+supervisor.\+Supervisor}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a2bff4b3eb3103c7dd32e95d11958f1e4}\label{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a2bff4b3eb3103c7dd32e95d11958f1e4}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self)
+\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_afbe9013693a4d24151e3063a6f05a13e}{get\+\_\+device} (self, device\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Method to get the device pointer from a device\+\_\+id, called by devices when they receive a message from a device that they do not recognize. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a906a09a9bb5acf8b1a4ed4cda6d91661}\label{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a906a09a9bb5acf8b1a4ed4cda6d91661}} 
+def \hyperlink{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a906a09a9bb5acf8b1a4ed4cda6d91661}{all\+\_\+devices} (self)
+\begin{DoxyCompactList}\small\item\em Returns the list of all devices in the simulation. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a832a95fccf9b01f2a3126f554e172adb}{register\+\_\+device} (self, device)
+\begin{DoxyCompactList}\small\item\em Given a device, adds a mapping from device\+\_\+id to that device. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_aaa1358b86023cb1cdb458103f2981025}{register\+\_\+event} (self, device\+\_\+id, time\+\_\+of\+\_\+next\+\_\+event)
+\begin{DoxyCompactList}\small\item\em Registers an event. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a8a8141714cc3cafb919978e5297d3071}{occur\+\_\+next\+\_\+event} (self)
+\begin{DoxyCompactList}\small\item\em Runs the next event in the supervisor\textquotesingle{}s queue, advancing that device\textquotesingle{}s local time to that point Assumes queue is not empty. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_afc3f4f66bc91c1bf381bdfdcfea064f7}\label{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_afc3f4f66bc91c1bf381bdfdcfea064f7}} 
+def \hyperlink{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_afc3f4f66bc91c1bf381bdfdcfea064f7}{has\+\_\+next\+\_\+event} (self)
+\begin{DoxyCompactList}\small\item\em Determines if the simulation is unfinished and there are unprocessed events in its queue. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a6b25fce4bb7e5845c17427db1cbdd6fe}{peek\+\_\+next\+\_\+event} (self)
+\begin{DoxyCompactList}\small\item\em Returns an (event, time\+\_\+stamp) with next, or None. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a27f0aa77cedb9b74d8d8d93ab702b01a}{total\+\_\+calcs} (self)
+\begin{DoxyCompactList}\small\item\em Returns the total simulation power in and total simulation power out for the device. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_aeffb9fb0fc359bc0be65cbc8b23b1deb}{finish\+\_\+all} (self, end\+\_\+time)
+\begin{DoxyCompactList}\small\item\em Called at the end of the simulation. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_aeffb9fb0fc359bc0be65cbc8b23b1deb}\label{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_aeffb9fb0fc359bc0be65cbc8b23b1deb}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor@{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor}!finish\+\_\+all@{finish\+\_\+all}}
+\index{finish\+\_\+all@{finish\+\_\+all}!Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor@{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor}}
+\subsubsection{\texorpdfstring{finish\+\_\+all()}{finish\_all()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+supervisor.\+Supervisor.\+finish\+\_\+all (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{end\+\_\+time }\end{DoxyParamCaption})}
+
+
+
+Called at the end of the simulation. 
+
+Finishes each device and instructs them to write their energy consumption calculations end\+\_\+time the time of the finish event, to update each device to so they can perform their calculations. \mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_afbe9013693a4d24151e3063a6f05a13e}\label{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_afbe9013693a4d24151e3063a6f05a13e}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor@{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor}!get\+\_\+device@{get\+\_\+device}}
+\index{get\+\_\+device@{get\+\_\+device}!Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor@{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor}}
+\subsubsection{\texorpdfstring{get\+\_\+device()}{get\_device()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+supervisor.\+Supervisor.\+get\+\_\+device (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Method to get the device pointer from a device\+\_\+id, called by devices when they receive a message from a device that they do not recognize. 
+
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a8a8141714cc3cafb919978e5297d3071}\label{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a8a8141714cc3cafb919978e5297d3071}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor@{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor}!occur\+\_\+next\+\_\+event@{occur\+\_\+next\+\_\+event}}
+\index{occur\+\_\+next\+\_\+event@{occur\+\_\+next\+\_\+event}!Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor@{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor}}
+\subsubsection{\texorpdfstring{occur\+\_\+next\+\_\+event()}{occur\_next\_event()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+supervisor.\+Supervisor.\+occur\+\_\+next\+\_\+event (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Runs the next event in the supervisor\textquotesingle{}s queue, advancing that device\textquotesingle{}s local time to that point Assumes queue is not empty. 
+
+Call has\+\_\+next\+\_\+event first. \mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a6b25fce4bb7e5845c17427db1cbdd6fe}\label{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a6b25fce4bb7e5845c17427db1cbdd6fe}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor@{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor}!peek\+\_\+next\+\_\+event@{peek\+\_\+next\+\_\+event}}
+\index{peek\+\_\+next\+\_\+event@{peek\+\_\+next\+\_\+event}!Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor@{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor}}
+\subsubsection{\texorpdfstring{peek\+\_\+next\+\_\+event()}{peek\_next\_event()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+supervisor.\+Supervisor.\+peek\+\_\+next\+\_\+event (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Returns an (event, time\+\_\+stamp) with next, or None. 
+
+Call has next event first to be safe. \mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a832a95fccf9b01f2a3126f554e172adb}\label{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a832a95fccf9b01f2a3126f554e172adb}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor@{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor}!register\+\_\+device@{register\+\_\+device}}
+\index{register\+\_\+device@{register\+\_\+device}!Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor@{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor}}
+\subsubsection{\texorpdfstring{register\+\_\+device()}{register\_device()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+supervisor.\+Supervisor.\+register\+\_\+device (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device }\end{DoxyParamCaption})}
+
+
+
+Given a device, adds a mapping from device\+\_\+id to that device. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em device} & the device to add to the supervisor device dictionary \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_aaa1358b86023cb1cdb458103f2981025}\label{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_aaa1358b86023cb1cdb458103f2981025}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor@{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor}!register\+\_\+event@{register\+\_\+event}}
+\index{register\+\_\+event@{register\+\_\+event}!Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor@{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor}}
+\subsubsection{\texorpdfstring{register\+\_\+event()}{register\_event()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+supervisor.\+Supervisor.\+register\+\_\+event (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device\+\_\+id,  }\item[{}]{time\+\_\+of\+\_\+next\+\_\+event }\end{DoxyParamCaption})}
+
+
+
+Registers an event. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em device\+\_\+id} & the device to add to the supervisor device dictionary \\
+\hline
+{\em time\+\_\+of\+\_\+next\+\_\+event} & the time of the next event to add to event queue \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a27f0aa77cedb9b74d8d8d93ab702b01a}\label{class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor_a27f0aa77cedb9b74d8d8d93ab702b01a}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor@{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor}!total\+\_\+calcs@{total\+\_\+calcs}}
+\index{total\+\_\+calcs@{total\+\_\+calcs}!Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor@{Build\+::\+Simulation\+\_\+\+Operation\+::supervisor\+::\+Supervisor}}
+\subsubsection{\texorpdfstring{total\+\_\+calcs()}{total\_calcs()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+supervisor.\+Supervisor.\+total\+\_\+calcs (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Returns the total simulation power in and total simulation power out for the device. 
+
+Total simulation power in should approximately equal simulation power out, with small margin of error allowed because of float rounding and because message latency slightly affects the calculations. 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Simulation\+\_\+\+Operation/supervisor.\+py\end{DoxyCompactItemize}

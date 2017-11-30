@@ -1,0 +1,187 @@
+\hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic}{}\section{Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller\+Price\+Logic Class Reference}
+\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic}\index{Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller\+Price\+Logic@{Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller\+Price\+Logic}}
+
+
+The abstract class for all grid controller price logics.  
+
+
+Inheritance diagram for Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller\+Price\+Logic\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=1.530055cm]{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_ad41a0d1f0d453c278938a1615352a2a3}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self, price\+\_\+history\+\_\+interval, initial\+\_\+price, price\+\_\+announce\+\_\+threshold)
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_afa3d44f846108a1c8be4818b50347597}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_afa3d44f846108a1c8be4818b50347597}} 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_afa3d44f846108a1c8be4818b50347597}{get\+\_\+initial\+\_\+price} (self)
+\begin{DoxyCompactList}\small\item\em Returns the devices initial price level. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a311d9e78fc37960b0404f60259ac92f3}{get\+\_\+price\+\_\+announce\+\_\+threshold} (self)
+\begin{DoxyCompactList}\small\item\em A method to determine the minimum price difference which should cause the grid controller to broadcast its new price to a specified subset of its connected devices. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_abfafee704233af88153846874f1c7d98}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_abfafee704233af88153846874f1c7d98}} 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_abfafee704233af88153846874f1c7d98}{get\+\_\+forecast\+\_\+price} (self, time)
+\begin{DoxyCompactList}\small\item\em Gets the predicted price of this grid controller at the specified time (in seconds) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a58470569ce8fe9ce1907e3f8784426a5}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a58470569ce8fe9ce1907e3f8784426a5}} 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a58470569ce8fe9ce1907e3f8784426a5}{get\+\_\+price\+\_\+history\+\_\+interval} (self)
+\begin{DoxyCompactList}\small\item\em Gets the length of a price intervals. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a9c0d6f8e499488e3ae75ad3779876cfd}{update\+\_\+interval\+\_\+prices} (self, time)
+\begin{DoxyCompactList}\small\item\em Given the current time of the device, uses the current price to set the interval prices of the GC accordingly. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a241ac9f19af131870e9bad6dd2b3cbc3}{update\+\_\+average\+\_\+price} (self, time)
+\begin{DoxyCompactList}\small\item\em Updates the average time of the grid controller. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a4448f422b18640d1d00b1b43cc73d149}{get\+\_\+interval\+\_\+prices} (self)
+\begin{DoxyCompactList}\small\item\em Returns the interval prices of this grid controller. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a83a87f838ab54ca0dbd4cb3924994c7b}{set\+\_\+current\+\_\+price} (self, price)
+\begin{DoxyCompactList}\small\item\em Sets the current price to use in the price logic for calculations. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a8772b6c6be3c37e2249c257f8ac5e82a}{update\+\_\+prices} (self, time)
+\begin{DoxyCompactList}\small\item\em Updates the interval and average price calculations stored in this price logic for this GC. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a2efaa2e5ead1f5d0d7d3d006940bfeba}{get\+\_\+average\+\_\+price} (self)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_ae4599f832b461c8fdbb66d90b95dd115}{calc\+\_\+price} (self, neighbor\+\_\+prices=None, loads=None, requested=None, allocated=None)
+\begin{DoxyCompactList}\small\item\em Calculates what this current GC\textquotesingle{}s price is based on some combination of the price of its neighbors, the current request and allocated amounts. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The abstract class for all grid controller price logics. 
+
+All abstract methods must be implemented by all price logics. 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_ad41a0d1f0d453c278938a1615352a2a3}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_ad41a0d1f0d453c278938a1615352a2a3}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}!\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}}
+\subsubsection{\texorpdfstring{\+\_\+\+\_\+init\+\_\+\+\_\+()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller\+Price\+Logic.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{price\+\_\+history\+\_\+interval,  }\item[{}]{initial\+\_\+price,  }\item[{}]{price\+\_\+announce\+\_\+threshold }\end{DoxyParamCaption})}
+
+
+\begin{DoxyParams}{Parameters}
+{\em price\+\_\+history\+\_\+interval} & the length of the interval to calculate the average price for and store in memory (e.\+g. if 3600, then store hourly average prices). \\
+\hline
+{\em initial} & price the initial price of this grid controller \\
+\hline
+{\em price\+\_\+announce\+\_\+threshold} & the difference in prices before announcing your new local price to neighbors \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_ae4599f832b461c8fdbb66d90b95dd115}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_ae4599f832b461c8fdbb66d90b95dd115}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}!calc\+\_\+price@{calc\+\_\+price}}
+\index{calc\+\_\+price@{calc\+\_\+price}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}}
+\subsubsection{\texorpdfstring{calc\+\_\+price()}{calc\_price()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller\+Price\+Logic.\+calc\+\_\+price (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{neighbor\+\_\+prices = {\ttfamily None},  }\item[{}]{loads = {\ttfamily None},  }\item[{}]{requested = {\ttfamily None},  }\item[{}]{allocated = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Calculates what this current GC\textquotesingle{}s price is based on some combination of the price of its neighbors, the current request and allocated amounts. 
+
+Varies between different implementations of price logics. 
+\begin{DoxyParams}{Parameters}
+{\em neighbor\+\_\+prices} & the dictionary of connected device id\textquotesingle{}s and their prices \\
+\hline
+{\em loads} & dictionary of connected device id\textquotesingle{}s and current loads with those devices \\
+\hline
+{\em requested} & dictionary of connected device id\textquotesingle{}s and current requests to and from those devices \\
+\hline
+{\em allocated} & the dictionary of connected device id\textquotesingle{}s and allocated by and to those devices. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the calculated price based on the input variables. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a2efaa2e5ead1f5d0d7d3d006940bfeba}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a2efaa2e5ead1f5d0d7d3d006940bfeba}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}!get\+\_\+average\+\_\+price@{get\+\_\+average\+\_\+price}}
+\index{get\+\_\+average\+\_\+price@{get\+\_\+average\+\_\+price}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}}
+\subsubsection{\texorpdfstring{get\+\_\+average\+\_\+price()}{get\_average\_price()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller\+Price\+Logic.\+get\+\_\+average\+\_\+price (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+\begin{DoxyReturn}{Returns}
+the average price for this price logic 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a4448f422b18640d1d00b1b43cc73d149}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a4448f422b18640d1d00b1b43cc73d149}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}!get\+\_\+interval\+\_\+prices@{get\+\_\+interval\+\_\+prices}}
+\index{get\+\_\+interval\+\_\+prices@{get\+\_\+interval\+\_\+prices}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}}
+\subsubsection{\texorpdfstring{get\+\_\+interval\+\_\+prices()}{get\_interval\_prices()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller\+Price\+Logic.\+get\+\_\+interval\+\_\+prices (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Returns the interval prices of this grid controller. 
+
+These price values may be weighted by the implementing logic. \mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a311d9e78fc37960b0404f60259ac92f3}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a311d9e78fc37960b0404f60259ac92f3}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}!get\+\_\+price\+\_\+announce\+\_\+threshold@{get\+\_\+price\+\_\+announce\+\_\+threshold}}
+\index{get\+\_\+price\+\_\+announce\+\_\+threshold@{get\+\_\+price\+\_\+announce\+\_\+threshold}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}}
+\subsubsection{\texorpdfstring{get\+\_\+price\+\_\+announce\+\_\+threshold()}{get\_price\_announce\_threshold()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller\+Price\+Logic.\+get\+\_\+price\+\_\+announce\+\_\+threshold (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+A method to determine the minimum price difference which should cause the grid controller to broadcast its new price to a specified subset of its connected devices. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a83a87f838ab54ca0dbd4cb3924994c7b}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a83a87f838ab54ca0dbd4cb3924994c7b}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}!set\+\_\+current\+\_\+price@{set\+\_\+current\+\_\+price}}
+\index{set\+\_\+current\+\_\+price@{set\+\_\+current\+\_\+price}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}}
+\subsubsection{\texorpdfstring{set\+\_\+current\+\_\+price()}{set\_current\_price()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller\+Price\+Logic.\+set\+\_\+current\+\_\+price (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{price }\end{DoxyParamCaption})}
+
+
+
+Sets the current price to use in the price logic for calculations. 
+
+Call this function whenever the grid controller\textquotesingle{}s local price changes. 
+\begin{DoxyParams}{Parameters}
+{\em price} & \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a241ac9f19af131870e9bad6dd2b3cbc3}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a241ac9f19af131870e9bad6dd2b3cbc3}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}!update\+\_\+average\+\_\+price@{update\+\_\+average\+\_\+price}}
+\index{update\+\_\+average\+\_\+price@{update\+\_\+average\+\_\+price}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}}
+\subsubsection{\texorpdfstring{update\+\_\+average\+\_\+price()}{update\_average\_price()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller\+Price\+Logic.\+update\+\_\+average\+\_\+price (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{time }\end{DoxyParamCaption})}
+
+
+
+Updates the average time of the grid controller. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em time} & the current time of the device \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a9c0d6f8e499488e3ae75ad3779876cfd}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a9c0d6f8e499488e3ae75ad3779876cfd}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}!update\+\_\+interval\+\_\+prices@{update\+\_\+interval\+\_\+prices}}
+\index{update\+\_\+interval\+\_\+prices@{update\+\_\+interval\+\_\+prices}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}}
+\subsubsection{\texorpdfstring{update\+\_\+interval\+\_\+prices()}{update\_interval\_prices()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller\+Price\+Logic.\+update\+\_\+interval\+\_\+prices (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{time }\end{DoxyParamCaption})}
+
+
+
+Given the current time of the device, uses the current price to set the interval prices of the GC accordingly. 
+
+This function should be called every interval duration by the GC, as well as when the GC\textquotesingle{}s price changes. 
+\begin{DoxyParams}{Parameters}
+{\em the} & current time of the device \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a8772b6c6be3c37e2249c257f8ac5e82a}\label{class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic_a8772b6c6be3c37e2249c257f8ac5e82a}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}!update\+\_\+prices@{update\+\_\+prices}}
+\index{update\+\_\+prices@{update\+\_\+prices}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+Grid\+Controller\+Price\+Logic}}
+\subsubsection{\texorpdfstring{update\+\_\+prices()}{update\_prices()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+Grid\+Controller\+Price\+Logic.\+update\+\_\+prices (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{time }\end{DoxyParamCaption})}
+
+
+
+Updates the interval and average price calculations stored in this price logic for this GC. 
+
+These calculations are dependent on the current price stored in the price logic. 
+\begin{DoxyParams}{Parameters}
+{\em time} & the current time stored in the price logic \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Objects/grid\+\_\+controller.\+py\end{DoxyCompactItemize}

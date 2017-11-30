@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['generate_5flog_5fid',['generate_log_id',['../class_build_1_1_simulation___operation_1_1logger_1_1_simulation_logger.html#a596e3f475ff2a31b5ac647e47aa86b41',1,'Build::Simulation_Operation::logger::SimulationLogger']]],
+  ['get_5fallocate_5fassets',['get_allocate_assets',['../class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#a739bdc06f47603df13fa105dfcfaea10',1,'Build::Objects::grid_controller::GridController']]],
+  ['get_5fallocate_5fliabilities',['get_allocate_liabilities',['../class_build_1_1_objects_1_1grid__controller_1_1_grid_controller.html#ad984f42fc7530884d3c95fd1d4e5067e',1,'Build::Objects::grid_controller::GridController']]],
+  ['get_5faverage_5fprice',['get_average_price',['../class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#a2efaa2e5ead1f5d0d7d3d006940bfeba',1,'Build::Objects::grid_controller::GridControllerPriceLogic']]],
+  ['get_5fcharging_5fpreference',['get_charging_preference',['../class_build_1_1_objects_1_1battery_1_1_battery.html#a7f98f0d9fb7608837c17618b799c7e55',1,'Build::Objects::battery::Battery']]],
+  ['get_5fcurrent_5fsoc',['get_current_soc',['../class_build_1_1_objects_1_1battery_1_1_battery.html#a111980cd30f418ba49e64ca9b89313d4',1,'Build::Objects::battery::Battery']]],
+  ['get_5fdevice',['get_device',['../class_build_1_1_simulation___operation_1_1supervisor_1_1_supervisor.html#afbe9013693a4d24151e3063a6f05a13e',1,'Build::Simulation_Operation::supervisor::Supervisor']]],
+  ['get_5fforecast_5fprice',['get_forecast_price',['../class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#abfafee704233af88153846874f1c7d98',1,'Build::Objects::grid_controller::GridControllerPriceLogic']]],
+  ['get_5fid',['get_id',['../class_build_1_1_objects_1_1device_1_1_device.html#a9cf14b880ef9cf103ba68554d3653593',1,'Build::Objects::device::Device']]],
+  ['get_5finitial_5fprice',['get_initial_price',['../class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#afa3d44f846108a1c8be4818b50347597',1,'Build::Objects::grid_controller::GridControllerPriceLogic']]],
+  ['get_5finterval_5fprices',['get_interval_prices',['../class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#a4448f422b18640d1d00b1b43cc73d149',1,'Build::Objects::grid_controller::GridControllerPriceLogic']]],
+  ['get_5fload',['get_load',['../class_build_1_1_objects_1_1battery_1_1_battery.html#ac493263e624c98ce6688973e35cd745b',1,'Build::Objects::battery::Battery']]],
+  ['get_5fmax_5fcharge_5frate',['get_max_charge_rate',['../class_build_1_1_objects_1_1battery_1_1_battery.html#ace39c87e0ab087c9f7d07c8a5f645fc4',1,'Build::Objects::battery::Battery']]],
+  ['get_5fmax_5fdischarge_5frate',['get_max_discharge_rate',['../class_build_1_1_objects_1_1battery_1_1_battery.html#a506889af4ebe7834352be77633a4a6f0',1,'Build::Objects::battery::Battery']]],
+  ['get_5foptimal_5fcharge_5frate',['get_optimal_charge_rate',['../class_build_1_1_objects_1_1battery_1_1_battery.html#a8f464a9edbd9a2efbe609477d004ccb1',1,'Build::Objects::battery::Battery']]],
+  ['get_5fprice_5fannounce_5fthreshold',['get_price_announce_threshold',['../class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#a311d9e78fc37960b0404f60259ac92f3',1,'Build::Objects::grid_controller::GridControllerPriceLogic']]],
+  ['get_5fprice_5fhistory_5finterval',['get_price_history_interval',['../class_build_1_1_objects_1_1grid__controller_1_1_grid_controller_price_logic.html#a58470569ce8fe9ce1907e3f8784426a5',1,'Build::Objects::grid_controller::GridControllerPriceLogic']]],
+  ['get_5fsetpoint_5ffrom_5fprice',['get_setpoint_from_price',['../class_build_1_1_objects_1_1air__conditioner_1_1_air_conditioner_simple.html#ac637b8d11556eea36880d3947b5c00c0',1,'Build::Objects::air_conditioner::AirConditionerSimple']]],
+  ['get_5ftype',['get_type',['../class_build_1_1_objects_1_1device_1_1_device.html#a0e0df5ad1dc3572210290c9c613777d4',1,'Build::Objects::device::Device']]]
+];

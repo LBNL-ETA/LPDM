@@ -1,0 +1,129 @@
+\hypertarget{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue}{}\section{Build.\+Simulation\+\_\+\+Operation.\+queue.\+Priority\+Queue Class Reference}
+\label{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue}\index{Build.\+Simulation\+\_\+\+Operation.\+queue.\+Priority\+Queue@{Build.\+Simulation\+\_\+\+Operation.\+queue.\+Priority\+Queue}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_aee409aeb79269e2167c83cecdd3b2db2}\label{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_aee409aeb79269e2167c83cecdd3b2db2}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self)
+\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_a042956dd1eaf2317965630e8deed80b3}{add} (self, task, priority=0)
+\begin{DoxyCompactList}\small\item\em Adds a new task to the priority queue, or if that task already exists, updates that tasks priority. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_af953e022ce390c5090ebe7de4f1ea6ec}{update\+\_\+by\+\_\+attribute} (self, task\+\_\+attribute, attribute\+\_\+value, new\+\_\+priority=0)
+\begin{DoxyCompactList}\small\item\em Updates all tasks with a given task\+\_\+attribute equal to an attribute\+\_\+value to have a new priority. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_a86faaf2d1f76eb146b6e1d5a55df09ba}{remove} (self, task)
+\begin{DoxyCompactList}\small\item\em Marks an existing task as R\+E\+M\+O\+V\+ED in the heap. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_aff0c9a1aefbac68dd00cb274adb1d739}{pop} (self)
+\begin{DoxyCompactList}\small\item\em Remove and return the lowest priority task and its priority. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_aae2cb79110fbe3917ede657052bb3976}{peek} (self)
+\begin{DoxyCompactList}\small\item\em Returns the lowest priority task in the queue and its priority without removing. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_a62ca97541bd2863177111afa2ebf01f0}{is\+\_\+empty} (self)
+\begin{DoxyCompactList}\small\item\em Returns whether the queue is empty. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_aeac0d1993374ae61b482b14cfe824473}{clear} (self)
+\begin{DoxyCompactList}\small\item\em Clears out all values from the priority queue. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_add1fdf8c2db1431d3368ca1f9a1b56e6}\label{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_add1fdf8c2db1431d3368ca1f9a1b56e6}} 
+string {\bfseries R\+E\+M\+O\+V\+ED} = \textquotesingle{}$<$removed-\/task$>$\textquotesingle{}
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_a042956dd1eaf2317965630e8deed80b3}\label{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_a042956dd1eaf2317965630e8deed80b3}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue@{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue}!add@{add}}
+\index{add@{add}!Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue@{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue}}
+\subsubsection{\texorpdfstring{add()}{add()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+queue.\+Priority\+Queue.\+add (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{task,  }\item[{}]{priority = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+Adds a new task to the priority queue, or if that task already exists, updates that tasks priority. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em task} & the task to add to the priority queue \\
+\hline
+{\em priority} & the priority to assign to this task. Default to 0 \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_aeac0d1993374ae61b482b14cfe824473}\label{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_aeac0d1993374ae61b482b14cfe824473}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue@{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue}!clear@{clear}}
+\index{clear@{clear}!Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue@{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue}}
+\subsubsection{\texorpdfstring{clear()}{clear()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+queue.\+Priority\+Queue.\+clear (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Clears out all values from the priority queue. 
+
+\begin{DoxyVerb}clear the priority queue\end{DoxyVerb}
+ \mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_a62ca97541bd2863177111afa2ebf01f0}\label{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_a62ca97541bd2863177111afa2ebf01f0}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue@{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue}!is\+\_\+empty@{is\+\_\+empty}}
+\index{is\+\_\+empty@{is\+\_\+empty}!Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue@{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue}}
+\subsubsection{\texorpdfstring{is\+\_\+empty()}{is\_empty()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+queue.\+Priority\+Queue.\+is\+\_\+empty (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Returns whether the queue is empty. 
+
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_aae2cb79110fbe3917ede657052bb3976}\label{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_aae2cb79110fbe3917ede657052bb3976}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue@{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue}!peek@{peek}}
+\index{peek@{peek}!Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue@{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue}}
+\subsubsection{\texorpdfstring{peek()}{peek()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+queue.\+Priority\+Queue.\+peek (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Returns the lowest priority task in the queue and its priority without removing. 
+
+Raise Key\+Error if queue is empty. \begin{DoxyReturn}{Returns}
+tuple of task with lowest priority and that priority 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_aff0c9a1aefbac68dd00cb274adb1d739}\label{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_aff0c9a1aefbac68dd00cb274adb1d739}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue@{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue}!pop@{pop}}
+\index{pop@{pop}!Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue@{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue}}
+\subsubsection{\texorpdfstring{pop()}{pop()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+queue.\+Priority\+Queue.\+pop (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Remove and return the lowest priority task and its priority. 
+
+Raise Key\+Error if queue is empty. \begin{DoxyReturn}{Returns}
+tuple of task with lowest priority and that priority 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_a86faaf2d1f76eb146b6e1d5a55df09ba}\label{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_a86faaf2d1f76eb146b6e1d5a55df09ba}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue@{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue}!remove@{remove}}
+\index{remove@{remove}!Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue@{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue}}
+\subsubsection{\texorpdfstring{remove()}{remove()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+queue.\+Priority\+Queue.\+remove (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{task }\end{DoxyParamCaption})}
+
+
+
+Marks an existing task as R\+E\+M\+O\+V\+ED in the heap. 
+
+When this value is encountered later in a pop or peek, it will be removed for good from the heap. Raises a Key\+Error if that task is not found. \mbox{\Hypertarget{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_af953e022ce390c5090ebe7de4f1ea6ec}\label{class_build_1_1_simulation___operation_1_1queue_1_1_priority_queue_af953e022ce390c5090ebe7de4f1ea6ec}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue@{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue}!update\+\_\+by\+\_\+attribute@{update\+\_\+by\+\_\+attribute}}
+\index{update\+\_\+by\+\_\+attribute@{update\+\_\+by\+\_\+attribute}!Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue@{Build\+::\+Simulation\+\_\+\+Operation\+::queue\+::\+Priority\+Queue}}
+\subsubsection{\texorpdfstring{update\+\_\+by\+\_\+attribute()}{update\_by\_attribute()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+queue.\+Priority\+Queue.\+update\+\_\+by\+\_\+attribute (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{task\+\_\+attribute,  }\item[{}]{attribute\+\_\+value,  }\item[{}]{new\+\_\+priority = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+Updates all tasks with a given task\+\_\+attribute equal to an attribute\+\_\+value to have a new priority. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em task\+\_\+attribute} & an attribute of the task to identify it \\
+\hline
+{\em attribute\+\_\+value} & the value of that attribute that we want to isolate \\
+\hline
+{\em new\+\_\+priority} & the new priority value to assign to the tasks that have the desired attribute value \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Simulation\+\_\+\+Operation/queue.\+py\end{DoxyCompactItemize}

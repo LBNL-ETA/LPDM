@@ -1,0 +1,65 @@
+\hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_g_c_marginal_price_logic_b}{}\section{Build.\+Objects.\+grid\+\_\+controller.\+G\+C\+Marginal\+Price\+LogicB Class Reference}
+\label{class_build_1_1_objects_1_1grid__controller_1_1_g_c_marginal_price_logic_b}\index{Build.\+Objects.\+grid\+\_\+controller.\+G\+C\+Marginal\+Price\+LogicB@{Build.\+Objects.\+grid\+\_\+controller.\+G\+C\+Marginal\+Price\+LogicB}}
+Inheritance diagram for Build.\+Objects.\+grid\+\_\+controller.\+G\+C\+Marginal\+Price\+LogicB\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.568807cm]{class_build_1_1_objects_1_1grid__controller_1_1_g_c_marginal_price_logic_b}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_g_c_marginal_price_logic_b_a74e1d712f6e032bd45240d28d892c368}{\+\_\+\+\_\+init\+\_\+\+\_\+} (self, price\+\_\+history\+\_\+interval, initial\+\_\+price, price\+\_\+announce\+\_\+threshold)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1grid__controller_1_1_g_c_marginal_price_logic_b_a3f0d251ac1acb87e09895cffbbe364f2}{calc\+\_\+price} (self, neighbor\+\_\+prices=None, loads=None, requested=None, allocated=None)
+\begin{DoxyCompactList}\small\item\em Price is a function of the neighbors prices who have allocated to this device and utility meter prices. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_g_c_marginal_price_logic_b_a74e1d712f6e032bd45240d28d892c368}\label{class_build_1_1_objects_1_1grid__controller_1_1_g_c_marginal_price_logic_b_a74e1d712f6e032bd45240d28d892c368}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Marginal\+Price\+LogicB@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Marginal\+Price\+LogicB}!\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}}
+\index{\+\_\+\+\_\+init\+\_\+\+\_\+@{\+\_\+\+\_\+init\+\_\+\+\_\+}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Marginal\+Price\+LogicB@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Marginal\+Price\+LogicB}}
+\subsubsection{\texorpdfstring{\+\_\+\+\_\+init\+\_\+\+\_\+()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+G\+C\+Marginal\+Price\+Logic\+B.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{price\+\_\+history\+\_\+interval,  }\item[{}]{initial\+\_\+price,  }\item[{}]{price\+\_\+announce\+\_\+threshold }\end{DoxyParamCaption})}
+
+
+\begin{DoxyParams}{Parameters}
+{\em price\+\_\+history\+\_\+interval} & the length of the interval to calculate the average price for and store in memory \\
+\hline
+{\em initial} & price the initial price of this grid controller \\
+\hline
+{\em price\+\_\+announce\+\_\+threshold} & the difference in prices before announcing your new local price to neighbors \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1grid__controller_1_1_g_c_marginal_price_logic_b_a3f0d251ac1acb87e09895cffbbe364f2}\label{class_build_1_1_objects_1_1grid__controller_1_1_g_c_marginal_price_logic_b_a3f0d251ac1acb87e09895cffbbe364f2}} 
+\index{Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Marginal\+Price\+LogicB@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Marginal\+Price\+LogicB}!calc\+\_\+price@{calc\+\_\+price}}
+\index{calc\+\_\+price@{calc\+\_\+price}!Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Marginal\+Price\+LogicB@{Build\+::\+Objects\+::grid\+\_\+controller\+::\+G\+C\+Marginal\+Price\+LogicB}}
+\subsubsection{\texorpdfstring{calc\+\_\+price()}{calc\_price()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+grid\+\_\+controller.\+G\+C\+Marginal\+Price\+Logic\+B.\+calc\+\_\+price (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{neighbor\+\_\+prices = {\ttfamily None},  }\item[{}]{loads = {\ttfamily None},  }\item[{}]{requested = {\ttfamily None},  }\item[{}]{allocated = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Price is a function of the neighbors prices who have allocated to this device and utility meter prices. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em neighbor\+\_\+prices} & the dictionary of connected device id\textquotesingle{}s and their prices \\
+\hline
+{\em loads} & dictionary of connected device id\textquotesingle{}s and current loads with those devices \\
+\hline
+{\em requested} & dictionary of connected device id\textquotesingle{}s and current requests to and from those devices \\
+\hline
+{\em allocated} & the dictionary of connected device id\textquotesingle{}s and allocated by and to those devices. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the calculated price based on the input variables. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Objects/grid\+\_\+controller.\+py\end{DoxyCompactItemize}

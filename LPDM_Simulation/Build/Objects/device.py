@@ -60,10 +60,7 @@ class Device(metaclass=ABCMeta):
     def __init__(self, device_id, device_type, supervisor, time=0, msg_latency=0, schedule=None, multiday=0,
                  total_runtime=SECONDS_IN_DAY, connected_devices=None):
 
-        # TODO: Add all_devices dictionary, which is idea of physical connection. Will be a dictionary of devices to
-        # TODO... wires. That device can then register at any point later on in the simulation. This is Konnected
-        # Devices.
-        self._konnected_devices = {}
+        # TODO: Make it so that connected devices maps from device id to Wire, Device tuple.
 
         if connected_devices is None:
             self._connected_devices = {}
@@ -251,26 +248,12 @@ class Device(metaclass=ABCMeta):
                 else:
                     raise NameError('Unverified Message Type')
 
-    # TODO!!!
-    ##
-    # Connects one device to another
-    #
-    def connect_device(self, wire_type, device):
-
-        self._konnected_devices[device] = wire_type
-
-    ##
-    #
-    #
-    def disconnect_device(self, device):
-        if device in self._konnected_devices:
-            del self._konnected_devices[device]
-
     ##
     # Registers or unregisters a given device from the device's connected device list
     # @param device the device to register or unregister from connected devices
     # @param that device's id
     # @param value positive to register, 0 or negative to unregister
+    # TODO: Make this so it also registers that device across a wire (add wire param)
 
     def register_device(self, device, device_id, value):
         if value > 0 and device_id not in self._connected_devices:
@@ -294,6 +277,7 @@ class Device(metaclass=ABCMeta):
     # @param sender the sender of the message informing of registering.
     # @param value positive if sender is registering negative if unregistering
 
+    # TODO: Make this so this message type includes wire in the extra information
     def process_register_message(self, sender_id, value):
         if sender_id in self._connected_devices:
             sender = self._connected_devices[sender_id]
@@ -458,7 +442,8 @@ class Device(metaclass=ABCMeta):
 # TODO: Implement the new Wire class, etc.
 # TODO: Change Grid Controller's input file "threshold_alloc" to "minimum allocate response".
 # TODO: Linear interpolation in Air Conditioner?
-# TODO: Loads->Powerflows 
+# TODO: Loads->Powerflows
+# TODO: Load profile EUD.
 
 
 

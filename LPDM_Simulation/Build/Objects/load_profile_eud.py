@@ -24,27 +24,42 @@ class LoadProfile(Eud):
         super().__init__(device_id=device_id, device_type="fixed_consumption", supervisor=supervisor,
                          time=time, msg_latency=msg_latency, schedule=schedule,
                          total_runtime=total_runtime, multiday=multiday, modulation_interval=modulation_interval)
+        self._desired_power_level = 0
+        self.setup_power_schedule(power_level_list, total_runtime)
 
-    def setup_power_schedule(self, power_profile, peak_power, total_runtime):
-        curr_day = int(self._time / SECONDS_IN_DAY)  # Current day in seconds. Starts at the PV's initial time.
+    ##
+    # Sets the device's power levels according to a schedule.
+    # @param power_level_list list of time, power_level tuples
+    # @param total_runtime how long the EUD is running for.
+    def setup_power_schedule(self, power_level_list, total_runtime):
+        curr_day = 0  # Current day in seconds. Starts at 0.
         while curr_day < total_runtime:
-            for time, power_proportion in power_profile:
-                power_event = Event(self.update_power_status, peak_power, power_proportion)
+            for time, power_level in power_level_list:
+                power_event = Event(self.set_desired_power_level)
                 self.add_event(power_event, time + curr_day)
             curr_day += SECONDS_IN_DAY
 
+    def set_desired_power_level(self, power_level):
+        self._desired_power_level = power_level
+
     ##
-    # Always returns the device's fixed consumption levels
+    # Always returns the device's current desired power level based on its schedule
     def calculate_desired_power_level(self):
         return self._desired_power_level
 
     ##
+    # No internal operation recorded
     def begin_internal_operation(self):
         pass
 
+
+    ##
+    # No internal operation recorded
     def end_internal_operation(self):
         pass
 
+    ##
+    # No need for internal state
     def update_state(self):
         pass
 

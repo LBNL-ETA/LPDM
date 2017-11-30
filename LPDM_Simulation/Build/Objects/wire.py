@@ -5,7 +5,7 @@ Devices will maintain knowledge of all physical connections associated with that
 class Wire:
 
     # TODO: Add whatever else you want here. This is a placeholder.
-    def __init__(self, length, thickness, resistance):
+    def __init__(self, length, gauge, voltage):
         self._length = length
-        self._thickness = thickness
-        self._resistance = resistance
+        self._gauge = gauge
+        self._voltage = voltage

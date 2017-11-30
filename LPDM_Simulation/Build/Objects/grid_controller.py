@@ -63,7 +63,10 @@ class GridController(Device):
         # A dictionary of utilities to their sell and buy prices, respectively.
         self._utility_prices = {}
         # the battery contained within this grid controller.
-        self._battery = battery
+        if battery:
+            self._battery = battery
+        else:
+            raise ValueError("Tried to make a grid controller without a battery. Not acceptable!")
 
         # the minimum allocate response to a request message
         self._minimum_allocate = min_alloc_response_threshold * battery.get_max_discharge_rate()
@@ -285,7 +288,6 @@ class GridController(Device):
                                                   tag="request_msg", value=request_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
 
-
     ##
     # Allocates a given quantity of power to be provided to another device.
     def send_allocate_message(self, target_id, allocate_amt):
@@ -340,9 +342,11 @@ class GridController(Device):
     ##
     # Recalculates the price with the Grid Controller's price logic, and then sets the current price value.
     def recalculate_price(self):
+        battery_power_adjust = self._battery.get_optimal_charge_rate() - self._battery.get_load()
         self._price = self._price_logic.calc_price(neighbor_prices=self._neighbor_prices,
                                                    loads=self._loads, requested=self._requested,
-                                                   allocated=self._allocated)
+                                                   allocated=self._allocated,
+                                                   desired_battery_power=battery_power_adjust)
         self._price_logic.set_current_price(self._price)
 
     ##
@@ -486,16 +490,17 @@ class GridController(Device):
     #
     def modulate_power(self):
 
-        net_load = self._power_in - self._power_out  # equivalent to battery's current load.
-
+        battery_load = self._battery.get_load()  # equivalent to battery's current load.
         desired_net_load = self._battery.get_optimal_charge_rate()
-        power_adjust = desired_net_load - net_load  # Negative if seeking to distribute extra, positive if to accept.
+
+        power_adjust = desired_net_load - battery_load  # Negative if seeking to distribute extra, positive if to accept.
         if nonzero_power(power_adjust):
             if power_adjust < 0:
                 self.seek_to_distribute_power(-power_adjust)
             elif power_adjust > 0:
                 self.seek_to_obtain_power(power_adjust)
         # TODO: Add a load shifting component that optimizes existing loads.
+
     ##
     # Grid controller is seeking to obtain the remaining amount of power for itself to consume.
     # Currently, only goes to the utility meters if it is connected and tries to shift power onto them,
@@ -730,9 +735,11 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
     # @param loads dictionary of connected device id's and current loads with those devices
     # @param requested dictionary of connected device id's and current requests to and from those devices
     # @param allocated the dictionary of connected device id's and allocated by and to those devices.
+    # @param desired_battery_charge the difference of current desired battery power flow and desired batt. power flow
     # @return the calculated price based on the input variables.
     @abstractmethod
-    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None):
+    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None,
+                   desired_battery_power=0):
         pass
 
 
@@ -747,6 +754,9 @@ is currently drawing in power from the utility meter or another grid controller 
 However, most of the time when it is simply drawing on the battery to funnel to other entities, it doesn't have the 
 necessary information and simply relies on its initial price as a fallback value, which doesn't seem to make sense. 
 Hence, it seems that marginal price logic will be superior here. 
+
+Additionally, contains no logic for implement any concepts of 'local scarcity', i.e. battery charging preference 
+compared to current power flows is not considered. 
 """
 
 
@@ -768,7 +778,9 @@ class GCWeightedAveragePriceLogic(GridControllerPriceLogic):
     # @param loads dictionary of connected device id's and current loads with those devices
     # @param requested dictionary of connected device id's and current requests to and from those devices
     # @param allocated the dictionary of connected device id's and allocated by and to those devices.
-    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None):
+    # @param desired_battery_charge the difference of current desired battery power flow and desired batt. power flow
+
+    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0):
 
         if neighbor_prices and loads:
             total_load_in = 0.0
@@ -787,7 +799,9 @@ class GCWeightedAveragePriceLogic(GridControllerPriceLogic):
 
 """ 
 Finds the minimum price among the sources that this device has been allocated to receive from, or from the utility. 
-If it doesn't meet any of these conditions, return double its initial price.
+If it doesn't meet any of these conditions, return its initial price.
+ 
+TODO: This logic does not consider the battery charging preference in its calculations. This should be added. 
 """
 
 
@@ -808,8 +822,9 @@ class GCMarginalPriceLogic(GridControllerPriceLogic):
     # @param loads dictionary of connected device id's and current loads with those devices
     # @param requested dictionary of connected device id's and current requests to and from those devices
     # @param allocated the dictionary of connected device id's and allocated by and to those devices.
+    # @param desired_battery_charge the difference of current desired battery power flow and desired batt. power flow
     # @return the calculated price based on the input variables.
-    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None):
+    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0):
         min_price = float('inf')
 
         # Find the cheapest price amongst the devices we've been allocated to receive from or utility meters
@@ -822,7 +837,8 @@ class GCMarginalPriceLogic(GridControllerPriceLogic):
         else:
             return self._initial_price  # Not enough information from other prices
 
-""" Same as above, but seeks to find the marginal price level that will satisfy all open requests.  """
+""" Same as above, but seeks to find the marginal price level that will satisfy all open requests and the 
+desired difference in battery power levels. If there is insufficient allocations, returns 1.1 * highest price"""
 
 
 class GCMarginalPriceLogicB(GridControllerPriceLogic):
@@ -842,9 +858,11 @@ class GCMarginalPriceLogicB(GridControllerPriceLogic):
     # @param loads dictionary of connected device id's and current loads with those devices
     # @param requested dictionary of connected device id's and current requests to and from those devices
     # @param allocated the dictionary of connected device id's and allocated by and to those devices.
+    # @param desired_battery_charge the difference of current desired battery power flow and desired batt. power flow
+    # (positive if wants to charge more, negative if wants to output more)
     # @return the calculated price based on the input variables.
 
-    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None):
+    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0):
         total_requested_out = 0  # positive record of how much this device has been requested to provide out
 
         # Calculate how much this device owes to provide.
@@ -852,10 +870,17 @@ class GCMarginalPriceLogicB(GridControllerPriceLogic):
             if requested < 0:
                 total_requested_out -= requested
 
-        remaining = total_requested_out
+        # Calculate how much has been requested vs. how much we want to change battery, this is our total power
+        # flow shift amount that we want to calculate the marginal price of satisfying.
+        remaining = total_requested_out + desired_battery_power
         prices_from_cheapest = sorted(neighbor_prices.items(), key=lambda x: x[1])
+        # We are looking to distribute power and there is insufficient current demand.
+        # Lower our price to below current cheapest price level to allow to sell
+        if remaining < 0:
+            return 0.9 * prices_from_cheapest[0][1]
+
         marginal_price = float('inf')
-        # Find the cheapest price amongst the devices we've been allocated or utility meters
+        # Find the cheapest price amongst the devices we've been allocated or from utility meters
         for source, price in prices_from_cheapest:
             if allocated.get(source, -1) > 0:
                 remaining -= allocated[source]
@@ -863,13 +888,21 @@ class GCMarginalPriceLogicB(GridControllerPriceLogic):
                 if remaining < 0:
                     break
 
-        for source, price in neighbor_prices:
-            if source.startswith("utm"):
+        # Subset to only the utility meter prices
+        utm_prices = {device: price for device, price in neighbor_prices.items() if device.startswith("utm")}
+        if utm_prices:
+            for utm, price in utm_prices:
                 if price < marginal_price:
                     marginal_price = price
+        else:
+            # There are no utility meters and we can't get enough from other sources.
+            # Raise it higher than all other sources.
+            if remaining > 0 and marginal_price != float('inf'):
+                return 1.1 * marginal_price
 
         if marginal_price != float('inf'):
             return marginal_price
+
         else:
             return self._initial_price  # not enough information from other prices
 

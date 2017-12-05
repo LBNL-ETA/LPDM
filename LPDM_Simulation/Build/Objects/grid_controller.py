@@ -549,30 +549,6 @@ class GridController(Device):
                 break
         self._battery.add_load(-power_to_distribute + remaining)
 
-    """
-    PROPOSED CHANGES TO THE LOAD OPTIMIZATION ALGORITHM. 
-    
-    --Step 1: Before using utilities, modulate current power up to allocate limits. 
-    --Step 2: 
-        - Then, try to use UTM to recallibrate. If not, step 3.
-    --Step 3: 
-        Can battery sustain the current deficit?
-        --Yes, within comfortable range (more than 20% charge): Raise Price Slightly. 
-        Request more power from all neighbors with price less than yours. 
-        Once you have received allocate messages, max out your requests starting from least
-        expensive to most expensive. 
-        
-        --Yes, within critical range (less than 20%): Double Price. 
-        Request more power from all neighbors with price less than yours. 
-        Once you have received allocate messages, max out your requests starting from least
-        expensive to most expensive.
-        
-        --NO: Double Price. Request power. Reduce your output to other GC's.  
-        
-        --STILL NO: REDUCE output to EUD's in order of their priority. 
-            
-    """
-
     # ________________________________LOGGING SPECIFIC FUNCTIONALITY______________________________#
 
     ##
@@ -880,7 +856,7 @@ class GCMarginalPriceLogicB(GridControllerPriceLogic):
             return 0.9 * prices_from_cheapest[0][1]
 
         marginal_price = float('inf')
-        # Find the cheapest price amongst the devices we've been allocated or from utility meters
+        # Find the cheapest price amongst the devices we've been allocated to take from.
         for source, price in prices_from_cheapest:
             if allocated.get(source, -1) > 0:
                 remaining -= allocated[source]
@@ -888,7 +864,7 @@ class GCMarginalPriceLogicB(GridControllerPriceLogic):
                 if remaining < 0:
                     break
 
-        # Subset to only the utility meter prices
+        # Subset to only the utility meter prices (we can take infinite without allocation)
         utm_prices = {device: price for device, price in neighbor_prices.items() if device.startswith("utm")}
         if utm_prices:
             for utm, price in utm_prices:

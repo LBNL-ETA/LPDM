@@ -59,7 +59,9 @@ class SimulationSetup:
 
     ##
     # Sets up the logging for the simulation by
-    # @param config_filename the name of the input JSON file to be
+    # @param config_filename the name of the input JSON file to be included in the header of the log
+    # @param config the input parameter dictionary containing info on log levels
+    # @param override_args the dictionary of override arguments to include in log header
 
     def setup_logging(self, config_filename, config, override_args):
         log_manager = SimulationLogger(

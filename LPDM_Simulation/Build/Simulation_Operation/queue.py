@@ -41,20 +41,6 @@ class PriorityQueue:
         heapq.heappush(self._pq, entry)
 
     ##
-    # Updates all tasks with a given task_attribute equal to an attribute_value to have a new priority.
-    # @param task_attribute an attribute of the task to identify it
-    # @param attribute_value the value of that attribute that we want to isolate
-    # @param new_priority the new priority value to assign to the tasks that have the desired attribute value
-    def update_by_attribute(self, task_attribute, attribute_value, new_priority=0):
-        for task in self._entry_finder:
-            if getattr(task, task_attribute) == attribute_value:
-                self.remove(task)
-                count = next(self._counter)
-                entry = [new_priority, count, task]
-                self._entry_finder[task] = entry
-                heapq.heappush(self._pq, entry)
-
-    ##
     # Marks an existing task as REMOVED in the heap. When this value is encountered later in a pop or peek,
     # it will be removed for good from the heap. Raises a KeyError if that task is not found.
     def remove(self, task):
@@ -97,5 +83,21 @@ class PriorityQueue:
         self._pq.clear()
         self._entry_finder.clear()
         self._counter = itertools.count()
+
+    ##
+    # Updates all tasks with a given task_attribute equal to an attribute_value to have a new priority.
+    # This may be useful later on when seeking to update Event times by using the function of that event
+    # as the attribute.
+    # @param task_attribute an attribute of the task to identify it
+    # @param attribute_value the value of that attribute that we want to isolate
+    # @param new_priority the new priority value to assign to the tasks that have the desired attribute value
+    def update_by_attribute(self, task_attribute, attribute_value, new_priority=0):
+        for task in self._entry_finder:
+            if getattr(task, task_attribute) == attribute_value:
+                self.remove(task)
+                count = next(self._counter)
+                entry = [new_priority, count, task]
+                self._entry_finder[task] = entry
+                heapq.heappush(self._pq, entry)
 
 

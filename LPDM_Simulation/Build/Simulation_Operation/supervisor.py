@@ -10,8 +10,10 @@
 ########################################################################################################################
 
 """
-The supervisor's role is to
-
+The supervisor's role is to maintain knowledge of all devices in the simulation and the soonest upcoming event for each.
+The supervisor then 'creates time' by updating the time of each device in serial fashion when they have the next
+earliest event, and then telling that device to process all of its events. The supervisor is also responsible for
+calculating some of the final simulation power statistics.
 """
 
 import logging
@@ -107,8 +109,8 @@ class Supervisor:
     ##
     # Called at the end of the simulation. Finishes each device and instructs them to write their energy
     # consumption calculations
-    # end_time the time of the finish event, to update each device to so they can perform their calculations.
+    # @param end_time the time of the finish event, to update each device to so they can perform their calculations.
     def finish_all(self, end_time):
-        for device in self.all_devices():
+        for device in self._devices.values():
             device.finish(end_time)
         self.total_calcs()

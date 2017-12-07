@@ -9,9 +9,10 @@
 # Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
 ########################################################################################################################
 
-"""An event is modelled as a function call with a specified series of arguments.
-Thus, it is some action that will be performed during the simulation.
-The time of an event's execution is stored in the queue of devices"""
+"""An event is modelled as a function call with a specified series of arguments,
+which can then be run at any time. Objects which use Events are responsible for
+maintaining knowledge of the specific time at which they want to run the Event.
+"""
 
 
 class Event(object):

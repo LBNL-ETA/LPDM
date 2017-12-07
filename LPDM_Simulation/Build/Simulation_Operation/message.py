@@ -11,8 +11,7 @@
 
 
 """
-
-
+Implementation of the Message object which passed between Devices for communications in the simulation.
 """
 
 from enum import Enum

@@ -15,6 +15,7 @@
 import json
 import logging
 import os
+import importlib
 
 from Build.Objects.air_conditioner import AirConditionerSimple
 from Build.Objects.battery import Battery
@@ -367,14 +368,42 @@ class SimulationSetup:
                        self.make_pvs(config=param_dict, runtime=self.end_time, override_args=overrides),
                        self.make_euds(config=param_dict, runtime=self.end_time, override_args=overrides)]
 
+        # connect devices together
+        self.connect_devices(connections)
+
+    def connect_devices(self, connections):
         # For each connection, register those devices with each other
         for connect_list in connections:
             for this_device_id, connects in connect_list:
                 this_device = self.supervisor.get_device(this_device_id)
-                for that_device_id in connects:
-                    that_device = self.supervisor.get_device(that_device_id)
-                    this_device.register_device(that_device, that_device_id, 1)
-                    that_device.register_device(this_device, this_device_id, 1)
+                for connection_item in connects:
+                    if type(connection_item) is str:
+                        self.connect_devices_without_wire(this_device_id, this_device, connection_item)
+                    elif type(connection_item) is dict:
+                        self.connect_devices_with_wire(this_device_id, this_device, connection_item)
+    
+    def connect_devices_without_wire(self, device_id_a, device_a, device_id_b):
+        # connect 2 devices together without any wire information
+        device_b = self.supervisor.get_device(device_id_b)
+        device_a.register_device(device_b, device_id_b, 1)
+        device_b.register_device(device_a, device_id_a, 1)
+    
+    def connect_devices_with_wire(self, device_id_a, device_a, connection_info):
+        # connect 2 devices together without any wire information
+        device_id = connection_info["device_id"]
+        voltage = connection_info["voltage"]
+        wire_class = connection_info["wire_class"]
+        length_m = connection_info["length_m"]
+        # load the module
+        m = importlib.import_module("Build.Objects.wire")
+        # get the class, will raise AttributeError if class cannot be found
+        WireClass = getattr(m, wire_class)
+        # build the wire object
+        wire = WireClass(length_m, voltage)
+
+        device_b = self.supervisor.get_device(device_id)
+        device_a.register_device(device_b, device_id, 1, wire)
+        device_b.register_device(device_a, device_id_a, 1, wire)
 
     ##
     # Takes a list of keyword arguments in the form of strings such as 'key=value' and outputs them as

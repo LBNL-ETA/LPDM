@@ -100,11 +100,17 @@ class Supervisor:
     def total_calcs(self):
         total_power_in = 0.0
         total_power_out = 0.0
+        total_wire_loss_in = 0.0
+        total_wire_loss_out = 0.0
         for device in self._devices.values():
             total_power_in += device._sum_power_in
             total_power_out += device._sum_power_out
+            total_wire_loss_in += device._wire_loss_in
+            total_wire_loss_out += device._wire_loss_out
         self._logger.info("total simulation power in: {} Wh".format(total_power_in))
         self._logger.info("total simulation power out: {} Wh".format(total_power_out))
+        self._logger.info("total simulation wire loss in: {} Wh".format(total_wire_loss_in))
+        self._logger.info("total simulation wire loss out: {} Wh".format(total_wire_loss_out))
 
     ##
     # Called at the end of the simulation. Finishes each device and instructs them to write their energy

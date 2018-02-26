@@ -132,6 +132,12 @@ class UtilityMeter(Device):
             self._loads[sender_id] = 0
             self.send_power_message(sender_id, 0)
             self.recalc_sum_power(prev_power, 0)
+        wire = self._wires.get(sender_id, None)
+        if wire:
+            if prev_power > 0:
+                self.sum_wire_loss_in(wire, prev_power)
+            elif prev_power < 0:
+                self.sum_wire_loss_out(wire, prev_power)
 
     ##
     # Method to be called when device receives a price message
@@ -201,3 +207,13 @@ class UtilityMeter(Device):
     # Utility meter currently does not have any specific device calculations to add to the log file
     def device_specific_calcs(self):
         pass
+
+    def last_wire_loss_calc(self):
+        for device_id, load in self._loads.items():
+            if load:
+                wire = self._wires.get(device_id, None)
+                if wire:
+                    if load > 0:
+                        self.sum_wire_loss_in(wire, load)
+                    else:
+                        self.sum_wire_loss_out(wire, abs(load))

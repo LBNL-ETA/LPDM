@@ -190,6 +190,11 @@ class Eud(Device):
     def change_load_in(self, sender_id, new_load):
         prev_load = self._loads_in.get(sender_id, 0)
         self.recalc_sum_power(prev_load, new_load)
+        # check if there's a wire associated with the sender device
+        # if so update the wire loss calculation
+        wire = self._wires.get(sender_id, None)
+        if wire:
+            self.sum_wire_loss_in(wire, prev_load)
         self._loads_in[sender_id] = new_load
     ##
     # Method to be called once it needs to recalculate its internal power usage.
@@ -297,3 +302,10 @@ class Eud(Device):
     @abstractmethod
     def device_specific_calcs(self):
         pass
+
+    def last_wire_loss_calc(self):
+        for device_id, load in self._loads_in.items():
+            if load > 0:
+                wire = self._wires.get(device_id, None)
+                if wire:
+                    self.sum_wire_loss_in(wire, load)

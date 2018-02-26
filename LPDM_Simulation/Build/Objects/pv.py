@@ -99,4 +99,5 @@ class PV(Device):
     def device_specific_calcs(self):
         pass
 
-
+    def last_wire_loss_calc(self):
+        pass

@@ -136,6 +136,14 @@ class GridController(Device):
         prev_load = self._loads[sender_id] if sender_id in self._loads else 0
         self.recalc_sum_power(prev_load, new_load)
         self._loads[sender_id] = new_load
+        # check if there's a wire associated with the sender device
+        # if so update the wire loss calculation
+        wire = self._wires.get(sender_id, None)
+        if wire:
+            if prev_load > 0:
+                self.sum_wire_loss_in(wire, prev_load)
+            elif prev_load < 0:
+                self.sum_wire_loss_out(wire, abs(prev_load))
         self._logger.debug(self.build_log_notation(message="load changed for {} to {}".format(sender_id, new_load),
                                                    tag="load change", value=new_load))
         return new_load - prev_load
@@ -346,7 +354,8 @@ class GridController(Device):
         self._price = self._price_logic.calc_price(neighbor_prices=self._neighbor_prices,
                                                    loads=self._loads, requested=self._requested,
                                                    allocated=self._allocated,
-                                                   desired_battery_power=battery_power_adjust)
+                                                   desired_battery_power=battery_power_adjust,
+                                                   wires=self._wires)
         self._price_logic.set_current_price(self._price)
 
     ##
@@ -549,6 +558,17 @@ class GridController(Device):
                 break
         self._battery.add_load(-power_to_distribute + remaining)
 
+    def last_wire_loss_calc(self):
+        for device_id, load in self._loads.items():
+            if load:
+                wire = self._wires.get(device_id, None)
+                if wire:
+                    if load > 0:
+                        self.sum_wire_loss_in(wire, load)
+                    else:
+                        self.sum_wire_loss_out(wire, abs(load))
+
+
     # ________________________________LOGGING SPECIFIC FUNCTIONALITY______________________________#
 
     ##
@@ -715,7 +735,7 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
     # @return the calculated price based on the input variables.
     @abstractmethod
     def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None,
-                   desired_battery_power=0):
+                   desired_battery_power=0, wires=None):
         pass
 
 
@@ -756,7 +776,7 @@ class GCWeightedAveragePriceLogic(GridControllerPriceLogic):
     # @param allocated the dictionary of connected device id's and allocated by and to those devices.
     # @param desired_battery_charge the difference of current desired battery power flow and desired batt. power flow
 
-    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0):
+    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0, wires=None):
 
         if neighbor_prices and loads:
             total_load_in = 0.0
@@ -765,7 +785,9 @@ class GCWeightedAveragePriceLogic(GridControllerPriceLogic):
                 if load > 0:  # receiving power from this entity
                     neighbor_price = neighbor_prices.get(source, 0)
                     if neighbor_price >= 0:
-                        total_load_in += load
+                        wire = wires.get(source, None) if type(wires) is dict else None
+                        wire_loss = wire.calculate_power() if wire else 0
+                        total_load_in += (load - wire_loss)
                         sum_price += (neighbor_price * load)
             if total_load_in:
                 return sum_price / total_load_in
@@ -800,7 +822,7 @@ class GCMarginalPriceLogic(GridControllerPriceLogic):
     # @param allocated the dictionary of connected device id's and allocated by and to those devices.
     # @param desired_battery_charge the difference of current desired battery power flow and desired batt. power flow
     # @return the calculated price based on the input variables.
-    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0):
+    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0, wires=None):
         min_price = float('inf')
 
         # Find the cheapest price amongst the devices we've been allocated to receive from or utility meters
@@ -838,7 +860,7 @@ class GCMarginalPriceLogicB(GridControllerPriceLogic):
     # (positive if wants to charge more, negative if wants to output more)
     # @return the calculated price based on the input variables.
 
-    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0):
+    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0, wires=None):
         total_requested_out = 0  # positive record of how much this device has been requested to provide out
 
         # Calculate how much this device owes to provide.

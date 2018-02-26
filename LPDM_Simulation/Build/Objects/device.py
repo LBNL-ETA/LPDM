@@ -80,6 +80,12 @@ class Device(metaclass=ABCMeta):
         self._sum_power_out = 0.0  # Record the total energy produced by this device (wH)
         self._sum_power_in = 0.0  # Record the total energy produced by this device (wH)
 
+        self._time_last_wire_loss_in = time
+        self._wire_loss_in = 0.0
+        self._time_last_wire_loss_out = time
+        self._wire_loss_out = 0.0
+        self._wires = {}
+
         if schedule:
             self.setup_schedule(schedule, multiday=multiday, runtime=total_runtime)
 
@@ -177,6 +183,18 @@ class Device(metaclass=ABCMeta):
             self._sum_power_in += self._power_in * (time_diff / 3600.0)  # Return in wH
         self._time_last_power_in_change = self._time
 
+    def sum_wire_loss_in(self, wire, load):
+        time_diff = self._time - self._time_last_wire_loss_in
+        if time_diff > 0 and load > 0:
+            self._wire_loss_in += wire.calculate_energy(time_diff) * (time_diff / 3600.0)  # Return in wH
+        self._time_last_wire_loss_in = self._time
+    
+    def sum_wire_loss_out(self, wire, load):
+        time_diff = self._time - self._time_last_wire_loss_out
+        if time_diff > 0 and load > 0:
+            self._wire_loss_out += wire.calculate_energy(time_diff) * (time_diff / 3600.0)  # Return in wH
+        self._time_last_wire_loss_out = self._time
+
     #  ______________________________________Internal State Functions _________________________________#
 
     ##
@@ -255,15 +273,19 @@ class Device(metaclass=ABCMeta):
     # @param value positive to register, 0 or negative to unregister
     # TODO: Make this so it also registers that device across a wire (add wire param)
 
-    def register_device(self, device, device_id, value):
+    def register_device(self, device, device_id, value, wire=None):
         if value > 0 and device_id not in self._connected_devices:
             self._connected_devices[device_id] = device
+            if not device_id in self._wires:
+                self._wires[device_id] = wire
             self._logger.info(
                 self.build_log_notation("registered {}".format(device_id))
             )
         else:
             if device_id in self._connected_devices:
                 del self._connected_devices[device_id]  # unregister
+                if device_id in self._wires:
+                    del self._wires[device_id]
                 self._logger.info(
                     self.build_log_notation("unregistered {}".format(device_id))
                 )
@@ -355,6 +377,10 @@ class Device(metaclass=ABCMeta):
     def process_allocate_message(self, sender_id, allocate_amt):
         pass
 
+    @abstractmethod
+    def last_wire_loss_calc(self):
+        pass
+
     # ______________________________SCHEDULING FUNCTIONALITY___________________________ #
 
     ##
@@ -417,6 +443,16 @@ class Device(metaclass=ABCMeta):
             tag="power calcs",
             value=self._sum_power_in
         ))
+        self._logger.info(self.build_log_notation(
+            message="sum wire loss (Wh) in",
+            tag="wire loss in",
+            value=self._wire_loss_in
+        ))
+        self._logger.info(self.build_log_notation(
+            message="sum wire loss (Wh) out",
+            tag="wire loss out",
+            value=self._wire_loss_out
+        ))
         self.device_specific_calcs()
 
     ##
@@ -433,6 +469,7 @@ class Device(metaclass=ABCMeta):
         self._time = end_time
         self.set_power_in(0.0)
         self.set_power_out(0.0)
+        self.last_wire_loss_calc()
         self.write_calcs()
 
 # _____________________________________________________________________ #

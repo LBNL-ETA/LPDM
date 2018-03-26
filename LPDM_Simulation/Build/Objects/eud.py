@@ -189,13 +189,15 @@ class Eud(Device):
 
     def change_load_in(self, sender_id, new_load):
         prev_load = self._loads_in.get(sender_id, 0)
+        self._logger.info(self.build_log_notation(message="change load in from {} = {}".format(sender_id, new_load),
+                                                  tag="load_in", value=new_load))
         self.recalc_sum_power(prev_load, new_load)
+        self._loads_in[sender_id] = new_load
         # check if there's a wire associated with the sender device
         # if so update the wire loss calculation
         wire = self._wires.get(sender_id, None)
         if wire:
             self.sum_wire_loss_in(wire, prev_load)
-        self._loads_in[sender_id] = new_load
     ##
     # Method to be called once it needs to recalculate its internal power usage.
     # To be called after price, power level, or allocate has changed.
@@ -207,6 +209,8 @@ class Eud(Device):
     def modulate_power(self):
         self.update_state()  # make sure we are updated before calculating any desired power
         desired_power_level = self.calculate_desired_power_level()
+
+        self._logger.info(self.build_log_notation(message="desired power level", tag="desired_power", value=desired_power_level))
         gcs = [device_id for device_id in self._connected_devices.keys() if device_id.startswith("gc")]
 
         if desired_power_level == 0:
@@ -216,7 +220,8 @@ class Eud(Device):
                     self.change_load_in(gc, 0)
 
         elif desired_power_level > 0:
-            remaining = desired_power_level  # how much we have left to get (ignoring what we are getting already)
+            # how much we have left to get (ignoring what we are getting already)
+            remaining = desired_power_level
             total_power_taken = 0
 
             power_sources = []  # list of gcs we will get power from.
@@ -227,6 +232,12 @@ class Eud(Device):
             for device in self._allocated.keys():
                 if device in gcs:
                     # take all up to what we've been allocated.
+                    extra_for_wire_loss = 0
+                    # if the device is wired, add extra power to account for wire loss
+                    wire = self._wires.get(device, None)
+                    if wire:
+                        extra_for_wire_loss = wire.calculate_power()
+                        remaining += extra_for_wire_loss
                     take_power = min(remaining, self._allocated[device])
                     if nonzero_power(self._loads_in.get(device, 0) - take_power):
                         # We currently aren't taking the correct amt, send a power message
@@ -236,6 +247,9 @@ class Eud(Device):
                     total_power_taken += take_power
                     if take_power:
                         power_sources.append(device)
+                    elif extra_for_wire_loss:
+                        # subtract out the power loss for the wire if it's not being used
+                        remaining -= extra_for_wire_loss
                     if remaining <= 0:
                         break
 
@@ -244,6 +258,11 @@ class Eud(Device):
                 num_gcs = len(gcs)
                 if num_gcs:
                     for gc in gcs:
+                        # extra_for_wire_loss = 0
+                        # # if the device is wired, add extra power to account for wire loss
+                        # wire = self._wires[device]
+                        # if wire:
+                        #     extra_for_wire_loss = wire.calculate_power()
                         prev_load = self._loads_in.get(gc, 0)
                         extra_power = remaining / num_gcs # add a fractional value
                         if self._power_direct:

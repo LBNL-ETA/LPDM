@@ -140,11 +140,11 @@ class GridController(Device):
         # if so update the wire loss calculation
         wire = self._wires.get(sender_id, None)
         if wire:
-            if prev_load > 0:
+            if prev_load >= 0:
                 self.sum_wire_loss_in(wire, prev_load)
             elif prev_load < 0:
                 self.sum_wire_loss_out(wire, abs(prev_load))
-        self._logger.debug(self.build_log_notation(message="load changed for {} to {}".format(sender_id, new_load),
+        self._logger.info(self.build_log_notation(message="load changed for {} to {}".format(sender_id, new_load),
                                                    tag="load change", value=new_load))
         return new_load - prev_load
 
@@ -396,6 +396,13 @@ class GridController(Device):
         # Likewise, if we are selling to utm and power change is negative, reduce how much we sell.
         """ THIS WAS AN OPTIMIZATION. CAN BE REMOVED OR PUT IN FLAGGED LOGIC"""
         for utm in utility_meters:
+            extra_for_wire_loss = 0
+            wire = self._wires.get(utm, None)
+            if wire:
+                extra_for_wire_loss = wire.calculate_power()
+                remaining += extra_for_wire_loss
+                remaining_start = remaining
+
             if power_change > 0:  # must accept more.
                 if self._loads.get(utm, 0) > 0:
                     prev_utm_load = self._loads[utm]
@@ -414,6 +421,9 @@ class GridController(Device):
                     remaining -= (prev_utm_load - new_utm_load)
                     if not nonzero_power(remaining):
                         break
+            # if the utm was not used, subtract out the wire loss power
+            if remaining_start == remaining:
+                remaining -= extra_for_wire_loss
 
         # TODO: Try raising all allocate values up to their limits. Move battery adjustment to after utility meter try.
         # Try adding all the remaining demand onto the battery

@@ -124,6 +124,8 @@ class UtilityMeter(Device):
 
     def process_power_message(self, sender_id, new_power):
         prev_power = self._loads[sender_id] if sender_id in self._loads.keys() else 0
+        self._logger.info(self.build_log_notation(message="power msg from {} - {} -> {}".format(sender_id, prev_power, new_power),
+                                                tag="process_power_message", value=new_power))
         if self._in_operation:
             self._loads[sender_id] = -new_power
             self.recalc_sum_power(prev_power, -new_power)
@@ -134,10 +136,10 @@ class UtilityMeter(Device):
             self.recalc_sum_power(prev_power, 0)
         wire = self._wires.get(sender_id, None)
         if wire:
-            if prev_power > 0:
+            if prev_power >= 0:
                 self.sum_wire_loss_in(wire, prev_power)
             elif prev_power < 0:
-                self.sum_wire_loss_out(wire, prev_power)
+                self.sum_wire_loss_out(wire, abs(prev_power))
 
     ##
     # Method to be called when device receives a price message

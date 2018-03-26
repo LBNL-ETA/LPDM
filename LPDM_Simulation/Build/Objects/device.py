@@ -80,11 +80,15 @@ class Device(metaclass=ABCMeta):
         self._sum_power_out = 0.0  # Record the total energy produced by this device (wH)
         self._sum_power_in = 0.0  # Record the total energy produced by this device (wH)
 
-        self._time_last_wire_loss_in = time
         self._wire_loss_in = 0.0
-        self._time_last_wire_loss_out = time
+        self._time_last_wire_loss = time
         self._wire_loss_out = 0.0
+        # dictionary of wires connected to this device, where the keys are device id's
         self._wires = {}
+        # indicates if there's a wire connected to this device
+        self._is_wired = False
+        # extra power to request to account for wire losses
+        self._extra_for_wire_loss_pct = 0.05
 
         if schedule:
             self.setup_schedule(schedule, multiday=multiday, runtime=total_runtime)
@@ -181,19 +185,34 @@ class Device(metaclass=ABCMeta):
         time_diff = self._time - self._time_last_power_in_change
         if time_diff > 0:
             self._sum_power_in += self._power_in * (time_diff / 3600.0)  # Return in wH
+            self._logger.info(
+                self.build_log_notation(
+                    message="sum_power_in, dt = {}, load = {}".format(time_diff / 3600.0, self._power_in),
+                    tag="sum_power_in",
+                    value=self._power_in * (time_diff / 3600.0)
+                )
+            )
         self._time_last_power_in_change = self._time
 
     def sum_wire_loss_in(self, wire, load):
-        time_diff = self._time - self._time_last_wire_loss_in
+        time_diff = self._time - self._time_last_wire_loss
         if time_diff > 0 and load > 0:
-            self._wire_loss_in += wire.calculate_energy(time_diff) * (time_diff / 3600.0)  # Return in wH
-        self._time_last_wire_loss_in = self._time
+            wire_loss = wire.calculate_energy(time_diff) * (time_diff / 3600.0)
+            self._wire_loss_in += wire_loss # Return in wH
+            self._logger.info(
+                self.build_log_notation(message="Calculate wire loss in, dt = {}, load = {}".format(time_diff / 3600.0, load), tag="wire_loss_in", value=wire_loss)
+            )
+        self._time_last_wire_loss = self._time
     
     def sum_wire_loss_out(self, wire, load):
-        time_diff = self._time - self._time_last_wire_loss_out
+        time_diff = self._time - self._time_last_wire_loss
         if time_diff > 0 and load > 0:
-            self._wire_loss_out += wire.calculate_energy(time_diff) * (time_diff / 3600.0)  # Return in wH
-        self._time_last_wire_loss_out = self._time
+            wire_loss = wire.calculate_energy(time_diff) * (time_diff / 3600.0)
+            self._wire_loss_out += wire_loss # Return in wH
+            self._logger.info(
+                self.build_log_notation(message="Calculate wire loss out, dt = {}, load = {}".format(time_diff / 3600.0, load), tag="wire_loss_out", value=wire_loss)
+            )
+        self._time_last_wire_loss = self._time
 
     #  ______________________________________Internal State Functions _________________________________#
 
@@ -278,6 +297,14 @@ class Device(metaclass=ABCMeta):
             self._connected_devices[device_id] = device
             if not device_id in self._wires:
                 self._wires[device_id] = wire
+                if not wire is None:
+                    self._is_wired = True
+                    self._logger.info(
+                        self.build_log_notation(
+                            message="wire power",
+                            tag="wire_power",
+                            value=wire.calculate_power())
+                    )
             self._logger.info(
                 self.build_log_notation("registered {}".format(device_id))
             )

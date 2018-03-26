@@ -10,6 +10,7 @@
 ########################################################################################################################
 
 import os
+import sys
 import re
 import logging
 from datetime import datetime, timezone
@@ -116,7 +117,7 @@ class SimulationLogger:
         fh.setLevel(self.file_log_level)
 
         # create console handler for the console log messages
-        ch = logging.StreamHandler()
+        ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(self.console_log_level)
 
         fmt = '%(message)s'

@@ -81,14 +81,16 @@ class Device(metaclass=ABCMeta):
         self._sum_power_in = 0.0  # Record the total energy produced by this device (wH)
 
         self._wire_loss_in = 0.0
-        self._time_last_wire_loss = time
+        self._time_last_wire_loss_in = time
         self._wire_loss_out = 0.0
+        self._time_last_wire_loss_out = time
+        # keeps track of the wire loss for each device
+        self._wire_loss_info_in = {}
+        self._wire_loss_info_out = {}
         # dictionary of wires connected to this device, where the keys are device id's
         self._wires = {}
         # indicates if there's a wire connected to this device
         self._is_wired = False
-        # extra power to request to account for wire losses
-        self._extra_for_wire_loss_pct = 0.05
 
         if schedule:
             self.setup_schedule(schedule, multiday=multiday, runtime=total_runtime)
@@ -97,6 +99,9 @@ class Device(metaclass=ABCMeta):
         self._logger.info(
             self.build_log_notation("initialize {} - {}".format(self._device_id, self._device_type))
         )
+    
+    def init(self):
+        pass
 
     # ____________________________ Maintenance Functions _________________________________#
 
@@ -144,14 +149,53 @@ class Device(metaclass=ABCMeta):
             self._power_out = power_out
         else:
             raise ValueError("Power Level Out Must Be Non-Negative")
+    
+    def calculate_wire_loss(self, device_id, amount=None):
+        """Calculate the wire loss given a device_id
 
+        Parameters
+        ----------
+        device_id: str
+            The device_id of the device whose wire we need information
+        amount: float
+            An optional amount that will determine the sign (positive/negative)
+            of the wire loss.  So if amount is negative, wire loss will be negative
+
+        Returns
+        -------
+        float:
+            The wire loss rate of the wire connected to device_id
+        """
+        wire = self._wires.get(device_id, None)
+        if wire:
+            wire_loss = wire.calculate_power()
+            return -wire_loss if amount and amount < 0 else wire_loss
+        else:
+            return 0
+
+    def update_wire_loss_in(self, device_id, wire_loss_rate):
+        "Update the wire loss rate for power flowing into the device"
+        previous = self._wire_loss_info_in.get(device_id, 0)
+        if previous:
+            self.sum_wire_loss_in(previous)
+        self._wire_loss_info_in[device_id] = wire_loss_rate
+
+    def update_wire_loss_out(self, device_id, wire_loss_rate):
+        "Update the wire loss rate for power flowing into the device"
+        previous = self._wire_loss_info_out.get(device_id, 0)
+        if previous:
+            self.sum_wire_loss_in(previous)
+        self._wire_loss_info_out[device_id] = wire_loss_rate
+
+        
     ##
     # After a device has changed the quantity of power it is sending/receiving, modify the power in and power out.
     # Call whenever a load has been changed on this device.
     # @param prev_power the previous power flow from this device's perspective (in positive, out negative)
     # @param new_power the new power flow from this device's perspective (in positive, out negative)
     def recalc_sum_power(self, prev_power, new_power):
-        self.sum_power_in()  # log power usage at previous power level.
+        # log power usage at previous power level.
+        self.sum_power_in()
         self.sum_power_out()
         if prev_power >= 0:
             if new_power >= 0:
@@ -194,25 +238,31 @@ class Device(metaclass=ABCMeta):
             )
         self._time_last_power_in_change = self._time
 
-    def sum_wire_loss_in(self, wire, load):
-        time_diff = self._time - self._time_last_wire_loss
-        if time_diff > 0 and load > 0:
-            wire_loss = wire.calculate_energy(time_diff) * (time_diff / 3600.0)
-            self._wire_loss_in += wire_loss # Return in wH
+    def sum_wire_loss_in(self, wire_loss_rate):
+        time_diff = self._time - self._time_last_wire_loss_in
+        if time_diff > 0:
+            wire_loss_energy = wire_loss_rate * time_diff * (time_diff / 3600.0)
+            self._wire_loss_in += wire_loss_energy
             self._logger.info(
-                self.build_log_notation(message="Calculate wire loss in, dt = {}, load = {}".format(time_diff / 3600.0, load), tag="wire_loss_in", value=wire_loss)
-            )
-        self._time_last_wire_loss = self._time
+                self.build_log_notation(
+                    message="Calculate wire-loss-in, dt = {}, rate = {}, energy = {}".format(time_diff / 3600.0, wire_loss_rate, wire_loss_energy),
+                    tag="wire_loss_in",
+                    value=wire_loss_energy
+            ))
+        self._time_last_wire_loss_in = self._time
     
-    def sum_wire_loss_out(self, wire, load):
-        time_diff = self._time - self._time_last_wire_loss
-        if time_diff > 0 and load > 0:
-            wire_loss = wire.calculate_energy(time_diff) * (time_diff / 3600.0)
-            self._wire_loss_out += wire_loss # Return in wH
+    def sum_wire_loss_out(self, wire_loss_rate):
+        time_diff = self._time - self._time_last_wire_loss_out
+        if time_diff > 0:
+            wire_loss_energy = wire_loss_rate * time_diff * (time_diff / 3600.0)
+            self._wire_loss_out += wire_loss_energy
             self._logger.info(
-                self.build_log_notation(message="Calculate wire loss out, dt = {}, load = {}".format(time_diff / 3600.0, load), tag="wire_loss_out", value=wire_loss)
-            )
-        self._time_last_wire_loss = self._time
+                self.build_log_notation(
+                    message="Calculate wire-loss-out, dt = {}, rate = {}, energy = {}".format(time_diff / 3600.0, wire_loss_rate, wire_loss_energy),
+                    tag="wire_loss_out",
+                    value=wire_loss_energy
+            ))
+        self._time_last_wire_loss_out = self._time
 
     #  ______________________________________Internal State Functions _________________________________#
 
@@ -272,16 +322,16 @@ class Device(metaclass=ABCMeta):
             self._logger.info(self.build_log_notation(
                 "Read {} from {} with value {}".format(message.message_type, message.sender_id, message.value)))
             if message.message_type == MessageType.REGISTER:
-                self.process_register_message(message.sender_id, message.value)
+                self.process_register_message(message)
             elif message.sender_id in self._connected_devices:  # Only read other messages from verified devices.
                 if message.message_type == MessageType.POWER:
-                    self.process_power_message(message.sender_id, message.value)
+                    self.process_power_message(message)
                 elif message.message_type == MessageType.PRICE:
-                    self.process_price_message(message.sender_id, message.value, message.extra_info)
+                    self.process_price_message(message)
                 elif message.message_type == MessageType.ALLOCATE:
-                    self.process_allocate_message(message.sender_id, message.value)
+                    self.process_allocate_message(message)
                 elif message.message_type == MessageType.REQUEST:
-                    self.process_request_message(message.sender_id, message.value)
+                    self.process_request_message(message)
                 else:
                     raise NameError('Unverified Message Type')
 
@@ -299,25 +349,20 @@ class Device(metaclass=ABCMeta):
                 self._wires[device_id] = wire
                 if not wire is None:
                     self._is_wired = True
-                    self._logger.info(
-                        self.build_log_notation(
-                            message="wire power",
-                            tag="wire_power",
-                            value=wire.calculate_power())
-                    )
             self._logger.info(
                 self.build_log_notation("registered {}".format(device_id))
             )
-        else:
-            if device_id in self._connected_devices:
-                del self._connected_devices[device_id]  # unregister
-                if device_id in self._wires:
-                    del self._wires[device_id]
-                self._logger.info(
-                    self.build_log_notation("unregistered {}".format(device_id))
-                )
-            else:
-                print("No Such Device To Unregister")
+        # else:
+        #     raise Exception("Device {} already registered to {}".format(device_id, self._device_id))
+            # if device_id in self._connected_devices:
+            #     del self._connected_devices[device_id]  # unregister
+            #     if device_id in self._wires:
+            #         del self._wires[device_id]
+            #     self._logger.info(
+            #         self.build_log_notation("unregistered {}".format(device_id))
+            #     )
+            # else:
+            #     print("No Such Device To Unregister")
 
     ##
     # Method to be called when the device receives a register message, indicating a device
@@ -327,12 +372,12 @@ class Device(metaclass=ABCMeta):
     # @param value positive if sender is registering negative if unregistering
 
     # TODO: Make this so this message type includes wire in the extra information
-    def process_register_message(self, sender_id, value):
-        if sender_id in self._connected_devices:
-            sender = self._connected_devices[sender_id]
+    def process_register_message(self, message):
+        if message.sender_id in self._connected_devices:
+            sender = self._connected_devices[message.sender_id]
         else:
-            sender = self._supervisor.get_device(sender_id)  # not in local table. Ask supervisor for the pointer to it.
-        self.register_device(sender, sender_id, value)
+            sender = self._supervisor.get_device(message.sender_id)  # not in local table. Ask supervisor for the pointer to it.
+        self.register_device(sender, message.sender_id, message.value)
 
     ##
     # Method to be called when the device wants to register or unregister with another device
@@ -371,7 +416,7 @@ class Device(metaclass=ABCMeta):
     # positive if sender is receiving, negative if sender is providing.
 
     @abstractmethod
-    def process_power_message(self, sender_id, new_power):
+    def process_power_message(self, message):
         pass
 
     ##
@@ -382,7 +427,7 @@ class Device(metaclass=ABCMeta):
     # @param extra_info additional information contained in this price message. From the utility meter,
     # this is its buy prices, from other devices this can be price forecast information.
     @abstractmethod
-    def process_price_message(self, sender_id, new_price, extra_info):
+    def process_price_message(self, message):
         pass
 
     ##
@@ -391,7 +436,7 @@ class Device(metaclass=ABCMeta):
     #
     # @param request_amt the amount the sending device is requesting to receive (must be positive)
     @abstractmethod
-    def process_request_message(self, sender_id, request_amt):
+    def process_request_message(self, message):
         pass
 
     ##
@@ -401,7 +446,7 @@ class Device(metaclass=ABCMeta):
     #
     # @param allocated_amt the amount this device has been allocated to receive (must be positive).
     @abstractmethod
-    def process_allocate_message(self, sender_id, allocate_amt):
+    def process_allocate_message(self, message):
         pass
 
     @abstractmethod
@@ -508,7 +553,3 @@ class Device(metaclass=ABCMeta):
 # TODO: Linear interpolation in Air Conditioner?
 # TODO: Loads->Powerflows
 # TODO: Load profile EUD.
-
-
-
-

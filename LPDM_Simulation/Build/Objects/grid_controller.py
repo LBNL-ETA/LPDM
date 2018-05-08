@@ -18,13 +18,17 @@ power sources (such as Utility and PV), storage (batteries), and other grid cont
 
 from abc import ABCMeta, abstractmethod
 
-from Build.Simulation_Operation.message import Message, MessageType
+from Build.Objects.grid_equipment import GridEquipment
+from Build.Objects.utility_meter import UtilityMeter
+from Build.Objects.converter.converter import Converter
+
+from Build.Simulation_Operation.message import Message, MessageType, MessageRedirect
 from Build.Simulation_Operation.event import Event
 from Build.Simulation_Operation.support import SECONDS_IN_DAY, SECONDS_IN_HOUR, nonzero_power, delta
 from Build.Objects.device import Device
 
 
-class GridController(Device):
+class GridController(GridEquipment):
 
     TRICKLE_POWER = 2  # Allow fluctuations of power within 2 watts without rebalancing. All devices can consume this.
 
@@ -62,6 +66,9 @@ class GridController(Device):
         self._neighbor_prices = {}
         # A dictionary of utilities to their sell and buy prices, respectively.
         self._utility_prices = {}
+        # keep track of which devices are utility meters
+        # device could also be a Converter connected to more than 1 utility meter
+        self._connected_utility_meters = []
         # the battery contained within this grid controller.
         if battery:
             self._battery = battery
@@ -87,8 +94,23 @@ class GridController(Device):
 
         self.setup_battery_update_schedule(self._battery.get_update_frequency(), total_runtime)
         self.setup_modulation_schedule(total_runtime)
+    
+    def init(self):
+        super().init()
+        self.build_utility_meter_list()
+    
+    def build_utility_meter_list(self):
+        """Build a list of utility meters"""
+        for d_id, d in self._connected_devices.items():
+            if isinstance(d, UtilityMeter) or (isinstance(d, Converter) and d.has_utm()):
+                self._connected_utility_meters.append(d_id)
 
     #  ______________________________________Maintenance Functions______________________________________ #
+
+    # def device_is_utm(self, device_id):
+    #     "Determine if a given device_id is a utility meter, or is a converter connected to a utility meter"
+    #     items = [d for d in self._connected_utility_meters if d.utm_device_id == device_id]
+    #     return len(items) > 0
 
     ##
     # Method to be called when device is leaving the grid, and is seeking to unregister with other devices.
@@ -136,14 +158,6 @@ class GridController(Device):
         prev_load = self._loads[sender_id] if sender_id in self._loads else 0
         self.recalc_sum_power(prev_load, new_load)
         self._loads[sender_id] = new_load
-        # check if there's a wire associated with the sender device
-        # if so update the wire loss calculation
-        wire = self._wires.get(sender_id, None)
-        if wire:
-            if prev_load >= 0:
-                self.sum_wire_loss_in(wire, prev_load)
-            elif prev_load < 0:
-                self.sum_wire_loss_out(wire, abs(prev_load))
         self._logger.info(self.build_log_notation(message="load changed for {} to {}".format(sender_id, new_load),
                                                    tag="load change", value=new_load))
         return new_load - prev_load
@@ -193,14 +207,14 @@ class GridController(Device):
     # @param sender_id the sender of the message informing of registering.
     # @param value positive if sender is registering negative if unregistering
 
-    def process_register_message(self, sender_id, value):
-        if sender_id in self._connected_devices:
-            sender = self._connected_devices[sender_id]
+    def process_register_message(self, message):
+        if message.sender_id in self._connected_devices:
+            sender = self._connected_devices[message.sender_id]
         else:
-            sender = self._supervisor.get_device(sender_id)  # not in local table. Ask supervisor for the pointer to it.
-        self.register_device(sender, sender_id, value)
+            sender = self._supervisor.get_device(message.sender_id)  # not in local table. Ask supervisor for the pointer to it.
+        self.register_device(sender, message.sender_id, message.value)
         if value > 0:
-            self.send_price_message(sender_id, self._price)
+            self.send_price_message(message.sender_id, self._price)
 
     ##
     # Processes a power message, indicating power flows have changed. First, instantaneously responds
@@ -209,11 +223,16 @@ class GridController(Device):
     # @param sender_id the device which sent the power message
     # @param new_power the new power value from the perspective of the message sender.
 
-    def process_power_message(self, sender_id, new_power):
-
-        prev_power = self._loads[sender_id] if sender_id in self._loads else 0
-        self.balance_power(sender_id, prev_power, -new_power)  # process new power from perspective of receiver.
-        if delta(new_power, prev_power) > self.TRICKLE_POWER:  # don't recalibrate for power changes smaller than this
+    def process_power_message(self, message):
+        self._logger.info(
+            self.build_log_notation(
+                message="POWER message from {}".format(message.sender_id),
+                tag="power_msg_in",
+                value=message.value
+        ))
+        prev_power = self._loads[message.sender_id] if message.sender_id in self._loads else 0
+        self.balance_power(message.sender_id, prev_power, -message.value)  # process new power from perspective of receiver.
+        if delta(message.value, prev_power) > self.TRICKLE_POWER:  # don't recalibrate for power changes smaller than this
             self.modulate_price()
             self.modulate_power()
 
@@ -223,10 +242,12 @@ class GridController(Device):
     # @param sender_id the sender of the message
     # @param price the local price received from the message sender
 
-    def process_price_message(self, sender_id, price, extra_info):
-        if sender_id.startswith("utm"):  # Remember sell price, buy_price pair from utility meters
-            self._utility_prices[sender_id] = (price, extra_info)
-        self._neighbor_prices[sender_id] = price
+    def process_price_message(self, message):
+        # if message.sender_id.startswith("utm"):  # Remember sell price, buy_price pair from utility meters
+        # sender_id = message.redirect.original_sender_id if isinstance(message.redirect, MessageRedirect) else message.sender_id
+        if message.sender_id in self._connected_utility_meters:
+            self._utility_prices[message.sender_id] = (message.value, message.extra_info)
+        self._neighbor_prices[message.sender_id] = message.value
         self.modulate_price()  # if price significantly changed, will broadcast this price to all neighbors.
         self.modulate_power()
 
@@ -234,28 +255,28 @@ class GridController(Device):
     # Processes a request message from an EUD or another GC, and allocates in response whatever matches its
     # @param sender_id the sender of the request message
     # @param request_amt the quantity of power requested from perspective of message sender
-    def process_request_message(self, sender_id, request_amt):
-        if request_amt < 0:
+    def process_request_message(self, message):
+        if message.value < 0:
             return  # Invalid request. Must be positive.
-        if request_amt == 0:
-            self.send_allocate_message(sender_id, 0)  # always allow power flows to cease
+        if message.value == 0:
+            self.send_allocate_message(message.sender_id, 0)  # always allow power flows to cease
             return
-        elif not nonzero_power(self._requested.get(sender_id, 0) + request_amt):
+        elif not nonzero_power(self._requested.get(message.sender_id, 0) + message.value):
             return  # Already have noted this request and am working on it.
-        provide = self.request_response(request_amt)
+        provide = self.request_response(message.value)
         # Note: May provide more than asked for, which recipient can consume up to at any point.
-        self.send_allocate_message(sender_id, provide)  # Positive
-        self._requested[sender_id] = -request_amt
+        self.send_allocate_message(message.sender_id, provide)  # Positive
+        self._requested[message.sender_id] = -message.value
         self.modulate_price()
 
     ##
     # Process an allocate message from another grid controller.
 
-    def process_allocate_message(self, sender_id, allocate_amt):
-        if allocate_amt < 0:
-            self._logger.info("ignored negative allocate message from {}".format(sender_id))
+    def process_allocate_message(self, message):
+        if message.value < 0:
+            self._logger.info("ignored negative allocate message from {}".format(message.sender_id))
             return
-        self._allocated[sender_id] = allocate_amt  # so we can consume or provide up to that amount of power anytime
+        self._allocated[message.sender_id] = message.value  # so we can consume or provide up to that amount of power anytime
         # TODO: self.modulate_power()?
 
     ##
@@ -268,10 +289,21 @@ class GridController(Device):
             target = self._connected_devices[target_id]
         else:
             raise ValueError("This GC is connected to no such device")
+        self.change_load(target_id, power_amt)
+        # add in additional wire loss
+        # if wire_loss is non-zero, then there's a wire attached
+        wire_loss = self.calculate_wire_loss(target_id, power_amt)
+        if wire_loss:
+            if power_amt:
+                # if power_amt is non-zero, add in additional wire loss
+                power_amt += wire_loss
+                self.update_wire_loss_in(target_id, abs(wire_loss))
+            else:
+                # power_amt is zero so no wire loss
+                self.update_wire_loss_in(target_id, 0)
         self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
                                                   tag="power_msg", value=power_amt))
 
-        self.change_load(target_id, power_amt)
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
     #
@@ -354,8 +386,7 @@ class GridController(Device):
         self._price = self._price_logic.calc_price(neighbor_prices=self._neighbor_prices,
                                                    loads=self._loads, requested=self._requested,
                                                    allocated=self._allocated,
-                                                   desired_battery_power=battery_power_adjust,
-                                                   wires=self._wires)
+                                                   desired_battery_power=battery_power_adjust)
         self._price_logic.set_current_price(self._price)
 
     ##
@@ -391,39 +422,30 @@ class GridController(Device):
             return
         remaining = power_change
 
-        utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
         # If there is power in from utility and the power change is positive (must accept more), reduce that utm flow.
         # Likewise, if we are selling to utm and power change is negative, reduce how much we sell.
         """ THIS WAS AN OPTIMIZATION. CAN BE REMOVED OR PUT IN FLAGGED LOGIC"""
-        for utm in utility_meters:
-            extra_for_wire_loss = 0
-            wire = self._wires.get(utm, None)
-            if wire:
-                extra_for_wire_loss = wire.calculate_power()
-                remaining += extra_for_wire_loss
-                remaining_start = remaining
-
-            if power_change > 0:  # must accept more.
-                if self._loads.get(utm, 0) > 0:
-                    prev_utm_load = self._loads[utm]
-                    self.change_load(utm, max((prev_utm_load - remaining), 0))
-                    new_utm_load = self._loads[utm]
-                    self.send_power_message(utm, new_utm_load)
+        for utm_id in self._connected_utility_meters:
+            if power_change > 0:
+                # must accept more.
+                if self._loads.get(utm_id, 0) > 0:
+                    prev_utm_load = self._loads[utm_id]
+                    self.change_load(utm_id, max((prev_utm_load - remaining), 0))
+                    new_utm_load = self._loads[utm_id]
+                    self.send_power_message(utm_id, new_utm_load)
                     remaining -= (prev_utm_load - new_utm_load)
                     if not nonzero_power(remaining): # An insignificant quantity is remaining. Stop talking to utms
                         break
-            elif power_change < 0:  # must provide more
-                if self._loads.get(utm, 0) < 0:
-                    prev_utm_load = self._loads[utm]
-                    self.change_load(utm, min((prev_utm_load - remaining), 0))
-                    new_utm_load = self._loads[utm]
-                    self.send_power_message(utm, new_utm_load)
+            elif power_change < 0:
+                # must provide more
+                if self._loads.get(utm_id, 0) < 0:
+                    prev_utm_load = self._loads[utm_id]
+                    self.change_load(utm_id, min((prev_utm_load - remaining), 0))
+                    new_utm_load = self._loads[utm_id]
+                    self.send_power_message(utm_id, new_utm_load)
                     remaining -= (prev_utm_load - new_utm_load)
                     if not nonzero_power(remaining):
                         break
-            # if the utm was not used, subtract out the wire loss power
-            if remaining_start == remaining:
-                remaining -= extra_for_wire_loss
 
         # TODO: Try raising all allocate values up to their limits. Move battery adjustment to after utility meter try.
         # Try adding all the remaining demand onto the battery
@@ -432,21 +454,22 @@ class GridController(Device):
             remaining -= self._battery.add_load(remaining)
 
         if nonzero_power(remaining):
-            if len(utility_meters):
-                utm = utility_meters[0]
-                prev_utm_load = self._loads[utm] if utm in self._loads else 0
-                self.change_load(utm, prev_utm_load - remaining)  # Skylar was here
-                new_utm_load = self._loads[utm]
-                self.send_power_message(utm, new_utm_load)
+            if len(self._connected_utility_meters):
+                utm_id = self._connected_utility_meters[0]
 
-                remaining += (new_utm_load - prev_utm_load)  # what we were able to get from utility meter.
+                prev_utm_load = self._loads[utm_id] if utm_id in self._loads else 0
+                self.change_load(utm_id, prev_utm_load - remaining)
+                new_utm_load = self._loads[utm_id]
+                self.send_power_message(utm_id, new_utm_load)
+
+                # what we were able to get from utility meter.
+                remaining += (new_utm_load - prev_utm_load)
                 self.change_load(source_id, source_demanded_power - remaining)  # send what we were able to get from utm
 
                 # add the unprovided power as a request to address later.
                 unprovided = source_demanded_power - self._loads[source_id]
                 if unprovided:
                     self._requested[source_id] = source_demanded_power
-
             else:
                 # no utm, not able to provide for the demanded power. Send a new power message saying what you can give.
                 self.change_load(source_id, source_demanded_power - remaining)
@@ -529,16 +552,14 @@ class GridController(Device):
 
     #
     def seek_to_obtain_power(self, power_to_obtain):
-
-        utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
         if power_to_obtain <= 0:
             return
         remaining = power_to_obtain
-        for utm in utility_meters:
-            prev_utm_load = self._loads.get(utm, 0)
-            self.change_load(utm, prev_utm_load + remaining)
-            new_utm_load = self._loads[utm]
-            self.send_power_message(utm, new_utm_load)
+        for utm_id in self._connected_utility_meters:
+            prev_utm_load = self._loads.get(utm_id, 0)
+            self.change_load(utm_id, prev_utm_load + remaining)
+            new_utm_load = self._loads[utm_id]
+            self.send_power_message(utm_id, new_utm_load)
             remaining -= (new_utm_load - prev_utm_load)
             if remaining <= 0:
                 break
@@ -554,29 +575,27 @@ class GridController(Device):
     # must be a positive value.
     #
     def seek_to_distribute_power(self, power_to_distribute):
-        utility_meters = [key for key in self._connected_devices.keys() if key.startswith("utm")]
         if power_to_distribute <= 0:
             return  # Invalid quantity
         remaining = power_to_distribute
-        for utm in utility_meters:
-            prev_utm_load = self._loads.get(utm, 0)
-            self.change_load(utm, prev_utm_load - remaining)
-            new_utm_load = self._loads[utm]
-            self.send_power_message(utm, new_utm_load)
+        for utm_id in self._connected_utility_meters:
+            prev_utm_load = self._loads.get(utm_id, 0)
+            self.change_load(utm_id, prev_utm_load - remaining)
+            new_utm_load = self._loads[utm_id]
+            self.send_power_message(utm_id, new_utm_load)
             remaining -= (prev_utm_load - new_utm_load)
             if remaining <= 0:
                 break
         self._battery.add_load(-power_to_distribute + remaining)
 
     def last_wire_loss_calc(self):
-        for device_id, load in self._loads.items():
-            if load:
-                wire = self._wires.get(device_id, None)
-                if wire:
-                    if load > 0:
-                        self.sum_wire_loss_in(wire, load)
-                    else:
-                        self.sum_wire_loss_out(wire, abs(load))
+        for (device_id, wire_loss_rate) in self._wire_loss_info_in.items():
+            if wire_loss_rate:
+                self.update_wire_loss_in(device_id, wire_loss_rate)
+        for (device_id, wire_loss_rate) in self._wire_loss_info_out.items():
+            if wire_loss_rate:
+                self.update_wire_loss_out(device_id, wire_loss_rate)
+        pass
 
 
     # ________________________________LOGGING SPECIFIC FUNCTIONALITY______________________________#
@@ -745,7 +764,7 @@ class GridControllerPriceLogic(metaclass=ABCMeta):
     # @return the calculated price based on the input variables.
     @abstractmethod
     def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None,
-                   desired_battery_power=0, wires=None):
+                   desired_battery_power=0):
         pass
 
 
@@ -786,7 +805,7 @@ class GCWeightedAveragePriceLogic(GridControllerPriceLogic):
     # @param allocated the dictionary of connected device id's and allocated by and to those devices.
     # @param desired_battery_charge the difference of current desired battery power flow and desired batt. power flow
 
-    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0, wires=None):
+    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0):
 
         if neighbor_prices and loads:
             total_load_in = 0.0
@@ -795,9 +814,7 @@ class GCWeightedAveragePriceLogic(GridControllerPriceLogic):
                 if load > 0:  # receiving power from this entity
                     neighbor_price = neighbor_prices.get(source, 0)
                     if neighbor_price >= 0:
-                        wire = wires.get(source, None) if type(wires) is dict else None
-                        wire_loss = wire.calculate_power() if wire else 0
-                        total_load_in += (load - wire_loss)
+                        total_load_in += load
                         sum_price += (neighbor_price * load)
             if total_load_in:
                 return sum_price / total_load_in
@@ -832,7 +849,7 @@ class GCMarginalPriceLogic(GridControllerPriceLogic):
     # @param allocated the dictionary of connected device id's and allocated by and to those devices.
     # @param desired_battery_charge the difference of current desired battery power flow and desired batt. power flow
     # @return the calculated price based on the input variables.
-    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0, wires=None):
+    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0):
         min_price = float('inf')
 
         # Find the cheapest price amongst the devices we've been allocated to receive from or utility meters
@@ -870,7 +887,7 @@ class GCMarginalPriceLogicB(GridControllerPriceLogic):
     # (positive if wants to charge more, negative if wants to output more)
     # @return the calculated price based on the input variables.
 
-    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0, wires=None):
+    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0):
         total_requested_out = 0  # positive record of how much this device has been requested to provide out
 
         # Calculate how much this device owes to provide.

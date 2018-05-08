@@ -23,6 +23,7 @@ from Build.Objects.fixed_consumption import FixedConsumption
 from Build.Objects.grid_controller import GridController
 from Build.Objects.light import Light
 from Build.Objects.pv import PV
+from Build.Objects.converter.converter import Converter
 from Build.Objects.utility_meter import UtilityMeter
 from Build.Simulation_Operation.logger import SimulationLogger
 from Build.Simulation_Operation.supervisor import Supervisor
@@ -336,6 +337,41 @@ class SimulationSetup:
             self.supervisor.register_device(new_eud)
 
         return connections
+    
+    def make_converters(self, config, runtime, override_args):
+        "Make the converter objects"
+        if "converters" not in config["devices"]:
+            return []
+        connections = []
+        for cv_config in config["devices"]["converters"]:
+            device_id = cv_config.get('device_id')
+            msg_latency = cv_config.get('message_latency', self.DEFAULT_MESSAGE_LATENCY)
+            msg_latency = int(override_args.get('devices.{}.message_latency'.format(device_id), msg_latency))
+            start_time = cv_config.get('start_time', 0)
+            start_time = int(override_args.get('devices.{}.start_time'.format(device_id), start_time))
+            device_input = cv_config.get('device_input', None)
+            device_output = cv_config.get('device_output', None)
+            # make sure device_input and device_output are both defined
+            if not device_input or not device_output:
+                raise Exception("Converter {} requires both device_input and device_output to be defined")
+            capacity = cv_config.get('capacity')
+            # create a list of all connected devices (in + out)
+            connections.append((device_id, [device_input, device_output]))
+
+            efficiency_curve = cv_config.get('efficiency_curve', None)
+
+            converter = Converter(
+                device_id=device_id,
+                supervisor=self.supervisor,
+                time=start_time,
+                msg_latency=msg_latency,
+                device_input=device_input,
+                device_output=device_output,
+                efficiency_curve=efficiency_curve,
+                capacity=capacity
+            )
+            self.supervisor.register_device(converter)
+        return connections
 
     ##
     # Reads in the simulation json file and any override parameters, creating all the devices which will participate
@@ -366,10 +402,12 @@ class SimulationSetup:
         connections = [self.make_grid_controllers(config=param_dict, runtime=self.end_time, override_args=overrides),
                        self.make_utility_meters(config=param_dict, runtime=self.end_time, override_args=overrides),
                        self.make_pvs(config=param_dict, runtime=self.end_time, override_args=overrides),
-                       self.make_euds(config=param_dict, runtime=self.end_time, override_args=overrides)]
+                       self.make_euds(config=param_dict, runtime=self.end_time, override_args=overrides),
+                       self.make_converters(config=param_dict, runtime=self.end_time, override_args=overrides)]
 
         # connect devices together
         self.connect_devices(connections)
+        [d.init() for d in self.supervisor.all_devices()]
 
     def connect_devices(self, connections):
         # For each connection, register those devices with each other
@@ -404,6 +442,7 @@ class SimulationSetup:
         device_b = self.supervisor.get_device(device_id)
         device_a.register_device(device_b, device_id, 1, wire)
         device_b.register_device(device_a, device_id_a, 1, wire)
+        print("registered {} -> {}".format(device_id, device_id_a))
 
     ##
     # Takes a list of keyword arguments in the form of strings such as 'key=value' and outputs them as

@@ -16,6 +16,7 @@
 
 from abc import abstractmethod
 
+from Build.Objects.grid_equipment import GridEquipment
 from Build.Simulation_Operation.message import Message, MessageType
 from Build.Simulation_Operation.event import Event
 from Build.Simulation_Operation.support import nonzero_power
@@ -78,7 +79,7 @@ class Eud(Device):
             value=0
         ))
 
-        gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
+        gcs = [device_id for device_id in self._connected_devices.keys() if isinstance(self._connected_devices[device_id], GridEquipment)]
         for gc in gcs:
             self.send_power_message(gc, 0)
             self.change_load_in(gc, 0)
@@ -116,26 +117,26 @@ class Eud(Device):
     # @param sender_id the sender of the power message
     # @param new_power the new power value from the sender's perspective
 
-    def process_power_message(self, sender_id, new_power):
-        if new_power <= 0:
-            self.set_power_in(-new_power)
-            self._loads_in[sender_id] = -new_power
-            self.respond_to_power(-new_power)
+    def process_power_message(self, message):
+        if message.value <= 0:
+            self.set_power_in(-message.value)
+            self._loads_in[message.sender_id] = -message.value
+            self.respond_to_power(-message.value)
         else:
-            self.send_power_message(sender_id, 0)
-            self._logger.info(self.build_log_notation("ignored positive power message from {}".format(sender_id)))
+            self.send_power_message(message.sender_id, 0)
+            self._logger.info(self.build_log_notation("ignored positive power message from {}".format(message.sender_id)))
 
     ##
     # EUD's do not respond to request messages.
-    def process_request_message(self, sender_id, request_amt):
-        self._logger.info(self.build_log_notation("ignored request message from {}".format(sender_id)))
+    def process_request_message(self, message):
+        self._logger.info(self.build_log_notation("ignored request message from {}".format(message.sender_id)))
 
     ##
     # Method to be called after the EUD receives a price message from a grid controller, immediately updating its price.
-    def process_price_message(self, sender_id, new_price, extra_info):
+    def process_price_message(self, message):
         prev_price = self._price
-        price_delta = abs(new_price - prev_price)
-        self._price = new_price  # EUD always updates its value to the price it receives.
+        price_delta = abs(message.value - prev_price)
+        self._price = message.value  # EUD always updates its value to the price it receives.
         if self._time - self._last_price_message_time >= self.power_recalibration_interval or \
            price_delta > self.price_recalibration_interval:
             # Only modulate power if we haven't received a message recently or new price is very different
@@ -150,10 +151,11 @@ class Eud(Device):
     # @param allocated_amt the amount that the sending device has allocated to receive from this EUD. Hence, this EUD
     # cannot respond unless the value is negative, since the EUD only consumes power.
 
-    def process_allocate_message(self, sender_id, allocate_amt):
-        if allocate_amt < 0:  # can not send power, so ignore this message
-            self._logger.info(self.build_log_notation("ignored negative allocate message from {}".format(sender_id)))
-        self.set_allocated(sender_id, allocate_amt)  # records the amount this device has been allocated
+    def process_allocate_message(self, message):
+        if message.value < 0:  # can not send power, so ignore this message
+            self._logger.info(self.build_log_notation("ignored negative allocate message from {}".format(message.sender_id)))
+        # TODO: subtract out the wire loss?
+        self.set_allocated(message.sender_id, message.value)  # records the amount this device has been allocated
         self.modulate_power()
 
     ##
@@ -164,10 +166,14 @@ class Eud(Device):
     def send_request_message(self, target_id, request_amt):
         if request_amt < 0:
             raise ValueError("EUD cannot request to distribute power")
-        if target_id in self._connected_devices and target_id.startswith("gc"):  # cannot request from non-GC's
+        if target_id in self._connected_devices and isinstance(self._connected_devices[target_id], GridEquipment):  # cannot request from non-GC's
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("invalid target to request")
+        wire_loss = self.calculate_wire_loss(target_id, request_amt)
+        if wire_loss:
+            # if there's a wire attached add it onto the request amount
+            request_amt += wire_loss
         self._logger.info(self.build_log_notation(message="REQUEST to {}".format(target_id),
                                                   tag="request_msg", value=request_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
@@ -178,10 +184,20 @@ class Eud(Device):
     def send_power_message(self, target_id, power_amt):
         if power_amt < 0:
             raise ValueError("EUD cannot distribute power")
-        if target_id in self._connected_devices and target_id.startswith("gc"):  # cannot request from non-GC's
+        if target_id in self._connected_devices and isinstance(self._connected_devices[target_id], GridEquipment):  # cannot request from non-GC's
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("invalid target to request")
+        
+        # if there's a wire attached add it onto the request amount
+        wire_loss = self.calculate_wire_loss(target_id, power_amt)
+        if wire_loss:
+            if power_amt:
+                power_amt += wire_loss
+                self.update_wire_loss_in(target_id, abs(wire_loss))
+            else:
+                self.update_wire_loss_in(target_id, 0)
+
         self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
                                                   tag="power_msg", value=power_amt))
 
@@ -193,11 +209,7 @@ class Eud(Device):
                                                   tag="load_in", value=new_load))
         self.recalc_sum_power(prev_load, new_load)
         self._loads_in[sender_id] = new_load
-        # check if there's a wire associated with the sender device
-        # if so update the wire loss calculation
-        wire = self._wires.get(sender_id, None)
-        if wire:
-            self.sum_wire_loss_in(wire, prev_load)
+
     ##
     # Method to be called once it needs to recalculate its internal power usage.
     # To be called after price, power level, or allocate has changed.
@@ -211,7 +223,7 @@ class Eud(Device):
         desired_power_level = self.calculate_desired_power_level()
 
         self._logger.info(self.build_log_notation(message="desired power level", tag="desired_power", value=desired_power_level))
-        gcs = [device_id for device_id in self._connected_devices.keys() if device_id.startswith("gc")]
+        gcs = [device_id for device_id in self._connected_devices.keys() if isinstance(self._connected_devices[device_id], GridEquipment)]
 
         if desired_power_level == 0:
             for gc in gcs:
@@ -232,24 +244,14 @@ class Eud(Device):
             for device in self._allocated.keys():
                 if device in gcs:
                     # take all up to what we've been allocated.
-                    extra_for_wire_loss = 0
-                    # if the device is wired, add extra power to account for wire loss
-                    wire = self._wires.get(device, None)
-                    if wire:
-                        extra_for_wire_loss = wire.calculate_power()
-                        remaining += extra_for_wire_loss
                     take_power = min(remaining, self._allocated[device])
                     if nonzero_power(self._loads_in.get(device, 0) - take_power):
                         # We currently aren't taking the correct amt, send a power message
                         self.send_power_message(device, take_power)
                         self.change_load_in(device, take_power)
-                    remaining -= take_power
-                    total_power_taken += take_power
-                    if take_power:
+                        remaining -= take_power
+                        total_power_taken += take_power
                         power_sources.append(device)
-                    elif extra_for_wire_loss:
-                        # subtract out the power loss for the wire if it's not being used
-                        remaining -= extra_for_wire_loss
                     if remaining <= 0:
                         break
 
@@ -258,16 +260,12 @@ class Eud(Device):
                 num_gcs = len(gcs)
                 if num_gcs:
                     for gc in gcs:
-                        # extra_for_wire_loss = 0
-                        # # if the device is wired, add extra power to account for wire loss
-                        # wire = self._wires[device]
-                        # if wire:
-                        #     extra_for_wire_loss = wire.calculate_power()
                         prev_load = self._loads_in.get(gc, 0)
                         extra_power = remaining / num_gcs # add a fractional value
                         if self._power_direct:
                             self.send_power_message(gc, prev_load + extra_power)
                             self.change_load_in(gc, prev_load + extra_power)
+                            # self.update_wire_loss_in(gc, wire_loss)
                             total_power_taken += extra_power
                         else:
                             self.send_request_message(gc, prev_load + extra_power)
@@ -323,8 +321,6 @@ class Eud(Device):
         pass
 
     def last_wire_loss_calc(self):
-        for device_id, load in self._loads_in.items():
-            if load > 0:
-                wire = self._wires.get(device_id, None)
-                if wire:
-                    self.sum_wire_loss_in(wire, load)
+        for (device_id, wire_loss_rate) in self._wire_loss_info_in.items():
+            if wire_loss_rate:
+                self.update_wire_loss_in(device_id, wire_loss_rate)

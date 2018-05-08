@@ -67,7 +67,7 @@ class PV(Device):
     # @param sender the sender of the message providing or receiving the new power
     # @param new_power the value of power flow from sender's perspective
     # positive if sender is receiving, negative if sender is providing.
-    def process_power_message(self, sender_id, new_power):
+    def process_power_message(self, message):
         raise ValueError("PV should not receive power information")
 
     ##
@@ -75,14 +75,14 @@ class PV(Device):
     #
     # @param sender_id the sender of the message informing of the new price
     # @param new_price the new price value
-    def process_price_message(self, sender_id, new_price, extra_info):
+    def process_price_message(self, message):
         pass
 
     ##
     # PV does not respond to request information
     #
     # @param request_amt the amount the sending device is requesting to receive (positive) or send (negative)
-    def process_request_message(self, sender_id, request_amt):
+    def process_request_message(self, message):
         pass
 
     ##
@@ -91,7 +91,7 @@ class PV(Device):
     # @param allocated_amt the amount allocated from perspective of message sender.
     # Positive indicates this device is allocated to take, negative indicates this device is allocated to provide.
     # device (negative).
-    def process_allocate_message(self, sender_id, allocate_amt):
+    def process_allocate_message(self, message):
         pass
 
     ##

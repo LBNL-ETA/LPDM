@@ -122,31 +122,35 @@ class UtilityMeter(Device):
     # @param sender_id the
     # @param new_power the new power from the sender's perspective
 
-    def process_power_message(self, sender_id, new_power):
-        prev_power = self._loads[sender_id] if sender_id in self._loads.keys() else 0
-        self._logger.info(self.build_log_notation(message="power msg from {} - {} -> {}".format(sender_id, prev_power, new_power),
-                                                tag="process_power_message", value=new_power))
+    def process_power_message(self, message):
+        self._logger.info(
+            self.build_log_notation(
+                message="POWER message from {}".format(message.sender_id),
+                tag="power_msg_in",
+                value=message.value
+        ))
+        prev_power = self._loads[message.sender_id] if message.sender_id in self._loads.keys() else 0
         if self._in_operation:
-            self._loads[sender_id] = -new_power
-            self.recalc_sum_power(prev_power, -new_power)
+            self._loads[message.sender_id] = -message.value
+            self.recalc_sum_power(prev_power, -message.value)
         else:
             # Not in operation. Respond with 0 power
-            self._loads[sender_id] = 0
-            self.send_power_message(sender_id, 0)
+            self._loads[message.sender_id] = 0
+            self.send_power_message(message.sender_id, 0)
             self.recalc_sum_power(prev_power, 0)
-        wire = self._wires.get(sender_id, None)
-        if wire:
-            if prev_power >= 0:
-                self.sum_wire_loss_in(wire, prev_power)
-            elif prev_power < 0:
-                self.sum_wire_loss_out(wire, abs(prev_power))
+        # wire = self._wires.get(message.sender_id, None)
+        # if wire:
+        #     if prev_power >= 0:
+        #         self.sum_wire_loss_in(wire, prev_power)
+        #     elif prev_power < 0:
+        #         self.sum_wire_loss_out(wire, abs(prev_power))
 
     ##
     # Method to be called when device receives a price message
     #
     # @param new_price the new price value
 
-    def process_price_message(self, sender_id, new_price, extra_info):
+    def process_price_message(self, message):
         pass  # utility does not change its price based on prices of devices.
 
     ##
@@ -154,10 +158,10 @@ class UtilityMeter(Device):
     # either provide or receive the requested quantity of power.
     #
     # @param request_amt the amount the sender is requesting to provide (positive) or to receive (negative).
-    def process_request_message(self, sender_id, request_amt):
+    def process_request_message(self, message):
         # provide the sender exactly what they request
-        self._loads[sender_id] = -request_amt
-        self.send_power_message(sender_id, -request_amt)
+        self._loads[message.sender_id] = -message.value
+        self.send_power_message(message.sender_id, -message.value)
 
     ##
     # Utility Meter does not process allocate messages.
@@ -211,11 +215,12 @@ class UtilityMeter(Device):
         pass
 
     def last_wire_loss_calc(self):
-        for device_id, load in self._loads.items():
-            if load:
-                wire = self._wires.get(device_id, None)
-                if wire:
-                    if load > 0:
-                        self.sum_wire_loss_in(wire, load)
-                    else:
-                        self.sum_wire_loss_out(wire, abs(load))
+        # for device_id, load in self._loads.items():
+        #     if load:
+        #         wire = self._wires.get(device_id, None)
+        #         if wire:
+        #             if load > 0:
+        #                 self.sum_wire_loss_in(wire, load)
+        #             else:
+        #                 self.sum_wire_loss_out(wire, abs(load))
+        pass

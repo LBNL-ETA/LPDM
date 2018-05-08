@@ -19,12 +19,13 @@ from enum import Enum
 
 class Message(object):
 
-    def __init__(self, time, sender_id, message_type, value, extra_info=None):
+    def __init__(self, time, sender_id, message_type, value, extra_info=None, redirect=None):
         self.time = time  # timestamp of message in milliseconds
         self.sender_id = sender_id  # identify sender by their device ID.
         self.message_type = message_type  # Message type object, defined below.
         self.value = value  # the quantity associated with the messages (all messages are a quantity)
         self.extra_info = extra_info  # extra information associated with this message.
+        self.redirect = redirect
 
 
 ##
@@ -53,3 +54,7 @@ class MessageType(Enum):
     REQUEST = 4
     ALLOCATE = 5
 
+
+class MessageRedirect(object):
+    def __init__(self, original_sender_id):
+        self.original_sender_id = original_sender_id

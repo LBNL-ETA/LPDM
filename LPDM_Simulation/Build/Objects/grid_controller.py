@@ -213,7 +213,7 @@ class GridController(GridEquipment):
         else:
             sender = self._supervisor.get_device(message.sender_id)  # not in local table. Ask supervisor for the pointer to it.
         self.register_device(sender, message.sender_id, message.value)
-        if value > 0:
+        if message.value > 0:
             self.send_price_message(message.sender_id, self._price)
 
     ##

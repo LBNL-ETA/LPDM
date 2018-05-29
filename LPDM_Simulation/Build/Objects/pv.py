@@ -57,6 +57,17 @@ class PV(Device):
             target = self._connected_devices[target_id]
         else:
             raise ValueError("This PV is connected to no such device")
+        # add in additional wire loss
+        # if wire_loss is non-zero, then there's a wire attached
+        wire_loss = self.calculate_wire_loss(target_id)
+        if wire_loss:
+            if power_amt:
+                # if power_amt is non-zero, add in additional wire loss
+                power_amt += wire_loss
+                self.update_wire_loss_out(target_id, abs(wire_loss))
+            else:
+                # power_amt is zero so no wire loss
+                self.update_wire_loss_out(target_id, 0)
         self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
                                                   tag="power_msg", value=power_amt))
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))

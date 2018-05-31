@@ -19,10 +19,11 @@ nor does it try to modify or optimize its own state, it simply acts as an unlimi
 from Build.Simulation_Operation.message import Message, MessageType
 
 from Build.Objects.device import Device, SECONDS_IN_DAY
+from Build.Objects.grid_equipment import GridEquipment
 from Build.Simulation_Operation.event import Event
 
 
-class UtilityMeter(Device):
+class UtilityMeter(GridEquipment):
 
     def __init__(self, device_id, supervisor, msg_latency=0, schedule=None, runtime=SECONDS_IN_DAY, multiday=0,
                  sell_price_schedule=None, sell_price_multiday=0, buy_price_schedule=None,
@@ -168,7 +169,7 @@ class UtilityMeter(Device):
     # @param sender_id the sender of the allocate message
     # @param allocate_amt the quantity that this device has been allocated to consume
 
-    def process_allocate_message(self, sender_id, allocate_amt):
+    def process_allocate_message(self, message):
         pass
 
     ##

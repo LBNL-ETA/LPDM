@@ -125,8 +125,22 @@ class Battery(object):
         self._load = max(self._load, -self._max_discharge_rate)  # don't add a load to exceed charge rate.
         self._load = min(self._load, self._max_charge_rate)
 
-        self._logger.info(self.build_battery_log_notation(
-            "battery load changed from {} to {}".format(old_load, self._load)))
+        # self._logger.info(self.build_standard_log_notation(
+        #     "battery load changed from {} to {}".format(old_load, self._load)))
+
+        self._logger.info(
+            self.build_standard_log_notation(
+                "battery load changed from {} to {}".format(old_load, self._load),
+                "load",
+                self._load
+        ))
+
+        self._logger.info(
+            self.build_standard_log_notation(
+                "current soc",
+                "soc",
+                self._current_soc
+        ))
         return self._load - old_load
 
     ##
@@ -134,7 +148,7 @@ class Battery(object):
     def clear_load(self):
         old_load = self._load
         self._load = 0
-        self._logger.info(self.build_battery_log_notation(
+        self._logger.info(self.build_standard_log_notation(
             "battery load cleared from {} to zero".format(old_load)))
 
     ##
@@ -182,10 +196,10 @@ class Battery(object):
 
         """Log changes in battery charge preference"""
         if old_preference != self._charging_preference:
-            self._logger.info(self.build_battery_log_notation(
+            self._logger.info(self.build_standard_log_notation(
                 "changed from {}".format(old_preference)))
         elif self._time - self._last_log_update_time > BATTERY_LOG_FREQUENCY:
-            self._logger.info(self.build_battery_log_notation(
+            self._logger.info(self.build_standard_log_notation(
                 "unchanged charge preference"))
             self._last_log_update_time = self._time
 
@@ -201,6 +215,10 @@ class Battery(object):
         return "{}; {}; {}; SOC {}, charge pref {}; {}; {}".format(
             format_time_from_seconds(self._time), self._time, self._battery_id, self._current_soc,
             self._charging_preference, value, message)
+
+    def build_standard_log_notation(self, message="", tag="", value=None):
+        return "{}; {}; {}; {}; {}; {}".format(
+            format_time_from_seconds(self._time), self._time, self._battery_id, tag, value, message)
 
 
 """

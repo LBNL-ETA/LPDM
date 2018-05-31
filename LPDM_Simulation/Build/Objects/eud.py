@@ -137,6 +137,13 @@ class Eud(Device):
         prev_price = self._price
         price_delta = abs(message.value - prev_price)
         self._price = message.value  # EUD always updates its value to the price it receives.
+        self._logger.info(
+            self.build_log_notation(
+                message="ignored request message from {}".format(message.sender_id),
+                tag="price",
+                value=message.value
+        ))
+
         if self._time - self._last_price_message_time >= self.power_recalibration_interval or \
            price_delta > self.price_recalibration_interval:
             # Only modulate power if we haven't received a message recently or new price is very different

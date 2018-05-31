@@ -86,6 +86,9 @@ class GridController(GridEquipment):
         elif price_logic == "marginal_price":
             self._price_logic = GCMarginalPriceLogic(price_logic_interval, starting_price,
                                                      price_announce_threshold)
+        elif price_logic == "marginal_price_b":
+            self._price_logic = GCMarginalPriceLogicB(price_logic_interval, starting_price,
+                                                     price_announce_threshold)
         else:
             raise ValueError("attempted to initialize grid controller with invalid price logic")
 

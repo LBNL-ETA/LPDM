@@ -248,6 +248,12 @@ class GridController(GridEquipment):
     def process_price_message(self, message):
         # if message.sender_id.startswith("utm"):  # Remember sell price, buy_price pair from utility meters
         # sender_id = message.redirect.original_sender_id if isinstance(message.redirect, MessageRedirect) else message.sender_id
+        self._logger.info(
+            self.build_log_notation(
+                message="PRICE message from {}".format(message.sender_id),
+                tag="price_msg_in",
+                value=message.value
+        ))
         if message.sender_id in self._connected_utility_meters:
             self._utility_prices[message.sender_id] = (message.value, message.extra_info)
         self._neighbor_prices[message.sender_id] = message.value
@@ -317,7 +323,7 @@ class GridController(GridEquipment):
         else:
             raise ValueError("This GC is connected to no such device")
         self._logger.info(self.build_log_notation(message="PRICE to {}".format(target_id),
-                                                  tag="price_msg", value=price))
+                                                  tag="price_msg_out", value=price))
         target.receive_message(Message(self._time, self._device_id, MessageType.PRICE, price))
 
     ##
@@ -381,6 +387,12 @@ class GridController(GridEquipment):
     # hourly price and total average price statistics so that it can base its current price based on those.
     def update_average_price_calcs(self):
         self._price_logic.update_prices(self._time)
+        self._logger.info(
+            self.build_log_notation(
+                message="price changed to {}".format(self._price),
+                tag="price",
+                value=self._price
+        ))
 
     ##
     # Recalculates the price with the Grid Controller's price logic, and then sets the current price value.
@@ -919,7 +931,7 @@ class GCMarginalPriceLogicB(GridControllerPriceLogic):
         # Subset to only the utility meter prices (we can take infinite without allocation)
         utm_prices = {device: price for device, price in neighbor_prices.items() if device.startswith("utm")}
         if utm_prices:
-            for utm, price in utm_prices:
+            for utm, price in utm_prices.items():
                 if price < marginal_price:
                     marginal_price = price
         else:

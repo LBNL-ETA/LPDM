@@ -17,18 +17,365 @@ power sources (such as Utility and PV), storage (batteries), and other grid cont
 
 
 from abc import ABCMeta, abstractmethod
+from functools import reduce
 
+from Build.Objects.device import Device
 from Build.Objects.grid_equipment import GridEquipment
+from Build.Objects.eud import Eud
 from Build.Objects.utility_meter import UtilityMeter
 from Build.Objects.converter.converter import Converter
+from Build.Objects.device_type import PowerGiver, PowerTaker
 
 from Build.Simulation_Operation.message import Message, MessageType, MessageRedirect
 from Build.Simulation_Operation.event import Event
 from Build.Simulation_Operation.support import SECONDS_IN_DAY, SECONDS_IN_HOUR, nonzero_power, delta
 from Build.Objects.device import Device
 
+class DeviceRef:
+    def __init__(self, device_id: str, device: Device):
+        self._device_id = device_id
+        self._device = device
+        self._load = None
+        self._allocate = None
+        self._last_allocate_amt = None
+        self._requests = []
+        self._price_buy = None
+        self._price_sell = None
+    
+    def get_device_id(self) -> str:
+        return self._device_id
+    
+    def get_device(self) -> Device:
+        return self._device
+    
+    def set_load(self, load: float):
+        self._load = load
+    
+    def get_load(self) -> float:
+        return self._load
+    
+    def is_buying_power(self) -> bool:
+        """Is the device buying (receiving).
 
-class GridController(GridEquipment):
+        Returns
+        -------
+        bool
+            Boolean indicating if the device is currently buying power,
+            so load > 0 and power is flowing from the gc into the device.
+        """
+        return True if self._load > 0 else False
+    
+    def is_selling_power(self) -> bool:
+        """Is the device selling (supplying) power.
+
+        Returns
+        -------
+        bool
+            Boolean indicating if the device is currently selling power,
+            so load < 0 and power is flowing from the device into the gc.
+        """
+        return True if self._load < 0 else False
+    
+    def set_allocate(self, allocate: float):
+        self._allocate = allocate
+    
+    def get_allocate(self) -> float:
+        return self._allocate
+    
+    def set_last_allocate(self, allocate: float):
+        self._last_allocate_amt = allocate
+    
+    def get_last_allocate(self) -> float:
+        return self._last_allocate_amt
+    
+    def set_buy_price(self, value: float):
+        self._price_buy = value
+    
+    def get_buy_price(self) -> float:
+        return self._price_buy
+
+    def set_sell_price(self, value: float):
+        self._price_sell = value
+    
+    def get_sell_price(self) -> float:
+        return self._price_sell
+    
+    def add_request(self, time: float, device_id: str, value: float):
+        self._requests.append({
+            "device_id": device_id, "time": time, "value": value
+        })
+
+
+class DeviceManager:
+    def __init__(self, battery):
+        self._battery = battery
+        # all devices
+        self._items = []
+        # eud devices
+        self._euds = []
+        # grid equipment devices
+        self._grid_equips = []
+        # devices we can take power from, ie GridController, UtilityMeter, PV
+        self._power_givers = []
+        # devices we can give power to, ie GridController, UtiityMeter
+        self._power_takers = []
+
+
+    def add_device(self, device_id: str, device: Device):
+        """Add a device to the collection."""
+        item = DeviceRef(device_id, device)
+        self._items.append(item)
+        if isinstance(device, GridEquipment):
+            self._grid_equips.append(item)
+            if isinstance(device, PowerGiver):
+                self._power_givers.append(item)
+            if isinstance(device, PowerTaker):
+                self._power_takers.append(item)
+        elif isinstance(device, Eud):
+            self._euds.append(item)
+        else:
+            raise Exception("Unknown device type {}".format(type(device)))
+
+
+    def remove_device(self, device_id: str):
+        """Remove a device from the collection.
+        
+        Parameters
+        ----------
+        device_id: str
+            Device id of the device to remove from the collection.
+        """
+        # remove the device from all 3 lists
+        self.remove_item_from_list(device_id, self._items)
+        self.remove_item_from_list(device_id, self._euds)
+        self.remove_item_from_list(device_id, self._grid_equips)
+        self.remove_item_from_list(device_id, self._power_givers)
+        self.remove_item_from_list(device_id, self._power_takers)
+
+    
+    def remove_item_from_list(self, device_id: str, the_list):
+        """Remove a device from a given list of DeviceRefs.
+
+        Parameters
+        ----------
+        device_id: str
+            Device id of the device to remove from the collection.
+        the_list: List of DeviceRef
+            The list of DeviceRefs from which to remove the given item with device_id.
+        """
+        index = None
+        for i, item in enumerate(the_list):
+            if item.device_id == device_id:
+                index = i
+                break
+        if index is None:
+            return
+        else:
+            the_list.pop(index)
+    
+    def get_item_by_device_id(self, device_id) -> DeviceRef:
+        """Get a device_item by device_id.
+        
+        Returns
+        -------
+        DeviceRef
+            The DeviceRef in _items with a matching device_id.
+        """
+        for item in self._items:
+            if item.get_device_id() == device_id:
+                return item
+    
+
+    def get_gcs(self):
+        """Get the device_id's of the connected gc's
+
+        Returns
+        -------
+        list[str]
+            The list of device_id's for GC devices.
+        """
+        return [x.get_device_id() for x in self._grid_equips if isinstance(x.get_device(), GridController)]
+    
+
+    def has_utm(self):
+        """Determines if there's a utility meter attached.
+
+        Returns
+        -------
+        bool
+            True if there's a utility meter attached, False otherwise.
+        """
+        for d in self._grid_equips:
+            if isinstance(d.get_device(), UtilityMeter):
+                return True
+        return False
+    
+
+    def get_utms(self):
+        """Returns a list of connected utm device_ids.
+
+        Returns
+        -------
+        List[device_id]
+            True if there's a utility meter attached, False otherwise.
+        """
+        return [d.get_device_id() for d in self._grid_equips if isinstance(d.get_device(), UtilityMeter)]
+    
+    
+    def get_available_power_sources(self):
+        """Returns all the devices with available power.
+
+        TODO: sort by price?
+
+        Returns
+        -------
+        List[DeviceRef]
+            List of DeviceRefs which with available power.
+        """
+        items = []
+        for d in self._grid_equips:
+            allocated = d.get_allocate()
+            load = d.get_load() or 0
+            # check allocated + load because load is negative for power flowing out
+            if not allocated is None and allocated + load > 0:
+                items.append(d)
+        return items
+
+
+    def log_request(self, device_id, time, value):
+        item = self.get_item_by_device_id(device_id)
+        if item:
+            item.add_request(device_id, time, value)
+        else:
+            raise Exception("Device ID not found ({})".format(device_id))
+
+    
+    def set_allocate(self, device_id, value):
+        """Set the allocate value for a device_id.
+
+        Parameters
+        ----------
+        device_id: str
+            Device id of the device to remove from the collection.
+        value: float
+            The new allocate value to set for the device.
+        """
+        item = self.get_item_by_device_id(device_id)
+        if item:
+            item.set_allocate(value)
+        else:
+            raise Exception("Device ID not found ({})".format(device_id))
+    
+
+    def get_allocated_items(self):
+        """Get a list of items with allocate values.
+
+        Returns
+        -------
+        List[DeviceRef]
+            A list of devices for which allocate values exist.
+        """
+        return filter(lambda d: d.allocate, self._items)
+
+    
+    def set_load(self, device_id, value):
+        """Set the load for a device with the given device_id.
+
+        Parameters
+        ----------
+        device_id: str
+            Device id of the device in question.
+        value: float
+            The new load for the device.
+        """
+        item = self.get_item_by_device_id(device_id)
+        if item:
+            item.set_load(value)
+        else:
+            raise Exception("Device ID not found ({})".format(device_id))
+    
+
+    def set_price(self, device_id, sell_price, buy_price=None):
+        """Set the buy/sell prices for a device with the given device_id.
+
+        Parameters
+        ----------
+        device_id: str
+            Device id of the device in question.
+        sell_price: float
+            The sell price for the device.
+        buy_price: float
+            The buy price for the device.
+        """
+        item = self.get_item_by_device_id(device_id)
+        if item:
+            item.set_sell_price(sell_price)
+            if not buy_price is None:
+                item.set_buy_price(buy_price)
+        else:
+            raise Exception("Device ID not found ({})".format(device_id))
+    
+
+    def get_grid_equipment_prices(self):
+        """Get the list of all grid equipment, sorted by loweset price.
+
+        Returns
+        -------
+        List[DeviceRef]
+        """
+        return [d for d in self._grid_equips]
+
+    
+    def total_allocated(self, ignore_ids=[]) -> float:
+        """Calculate the total amount this device has been allocated.
+
+        Parameters
+        ----------
+        ignore_ids: List[str]
+            List of grid-equipment device_id's to ignore in the calculation.
+
+        Returns
+        -------
+        float
+            The total allocated amount from the connected devices.
+        """
+        device_list = [d for d in self._power_givers if d.get_device_id() not in ignore_ids]
+        return reduce(lambda a, b: a + (b.get_allocate() or 0.0), device_list, 0.0)
+    
+    def total_eud_load(self) -> float:
+        """Calculate the total loads of all eud devices.
+
+        Returns
+        -------
+        float
+            The total of all loads for eud devices.
+        """
+        return reduce(lambda a, b: a + (b.get_load() or 0.0), self._euds, 0.0)
+    
+    def calculate_available_power(self, ignore_ids=[]) -> float:
+        """Calculate how much power is available.
+
+        Parameters
+        ----------
+        ignore_ids: List[str]
+            List of grid-equipment device_id's to ignore in the calculation.
+
+        Returns
+        -------
+        float
+            The amount of power available for other devices to use.
+        """
+        total_allocated = self.total_allocated(ignore_ids)
+        # change the sign on device load to positive
+        # since all loads on euds should be negative
+        # (power flowing out of gc = negative load)
+        total_eud = -self.total_eud_load()
+        available = total_allocated - total_eud
+        return available if available > 0 else 0
+        
+
+
+class GridController(GridEquipment, PowerGiver, PowerTaker):
 
     TRICKLE_POWER = 2  # Allow fluctuations of power within 2 watts without rebalancing. All devices can consume this.
 
@@ -70,10 +417,13 @@ class GridController(GridEquipment):
         # device could also be a Converter connected to more than 1 utility meter
         self._connected_utility_meters = []
         # the battery contained within this grid controller.
+
         if battery:
             self._battery = battery
         else:
             raise ValueError("Tried to make a grid controller without a battery. Not acceptable!")
+        
+        self._device_manager = DeviceManager(self._battery)
 
         # the minimum allocate response to a request message
         self._minimum_allocate = min_alloc_response_threshold * battery.get_max_discharge_rate()
@@ -98,15 +448,25 @@ class GridController(GridEquipment):
         self.setup_battery_update_schedule(self._battery.get_update_frequency(), total_runtime)
         self.setup_modulation_schedule(total_runtime)
     
+
     def init(self):
         super().init()
         self.build_utility_meter_list()
+        self.build_device_list()
+        # self.inquire_connected_gcs()
+
     
     def build_utility_meter_list(self):
         """Build a list of utility meters"""
         for d_id, d in self._connected_devices.items():
             if isinstance(d, UtilityMeter) or (isinstance(d, Converter) and d.has_utm()):
                 self._connected_utility_meters.append(d_id)
+
+    
+    def build_device_list(self):
+        for (device_id, device) in self._connected_devices.items():
+            self._device_manager.add_device(device_id, device)
+
 
     #  ______________________________________Maintenance Functions______________________________________ #
 
@@ -161,6 +521,7 @@ class GridController(GridEquipment):
         prev_load = self._loads[sender_id] if sender_id in self._loads else 0
         self.recalc_sum_power(prev_load, new_load)
         self._loads[sender_id] = new_load
+        self._device_manager.set_load(sender_id, new_load)
         self._logger.info(self.build_log_notation(message="load changed for {} to {}".format(sender_id, new_load),
                                                    tag="load change", value=new_load))
         return new_load - prev_load
@@ -201,6 +562,14 @@ class GridController(GridEquipment):
             self.add_event(Event(self.modulate_power), curr_time)
             curr_time += modulation_frequency
 
+        
+    # def inquire_connected_gcs(self):
+    #     """Send request messages to connected gc's to see how power is available.
+    #     """
+    #     for device_id in self._device_manager.get_gcs():
+    #         self.send_request_message(device_id, 1)
+    #         pass
+
     #  ______________________________________ Messaging/Interactive Functions_________________________________#
 
     ##
@@ -238,6 +607,7 @@ class GridController(GridEquipment):
         if delta(message.value, prev_power) > self.TRICKLE_POWER:  # don't recalibrate for power changes smaller than this
             self.modulate_price()
             self.modulate_power()
+            self.broadcast_allocate_to_gcs()
 
     ##
     # Processes a price message received from another device, modifying its own price based on its price logic.
@@ -246,8 +616,6 @@ class GridController(GridEquipment):
     # @param price the local price received from the message sender
 
     def process_price_message(self, message):
-        # if message.sender_id.startswith("utm"):  # Remember sell price, buy_price pair from utility meters
-        # sender_id = message.redirect.original_sender_id if isinstance(message.redirect, MessageRedirect) else message.sender_id
         self._logger.info(
             self.build_log_notation(
                 message="PRICE message from {}".format(message.sender_id),
@@ -255,8 +623,10 @@ class GridController(GridEquipment):
                 value=message.value
         ))
         if message.sender_id in self._connected_utility_meters:
+            # sell price, buy_price pair from utility meters
             self._utility_prices[message.sender_id] = (message.value, message.extra_info)
         self._neighbor_prices[message.sender_id] = message.value
+        self._device_manager.set_price(message.sender_id, message.value, message.extra_info)
         self.modulate_price()  # if price significantly changed, will broadcast this price to all neighbors.
         self.modulate_power()
 
@@ -286,6 +656,8 @@ class GridController(GridEquipment):
             self._logger.info("ignored negative allocate message from {}".format(message.sender_id))
             return
         self._allocated[message.sender_id] = message.value  # so we can consume or provide up to that amount of power anytime
+        self._device_manager.set_allocate(message.sender_id, message.value)
+        self.broadcast_allocate_to_gcs()
         # TODO: self.modulate_power()?
 
     ##
@@ -298,7 +670,14 @@ class GridController(GridEquipment):
             target = self._connected_devices[target_id]
         else:
             raise ValueError("This GC is connected to no such device")
+
+        self._logger.info(self.build_log_notation(
+            message="load on {}".format(target_id),
+            tag="load_{}".format(target_id),
+            value=power_amt
+        ))
         self.change_load(target_id, power_amt)
+        self._device_manager.set_load(target_id, power_amt)
         # add in additional wire loss
         # if wire_loss is non-zero, then there's a wire attached
         wire_loss = self.calculate_wire_loss(target_id, power_amt)
@@ -347,7 +726,26 @@ class GridController(GridEquipment):
         self._logger.info(self.build_log_notation(message="ALLOCATE to {}".format(target_id),
                                                   tag="allocate_msg", value=allocate_amt))
         self._allocated[target_id] = -allocate_amt
+        self._device_manager.set_allocate(target_id, -allocate_amt)
         target_device.receive_message(Message(self._time, self._device_id, MessageType.ALLOCATE, allocate_amt))
+    
+
+    def broadcast_allocate_to_gcs(self):
+        """Sends out an allocate message to connected gc's.
+
+        Informs connected grid controllers of how much power is available.
+        Should be called whenever power flows change so gc's are always up-to-date
+        on power availability.
+        """
+        for gc_id in self._device_manager.get_gcs():
+            device_ref = self._device_manager.get_item_by_device_id(gc_id)
+            # calculate the available power, not including the device we're sending the allocate message to
+            allocate_amt = self._device_manager.calculate_available_power([gc_id])
+            if allocate_amt != device_ref.get_last_allocate():
+                device = device_ref.get_device()
+                device.receive_message(Message(self._time, self._device_id, MessageType.ALLOCATE, allocate_amt))
+                device_ref.set_last_allocate(allocate_amt)
+
 
     # Broadcasts the new price to all of its connected devices.
     # @param new_price the new price to broadcast to all devices
@@ -401,7 +799,8 @@ class GridController(GridEquipment):
         self._price = self._price_logic.calc_price(neighbor_prices=self._neighbor_prices,
                                                    loads=self._loads, requested=self._requested,
                                                    allocated=self._allocated,
-                                                   desired_battery_power=battery_power_adjust)
+                                                   desired_battery_power=battery_power_adjust,
+                                                   device_manager=self._device_manager)
         self._price_logic.set_current_price(self._price)
 
     ##
@@ -437,28 +836,32 @@ class GridController(GridEquipment):
             return
         remaining = power_change
 
+        # get the list of available GE devices
+        available_ges = self._device_manager.get_available_power_sources()
         # If there is power in from utility and the power change is positive (must accept more), reduce that utm flow.
         # Likewise, if we are selling to utm and power change is negative, reduce how much we sell.
         """ THIS WAS AN OPTIMIZATION. CAN BE REMOVED OR PUT IN FLAGGED LOGIC"""
-        for utm_id in self._connected_utility_meters:
+        # for utm_id in self._connected_utility_meters:
+        for device_ref in available_ges:
+            device_id = device_ref.get_device_id()
             if power_change > 0:
                 # must accept more.
-                if self._loads.get(utm_id, 0) > 0:
-                    prev_utm_load = self._loads[utm_id]
-                    self.change_load(utm_id, max((prev_utm_load - remaining), 0))
-                    new_utm_load = self._loads[utm_id]
-                    self.send_power_message(utm_id, new_utm_load)
-                    remaining -= (prev_utm_load - new_utm_load)
+                if self._loads.get(device_id, 0) > 0:
+                    prev_load = self._loads[device_id]
+                    self.change_load(device_id, max((prev_load - remaining), 0))
+                    new_load = self._loads[device_id]
+                    self.send_power_message(device_id, new_load)
+                    remaining -= (prev_load - new_load)
                     if not nonzero_power(remaining): # An insignificant quantity is remaining. Stop talking to utms
                         break
             elif power_change < 0:
                 # must provide more
-                if self._loads.get(utm_id, 0) < 0:
-                    prev_utm_load = self._loads[utm_id]
-                    self.change_load(utm_id, min((prev_utm_load - remaining), 0))
-                    new_utm_load = self._loads[utm_id]
-                    self.send_power_message(utm_id, new_utm_load)
-                    remaining -= (prev_utm_load - new_utm_load)
+                if self._loads.get(device_id, 0) < 0:
+                    prev_load = self._loads[device_id]
+                    self.change_load(device_id, min((prev_load - remaining), 0))
+                    new_load = self._loads[device_id]
+                    self.send_power_message(device_id, new_load)
+                    remaining -= (prev_load - new_load)
                     if not nonzero_power(remaining):
                         break
 
@@ -469,22 +872,29 @@ class GridController(GridEquipment):
             remaining -= self._battery.add_load(remaining)
 
         if nonzero_power(remaining):
-            if len(self._connected_utility_meters):
-                utm_id = self._connected_utility_meters[0]
+            # need to find another power source
+            if len(available_ges):
+                for device_ref in available_ges:
+                    device_id = device_ref.get_device_id()
+                    # prev_load = self._loads[device_id] if device_id in self._loads else 0
+                    prev_load = device_ref.get_load() or 0
+                    self.change_load(device_id, prev_load - remaining)
+                    # new_load = self._loads[device_id]
+                    new_load = device_ref.get_load() or 0
+                    self.send_power_message(device_id, new_load)
 
-                prev_utm_load = self._loads[utm_id] if utm_id in self._loads else 0
-                self.change_load(utm_id, prev_utm_load - remaining)
-                new_utm_load = self._loads[utm_id]
-                self.send_power_message(utm_id, new_utm_load)
+                    # what we were able to get from utility meter.
+                    remaining += (new_load - prev_load)
+                    self.change_load(source_id, source_demanded_power - remaining)  # send what we were able to get from utm
 
-                # what we were able to get from utility meter.
-                remaining += (new_utm_load - prev_utm_load)
-                self.change_load(source_id, source_demanded_power - remaining)  # send what we were able to get from utm
-
-                # add the unprovided power as a request to address later.
-                unprovided = source_demanded_power - self._loads[source_id]
-                if unprovided:
-                    self._requested[source_id] = source_demanded_power
+                    # add the unprovided power as a request to address later.
+                    unprovided = source_demanded_power - self._loads[source_id]
+                    if unprovided:
+                        self._requested[source_id] = source_demanded_power
+                    
+                    # stop if fulfilled
+                    if not nonzero_power(remaining):
+                        break
             else:
                 # no utm, not able to provide for the demanded power. Send a new power message saying what you can give.
                 self.change_load(source_id, source_demanded_power - remaining)
@@ -537,7 +947,7 @@ class GridController(GridEquipment):
         self.update_battery()
         if request_amt > 0:  # This device is being asked to distribute
             desired_response = self.get_allocate_assets() - self._battery.get_optimal_charge_rate()
-            return max(desired_response, self._minimum_allocate)
+            return max(desired_response, self._minimum_allocate, 1000000 if self._device_manager.has_utm() else 0)
         else:  # Invalid request
             return 0
 
@@ -592,6 +1002,10 @@ class GridController(GridEquipment):
     def seek_to_distribute_power(self, power_to_distribute):
         if power_to_distribute <= 0:
             return  # Invalid quantity
+        
+        # sort power sources from lowest -> highest
+        prices_from_cheapest = sorted(self._neighbor_prices.items(), key=lambda x: x[1])
+
         remaining = power_to_distribute
         for utm_id in self._connected_utility_meters:
             prev_utm_load = self._loads.get(utm_id, 0)
@@ -864,7 +1278,7 @@ class GCMarginalPriceLogic(GridControllerPriceLogic):
     # @param allocated the dictionary of connected device id's and allocated by and to those devices.
     # @param desired_battery_charge the difference of current desired battery power flow and desired batt. power flow
     # @return the calculated price based on the input variables.
-    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0):
+    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0, device_manager=None):
         min_price = float('inf')
 
         # Find the cheapest price amongst the devices we've been allocated to receive from or utility meters
@@ -902,7 +1316,7 @@ class GCMarginalPriceLogicB(GridControllerPriceLogic):
     # (positive if wants to charge more, negative if wants to output more)
     # @return the calculated price based on the input variables.
 
-    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0):
+    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0, device_manager=None):
         total_requested_out = 0  # positive record of how much this device has been requested to provide out
 
         # Calculate how much this device owes to provide.
@@ -914,10 +1328,11 @@ class GCMarginalPriceLogicB(GridControllerPriceLogic):
         # flow shift amount that we want to calculate the marginal price of satisfying.
         remaining = total_requested_out + desired_battery_power
         prices_from_cheapest = sorted(neighbor_prices.items(), key=lambda x: x[1])
+        ge_prices = device_manager.get_grid_equipment_prices()
         # We are looking to distribute power and there is insufficient current demand.
         # Lower our price to below current cheapest price level to allow to sell
         if remaining < 0:
-            return 0.9 * prices_from_cheapest[0][1]
+            return 0.9 * prices_from_cheapest[0][1] if len(prices_from_cheapest) else self._initial_price
 
         marginal_price = float('inf')
         # Find the cheapest price amongst the devices we've been allocated to take from.

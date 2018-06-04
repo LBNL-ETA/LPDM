@@ -14,9 +14,11 @@ from Build.Simulation_Operation.message import Message, MessageType
 from Build.Simulation_Operation.support import SECONDS_IN_DAY
 from Build.Simulation_Operation.event import Event
 from Build.Objects.device import Device
+from Build.Objects.grid_equipment import GridEquipment
+from Build.Objects.device_type import PowerGiver
 
 
-class PV(Device):
+class PV(GridEquipment, PowerGiver):
 
     def __init__(self, device_id, supervisor, power_profile, peak_power, time=0, msg_latency=0,
                  schedule=None, connected_devices=None, total_runtime=SECONDS_IN_DAY):

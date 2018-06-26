@@ -21,8 +21,20 @@ class Converter(GridEquipment):
                 value=None
             )
         )
-        self._device_input = device_input
-        self._device_output = device_output
+        if type(device_input) is str:
+            self._device_input_id = device_input
+        elif type(device_input) is dict:
+            self._device_input_id = device_input["device_id"]
+        else:
+            raise Exception("{} device input is invalid".format(device_id))
+        if type(device_output) is str:
+            self._device_output_id = device_output
+        elif type(device_output) is dict:
+            self._device_output_id = device_output["device_id"]
+        else:
+            raise Exception("{} device input is invalid".format(device_id))
+        # self._device_input = device_input
+        # self._device_output = device_output
         self._efficiency_curve_input = efficiency_curve
         self._capacity = capacity
         self._has_utm = False
@@ -30,6 +42,10 @@ class Converter(GridEquipment):
         self._load_loss = 0.0
         self._efficiency_curve = None
         self.build_efficiency_curve()
+
+        self._converter_loss_power = 0.0
+        self._converter_loss_energy = 0.0
+        self._time_last_loss_calc = self._time
     
     def build_efficiency_curve(self):
         "Build the efficiency curve object"
@@ -52,7 +68,8 @@ class Converter(GridEquipment):
     
     def is_input_device(self, device_id):
         "Determines if the device_id is the input device"
-        return device_id == self._device_input["device_id"]
+        return device_id == self._device_input_id
+        # return device_id == self._device_input["device_id"]
     
     def has_utm(self):
         return self._has_utm
@@ -118,12 +135,18 @@ class Converter(GridEquipment):
     
     def get_receiving_device(self, sender_device_id):
         "get the device_id of the receiving device to pass the message"
-        if sender_device_id == self._device_input["device_id"]:
-            return self._device_output
-        elif sender_device_id == self._device_output["device_id"]:
-            return self._device_input
+        if sender_device_id == self._device_input_id:
+            return self._device_output_id
+        elif sender_device_id == self._device_output_id:
+            return self._device_input_id
         else:
             raise Exception("Unknown device_id {}".format(sender_device_id))
+        # if sender_device_id == self._device_input["device_id"]:
+        #     return self._device_output
+        # elif sender_device_id == self._device_output["device_id"]:
+        #     return self._device_input
+        # else:
+        #     raise Exception("Unknown device_id {}".format(sender_device_id))
 
     def process_power_message(self, message):
         "Process a power message"
@@ -133,9 +156,11 @@ class Converter(GridEquipment):
                 tag="power_msg_in",
                 value=message.value
         ))
-        receiver = self.get_receiving_device(message.sender_id)
-        self.set_power_flow(message.sender_id, receiver["device_id"], message.value)
-        self.send_power_message(receiver["device_id"], message.value)
+        receiver_id = self.get_receiving_device(message.sender_id)
+        self.set_power_flow(message.sender_id, receiver_id, message.value)
+        self.send_power_message(receiver_id, message.value)
+        # self.set_power_flow(message.sender_id, receiver["device_id"], message.value)
+        # self.send_power_message(receiver["device_id"], message.value)
 
     def process_price_message(self, message):
         # pass on price messages from output -> inputs
@@ -146,8 +171,9 @@ class Converter(GridEquipment):
                 value=message.value
             )
         )
-        receiver = self.get_receiving_device(message.sender_id)
-        self.send_price_message(receiver["device_id"], message.value)
+        receiver_id = self.get_receiving_device(message.sender_id)
+        self.send_price_message(receiver_id, message.value)
+        # self.send_price_message(receiver["device_id"], message.value)
 
     def process_request_message(self, message):
         # send request message from an input to the output device
@@ -158,12 +184,14 @@ class Converter(GridEquipment):
                 value=message.value
             )
         )
-        receiver = self.get_receiving_device(message.sender_id)
+        receiver_id = self.get_receiving_device(message.sender_id)
         # request extra to account for the converter loss
         converter_loss = self._efficiency_curve.get_converter_loss(message.value)
         # reequest extra to account for wire loss
-        wire_loss = self.calculate_wire_loss(receiver["device_id"])
-        self.send_request_message(receiver["device_id"], message.value + converter_loss + wire_loss)
+        wire_loss = self.calculate_wire_loss(receiver_id, message.value)
+        self.send_request_message(receiver_id, message.value + converter_loss + wire_loss)
+        # wire_loss = self.calculate_wire_loss(receiver["device_id"], message.value)
+        # self.send_request_message(receiver["device_id"], message.value + converter_loss + wire_loss)
 
     def process_allocate_message(self, message):
         self._logger.info(
@@ -173,8 +201,9 @@ class Converter(GridEquipment):
                 value=message.value
             )
         )
-        receiver = self.get_receiving_device(message.sender_id)
-        self.send_allocate_message(receiver["device_id"], message.value)
+        receiver_id = self.get_receiving_device(message.sender_id)
+        self.send_allocate_message(receiver_id, message.value)
+        # self.send_allocate_message(receiver["device_id"], message.value)
 
     def send_allocate_message(self, target_id, allocate_amt):
         self._logger.info(
@@ -208,28 +237,52 @@ class Converter(GridEquipment):
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
 
     def send_power_message(self, target_id, power_amt):
-        self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
-                                                  tag="power_msg", value=power_amt))
-
         target_device = self._connected_devices[target_id]
         # add extra to account for the converter loss if power is flowing
         if power_amt:
+            # if power_amt > 0:
+            #     converter_loss = self._efficiency_curve.get_converter_loss(power_amt)
+            # else:
+            #     converter_loss = self._efficiency_curve.get_converter_loss_source(power_amt)
             converter_loss = self._efficiency_curve.get_converter_loss(power_amt)
             power_amt += converter_loss
+            self.update_converter_loss(converter_loss)
         # add extra to account for wire loss
         wire_loss = self.calculate_wire_loss(target_id, power_amt)
-        if wire_loss:
-            if power_amt:
-                # if power_amt is non-zero, add in additional wire loss
-                power_amt += wire_loss
-                self.update_wire_loss_in(target_id, abs(wire_loss))
-            else:
-                # power_amt is zero so no wire loss
-                self.update_wire_loss_in(target_id, 0)
+        power_amt += wire_loss
+        self.update_wire_loss_in(target_id, abs(wire_loss))
+
         target_device.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
+        self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
+                                                  tag="power_msg", value=power_amt))
+
+    def update_converter_loss(self, converter_loss_power):
+        "Update the converter loss rate for power flowing into the device"
+        previous = self._converter_loss_power
+        # if previous and converter_loss_power:
+        self.sum_converter_loss(previous)
+        self._converter_loss_power = converter_loss_power
+
+    def sum_converter_loss(self, converter_loss_power):
+        time_diff = self._time - self._time_last_loss_calc
+        if time_diff > 0:
+            # Wh = W*s*(h/3600s)
+            converter_loss_energy = converter_loss_power * (time_diff / 3600.0)
+            self._converter_loss_energy += converter_loss_energy
+            self._logger.info(
+                self.build_log_notation(
+                    message="Calculate converter loss, dt = {} h, rate = {} W, energy = {} Wh".format( \
+                        time_diff / 3600.0, converter_loss_power, converter_loss_energy),
+                    tag="converter_loss",
+                    value=converter_loss_energy
+            ))
+        self._time_last_loss_calc = self._time
 
     def last_wire_loss_calc(self):
-        pass
+        for (device_id, wire_loss_rate) in self._wire_loss_info_in.items():
+            if wire_loss_rate:
+                self.update_wire_loss_in(device_id, wire_loss_rate)
+        self.update_converter_loss(0.0)
 
     def device_specific_calcs(self):
         pass

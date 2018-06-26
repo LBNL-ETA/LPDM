@@ -29,16 +29,45 @@ class PV(GridEquipment, PowerGiver):
 
     ##
     # Sets up the power generation schedule for this PV. Takes input of a daily power generation schedule.
+    # @param power_profile list of (time, power_proportion) pairs for the PV profile
+    # @param peak_power peak power generated from PV unit, i.e. solar capacity
+    # @param total_runtime total number of days to run PV unit (usually simulation duration) 
+    def setup_power_schedule(self, power_profile, peak_power, total_runtime):
+        # Check if power level list spans multiple days, or is single day repeat
+        multiday_input = False
+        for time, power_proportion in power_profile:
+            if time > 86400:
+                multiday_input = True
+                break
+        if multiday_input: # multiple day power level list (i.e. PVWatts)
+            for time, power_proportion in power_profile:
+                power_event = Event(self.update_power_status, peak_power, power_proportion)
+                self.add_event(power_event, time)
+        else: # single day repeated power level list
+            curr_day = int(self._time / SECONDS_IN_DAY)  # Current day in seconds
+            while curr_day < total_runtime:
+                for time, power_proportion in power_profile:
+                    power_event = Event(self.update_power_status, peak_power, power_proportion)
+                    self.add_event(power_event, time + curr_day)
+                curr_day += SECONDS_IN_DAY
+
+    ##
+    # Sets up the power generation schedule for this PV. Takes input of a daily power generation schedule.
     # Power
     # TODO: assumes total_runtime is in days, and schedule is at most one day long, and schedule is
     # TODO: in percentage of peak power. Make this more robust?
-    def setup_power_schedule(self, power_profile, peak_power, total_runtime):
-        curr_day = int(self._time / SECONDS_IN_DAY)  # Current day in seconds. Starts at the PV's initial time.
-        while curr_day < total_runtime:
-            for time, power_proportion in power_profile:
-                power_event = Event(self.update_power_status, peak_power, power_proportion)
-                self.add_event(power_event, time + curr_day)
-            curr_day += SECONDS_IN_DAY
+#     def setup_power_schedule(self, power_profile, peak_power, total_runtime):
+#         curr_day = int(self._time / SECONDS_IN_DAY)  # Current day in seconds. Starts at the PV's initial time.
+#         while curr_day < total_runtime:
+#             for time, power_proportion in power_profile:
+#                 power_event = Event(self.update_power_status, peak_power, power_proportion)
+#                 if time < curr_day:
+#                     # LPDM PV profile
+#                     self.add_event(power_event, time + curr_day)
+#                 else:
+#                     # PVWatts profile
+#                     self.add_event(power_event, time)
+#             curr_day += SECONDS_IN_DAY
 
     ##
     # Changes the amount of power that this device is producing and
@@ -77,7 +106,7 @@ class PV(GridEquipment, PowerGiver):
     ##
     # PV does not respond to external power messages
     #
-    # @param sender the sender of the message providing or receiving the new power
+    # @param sender_id the sender of the message providing or receiving the new power
     # @param new_power the value of power flow from sender's perspective
     # positive if sender is receiving, negative if sender is providing.
     def process_power_message(self, message):

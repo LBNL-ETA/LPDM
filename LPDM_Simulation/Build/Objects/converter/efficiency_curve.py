@@ -57,4 +57,32 @@ class EfficiencyCurve:
     
     def get_converter_loss(self, load):
         "Calculate the power loss through the converter"
-        return load - (self.get_efficiency_value(load) * load)
+        # load is the output power of the converter
+        # return load - (self.get_efficiency_value(load) * load)
+        eff = self.get_efficiency_value(load)
+        if eff <= 0:
+            return load
+        elif eff >= 1:
+            return 0
+        else:
+            input_power = load / eff
+            return abs(input_power) - abs(load)
+
+    # def get_converter_loss_source(self, source):
+    #     "Calculate the power loss through the converter"
+    #     # source is the input power of the converter
+    #     eff = self.get_efficiency_value(source)
+    #     if eff <= 0:
+    #         return load
+    #     elif eff >= 1:
+    #         return 0
+    #     else:
+    #         # try to find output power by iterative method
+    #         output_power = source * eff
+    #         for n in range(0,10):
+    #             eff = self.get_efficiency_value(output_power)
+    #             output_power = source * eff
+    #         return abs(source) - abs(output_power)
+
+
+

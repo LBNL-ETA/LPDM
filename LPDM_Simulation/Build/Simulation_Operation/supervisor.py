@@ -19,6 +19,8 @@ calculating some of the final simulation power statistics.
 import logging
 
 from Build.Simulation_Operation.queue import PriorityQueue
+from Build.Objects.converter.converter import Converter
+from Build.Objects.eud import Eud
 
 
 class Supervisor:
@@ -36,7 +38,7 @@ class Supervisor:
         if device_id in self._devices:
             return self._devices[device_id]
         else:
-            raise ValueError("There is no such requested device in the simulation")
+            raise ValueError("There is no such requested device in the simulation " + device_id)
 
     ##
     # Returns the list of all devices in the simulation.
@@ -102,15 +104,30 @@ class Supervisor:
         total_power_out = 0.0
         total_wire_loss_in = 0.0
         total_wire_loss_out = 0.0
+        total_converter_loss_energy = 0.0
+        total_eud_energy = 0.0
         for device in self._devices.values():
             total_power_in += device._sum_power_in
             total_power_out += device._sum_power_out
             total_wire_loss_in += device._wire_loss_in
             total_wire_loss_out += device._wire_loss_out
+            if isinstance(device, Converter):
+                total_converter_loss_energy += device._converter_loss_energy
+            if isinstance(device, Eud):
+                total_eud_energy += device._sum_power_in
+        total_loss_energy = total_converter_loss_energy + total_wire_loss_in
+        if total_eud_energy > 0:
+            efficiency = 1 - total_loss_energy/total_eud_energy
+        else:
+            efficiency = 0
         self._logger.info("total simulation power in: {} Wh".format(total_power_in))
         self._logger.info("total simulation power out: {} Wh".format(total_power_out))
         self._logger.info("total simulation wire loss in: {} Wh".format(total_wire_loss_in))
         self._logger.info("total simulation wire loss out: {} Wh".format(total_wire_loss_out))
+        self._logger.info("total simulation converter loss: {} Wh".format(total_converter_loss_energy))
+        self._logger.info("total simulation loss: {} Wh".format(total_loss_energy))
+        self._logger.info("total simulation EUD load: {} Wh".format(total_eud_energy))
+        self._logger.info("total simulation efficiency: {} %".format(efficiency*100.0))
 
     ##
     # Called at the end of the simulation. Finishes each device and instructs them to write their energy

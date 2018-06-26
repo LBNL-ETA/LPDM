@@ -150,7 +150,7 @@ class Device(metaclass=ABCMeta):
         else:
             raise ValueError("Power Level Out Must Be Non-Negative")
     
-    def calculate_wire_loss(self, device_id, amount=None):
+    def calculate_wire_loss(self, device_id, amount):
         """Calculate the wire loss given a device_id
 
         Parameters
@@ -158,32 +158,39 @@ class Device(metaclass=ABCMeta):
         device_id: str
             The device_id of the device whose wire we need information
         amount: float
-            An optional amount that will determine the sign (positive/negative)
-            of the wire loss.  So if amount is negative, wire loss will be negative
+            Amount of power flowing through wire
 
         Returns
         -------
         float:
             The wire loss rate of the wire connected to device_id
         """
+        # if wire:
+        #     print(str(amount) + " " + str(wire))
+        # else:
+        #     print(str(self._device_id) + "  " +str(device_id) + "  " + str(self._wires.keys()))
+        if amount < 0:
+            # only calculates wire loss for positive amount
+            return 0
         wire = self._wires.get(device_id, None)
         if wire:
-            wire_loss = wire.calculate_power()
-            return -wire_loss if amount and amount < 0 else wire_loss
+            wire_loss = wire.calculate_power(amount)
+            return wire_loss
+            # return -wire_loss if amount and amount < 0 else wire_loss
         else:
             return 0
 
     def update_wire_loss_in(self, device_id, wire_loss_rate):
         "Update the wire loss rate for power flowing into the device"
         previous = self._wire_loss_info_in.get(device_id, 0)
-        if previous:
+        if previous and wire_loss_rate:
             self.sum_wire_loss_in(previous)
         self._wire_loss_info_in[device_id] = wire_loss_rate
 
     def update_wire_loss_out(self, device_id, wire_loss_rate):
         "Update the wire loss rate for power flowing into the device"
         previous = self._wire_loss_info_out.get(device_id, 0)
-        if previous:
+        if previous and wire_loss_rate:
             self.sum_wire_loss_in(previous)
         self._wire_loss_info_out[device_id] = wire_loss_rate
 
@@ -241,7 +248,9 @@ class Device(metaclass=ABCMeta):
     def sum_wire_loss_in(self, wire_loss_rate):
         time_diff = self._time - self._time_last_wire_loss_in
         if time_diff > 0:
-            wire_loss_energy = wire_loss_rate * time_diff * (time_diff / 3600.0)
+            # Wh = W*s*(h/3600s)
+            wire_loss_energy = wire_loss_rate * (time_diff / 3600.0)
+            #wire_loss_energy = wire_loss_rate * time_diff * (time_diff / 3600.0)
             self._wire_loss_in += wire_loss_energy
             self._logger.info(
                 self.build_log_notation(
@@ -254,7 +263,8 @@ class Device(metaclass=ABCMeta):
     def sum_wire_loss_out(self, wire_loss_rate):
         time_diff = self._time - self._time_last_wire_loss_out
         if time_diff > 0:
-            wire_loss_energy = wire_loss_rate * time_diff * (time_diff / 3600.0)
+            wire_loss_energy = wire_loss_rate * (time_diff / 3600.0)
+            #wire_loss_energy = wire_loss_rate * time_diff * (time_diff / 3600.0)
             self._wire_loss_out += wire_loss_energy
             self._logger.info(
                 self.build_log_notation(
@@ -352,6 +362,12 @@ class Device(metaclass=ABCMeta):
             self._logger.info(
                 self.build_log_notation("registered {}".format(device_id))
             )
+        elif value > 0 and device_id in self._connected_devices and not wire is None:
+            self._wires[device_id] = wire
+            self._is_wired = True
+            self._logger.info(
+                self.build_log_notation("added wire to {}".format(device_id))
+            )            
         # else:
         #     raise Exception("Device {} already registered to {}".format(device_id, self._device_id))
             # if device_id in self._connected_devices:

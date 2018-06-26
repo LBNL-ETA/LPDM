@@ -172,10 +172,9 @@ class Eud(Device):
             target_device = self._connected_devices[target_id]
         else:
             raise ValueError("invalid target to request")
+        # if there's a wire attached add it onto the request amount
         wire_loss = self.calculate_wire_loss(target_id, request_amt)
-        if wire_loss:
-            # if there's a wire attached add it onto the request amount
-            request_amt += wire_loss
+        request_amt += wire_loss
         self._logger.info(self.build_log_notation(message="REQUEST to {}".format(target_id),
                                                   tag="request_out", value=request_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
@@ -189,16 +188,11 @@ class Eud(Device):
         if target_id in self._connected_devices and isinstance(self._connected_devices[target_id], GridEquipment):  # cannot request from non-GC's
             target_device = self._connected_devices[target_id]
         else:
-            raise ValueError("invalid target to request")
-        
+            raise ValueError("invalid target to request")        
         # if there's a wire attached add it onto the request amount
         wire_loss = self.calculate_wire_loss(target_id, power_amt)
-        if wire_loss:
-            if power_amt:
-                power_amt += wire_loss
-                self.update_wire_loss_in(target_id, abs(wire_loss))
-            else:
-                self.update_wire_loss_in(target_id, 0)
+        power_amt += wire_loss
+        self.update_wire_loss_in(target_id, abs(wire_loss))
 
         self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
                                                   tag="power_out", value=power_amt))

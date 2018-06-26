@@ -20,10 +20,12 @@ import importlib
 from Build.Objects.air_conditioner import AirConditionerSimple
 from Build.Objects.battery import Battery
 from Build.Objects.fixed_consumption import FixedConsumption
+from Build.Objects.load_profile_eud import LoadProfile
 from Build.Objects.grid_controller import GridController
 from Build.Objects.light import Light
 from Build.Objects.pv import PV
 from Build.Objects.converter.converter import Converter
+from Build.Objects.wire import Wire
 from Build.Objects.utility_meter import UtilityMeter
 from Build.Simulation_Operation.logger import SimulationLogger
 from Build.Simulation_Operation.supervisor import Supervisor
@@ -49,7 +51,8 @@ class SimulationSetup:
             'air_conditioner': [AirConditionerSimple, 'compressor_operating_power', 'initial_temp', 'temp_max_delta',
                                 'initial_set_point', 'price_to_setpoint', 'temperature_schedule',
                                 'precooling_price_threshold', 'compressor_cooling_rate', 'heat_exchange_rate'],
-            'fixed_consumption': [FixedConsumption, 'desired_power_level']
+            'fixed_consumption': [FixedConsumption, 'desired_power_level'],
+            'load_profile_eud': [LoadProfile, 'data_filename']
         }
 
     ##
@@ -208,7 +211,7 @@ class SimulationSetup:
 
     ##
     # Reads in the PV csv data containing information about the proportion of power used at different times during
-    # the simulation.
+    # the simulation. Can use PV Watts input
     # @param filename the input filename containing a list of times and associated percentages of peak power
     # @return a list of tuples of time (seconds), and power produced (watts).
 
@@ -217,14 +220,41 @@ class SimulationSetup:
         pv_data = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
                                "scenario_data/pv_data/{}".format(filename))
         with open(pv_data, 'r') as data:
-            for line in data:
+            # parsing settings depend on whether PVWatts or LPDM data
+            if filename == "pvwatts_hourly.csv":
+                # Parse data from a PV Watts hourly data format
+                DATASTART = 18
+                DCPOWERIND = 9
+                TIMEPARSE = False
+                POWERSCALAR = 1
+                for i, line in enumerate(data):
+                    # Find the kW solar capacity of the PVWatts data
+                    if i == 6:
+                        parts = line.strip().split(',')
+                        POWERSCALAR = float(parts[1])*1000
+                        break
+            else:
+                # Parse data from LPDM power ratio format
+                DATASTART = 0
+                DCPOWERIND = 1
+                TIMEPARSE = True
+                POWERSCALAR = 1
+            # Go through each line in CSV and parse power and time data 
+            data.seek(0)
+            for i, line in enumerate(data):
+                if i < DATASTART:
+                    continue
                 parts = line.strip().split(',')
-                if len(parts) == 2 and parts[0].strip():
+                if len(parts) >= DCPOWERIND + 1 and parts[0].strip():
                     time_parts = parts[0].split(':')
-                    if len(time_parts) == 3:
+                    if TIMEPARSE and len(time_parts) == 3:
+                        # For LPDM format, Parse time from H:M:S format
                         time_secs = (int(time_parts[0]) * 60 * 60) + (int(time_parts[1]) * 60) + int(time_parts[2])
-                        power_ratio = float(parts[1])
-                        data_out.append((time_secs, power_ratio))
+                    else:
+                        # For PVWatts format, get time from row index in hourly increments
+                        time_secs = (i - DATASTART)*3600
+                    power_ratio = float(parts[DCPOWERIND])/POWERSCALAR
+                    data_out.append((time_secs, power_ratio))
         return data_out
 
     ##
@@ -388,12 +418,14 @@ class SimulationSetup:
 
         self.setup_logging(config_filename=config_file, config=param_dict, override_args=override_args_list)
 
+
         # Transform the override list into a dictionary of override key, value dictionary
         overrides = self.parse_inputs_to_dict(override_args_list)
 
         run_time_days = param_dict['run_time_days']
         run_time_days = int(overrides.get('run_time_days', run_time_days))
         self.end_time = SECONDS_IN_DAY * run_time_days
+        logging.getLogger("lpdm").info("Total Run Time (s): {}".format(self.end_time))
 
         if 'devices' not in param_dict:
             raise ValueError("Tried to run a simulation with no devices!")
@@ -425,24 +457,29 @@ class SimulationSetup:
         device_b = self.supervisor.get_device(device_id_b)
         device_a.register_device(device_b, device_id_b, 1)
         device_b.register_device(device_a, device_id_a, 1)
+        print("registered no wire {} -> {}".format(device_id_b, device_id_a))
     
     def connect_devices_with_wire(self, device_id_a, device_a, connection_info):
         # connect 2 devices together without any wire information
         device_id = connection_info["device_id"]
         voltage = connection_info["voltage"]
-        wire_class = connection_info["wire_class"]
-        length_m = connection_info["length_m"]
+        #wire_class = connection_info["wire_class"]
+        resistance = connection_info.get("resistance", None)
+        length = connection_info.get("length", 0)
+        gauge = connection_info.get("gauge", '14')
+        current_type = connection_info.get("current_type", 'DC')
         # load the module
         m = importlib.import_module("Build.Objects.wire")
         # get the class, will raise AttributeError if class cannot be found
-        WireClass = getattr(m, wire_class)
+        #WireClass = getattr(m, wire_class)
         # build the wire object
-        wire = WireClass(length_m, voltage)
+        #wire = WireClass(length_m, voltage)
+        wire = Wire(voltage, resistance, length, gauge, current_type)
 
         device_b = self.supervisor.get_device(device_id)
         device_a.register_device(device_b, device_id, 1, wire)
         device_b.register_device(device_a, device_id_a, 1, wire)
-        print("registered {} -> {}".format(device_id, device_id_a))
+        print("registered with wire {} -> {}".format(device_id, device_id_a))
 
     ##
     # Takes a list of keyword arguments in the form of strings such as 'key=value' and outputs them as

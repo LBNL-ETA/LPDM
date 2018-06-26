@@ -1,0 +1,86 @@
+{
+    "run_time_days": 1,
+    "console_log_level": 20,
+    "file_log_level": 20,
+    "devices": {
+        "grid_controllers": [
+            {
+                "device_id": "gc_1",
+                "device_type": "grid_controller",
+                "static_price": true,
+                "uuid": 12, 
+                "threshold_alloc": 1, 
+                "message_latency": 1,  
+                "price_logic": "static_price",
+                "connected_devices": [
+                    "eud_3",
+                    "cv_1",
+                    "utm_1"], 
+                "battery": {
+                    "battery_id": "battery_1",
+                    "device_type": "battery",
+                    "capacity": 1.0,
+                    "max_discharge_rate": 10000000, 
+                    "max_charge_rate": 1000000, 
+                    "price_logic": "hourly_preference", 
+                    "starting soc": 1.0
+                }
+            }
+        ],
+        "pvs": [
+            {
+                "message_latency": 1, 
+                "data_filename": "pvwatts_hourly.csv", 
+                "uuid": 4, 
+                "device_id": "pv_1", 
+                "peak_power": 100
+            }
+        ], 
+        "utility_meters": [
+            {
+                "device_id": "utm_1",
+                "uuid": 10,
+                "device_type": "utility_meter",
+                "capacity": 5000.0,
+                "schedule": {
+                    "multiday": 0, 
+                    "items": [[0, "turn_on"]]
+                }, 
+                "buy_price_schedule": {
+                    "multiday": 1, 
+                    "items": [[0, 0.10]]
+                }, 
+                "sell_price_schedule": {
+                    "multiday": 1, 
+                    "items": [[0, 0.10]]
+                }
+            }
+        ],
+        "euds": [
+            {
+                "device_id": "eud_3",
+                "uuid": 3,
+                "eud_type": "fixed_consumption",
+                "desired_power_level": 100.0,
+                "constant_power_output": true,
+                "schedule": {
+                    "multiday": 1, 
+                    "items": [[0, "start_up"]] 
+                }
+            }
+        ],
+        "converters": [
+            {
+                "device_id": "cv_1",
+                "uuid": 15,
+                "capacity": 1000000,
+                "efficiency_curve": [
+                    {"capacity": 0, "efficiency": 0.5},
+                    {"capacity": 1, "efficiency": 0.5}
+                ],
+                "device_input": "pv_1",
+                "device_output": "gc_1"
+            }
+        ]
+    }
+}

@@ -599,7 +599,7 @@ class GridController(GridEquipment, PowerGiver, PowerTaker):
         self._logger.info(
             self.build_log_notation(
                 message="POWER message from {}".format(message.sender_id),
-                tag="power_msg_in",
+                tag="power_in_{}".format(message.sender_id),
                 value=message.value
         ))
         prev_power = self._loads[message.sender_id] if message.sender_id in self._loads else 0
@@ -619,7 +619,7 @@ class GridController(GridEquipment, PowerGiver, PowerTaker):
         self._logger.info(
             self.build_log_notation(
                 message="PRICE message from {}".format(message.sender_id),
-                tag="price_msg_in",
+                tag="price_in",
                 value=message.value
         ))
         if message.sender_id in self._connected_utility_meters:
@@ -635,6 +635,12 @@ class GridController(GridEquipment, PowerGiver, PowerTaker):
     # @param sender_id the sender of the request message
     # @param request_amt the quantity of power requested from perspective of message sender
     def process_request_message(self, message):
+        self._logger.info(
+            self.build_log_notation(
+                message="REQUEST message from {}".format(message.sender_id),
+                tag="request_in",
+                value=message.value
+        ))
         if message.value < 0:
             return  # Invalid request. Must be positive.
         if message.value == 0:
@@ -652,6 +658,12 @@ class GridController(GridEquipment, PowerGiver, PowerTaker):
     # Process an allocate message from another grid controller.
 
     def process_allocate_message(self, message):
+        self._logger.info(
+            self.build_log_notation(
+                message="ALLOCATE message from {}".format(message.sender_id),
+                tag="allocate_in",
+                value=message.value
+        ))
         if message.value < 0:
             self._logger.info("ignored negative allocate message from {}".format(message.sender_id))
             return
@@ -689,8 +701,6 @@ class GridController(GridEquipment, PowerGiver, PowerTaker):
             else:
                 # power_amt is zero so no wire loss
                 self.update_wire_loss_in(target_id, 0)
-        self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
-                                                  tag="power_msg", value=power_amt))
 
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
@@ -702,7 +712,7 @@ class GridController(GridEquipment, PowerGiver, PowerTaker):
         else:
             raise ValueError("This GC is connected to no such device")
         self._logger.info(self.build_log_notation(message="PRICE to {}".format(target_id),
-                                                  tag="price_msg_out", value=price))
+                                                  tag="price", value=price))
         target.receive_message(Message(self._time, self._device_id, MessageType.PRICE, price))
 
     ##
@@ -713,7 +723,7 @@ class GridController(GridEquipment, PowerGiver, PowerTaker):
         else:
             raise ValueError("This GC is connected to no such device")
         self._logger.info(self.build_log_notation(message="REQUEST to {}".format(target_id),
-                                                  tag="request_msg", value=request_amt))
+                                                  tag="request_out", value=request_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
 
     ##
@@ -724,7 +734,7 @@ class GridController(GridEquipment, PowerGiver, PowerTaker):
         else:
             raise ValueError("This GC is connected to no such device")
         self._logger.info(self.build_log_notation(message="ALLOCATE to {}".format(target_id),
-                                                  tag="allocate_msg", value=allocate_amt))
+                                                  tag="allocate_out", value=allocate_amt))
         self._allocated[target_id] = -allocate_amt
         self._device_manager.set_allocate(target_id, -allocate_amt)
         target_device.receive_message(Message(self._time, self._device_id, MessageType.ALLOCATE, allocate_amt))
@@ -785,12 +795,12 @@ class GridController(GridEquipment, PowerGiver, PowerTaker):
     # hourly price and total average price statistics so that it can base its current price based on those.
     def update_average_price_calcs(self):
         self._price_logic.update_prices(self._time)
-        self._logger.info(
-            self.build_log_notation(
-                message="price changed to {}".format(self._price),
-                tag="price",
-                value=self._price
-        ))
+        # self._logger.info(
+        #     self.build_log_notation(
+        #         message="price changed to {}".format(self._price),
+        #         tag="price",
+        #         value=self._price
+        # ))
 
     ##
     # Recalculates the price with the Grid Controller's price logic, and then sets the current price value.
@@ -813,8 +823,6 @@ class GridController(GridEquipment, PowerGiver, PowerTaker):
         self.update_average_price_calcs()  # update the previous average price information
         self.recalculate_price()  # use the price logic to evaluate a new price
         if self._price != old_price:  # log this if the price changed.
-            self._logger.info(self.build_log_notation(message="price changed to {}".format(self._price),
-                                                      tag="price change", value=self._price))
             # broadcast only if significant change price.
             price_delta = delta(self._price, old_price)
             if price_delta >= self._price_logic.get_price_announce_threshold():

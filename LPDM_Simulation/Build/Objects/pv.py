@@ -71,7 +71,7 @@ class PV(GridEquipment, PowerGiver):
                 # power_amt is zero so no wire loss
                 self.update_wire_loss_out(target_id, 0)
         self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
-                                                  tag="power_msg", value=power_amt))
+                                                  tag="power_out", value=power_amt))
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
     ##

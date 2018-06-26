@@ -231,8 +231,8 @@ class Device(metaclass=ABCMeta):
             self._sum_power_in += self._power_in * (time_diff / 3600.0)  # Return in wH
             self._logger.info(
                 self.build_log_notation(
-                    message="sum_power_in, dt = {}, load = {}".format(time_diff / 3600.0, self._power_in),
-                    tag="sum_power_in",
+                    message="energy_in, dt = {}, load = {}".format(time_diff / 3600.0, self._power_in),
+                    tag="energy_in",
                     value=self._power_in * (time_diff / 3600.0)
                 )
             )

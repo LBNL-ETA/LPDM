@@ -58,11 +58,6 @@ class Eud(Device):
     # are maintained. If EUD is already on, does not do anything.
     def start_up(self):
         if not self._in_operation:
-            self._logger.info(self.build_log_notation(
-                message="start up {}".format(self._device_id),
-                tag="start_up",
-                value=1
-            ))
             # TODO: self.engage()
             # Set power levels to update the power charge calculations.
             self._in_operation = True
@@ -182,7 +177,7 @@ class Eud(Device):
             # if there's a wire attached add it onto the request amount
             request_amt += wire_loss
         self._logger.info(self.build_log_notation(message="REQUEST to {}".format(target_id),
-                                                  tag="request_msg", value=request_amt))
+                                                  tag="request_out", value=request_amt))
         target_device.receive_message(Message(self._time, self._device_id, MessageType.REQUEST, request_amt))
 
     # This method is called when the EUD wishes to inform a grid controller that it is now consuming X watts of power.
@@ -206,14 +201,12 @@ class Eud(Device):
                 self.update_wire_loss_in(target_id, 0)
 
         self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
-                                                  tag="power_msg", value=power_amt))
+                                                  tag="power_out", value=power_amt))
 
         target_device.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
     def change_load_in(self, sender_id, new_load):
         prev_load = self._loads_in.get(sender_id, 0)
-        self._logger.info(self.build_log_notation(message="change load in from {} = {}".format(sender_id, new_load),
-                                                  tag="load_in", value=new_load))
         self.recalc_sum_power(prev_load, new_load)
         self._loads_in[sender_id] = new_load
 
@@ -229,7 +222,7 @@ class Eud(Device):
         self.update_state()  # make sure we are updated before calculating any desired power
         desired_power_level = self.calculate_desired_power_level()
 
-        self._logger.info(self.build_log_notation(message="desired power level", tag="desired_power", value=desired_power_level))
+        # self._logger.info(self.build_log_notation(message="desired power level", tag="desired_power", value=desired_power_level))
         gcs = [device_id for device_id in self._connected_devices.keys() if isinstance(self._connected_devices[device_id], GridEquipment)]
 
         if desired_power_level == 0:

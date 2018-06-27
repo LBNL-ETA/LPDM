@@ -13,9 +13,9 @@
                 "message_latency": 1,  
                 "price_logic": "marginal_price",
                 "connected_devices": [
-                    {"device_id": "cv_1", "voltage": 120, "wire_class": "Wire18Dc", "length_m": 2000},
-                    {"device_id": "cv_2", "voltage": 120, "wire_class": "Wire18Dc", "length_m": 2000},
-                    {"device_id": "cv_3", "voltage": 120, "wire_class": "Wire18Dc", "length_m": 2000}
+                    {"device_id": "cv_1", "voltage": 120, "length": 200, "resistance": 0.1},
+                    {"device_id": "cv_2", "voltage": 120, "length": 200, "resistance": 0.1},
+                    {"device_id": "cv_3", "voltage": 120, "length": 200, "resistance": 0.1}
                 ], 
                 "battery": {
                     "battery_id": "battery_1",
@@ -89,10 +89,10 @@
                     {"capacity": 1, "efficiency": 0.8}
                 ],
                 "device_input": {
-                    "device_id": "gc_1", "voltage": 120, "wire_class": "Wire18Dc", "length_m": 2000
+                    "device_id": "gc_1", "voltage": 120, "length": 200, "resistance": 0.1
                 },
                 "device_output": {
-                    "device_id": "eud_3", "voltage": 120, "wire_class": "Wire18Dc", "length_m": 2000
+                    "device_id": "eud_3", "voltage": 120, "length": 200, "resistance": 0.1
                 }
             },
             {
@@ -113,10 +113,10 @@
                     {"capacity": 1, "efficiency": 0.8}
                 ],
                 "device_input": {
-                    "device_id": "gc_1", "voltage": 120, "wire_class": "Wire18Dc", "length_m": 2000
+                    "device_id": "gc_1", "voltage": 120, "length": 200, "resistance": 0.1
                 },
                 "device_output": {
-                    "device_id": "utm_1", "voltage": 120, "wire_class": "Wire18Dc", "length_m": 2000
+                    "device_id": "utm_1", "voltage": 120, "length": 200, "resistance": 0.1
                 }
             },
             {
@@ -137,10 +137,10 @@
                     {"capacity": 1, "efficiency": 0.8}
                 ],
                 "device_input": {
-                    "device_id": "pv_1", "voltage": 120, "wire_class": "Wire18Dc", "length_m": 2000
+                    "device_id": "pv_1", "voltage": 120, "length": 200, "resistance": 0.1
                 },
                 "device_output": {
-                    "device_id": "gc_1", "voltage": 120, "wire_class": "Wire18Dc", "length_m": 2000
+                    "device_id": "gc_1", "voltage": 120, "length": 200, "resistance": 0.1
                 }
             }
         ]

@@ -90,7 +90,7 @@ class PV(GridEquipment, PowerGiver):
             raise ValueError("This PV is connected to no such device")
         # add in additional wire loss
         # if wire_loss is non-zero, then there's a wire attached
-        wire_loss = self.calculate_wire_loss(target_id)
+        wire_loss = self.calculate_wire_loss(target_id, power_amt)
         if wire_loss:
             if power_amt:
                 # if power_amt is non-zero, add in additional wire loss

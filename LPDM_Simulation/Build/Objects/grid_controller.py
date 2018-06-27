@@ -436,6 +436,9 @@ class GridController(GridEquipment, PowerGiver, PowerTaker):
         elif price_logic == "marginal_price":
             self._price_logic = GCMarginalPriceLogic(price_logic_interval, starting_price,
                                                      price_announce_threshold)
+        elif price_logic == "marginal_price_b":
+            self._price_logic = GCMarginalPriceLogicB(price_logic_interval, starting_price,
+                                                     price_announce_threshold)
         elif price_logic == "static_price":
             self._price_logic = GCStaticPrice(price_logic_interval, starting_price,
                                                      price_announce_threshold)

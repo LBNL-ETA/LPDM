@@ -1,26 +1,24 @@
 import unittest
-from Build.Objects.personal_computer import PersonalComputer
+from Build.Objects.notebook_personal_computer import NotebookPersonalComputer
 from Build.Simulation_Operation.supervisor import Supervisor
 import logging
 
-class PersonalComputerTest(unittest.TestCase):
+class NotebookPersonalComputerTest(unittest.TestCase):
 
     def setUp(self):
         self._logger = logging.getLogger("test")
         device_id = 1 # Note: Assuming it is an integer not UUID.
         supervisor = Supervisor()
-        self.personal_computer = PersonalComputer(device_id, supervisor)
+        self.notebook_personal_computer = NotebookPersonalComputer(device_id, supervisor)
 
     def test_start_up(self):
 
-        self._logger.info("In PersonalComputerTest#test_start_up")
-
-        self.personal_computer.start_up()
+        self.notebook_personal_computer.start_up()
 
         # Note: Since there is not assertNotRaises, if this test doesn't cause any error, it is considered to be success.
 
     def test_shut_down(self):
 
-        self.personal_computer.shut_down()
+        self.notebook_personal_computer.shut_down()
 
-        self.assertEqual(self.personal_computer._in_operation, False)
+        self.assertEqual(self.notebook_personal_computer._in_operation, False)

@@ -1,7 +1,7 @@
 from Build.Objects.eud import Eud
 from Build.Simulation_Operation.support import SECONDS_IN_DAY
 
-class PersonalComputer(Eud):
+class NotebookPersonalComputer(Eud):
 
     ##
     # @param operating_power DC input voltage is typically 12[V]. Assuming on average, it consumes 5[A]

@@ -6,7 +6,7 @@ from Build.Simulation_Operation.queue import PriorityQueue
 from Build.Simulation_Operation.supervisor import Supervisor
 
 
-# TODO: DO NOT USE. HAS NOT BEEN UPDATED.
+@unittest.skip("TODO: DO NOT USE. HAS NOT BEEN UPDATED.")
 class TestEventModel(unittest.TestCase):
 
     def setUp(self):

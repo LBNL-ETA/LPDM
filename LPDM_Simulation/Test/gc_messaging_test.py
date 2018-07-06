@@ -5,8 +5,7 @@ from Build.Objects.grid_controller import GridController
 from Build.Simulation_Operation.supervisor import Supervisor
 
 
-# TODO: DO NOT USE. HAS NOT BEEN UPDATED.
-
+@unittest.skip("TODO: DO NOT USE. HAS NOT BEEN UPDATED.")
 class TestGCMessaging(unittest.TestCase):
     def setUp(self):
         self.sup = Supervisor()
@@ -56,7 +55,7 @@ class TestGCMessaging(unittest.TestCase):
         self.assertEqual(self.gc2._requested["gc1"], -10) # 10 remaining to be sold to ya.
 
         """
-        Remaining Tests: Do one with utility meter.   
+        Remaining Tests: Do one with utility meter.
         """
 
 

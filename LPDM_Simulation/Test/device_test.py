@@ -4,8 +4,7 @@ from Build.Objects.grid_controller import GridController
 from Build.Simulation_Operation.supervisor import Supervisor
 
 
-# TODO: DO NOT USE. HAS NOT BEEN UPDATED.
-
+@unittest.skip("TODO: DO NOT USE. HAS NOT BEEN UPDATED.")
 class TestDeviceRegister(unittest.TestCase):
     def setUp(self):
         self.sup = Supervisor()
@@ -18,5 +17,3 @@ class TestDeviceRegister(unittest.TestCase):
     def test_connections(self):
         self.assertEqual(self.gc1._connected_devices["gc2"], self.gc2)
         self.assertEqual(self.gc2._connected_devices["gc1"], self.gc1)
-
-

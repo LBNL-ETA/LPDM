@@ -11,9 +11,13 @@ class NotebookPersonalComputer(Eud):
                          modulation_interval=modulation_interval, schedule=schedule, multiday=multiday, connected_devices=connected_devices)
         self.operating_power = operating_power
 
+    ##
+    # Notebook Personal Computer does not have startup behavior
     def begin_internal_operation(self):
         pass
 
+    ##
+    # Notebook Personal Computer does not have end behavior
     def end_internal_operation(self):
         pass
 
@@ -21,11 +25,17 @@ class NotebookPersonalComputer(Eud):
         self._logger.debug("In PersonalComputer#calculate_desired_power_level")
         return self.operating_power
 
+    ##
+    # Notebook Personal Computer does not seem to have any particular responce to received power
     def respond_to_power(self, received_power):
         pass
 
+    ##
+    # Notebook Personal Computer does not seem to have any change of state
     def update_state(self):
         pass
 
+    ##
+    # Notebook Personal Computer does not seem to have any. Investigate more. 
     def device_specific_calcs(self):
         pass

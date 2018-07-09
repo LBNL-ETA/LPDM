@@ -42,3 +42,23 @@ class NotebookPersonalComputerTest(unittest.TestCase):
         actual_state_of_charge = notebook_personal_computer.internal_battery.state_of_charge()
 
         self.assertEqual(actual_state_of_charge, expected_state_of_charge)
+
+    def test_charge_battery_when_with_more_supply(self):
+
+        operating_power = 12 * 5
+        received_power = 12 * 10 # Only maximum of 9.8 - 5 [Ah] can be used for charging battery
+        battery_capacity = 48
+        state_of_charge_before = 0.9
+
+        notebook_personal_computer = NotebookPersonalComputer(self.device_id, self.supervisor, operating_power = operating_power)
+        notebook_personal_computer.internal_battery.set_capacity(battery_capacity)
+        notebook_personal_computer.internal_battery.set_stat_of_charge(state_of_charge_before)
+
+        # Note: This acts more like private method but tested in unit test of this class:
+        notebook_personal_computer.respond_to_power(received_power)
+
+        expected_state_of_charge = 1.0
+
+        actual_state_of_charge = notebook_personal_computer.internal_battery.state_of_charge()
+
+        self.assertEqual(actual_state_of_charge, expected_state_of_charge)

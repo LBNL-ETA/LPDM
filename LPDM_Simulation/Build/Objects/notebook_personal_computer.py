@@ -28,8 +28,6 @@ class NotebookPersonalComputer(Eud):
         self._logger.debug("In PersonalComputer#calculate_desired_power_level")
         return self.operating_power
 
-    ##
-    # Notebook Personal Computer does not seem to have any particular responce to received power
     def respond_to_power(self, received_power):
         if received_power > self.operating_power:
            self.internal_battery.charge(received_power - self.operating_power)

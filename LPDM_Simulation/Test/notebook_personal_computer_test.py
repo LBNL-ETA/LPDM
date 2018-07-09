@@ -7,9 +7,9 @@ class NotebookPersonalComputerTest(unittest.TestCase):
 
     def setUp(self):
         self._logger = logging.getLogger("test")
-        device_id = 1 # Note: Assuming it is an integer not UUID.
-        supervisor = Supervisor()
-        self.notebook_personal_computer = NotebookPersonalComputer(device_id, supervisor)
+        self.device_id = 1 # Note: Assuming it is an integer not UUID.
+        self.supervisor = Supervisor()
+        self.notebook_personal_computer = NotebookPersonalComputer(self.device_id, self.supervisor)
 
     def test_start_up(self):
 
@@ -22,3 +22,23 @@ class NotebookPersonalComputerTest(unittest.TestCase):
         self.notebook_personal_computer.shut_down()
 
         self.assertEqual(self.notebook_personal_computer._in_operation, False)
+
+    def test_charge_battery(self):
+
+        operating_power = 12 * 5
+        received_power = 12 * 9.8 # 9.8 - 5 [Ah] is used for charging battery
+        battery_capacity = 48
+        state_of_charge_before = 0.5
+
+        notebook_personal_computer = NotebookPersonalComputer(self.device_id, self.supervisor, operating_power = operating_power)
+        notebook_personal_computer.internal_battery.set_capacity(battery_capacity)
+        notebook_personal_computer.internal_battery.set_stat_of_charge(state_of_charge_before)
+
+        # Note: This acts more like private method but tested in unit test of this class:
+        notebook_personal_computer.respond_to_power(received_power)
+
+        expected_state_of_charge = 0.6
+
+        actual_state_of_charge = notebook_personal_computer.internal_battery.state_of_charge()
+
+        self.assertEqual(actual_state_of_charge, expected_state_of_charge)

@@ -3,3 +3,6 @@ logs/
 node_tmp.json
 venv/
 .vscode/
+
+# For PyCharm IDE. Not necessary for Sublime Text or Atom. 
+.idea/

@@ -11,7 +11,8 @@ class NotebookPersonalComputerIntegrationTest(unittest.TestCase):
         supervisor = Supervisor()
 
         notebook_personal_computer_device_id = "notebook_personal_computer_1"
-        notebook_personal_computer = NotebookPersonalComputer(notebook_personal_computer_device_id, supervisor)
+        operating_power = 12 * 5
+        notebook_personal_computer = NotebookPersonalComputer(notebook_personal_computer_device_id, supervisor, operating_power = operating_power)
 
         battery_id = "battery_1"
         battery_price_logic = 'moving_average' # According to the constructor of Battery class, 'hourly_preference' or 'moving_average'
@@ -33,9 +34,3 @@ class NotebookPersonalComputerIntegrationTest(unittest.TestCase):
         grid_controller.send_register_message("notebook_personal_computer_1", 1)
         grid_controller.build_device_list()
         grid_controller.send_power_message("notebook_personal_computer_1", 10)
-        
-
-
-
-
-

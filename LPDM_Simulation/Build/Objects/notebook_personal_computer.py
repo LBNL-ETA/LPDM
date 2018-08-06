@@ -1,44 +1,117 @@
-from Build.Objects.eud import Eud
+########################################################################################################################
+# *** Copyright Notice ***
+#
+# "Price Based Local Power Distribution Management System (Local Power Distribution Manager) v2.0"
+# Copyright (c) 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory
+# (subject to receipt of any required approvals from the U.S. Dept. of Energy).  All rights reserved.
+#
+# If you have questions about your rights to use or distribute this software, please contact
+# Berkeley Lab's Innovation & Partnerships Office at  IPO@lbl.gov.
+########################################################################################################################
+
+"""
+An implementation of a light EUD. The light functions such that
+
+"""
+
 from Build.Simulation_Operation.support import SECONDS_IN_DAY
+from Build.Objects.eud import Eud
 
 class NotebookPersonalComputer(Eud):
 
     NOMINAL_DC_INPUT_VOLTAGE = 12
 
-    ##
-    # @param operating_power DC input voltage is typically 12[V]. Assuming on average, it consumes 5[A]
-    def __init__(self, device_id, supervisor, total_runtime=SECONDS_IN_DAY, time=0, msg_latency=0, power_direct=False,
-                 modulation_interval=600, schedule=None, multiday=0, connected_devices=None, operating_power=12*5):
-        super().__init__(device_id, "personal_computer", supervisor, total_runtime = total_runtime, time=time, msg_latency=msg_latency, power_direct=power_direct,
-                         modulation_interval=modulation_interval, schedule=schedule, multiday=multiday, connected_devices=connected_devices)
-        self.operating_power = operating_power
+    def __init__(self, device_id, supervisor, total_runtime=SECONDS_IN_DAY, multiday=0, modulation_interval=7200,
+                 msg_latency=0, time=0, schedule=None, connected_devices=None, max_operating_power=100.0,
+                 power_level_max=1.0, power_level_low=0.2, price_dim_start=0.1, price_dim_end=0.2, price_off=0.3):
+        super().__init__(device_id=device_id, device_type="personal_computer", supervisor=supervisor, total_runtime=total_runtime,
+                         multiday=multiday,
+                         modulation_interval=modulation_interval, msg_latency=msg_latency, time=time,
+                         schedule=schedule, connected_devices=connected_devices)
+        self._max_operating_power = max_operating_power  # the device's ideal maximum power usage
+        self._power_level_max = power_level_max  # percentage of power level to operate at when price is low
+        self._power_level_low = power_level_low  # percent of power level to operate at when price is high.
+        self._price_dim_start = price_dim_start  # the price at which to start to lower power
+        self._price_dim_end = price_dim_end  # price at which to change to lower_power mode.
+        self._price_off = price_off  # price at which to turn off completely
+        self._brightness = 0.0  # The percentage of this device's peak brightness, depending on percent of operating pwr
+        self._on = False  # Whether the light is on
+
         self.internal_battery = self.Battery()
 
     ##
-    # Notebook Personal Computer does not have startup behavior
-    def begin_internal_operation(self):
-        pass
-
-    ##
-    # Notebook Personal Computer does not have end behavior
-    def end_internal_operation(self):
-        pass
-
+    # Calculate the desired power level in based on the price (watts). Algorithm is described in
+    # software documentation.
+    #
     def calculate_desired_power_level(self):
-        self._logger.debug("In PersonalComputer#calculate_desired_power_level")
-        return self.operating_power
-
-    def respond_to_power(self, received_power):
-        if received_power > self.operating_power:
-           self.internal_battery.charge(received_power - self.operating_power)
+        if self._in_operation and self._on:
+            if self._price <= self._price_dim_start:
+                # Operate at maximum capacity when below this threshold
+                return self._power_level_max * self._max_operating_power
+            elif self._price <= self._price_dim_end:
+                # Linearly reduce power consumption
+                power_reduce_ratio = (self._price - self._price_dim_start) / (self._price_dim_end - self._price_dim_start)
+                power_level_reduced = self._power_level_max - ((self._power_level_max - self._power_level_low) * power_reduce_ratio)
+                return self._max_operating_power * power_level_reduced
+            elif self._price <= self._price_off:
+                # In this price range operate in low power mode
+                return self._power_level_low * self._max_operating_power
+        return 0.0  # not in operation or price too high.
 
     ##
-    # Notebook Personal Computer does not seem to have any change of state
+    # Turns the light "on", and hence begins consuming power. Does not affect whether device is in operation and can
+    # receive messages, only power consumption.
+    def on(self):
+        self._on = True
+        self.modulate_power()
+
+    ##
+    # Turns the light "off", and stops consuming power. Does not affect this device's ability to receive messages,
+    # and it remains in operation even when off.
+    def off(self):
+        self._on = False
+        gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
+        for gc in gcs:
+            self.send_power_message(gc, 0)
+            self.change_load_in(gc, 0)
+        self.set_power_in(0)
+        self.set_power_out(0)
+
+    ##
+    # The light modulates its brightness based on how much power is received.
+    # Brightness is ratio of received power to maximum operating power.
+    # @param received_power how much power this light received to operate
+    def respond_to_power(self, received_power):
+        self._brightness = received_power / self._max_operating_power
+        self._logger.info(self.build_log_notation(
+            message="brightness changed to {}".format(self._brightness),
+            tag="brightness",
+            value=self._brightness
+        ))
+
+        if received_power > self._max_operating_power:
+            self.internal_battery.charge(received_power - self._max_operating_power)
+
+    """The light does not keep track of a dynamic internal state -- it is just either on or off with its power level
+    determining its brightness. Hence, does not perform other EUD functions corresponding its dynamic internal state"""
+
+    ##
+    # Light does not change dynamic state
     def update_state(self):
         pass
 
     ##
-    # Notebook Personal Computer does not seem to have any. Investigate more.
+    # Light does not have a dynamic internal operation.
+    def begin_internal_operation(self):
+        pass
+
+    ##
+    # Light does not have a dynamic internal operation.
+    def end_internal_operation(self):
+        pass
+
+    ##
+    # Light does not have extra calculations beyond power consumption.
     def device_specific_calcs(self):
         pass
 
@@ -53,28 +126,28 @@ class NotebookPersonalComputer(Eud):
         #   Built-in 41.4-watt-hour lithium-polymer battery
         #   29W USB-C Power Adapter; USB-C power port"
         #
-        __capacity = 41.4 / 12  # 41.4[Wh] / 12[V] in order to get value in [Ah]
-        __state_of_charge = 0.0
+        _capacity = 41.4 / 12  # 41.4[Wh] / 12[V] in order to get value in [Ah]
+        _state_of_charge = 0.0
 
         # def __init__(self, capacity):
-        #     self.__capacity = capacity
+        #     self._capacity = capacity
 
         def set_capacity(self, capacity):
-            self.__capacity = capacity
+            self._capacity = capacity
 
         def set_stat_of_charge(self, state_of_charge):
-            self.__state_of_charge = state_of_charge
+            self._state_of_charge = state_of_charge
 
         def state_of_charge(self):
-            return self.__state_of_charge
+            return self._state_of_charge
 
         # Note: Simple implementation as a start
         def charge(self, power):
             # Note: Energy is measured in [Wh] thus assuming time has a unit of hour:
             current = power / NotebookPersonalComputer.NOMINAL_DC_INPUT_VOLTAGE
             capacity_change = current * 1 # [Ah]
-            state_of_charge_change = capacity_change / self.__capacity
-            if self.__state_of_charge + state_of_charge_change <= 1.0:
-                self.__state_of_charge += state_of_charge_change
+            state_of_charge_change = capacity_change / self._capacity
+            if self._state_of_charge + state_of_charge_change <= 1.0:
+                self._state_of_charge += state_of_charge_change
             else:
-               self.__state_of_charge = 1.0
+               self._state_of_charge = 1.0

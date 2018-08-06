@@ -25,12 +25,12 @@ class NotebookPersonalComputerTest(unittest.TestCase):
 
     def test_charge_battery(self):
 
-        operating_power = 12 * 5
+        max_operating_power = 12 * 5
         received_power = 12 * 9.8 # 9.8 - 5 [Ah] is used for charging battery
         battery_capacity = 48
         state_of_charge_before = 0.5
 
-        notebook_personal_computer = NotebookPersonalComputer(self.device_id, self.supervisor, operating_power = operating_power)
+        notebook_personal_computer = NotebookPersonalComputer(self.device_id, self.supervisor, max_operating_power = max_operating_power)
         notebook_personal_computer.internal_battery.set_capacity(battery_capacity)
         notebook_personal_computer.internal_battery.set_stat_of_charge(state_of_charge_before)
 
@@ -45,12 +45,12 @@ class NotebookPersonalComputerTest(unittest.TestCase):
 
     def test_charge_battery_when_with_more_supply(self):
 
-        operating_power = 12 * 5
+        max_operating_power = 12 * 5
         received_power = 12 * 10 # Only maximum of 9.8 - 5 [Ah] can be used for charging battery
         battery_capacity = 48
         state_of_charge_before = 0.9
 
-        notebook_personal_computer = NotebookPersonalComputer(self.device_id, self.supervisor, operating_power = operating_power)
+        notebook_personal_computer = NotebookPersonalComputer(self.device_id, self.supervisor, max_operating_power = max_operating_power)
         notebook_personal_computer.internal_battery.set_capacity(battery_capacity)
         notebook_personal_computer.internal_battery.set_stat_of_charge(state_of_charge_before)
 

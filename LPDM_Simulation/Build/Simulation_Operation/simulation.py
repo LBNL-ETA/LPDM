@@ -23,6 +23,7 @@ from Build.Objects.fixed_consumption import FixedConsumption
 from Build.Objects.load_profile_eud import LoadProfile
 from Build.Objects.grid_controller import GridController
 from Build.Objects.light import Light
+from Build.Objects.notebook_personal_computer import NotebookPersonalComputer
 from Build.Objects.pv import PV
 from Build.Objects.converter.converter import Converter
 from Build.Objects.wire import Wire
@@ -47,6 +48,8 @@ class SimulationSetup:
         # A dictionary of eud class names and their respective constructor input names to read from the JSON file
         self.eud_dictionary = {
             'light': [Light, 'max_operating_power', 'power_level_max', 'power_level_low', 'price_dim_start',
+                      'price_dim_end', 'price_off'],
+            'notebook_personal_computer': [NotebookPersonalComputer, 'max_operating_power', 'power_level_max', 'power_level_low', 'price_dim_start',
                       'price_dim_end', 'price_off'],
             'air_conditioner': [AirConditionerSimple, 'compressor_operating_power', 'initial_temp', 'temp_max_delta',
                                 'initial_set_point', 'price_to_setpoint', 'temperature_schedule',
@@ -79,9 +82,9 @@ class SimulationSetup:
 
     #  ________________________JSON READ-IN/DEVICE-INITIALIZATION FUNCTIONS ____________________________________________
 
-    """ Below are a collection of read-in functions, which parse their respective portions of the JSON and create 
-    instances of their respective classes, report those devices to the simulation supervisor, 
-    and record all the connections between devices which will then be initiated after all the devices are created. 
+    """ Below are a collection of read-in functions, which parse their respective portions of the JSON and create
+    instances of their respective classes, report those devices to the simulation supervisor,
+    and record all the connections between devices which will then be initiated after all the devices are created.
     """
 
     ##
@@ -239,7 +242,7 @@ class SimulationSetup:
                 DCPOWERIND = 1
                 TIMEPARSE = True
                 POWERSCALAR = 1
-            # Go through each line in CSV and parse power and time data 
+            # Go through each line in CSV and parse power and time data
             data.seek(0)
             for i, line in enumerate(data):
                 if i < DATASTART:
@@ -367,7 +370,7 @@ class SimulationSetup:
             self.supervisor.register_device(new_eud)
 
         return connections
-    
+
     def make_converters(self, config, runtime, override_args):
         "Make the converter objects"
         if "converters" not in config["devices"]:
@@ -451,14 +454,14 @@ class SimulationSetup:
                         self.connect_devices_without_wire(this_device_id, this_device, connection_item)
                     elif type(connection_item) is dict:
                         self.connect_devices_with_wire(this_device_id, this_device, connection_item)
-    
+
     def connect_devices_without_wire(self, device_id_a, device_a, device_id_b):
         # connect 2 devices together without any wire information
         device_b = self.supervisor.get_device(device_id_b)
         device_a.register_device(device_b, device_id_b, 1)
         device_b.register_device(device_a, device_id_a, 1)
         print("registered no wire {} -> {}".format(device_id_b, device_id_a))
-    
+
     def connect_devices_with_wire(self, device_id_a, device_a, connection_info):
         # connect 2 devices together without any wire information
         device_id = connection_info["device_id"]
@@ -516,8 +519,3 @@ def run_simulation(config_file, override_args):
         sim.supervisor.occur_next_event()
 
     sim.supervisor.finish_all(sim.end_time)
-
-
-
-
-

@@ -21,14 +21,13 @@ from Build.Simulation_Operation.message import Message, MessageType
 from Build.Objects.device import Device, SECONDS_IN_DAY
 from Build.Objects.grid_equipment import GridEquipment
 from Build.Simulation_Operation.event import Event
-from Build.Objects.device_type import PowerGiver, PowerTaker
 
 
-class UtilityMeter(GridEquipment, PowerGiver, PowerTaker):
+class UtilityMeter(GridEquipment):
 
     def __init__(self, device_id, supervisor, msg_latency=0, schedule=None, runtime=SECONDS_IN_DAY, multiday=0,
                  sell_price_schedule=None, sell_price_multiday=0, buy_price_schedule=None,
-                 buy_price_multiday=0, connected_devices=None, capacity=None):
+                 buy_price_multiday=0, connected_devices=None):
 
         super().__init__(device_id, "Utility Meter", supervisor, msg_latency=msg_latency, schedule=schedule,
                          connected_devices=connected_devices, total_runtime=runtime, multiday=multiday)
@@ -36,24 +35,21 @@ class UtilityMeter(GridEquipment, PowerGiver, PowerTaker):
         self._sell_price = 0
         self._buy_price = 0
         self._in_operation = False
-        self._capacity = capacity or 1000000
         self.setup_price_schedules(sell_price_schedule=sell_price_schedule, sell_price_multiday=sell_price_multiday,
                                    buy_price_schedule=buy_price_schedule, buy_price_multiday=buy_price_multiday,
                                    runtime=runtime)
-        
-        self.set_initial_allocate_event()
 
     ##
     # Turn the utility meter on so that it can provide and receive power.
     def turn_on(self):
         self._in_operation = True
-        # self._logger.info(self.build_log_notation("Turning on utility meter", "turn_on", 1))
+        self._logger.info(self.build_log_notation("Turning on utility meter", "turn_on", 1))
 
     ##
     # Turn the utility meter off so that it can no longer provide and receive power.
     def turn_off(self):
         self._in_operation = False
-        # self._logger.info(self.build_log_notation("Turning off utility meter", "turn_off", 0))
+        self._logger.info(self.build_log_notation("Turning off utility meter", "turn_off", 0))
 
     ##
     # Change the sell price for this utility meter
@@ -61,7 +57,7 @@ class UtilityMeter(GridEquipment, PowerGiver, PowerTaker):
     def set_sell_price(self, sell_price):
         prev_sell_price = self._sell_price
         self._sell_price = sell_price
-        self._logger.info(self.build_log_notation("set sell price", "price_sell", sell_price))
+        self._logger.info(self.build_log_notation("set sell price", "set sell price", sell_price))
         if self._sell_price != prev_sell_price:
             self.broadcast_price_levels(sell_price=self._sell_price, buy_price=self._buy_price)
 
@@ -71,7 +67,7 @@ class UtilityMeter(GridEquipment, PowerGiver, PowerTaker):
     def set_buy_price(self, buy_price):
         prev_buy_price = self._buy_price
         self._buy_price = buy_price
-        self._logger.info(self.build_log_notation("set buy price", "price_buy", buy_price))
+        self._logger.info(self.build_log_notation("set buy price", "set buy price", buy_price))
         if self._buy_price != prev_buy_price:
             self.broadcast_price_levels(sell_price=self._sell_price, buy_price=self._buy_price)
 
@@ -118,18 +114,6 @@ class UtilityMeter(GridEquipment, PowerGiver, PowerTaker):
                     price_event = Event(self.set_buy_price, buy_price)
                     time_sec = int(hour) * 3600
                     self.add_event(price_event, time_sec)
-    
-    def set_initial_allocate_event(self):
-        """Send out an allocate message when the simulation begins.
-        """
-        self.add_event(Event(self.broadcast_allocate), 0)
-    
-
-    def broadcast_allocate(self):
-        """Send out an allocate message to all connected devices.
-        """
-        for device_id in self._connected_devices:
-            self.send_allocate_message(device_id, self._capacity)
 
     # __________________________________ Messaging Functions _______________________ #
 
@@ -217,21 +201,6 @@ class UtilityMeter(GridEquipment, PowerGiver, PowerTaker):
 
         target.receive_message(Message(self._time, self._device_id, MessageType.PRICE,
                                        value=sell_price, extra_info=buy_price))
-
-    def send_allocate_message(self, target_id, value):
-        if target_id in self._connected_devices:
-            target = self._connected_devices[target_id]
-        else:
-            raise ValueError("This Utility Meter is connected to no such device")
-        self._logger.info(
-            self.build_log_notation(
-                message="allocate to {}".format(target_id),
-                tag="allocate_out",
-                value=value
-        ))
-
-        target.receive_message(Message(self._time, self._device_id, MessageType.ALLOCATE, value))
-
 
     ##
     # Informs all connected devices of the utility meter's buy price

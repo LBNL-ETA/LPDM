@@ -27,16 +27,28 @@ class PV(Device):
 
     ##
     # Sets up the power generation schedule for this PV. Takes input of a daily power generation schedule.
-    # Power
-    # TODO: assumes total_runtime is in days, and schedule is at most one day long, and schedule is
-    # TODO: in percentage of peak power. Make this more robust?
+    # @param power_profile list of (time, power_proportion) pairs for the PV profile
+    # @param peak_power peak power generated from PV unit, i.e. solar capacity
+    # @param total_runtime total number of days to run PV unit (usually simulation duration) 
     def setup_power_schedule(self, power_profile, peak_power, total_runtime):
-        curr_day = int(self._time / SECONDS_IN_DAY)  # Current day in seconds. Starts at the PV's initial time.
-        while curr_day < total_runtime:
+        # Check if power level list spans multiple days, or is single day repeat
+        multiday_input = False
+        for time, power_proportion in power_profile:
+            if time > 86400:
+                multiday_input = True
+                break
+        if multiday_input: # multiple day power level list (i.e. PVWatts)
             for time, power_proportion in power_profile:
                 power_event = Event(self.update_power_status, peak_power, power_proportion)
-                self.add_event(power_event, time + curr_day)
-            curr_day += SECONDS_IN_DAY
+                self.add_event(power_event, time)
+        else: # single day repeated power level list
+            curr_day = int(self._time / SECONDS_IN_DAY)  # Current day in seconds
+            while curr_day < total_runtime:
+                for time, power_proportion in power_profile:
+                    power_event = Event(self.update_power_status, peak_power, power_proportion)
+                    self.add_event(power_event, time + curr_day)
+                curr_day += SECONDS_IN_DAY
+
 
     ##
     # Changes the amount of power that this device is producing and
@@ -59,7 +71,7 @@ class PV(Device):
             raise ValueError("This PV is connected to no such device")
         # add in additional wire loss
         # if wire_loss is non-zero, then there's a wire attached
-        wire_loss = self.calculate_wire_loss(target_id)
+        wire_loss = self.calculate_wire_loss(target_id, power_amt)
         if wire_loss:
             if power_amt:
                 # if power_amt is non-zero, add in additional wire loss
@@ -69,8 +81,9 @@ class PV(Device):
                 # power_amt is zero so no wire loss
                 self.update_wire_loss_out(target_id, 0)
         self._logger.info(self.build_log_notation(message="POWER to {}".format(target_id),
-                                                  tag="power_msg", value=power_amt))
+                                                  tag="power_out", value=power_amt))
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
+
 
     ##
     # PV does not respond to external power messages

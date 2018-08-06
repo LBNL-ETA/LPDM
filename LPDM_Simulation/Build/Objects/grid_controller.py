@@ -89,6 +89,10 @@ class GridController(GridEquipment):
         elif price_logic == "marginal_price_b":
             self._price_logic = GCMarginalPriceLogicB(price_logic_interval, starting_price,
                                                      price_announce_threshold)
+        elif price_logic == "static_price":
+            self._price_logic = GCStaticPrice(price_logic_interval, starting_price,
+                                                     price_announce_threshold)
+
         else:
             raise ValueError("attempted to initialize grid controller with invalid price logic")
 
@@ -947,3 +951,30 @@ class GCMarginalPriceLogicB(GridControllerPriceLogic):
             return self._initial_price  # not enough information from other prices
 
 
+
+""" Static price, returns fixed initial price """
+class GCStaticPrice(GridControllerPriceLogic):
+
+    ##
+    # @param price_history_interval the length of the interval to calculate the average price for and store in memory
+    # @param initial price the initial price of this grid controller
+    # @param price_announce_threshold the difference in prices before announcing your new local price to neighbors
+
+    def __init__(self, price_history_interval, initial_price, price_announce_threshold):
+        super().__init__(price_history_interval, initial_price, price_announce_threshold)
+
+    ##
+    #
+    # Price is a function of the neighbors prices who have allocated to this device and utility meter prices.
+    # @param neighbor_prices the dictionary of connected device id's and their prices
+    # @param loads dictionary of connected device id's and current loads with those devices
+    # @param requested dictionary of connected device id's and current requests to and from those devices
+    # @param allocated the dictionary of connected device id's and allocated by and to those devices.
+    # @param desired_battery_charge the difference of current desired battery power flow and desired batt. power flow
+    # (positive if wants to charge more, negative if wants to output more)
+    # @return the calculated price based on the input variables.
+
+    def calc_price(self, neighbor_prices=None, loads=None, requested=None, allocated=None, desired_battery_power=0):
+        total_requested_out = 0  # positive record of how much this device has been requested to provide out
+
+        return self._initial_price

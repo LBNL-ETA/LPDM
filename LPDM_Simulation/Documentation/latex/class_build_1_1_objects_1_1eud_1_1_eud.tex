@@ -1,0 +1,231 @@
+\hypertarget{class_build_1_1_objects_1_1eud_1_1_eud}{}\section{Build.\+Objects.\+eud.\+Eud Class Reference}
+\label{class_build_1_1_objects_1_1eud_1_1_eud}\index{Build.\+Objects.\+eud.\+Eud@{Build.\+Objects.\+eud.\+Eud}}
+Inheritance diagram for Build.\+Objects.\+eud.\+Eud\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.408602cm]{class_build_1_1_objects_1_1eud_1_1_eud}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_ae9a2bace7d3af75a2a0746ab6ea9103c}\label{class_build_1_1_objects_1_1eud_1_1_eud_ae9a2bace7d3af75a2a0746ab6ea9103c}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self, device\+\_\+id, device\+\_\+type, supervisor, total\+\_\+runtime, time=0, msg\+\_\+latency=0, power\+\_\+direct=False, modulation\+\_\+interval=600, schedule=None, multiday=0, connected\+\_\+devices=None)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_a8601f950b8b11f28f9ec0e80965c8b25}{start\+\_\+up} (self)
+\begin{DoxyCompactList}\small\item\em Turns on the E\+UD, seeking to update to its desired power level. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_afc9354486371abba2f70e6a1605459e3}{shut\+\_\+down} (self)
+\begin{DoxyCompactList}\small\item\em Turns off the E\+UD. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a7a4ea640840f7c33015a204d83cc0b59}\label{class_build_1_1_objects_1_1eud_1_1_eud_a7a4ea640840f7c33015a204d83cc0b59}} 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_a7a4ea640840f7c33015a204d83cc0b59}{set\+\_\+allocated} (self, device\+\_\+id, allocate\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em Sets the quantity of power that this E\+UD has been allocated to consume by a specific device. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_a6f7982b4d798f0a26222ec4a96366b9a}{setup\+\_\+modulation\+\_\+schedule} (self, modulation\+\_\+interval, total\+\_\+runtime)
+\begin{DoxyCompactList}\small\item\em The E\+UD will modulate its power every 10 minutes. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_a5105203c22df5b2e9c1754b8889563df}{process\+\_\+power\+\_\+message} (self, sender\+\_\+id, new\+\_\+power)
+\begin{DoxyCompactList}\small\item\em Method to be called when this E\+UD receives a power message. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_a4e9b1ca4c510a1f405f5d16b31215cbe}{process\+\_\+request\+\_\+message} (self, sender\+\_\+id, request\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em E\+UD\textquotesingle{}s do not respond to request messages. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_abef38cebc5b66f6cb03f58f2900b9a93}{process\+\_\+price\+\_\+message} (self, sender\+\_\+id, new\+\_\+price, extra\+\_\+info)
+\begin{DoxyCompactList}\small\item\em Method to be called after the E\+UD receives a price message from a grid controller, immediately updating its price. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_af02e4338062f37389c04e87d9d5f9f63}{process\+\_\+allocate\+\_\+message} (self, sender\+\_\+id, allocate\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em Method to be called once device has allocated to provide a given quantity of power to another device, or to receive a given quantity of power. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_a13b6abd062b9b88597dc83c9c7813fdc}{send\+\_\+request\+\_\+message} (self, target\+\_\+id, request\+\_\+amt)
+\begin{DoxyCompactList}\small\item\em This method is called when the E\+UD is requesting to use power from a GC. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a45a3f08a0d82e961c9244f54fe446608}\label{class_build_1_1_objects_1_1eud_1_1_eud_a45a3f08a0d82e961c9244f54fe446608}} 
+def {\bfseries send\+\_\+power\+\_\+message} (self, target\+\_\+id, power\+\_\+amt)
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a652d92e9486fef78851127b876b000ff}\label{class_build_1_1_objects_1_1eud_1_1_eud_a652d92e9486fef78851127b876b000ff}} 
+def {\bfseries change\+\_\+load\+\_\+in} (self, sender\+\_\+id, new\+\_\+load)
+\item 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_a11d57b7f91d22bd696f2b29a8ac93044}{modulate\+\_\+power} (self)
+\begin{DoxyCompactList}\small\item\em Method to be called once it needs to recalculate its internal power usage. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a0a75866bd7e1478fa1f459bfb0da6675}\label{class_build_1_1_objects_1_1eud_1_1_eud_a0a75866bd7e1478fa1f459bfb0da6675}} 
+def {\bfseries begin\+\_\+internal\+\_\+operation} (self)
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a82b817dc748e1b5db87f4e47755b64ec}\label{class_build_1_1_objects_1_1eud_1_1_eud_a82b817dc748e1b5db87f4e47755b64ec}} 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_a82b817dc748e1b5db87f4e47755b64ec}{end\+\_\+internal\+\_\+operation} (self)
+\begin{DoxyCompactList}\small\item\em \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud}{Eud} specific processes to initiate or terminate when this device turns off. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_a690ec54ec92b3d2373858fe460013730}{calculate\+\_\+desired\+\_\+power\+\_\+level} (self)
+\begin{DoxyCompactList}\small\item\em Calculates E\+UD\textquotesingle{}s desired power in to support its current internal state levels. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_a89a88154fdd5e8a4c9c1207eb3cb3f2f}{respond\+\_\+to\+\_\+power} (self, received\+\_\+power)
+\begin{DoxyCompactList}\small\item\em How this E\+UD responds once it receives a given quantity of power after requesting a certain amount. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_ac807e57f20360c9e828046a38aaa7db6}{update\+\_\+state} (self)
+\begin{DoxyCompactList}\small\item\em Call to update all the internal state functions of the E\+UD. \end{DoxyCompactList}\item 
+def \hyperlink{class_build_1_1_objects_1_1eud_1_1_eud_a4d6c3c842206a1738efd24319ddc2176}{device\+\_\+specific\+\_\+calcs} (self)
+\begin{DoxyCompactList}\small\item\em All device specific end-\/of-\/simulation calculations are E\+U\+D-\/specific. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a79c2171714e8f604f2cf6e1b245dcf9f}\label{class_build_1_1_objects_1_1eud_1_1_eud_a79c2171714e8f604f2cf6e1b245dcf9f}} 
+{\bfseries power\+\_\+recalibration\+\_\+interval}
+\item 
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_ad35f5cbe19da59af227b7a38c4b76ae9}\label{class_build_1_1_objects_1_1eud_1_1_eud_ad35f5cbe19da59af227b7a38c4b76ae9}} 
+{\bfseries price\+\_\+recalibration\+\_\+interval}
+\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a690ec54ec92b3d2373858fe460013730}\label{class_build_1_1_objects_1_1eud_1_1_eud_a690ec54ec92b3d2373858fe460013730}} 
+\index{Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}!calculate\+\_\+desired\+\_\+power\+\_\+level@{calculate\+\_\+desired\+\_\+power\+\_\+level}}
+\index{calculate\+\_\+desired\+\_\+power\+\_\+level@{calculate\+\_\+desired\+\_\+power\+\_\+level}!Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}}
+\subsubsection{\texorpdfstring{calculate\+\_\+desired\+\_\+power\+\_\+level()}{calculate\_desired\_power\_level()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+eud.\+Eud.\+calculate\+\_\+desired\+\_\+power\+\_\+level (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Calculates E\+UD\textquotesingle{}s desired power in to support its current internal state levels. 
+
+N\+O\+TE\+: E\+UD must be in\+\_\+operation for this function to work. \begin{DoxyReturn}{Returns}
+the eud\textquotesingle{}s desired power in 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a4d6c3c842206a1738efd24319ddc2176}\label{class_build_1_1_objects_1_1eud_1_1_eud_a4d6c3c842206a1738efd24319ddc2176}} 
+\index{Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}!device\+\_\+specific\+\_\+calcs@{device\+\_\+specific\+\_\+calcs}}
+\index{device\+\_\+specific\+\_\+calcs@{device\+\_\+specific\+\_\+calcs}!Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}}
+\subsubsection{\texorpdfstring{device\+\_\+specific\+\_\+calcs()}{device\_specific\_calcs()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+eud.\+Eud.\+device\+\_\+specific\+\_\+calcs (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+All device specific end-\/of-\/simulation calculations are E\+U\+D-\/specific. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a11d57b7f91d22bd696f2b29a8ac93044}\label{class_build_1_1_objects_1_1eud_1_1_eud_a11d57b7f91d22bd696f2b29a8ac93044}} 
+\index{Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}!modulate\+\_\+power@{modulate\+\_\+power}}
+\index{modulate\+\_\+power@{modulate\+\_\+power}!Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}}
+\subsubsection{\texorpdfstring{modulate\+\_\+power()}{modulate\_power()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+eud.\+Eud.\+modulate\+\_\+power (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Method to be called once it needs to recalculate its internal power usage. 
+
+To be called after price, power level, or allocate has changed. This function will change the E\+UD\textquotesingle{}s power level to the desired level. This function is compatible with this E\+UD being associated with multiple grid controllers. E\+UD specific processes to initiate when this device turns on \mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_af02e4338062f37389c04e87d9d5f9f63}\label{class_build_1_1_objects_1_1eud_1_1_eud_af02e4338062f37389c04e87d9d5f9f63}} 
+\index{Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}!process\+\_\+allocate\+\_\+message@{process\+\_\+allocate\+\_\+message}}
+\index{process\+\_\+allocate\+\_\+message@{process\+\_\+allocate\+\_\+message}!Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}}
+\subsubsection{\texorpdfstring{process\+\_\+allocate\+\_\+message()}{process\_allocate\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+eud.\+Eud.\+process\+\_\+allocate\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{allocate\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+Method to be called once device has allocated to provide a given quantity of power to another device, or to receive a given quantity of power. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sender\+\_\+id} & the device who has allocated to provide the given quantity \\
+\hline
+{\em allocated\+\_\+amt} & the amount that the sending device has allocated to receive from this E\+UD. Hence, this E\+UD cannot respond unless the value is negative, since the E\+UD only consumes power. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a5105203c22df5b2e9c1754b8889563df}\label{class_build_1_1_objects_1_1eud_1_1_eud_a5105203c22df5b2e9c1754b8889563df}} 
+\index{Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}!process\+\_\+power\+\_\+message@{process\+\_\+power\+\_\+message}}
+\index{process\+\_\+power\+\_\+message@{process\+\_\+power\+\_\+message}!Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}}
+\subsubsection{\texorpdfstring{process\+\_\+power\+\_\+message()}{process\_power\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+eud.\+Eud.\+process\+\_\+power\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{new\+\_\+power }\end{DoxyParamCaption})}
+
+
+
+Method to be called when this E\+UD receives a power message. 
+
+If there is an erroneous message suggesting for the E\+UD to provide power, it immediately responds with a \char`\"{}0\char`\"{} price message. 
+\begin{DoxyParams}{Parameters}
+{\em sender\+\_\+id} & the sender of the power message \\
+\hline
+{\em new\+\_\+power} & the new power value from the sender\textquotesingle{}s perspective \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_abef38cebc5b66f6cb03f58f2900b9a93}\label{class_build_1_1_objects_1_1eud_1_1_eud_abef38cebc5b66f6cb03f58f2900b9a93}} 
+\index{Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}!process\+\_\+price\+\_\+message@{process\+\_\+price\+\_\+message}}
+\index{process\+\_\+price\+\_\+message@{process\+\_\+price\+\_\+message}!Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}}
+\subsubsection{\texorpdfstring{process\+\_\+price\+\_\+message()}{process\_price\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+eud.\+Eud.\+process\+\_\+price\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{new\+\_\+price,  }\item[{}]{extra\+\_\+info }\end{DoxyParamCaption})}
+
+
+
+Method to be called after the E\+UD receives a price message from a grid controller, immediately updating its price. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a4e9b1ca4c510a1f405f5d16b31215cbe}\label{class_build_1_1_objects_1_1eud_1_1_eud_a4e9b1ca4c510a1f405f5d16b31215cbe}} 
+\index{Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}!process\+\_\+request\+\_\+message@{process\+\_\+request\+\_\+message}}
+\index{process\+\_\+request\+\_\+message@{process\+\_\+request\+\_\+message}!Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}}
+\subsubsection{\texorpdfstring{process\+\_\+request\+\_\+message()}{process\_request\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+eud.\+Eud.\+process\+\_\+request\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{sender\+\_\+id,  }\item[{}]{request\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+E\+UD\textquotesingle{}s do not respond to request messages. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a89a88154fdd5e8a4c9c1207eb3cb3f2f}\label{class_build_1_1_objects_1_1eud_1_1_eud_a89a88154fdd5e8a4c9c1207eb3cb3f2f}} 
+\index{Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}!respond\+\_\+to\+\_\+power@{respond\+\_\+to\+\_\+power}}
+\index{respond\+\_\+to\+\_\+power@{respond\+\_\+to\+\_\+power}!Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}}
+\subsubsection{\texorpdfstring{respond\+\_\+to\+\_\+power()}{respond\_to\_power()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+eud.\+Eud.\+respond\+\_\+to\+\_\+power (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{received\+\_\+power }\end{DoxyParamCaption})}
+
+
+
+How this E\+UD responds once it receives a given quantity of power after requesting a certain amount. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em received\+\_\+power} & how much power this device immediately received (must be positive value) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a13b6abd062b9b88597dc83c9c7813fdc}\label{class_build_1_1_objects_1_1eud_1_1_eud_a13b6abd062b9b88597dc83c9c7813fdc}} 
+\index{Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}!send\+\_\+request\+\_\+message@{send\+\_\+request\+\_\+message}}
+\index{send\+\_\+request\+\_\+message@{send\+\_\+request\+\_\+message}!Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}}
+\subsubsection{\texorpdfstring{send\+\_\+request\+\_\+message()}{send\_request\_message()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+eud.\+Eud.\+send\+\_\+request\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{target\+\_\+id,  }\item[{}]{request\+\_\+amt }\end{DoxyParamCaption})}
+
+
+
+This method is called when the E\+UD is requesting to use power from a GC. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em target\+\_\+id} & the recipient of the request message (must be a GC) \\
+\hline
+{\em request\+\_\+amt} & the amount of power this E\+UD is requesting to receive (must be positive) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a6f7982b4d798f0a26222ec4a96366b9a}\label{class_build_1_1_objects_1_1eud_1_1_eud_a6f7982b4d798f0a26222ec4a96366b9a}} 
+\index{Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}!setup\+\_\+modulation\+\_\+schedule@{setup\+\_\+modulation\+\_\+schedule}}
+\index{setup\+\_\+modulation\+\_\+schedule@{setup\+\_\+modulation\+\_\+schedule}!Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}}
+\subsubsection{\texorpdfstring{setup\+\_\+modulation\+\_\+schedule()}{setup\_modulation\_schedule()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+eud.\+Eud.\+setup\+\_\+modulation\+\_\+schedule (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{modulation\+\_\+interval,  }\item[{}]{total\+\_\+runtime }\end{DoxyParamCaption})}
+
+
+
+The E\+UD will modulate its power every 10 minutes. 
+
+\mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_afc9354486371abba2f70e6a1605459e3}\label{class_build_1_1_objects_1_1eud_1_1_eud_afc9354486371abba2f70e6a1605459e3}} 
+\index{Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}!shut\+\_\+down@{shut\+\_\+down}}
+\index{shut\+\_\+down@{shut\+\_\+down}!Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}}
+\subsubsection{\texorpdfstring{shut\+\_\+down()}{shut\_down()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+eud.\+Eud.\+shut\+\_\+down (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Turns off the E\+UD. 
+
+Reduces all power consumption to 0 and informs all connected grid controllers of this change. \mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_a8601f950b8b11f28f9ec0e80965c8b25}\label{class_build_1_1_objects_1_1eud_1_1_eud_a8601f950b8b11f28f9ec0e80965c8b25}} 
+\index{Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}!start\+\_\+up@{start\+\_\+up}}
+\index{start\+\_\+up@{start\+\_\+up}!Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}}
+\subsubsection{\texorpdfstring{start\+\_\+up()}{start\_up()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+eud.\+Eud.\+start\+\_\+up (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Turns on the E\+UD, seeking to update to its desired power level. 
+
+Previous state functions such as price are maintained. If E\+UD is already on, does not do anything. \mbox{\Hypertarget{class_build_1_1_objects_1_1eud_1_1_eud_ac807e57f20360c9e828046a38aaa7db6}\label{class_build_1_1_objects_1_1eud_1_1_eud_ac807e57f20360c9e828046a38aaa7db6}} 
+\index{Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}!update\+\_\+state@{update\+\_\+state}}
+\index{update\+\_\+state@{update\+\_\+state}!Build\+::\+Objects\+::eud\+::\+Eud@{Build\+::\+Objects\+::eud\+::\+Eud}}
+\subsubsection{\texorpdfstring{update\+\_\+state()}{update\_state()}}
+{\footnotesize\ttfamily def Build.\+Objects.\+eud.\+Eud.\+update\+\_\+state (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Call to update all the internal state functions of the E\+UD. 
+
+Call this function before calling calculate desired power level. 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/\+Objects/eud.\+py\end{DoxyCompactItemize}

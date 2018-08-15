@@ -1,0 +1,1279 @@
+{
+    "run_time_days": 7.0, 
+    "console_log_level": 20, 
+    "file_log_level": 20, 
+    "devices": {
+        "grid_controllers": [
+            {
+                "static_price": false, 
+                "message_latency": 1, 
+                "connected_devices": [
+                    "conv_gti", 
+                    "conv_pv", 
+                    {
+                        "resistance": 0.026649999999999997, 
+                        "voltage": 380, 
+                        "device_id": "conv_1"
+                    }, 
+                    {
+                        "resistance": 0.026649999999999997, 
+                        "voltage": 380, 
+                        "device_id": "conv_2"
+                    }, 
+                    {
+                        "resistance": 0.0004375, 
+                        "voltage": 380, 
+                        "device_id": "conv_3"
+                    }, 
+                    {
+                        "resistance": 0.01367142857142857, 
+                        "voltage": 380, 
+                        "device_id": "conv_4"
+                    }, 
+                    {
+                        "resistance": 0.026649999999999997, 
+                        "voltage": 380, 
+                        "device_id": "conv_5"
+                    }, 
+                    {
+                        "resistance": 0.0385, 
+                        "voltage": 380, 
+                        "device_id": "conv_6"
+                    }, 
+                    {
+                        "resistance": 0.0004375, 
+                        "voltage": 48, 
+                        "device_id": "conv_7"
+                    }
+                ], 
+                "uuid": 1, 
+                "device_type": "grid_controller", 
+                "price_logic": "static_price", 
+                "battery": {
+                    "starting soc": 0.5, 
+                    "capacity": 1.0, 
+                    "price_logic": "hourly_preference", 
+                    "max_charge_rate": 10000000000, 
+                    "battery_id": "battery_1", 
+                    "device_type": "battery", 
+                    "max_discharge_rate": 10000000000
+                }, 
+                "threshold_alloc": 1, 
+                "device_id": "gc_1"
+            }
+        ], 
+        "pvs": [
+            {
+                "message_latency": 1, 
+                "data_filename": "pvwatts_hourly.csv", 
+                "uuid": 4, 
+                "device_id": "pv_1", 
+                "peak_power": 378000
+            }
+        ], 
+        "utility_meters": [
+            {
+                "capacity": 1000000000.0, 
+                "uuid": 2, 
+                "schedule": {
+                    "items": [
+                        [
+                            0, 
+                            "turn_on"
+                        ]
+                    ], 
+                    "multiday": 0
+                }, 
+                "sell_price_schedule": {
+                    "items": [
+                        [
+                            0, 
+                            0
+                        ]
+                    ], 
+                    "multiday": 0
+                }, 
+                "buy_price_schedule": {
+                    "items": [
+                        [
+                            0, 
+                            0
+                        ]
+                    ], 
+                    "multiday": 0
+                }, 
+                "device_type": "utility_meter", 
+                "device_id": "utm_1"
+            }
+        ], 
+        "euds": [
+            {
+                "eud_type": "load_profile_eud", 
+                "uuid": 6, 
+                "grid_controller_id": "gc_1", 
+                "schedule": {
+                    "items": [
+                        [
+                            0, 
+                            "start_up"
+                        ]
+                    ], 
+                    "multiday": 0
+                }, 
+                "data_filename": "Load_1.csv", 
+                "device_id": "Load_1"
+            }, 
+            {
+                "eud_type": "load_profile_eud", 
+                "uuid": 8, 
+                "grid_controller_id": "gc_1", 
+                "schedule": {
+                    "items": [
+                        [
+                            0, 
+                            "start_up"
+                        ]
+                    ], 
+                    "multiday": 0
+                }, 
+                "data_filename": "Load_2.csv", 
+                "device_id": "Load_2"
+            }, 
+            {
+                "eud_type": "load_profile_eud", 
+                "uuid": 10, 
+                "grid_controller_id": "gc_1", 
+                "schedule": {
+                    "items": [
+                        [
+                            0, 
+                            "start_up"
+                        ]
+                    ], 
+                    "multiday": 0
+                }, 
+                "data_filename": "Load_3.csv", 
+                "device_id": "Load_3"
+            }, 
+            {
+                "eud_type": "load_profile_eud", 
+                "uuid": 12, 
+                "grid_controller_id": "gc_1", 
+                "schedule": {
+                    "items": [
+                        [
+                            0, 
+                            "start_up"
+                        ]
+                    ], 
+                    "multiday": 0
+                }, 
+                "data_filename": "Load_4.csv", 
+                "device_id": "Load_4"
+            }, 
+            {
+                "eud_type": "load_profile_eud", 
+                "uuid": 14, 
+                "grid_controller_id": "gc_1", 
+                "schedule": {
+                    "items": [
+                        [
+                            0, 
+                            "start_up"
+                        ]
+                    ], 
+                    "multiday": 0
+                }, 
+                "data_filename": "Load_5.csv", 
+                "device_id": "Load_5"
+            }, 
+            {
+                "eud_type": "load_profile_eud", 
+                "uuid": 16, 
+                "grid_controller_id": "gc_1", 
+                "schedule": {
+                    "items": [
+                        [
+                            0, 
+                            "start_up"
+                        ]
+                    ], 
+                    "multiday": 0
+                }, 
+                "data_filename": "Load_6.csv", 
+                "device_id": "Load_6"
+            }, 
+            {
+                "eud_type": "load_profile_eud", 
+                "uuid": 18, 
+                "grid_controller_id": "gc_1", 
+                "schedule": {
+                    "items": [
+                        [
+                            0, 
+                            "start_up"
+                        ]
+                    ], 
+                    "multiday": 0
+                }, 
+                "data_filename": "Load_7.csv", 
+                "device_id": "Load_7"
+            }
+        ], 
+        "converters": [
+            {
+                "capacity": 312007.84375, 
+                "uuid": 3, 
+                "device_output": "gc_1", 
+                "efficiency_curve": [
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": -1.0
+                    }, 
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": -0.9
+                    }, 
+                    {
+                        "efficiency": 0.99, 
+                        "capacity": -0.8
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.75
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.7
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.6
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.5
+                    }, 
+                    {
+                        "efficiency": 0.9890528700906346, 
+                        "capacity": -0.4
+                    }, 
+                    {
+                        "efficiency": 0.987058912386707, 
+                        "capacity": -0.3
+                    }, 
+                    {
+                        "efficiency": 0.9822235649546829, 
+                        "capacity": -0.2
+                    }, 
+                    {
+                        "efficiency": 0.9681661631419941, 
+                        "capacity": -0.1
+                    }, 
+                    {
+                        "efficiency": 0.9681661631419941, 
+                        "capacity": 0.1
+                    }, 
+                    {
+                        "efficiency": 0.9822235649546829, 
+                        "capacity": 0.2
+                    }, 
+                    {
+                        "efficiency": 0.987058912386707, 
+                        "capacity": 0.3
+                    }, 
+                    {
+                        "efficiency": 0.9890528700906346, 
+                        "capacity": 0.4
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.5
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.6
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.7
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.75
+                    }, 
+                    {
+                        "efficiency": 0.99, 
+                        "capacity": 0.8
+                    }, 
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": 0.9
+                    }, 
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": 1.0
+                    }, 
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": -1.0
+                    }, 
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": -0.9
+                    }, 
+                    {
+                        "efficiency": 0.99, 
+                        "capacity": -0.8
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.75
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.7
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.6
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.5
+                    }, 
+                    {
+                        "efficiency": 0.9890528700906346, 
+                        "capacity": -0.4
+                    }, 
+                    {
+                        "efficiency": 0.987058912386707, 
+                        "capacity": -0.3
+                    }, 
+                    {
+                        "efficiency": 0.9822235649546829, 
+                        "capacity": -0.2
+                    }, 
+                    {
+                        "efficiency": 0.9681661631419941, 
+                        "capacity": -0.1
+                    }, 
+                    {
+                        "efficiency": 0.9681661631419941, 
+                        "capacity": 0.1
+                    }, 
+                    {
+                        "efficiency": 0.9822235649546829, 
+                        "capacity": 0.2
+                    }, 
+                    {
+                        "efficiency": 0.987058912386707, 
+                        "capacity": 0.3
+                    }, 
+                    {
+                        "efficiency": 0.9890528700906346, 
+                        "capacity": 0.4
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.5
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.6
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.7
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.75
+                    }, 
+                    {
+                        "efficiency": 0.99, 
+                        "capacity": 0.8
+                    }, 
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": 0.9
+                    }, 
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": 1.0
+                    }
+                ], 
+                "device_input": "utm_1", 
+                "device_id": "conv_gti"
+            }, 
+            {
+                "capacity": 338383.875, 
+                "uuid": 5, 
+                "device_output": "gc_1", 
+                "efficiency_curve": [
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": -1.0
+                    }, 
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": -0.9
+                    }, 
+                    {
+                        "efficiency": 0.99, 
+                        "capacity": -0.8
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.75
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.7
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.6
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.5
+                    }, 
+                    {
+                        "efficiency": 0.9890528700906346, 
+                        "capacity": -0.4
+                    }, 
+                    {
+                        "efficiency": 0.987058912386707, 
+                        "capacity": -0.3
+                    }, 
+                    {
+                        "efficiency": 0.9822235649546829, 
+                        "capacity": -0.2
+                    }, 
+                    {
+                        "efficiency": 0.9681661631419941, 
+                        "capacity": -0.1
+                    }, 
+                    {
+                        "efficiency": 0.9681661631419941, 
+                        "capacity": 0.1
+                    }, 
+                    {
+                        "efficiency": 0.9822235649546829, 
+                        "capacity": 0.2
+                    }, 
+                    {
+                        "efficiency": 0.987058912386707, 
+                        "capacity": 0.3
+                    }, 
+                    {
+                        "efficiency": 0.9890528700906346, 
+                        "capacity": 0.4
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.5
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.6
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.7
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.75
+                    }, 
+                    {
+                        "efficiency": 0.99, 
+                        "capacity": 0.8
+                    }, 
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": 0.9
+                    }, 
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": 1.0
+                    }, 
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": -1.0
+                    }, 
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": -0.9
+                    }, 
+                    {
+                        "efficiency": 0.99, 
+                        "capacity": -0.8
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.75
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.7
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.6
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": -0.5
+                    }, 
+                    {
+                        "efficiency": 0.9890528700906346, 
+                        "capacity": -0.4
+                    }, 
+                    {
+                        "efficiency": 0.987058912386707, 
+                        "capacity": -0.3
+                    }, 
+                    {
+                        "efficiency": 0.9822235649546829, 
+                        "capacity": -0.2
+                    }, 
+                    {
+                        "efficiency": 0.9681661631419941, 
+                        "capacity": -0.1
+                    }, 
+                    {
+                        "efficiency": 0.9681661631419941, 
+                        "capacity": 0.1
+                    }, 
+                    {
+                        "efficiency": 0.9822235649546829, 
+                        "capacity": 0.2
+                    }, 
+                    {
+                        "efficiency": 0.987058912386707, 
+                        "capacity": 0.3
+                    }, 
+                    {
+                        "efficiency": 0.9890528700906346, 
+                        "capacity": 0.4
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.5
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.6
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.7
+                    }, 
+                    {
+                        "efficiency": 0.9899501510574019, 
+                        "capacity": 0.75
+                    }, 
+                    {
+                        "efficiency": 0.99, 
+                        "capacity": 0.8
+                    }, 
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": 0.9
+                    }, 
+                    {
+                        "efficiency": 0.9896510574018128, 
+                        "capacity": 1.0
+                    }
+                ], 
+                "device_input": {
+                    "resistance": 0.00281875, 
+                    "voltage": 700, 
+                    "device_id": "pv_1"
+                }, 
+                "device_id": "conv_pv"
+            }, 
+            {
+                "capacity": 86926.9296875, 
+                "uuid": 7, 
+                "device_output": "Load_1", 
+                "efficiency_curve": [
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -1.0
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.9
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.8
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.75
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.7
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.6
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.5
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.4
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.3
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.2
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.1
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.1
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.2
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.3
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.4
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.5
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.6
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.7
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.75
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.8
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.9
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 1.0
+                    }
+                ], 
+                "device_input": "gc_1", 
+                "device_id": "conv_1"
+            }, 
+            {
+                "capacity": 57406.5546875, 
+                "uuid": 9, 
+                "device_output": "Load_2", 
+                "efficiency_curve": [
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -1.0
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.9
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.8
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.75
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.7
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.6
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.5
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.4
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.3
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.2
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.1
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.1
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.2
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.3
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.4
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.5
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.6
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.7
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.75
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.8
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.9
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 1.0
+                    }
+                ], 
+                "device_input": "gc_1", 
+                "device_id": "conv_2"
+            }, 
+            {
+                "capacity": 48247.48828125, 
+                "uuid": 11, 
+                "device_output": "Load_3", 
+                "efficiency_curve": [
+                    {
+                        "efficiency": 0.9688057384508323, 
+                        "capacity": -1.0
+                    }, 
+                    {
+                        "efficiency": 0.96870188962047, 
+                        "capacity": -0.9
+                    }, 
+                    {
+                        "efficiency": 0.9695846046785503, 
+                        "capacity": -0.8
+                    }, 
+                    {
+                        "efficiency": 0.9697923023392752, 
+                        "capacity": -0.75
+                    }, 
+                    {
+                        "efficiency": 0.97, 
+                        "capacity": -0.7
+                    }, 
+                    {
+                        "efficiency": 0.97, 
+                        "capacity": -0.6
+                    }, 
+                    {
+                        "efficiency": 0.9668326106739467, 
+                        "capacity": -0.5
+                    }, 
+                    {
+                        "efficiency": 0.9622113377228199, 
+                        "capacity": -0.4
+                    }, 
+                    {
+                        "efficiency": 0.9516706814410362, 
+                        "capacity": -0.3
+                    }, 
+                    {
+                        "efficiency": 0.933704833788341, 
+                        "capacity": -0.2
+                    }, 
+                    {
+                        "efficiency": 0.7460499973234838, 
+                        "capacity": -0.1
+                    }, 
+                    {
+                        "efficiency": 0.7460499973234838, 
+                        "capacity": 0.1
+                    }, 
+                    {
+                        "efficiency": 0.933704833788341, 
+                        "capacity": 0.2
+                    }, 
+                    {
+                        "efficiency": 0.9516706814410362, 
+                        "capacity": 0.3
+                    }, 
+                    {
+                        "efficiency": 0.9622113377228199, 
+                        "capacity": 0.4
+                    }, 
+                    {
+                        "efficiency": 0.9668326106739467, 
+                        "capacity": 0.5
+                    }, 
+                    {
+                        "efficiency": 0.97, 
+                        "capacity": 0.6
+                    }, 
+                    {
+                        "efficiency": 0.97, 
+                        "capacity": 0.7
+                    }, 
+                    {
+                        "efficiency": 0.9697923023392752, 
+                        "capacity": 0.75
+                    }, 
+                    {
+                        "efficiency": 0.9695846046785503, 
+                        "capacity": 0.8
+                    }, 
+                    {
+                        "efficiency": 0.96870188962047, 
+                        "capacity": 0.9
+                    }, 
+                    {
+                        "efficiency": 0.9688057384508323, 
+                        "capacity": 1.0
+                    }
+                ], 
+                "device_input": "gc_1", 
+                "device_id": "conv_3"
+            }, 
+            {
+                "capacity": 15352.2900390625, 
+                "uuid": 13, 
+                "device_output": "Load_4", 
+                "efficiency_curve": [
+                    {
+                        "efficiency": 0.9688057384508323, 
+                        "capacity": -1.0
+                    }, 
+                    {
+                        "efficiency": 0.96870188962047, 
+                        "capacity": -0.9
+                    }, 
+                    {
+                        "efficiency": 0.9695846046785503, 
+                        "capacity": -0.8
+                    }, 
+                    {
+                        "efficiency": 0.9697923023392752, 
+                        "capacity": -0.75
+                    }, 
+                    {
+                        "efficiency": 0.97, 
+                        "capacity": -0.7
+                    }, 
+                    {
+                        "efficiency": 0.97, 
+                        "capacity": -0.6
+                    }, 
+                    {
+                        "efficiency": 0.9668326106739467, 
+                        "capacity": -0.5
+                    }, 
+                    {
+                        "efficiency": 0.9622113377228199, 
+                        "capacity": -0.4
+                    }, 
+                    {
+                        "efficiency": 0.9516706814410362, 
+                        "capacity": -0.3
+                    }, 
+                    {
+                        "efficiency": 0.933704833788341, 
+                        "capacity": -0.2
+                    }, 
+                    {
+                        "efficiency": 0.7460499973234838, 
+                        "capacity": -0.1
+                    }, 
+                    {
+                        "efficiency": 0.7460499973234838, 
+                        "capacity": 0.1
+                    }, 
+                    {
+                        "efficiency": 0.933704833788341, 
+                        "capacity": 0.2
+                    }, 
+                    {
+                        "efficiency": 0.9516706814410362, 
+                        "capacity": 0.3
+                    }, 
+                    {
+                        "efficiency": 0.9622113377228199, 
+                        "capacity": 0.4
+                    }, 
+                    {
+                        "efficiency": 0.9668326106739467, 
+                        "capacity": 0.5
+                    }, 
+                    {
+                        "efficiency": 0.97, 
+                        "capacity": 0.6
+                    }, 
+                    {
+                        "efficiency": 0.97, 
+                        "capacity": 0.7
+                    }, 
+                    {
+                        "efficiency": 0.9697923023392752, 
+                        "capacity": 0.75
+                    }, 
+                    {
+                        "efficiency": 0.9695846046785503, 
+                        "capacity": 0.8
+                    }, 
+                    {
+                        "efficiency": 0.96870188962047, 
+                        "capacity": 0.9
+                    }, 
+                    {
+                        "efficiency": 0.9688057384508323, 
+                        "capacity": 1.0
+                    }
+                ], 
+                "device_input": "gc_1", 
+                "device_id": "conv_4"
+            }, 
+            {
+                "capacity": 6477.14501953125, 
+                "uuid": 15, 
+                "device_output": "Load_5", 
+                "efficiency_curve": [
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -1.0
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.9
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.8
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.75
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.7
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.6
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.5
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.4
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.3
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.2
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.1
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.1
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.2
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.3
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.4
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.5
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.6
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.7
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.75
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.8
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.9
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 1.0
+                    }
+                ], 
+                "device_input": "gc_1", 
+                "device_id": "conv_5"
+            }, 
+            {
+                "capacity": 8.440093994140625, 
+                "uuid": 17, 
+                "device_output": "Load_6", 
+                "efficiency_curve": [
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -1.0
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.9
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.8
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.75
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.7
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.6
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.5
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.4
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.3
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.2
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.1
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.1
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.2
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.3
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.4
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.5
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.6
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.7
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.75
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.8
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.9
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 1.0
+                    }
+                ], 
+                "device_input": "gc_1", 
+                "device_id": "conv_6"
+            }, 
+            {
+                "capacity": 70403.3203125, 
+                "uuid": 19, 
+                "device_output": "Load_7", 
+                "efficiency_curve": [
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -1.0
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.9
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.8
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.75
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.7
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.6
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.5
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.4
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.3
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.2
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": -0.1
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.1
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.2
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.3
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.4
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.5
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.6
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.7
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.75
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.8
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 0.9
+                    }, 
+                    {
+                        "efficiency": 1.0, 
+                        "capacity": 1.0
+                    }
+                ], 
+                "device_input": "gc_1", 
+                "device_id": "conv_7"
+            }
+        ]
+    }
+}

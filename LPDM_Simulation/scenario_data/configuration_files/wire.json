@@ -1,0 +1,148 @@
+{
+    "run_time_days": 6,
+    "console_log_level": 20,
+    "file_log_level": 20,
+    "devices": {
+        "grid_controllers": [
+            {
+                "device_id": "gc_1",
+                "device_type": "grid_controller",
+                "static_price": false,
+                "uuid": 12, 
+                "threshold_alloc": 1, 
+                "message_latency": 1,  
+                "price_logic": "marginal_price",
+                "connected_devices": [
+                    {"device_id": "cv_1", "voltage": 120, "length": 200, "resistance": 0.1},
+                    {"device_id": "cv_2", "voltage": 120, "length": 200, "resistance": 0.1},
+                    {"device_id": "cv_3", "voltage": 120, "length": 200, "resistance": 0.1}
+                ], 
+                "battery": {
+                    "battery_id": "battery_1",
+                    "device_type": "battery",
+                    "capacity": 2000.0,
+                    "max_discharge_rate": 2000.0, 
+                    "max_charge_rate": 2000.0, 
+                    "price_logic": "hourly_preference", 
+                    "starting soc": 1.0
+                }
+            }
+        ],
+        "pvs":[
+            {
+                "device_id": "pv_1",
+                "uuid": 11,
+                "message_latency": 1, 
+                "peak_power": 1800.0,
+                "data_filename": "pv_data_winter.csv"
+            }
+        ], 
+        "utility_meters": [
+            {
+                "device_id": "utm_1",
+                "uuid": 10,
+                "device_type": "utility_meter",
+                "capacity": 5000.0,
+                "schedule": {
+                    "multiday": 0, 
+                    "items": [[0, "turn_on"]]
+                }, 
+                "buy_price_schedule": {
+                    "multiday": 1, 
+                    "items": [[0, 0.10], [11, 0.05], [15, 0.10], [17, 0.15], [23, 0.10]]
+                }, 
+                "sell_price_schedule": {
+                    "multiday": 1, 
+                    "items": [[0, 0.10], [11, 0.05], [15, 0.10], [17, 0.15], [23, 0.10]]
+                }
+            }
+        ],
+        "euds": [
+            {
+                "device_id": "eud_3",
+                "uuid": 3,
+                "eud_type": "light",
+                "max_operating_power": 500.0, 
+                "modulation_interval": 600,
+                "schedule": {
+                    "multiday": 1,
+                    "items": [[0, "start_up"],[0, "off"], [6, "on"], [8, "off"], [18, "on"]]
+                }
+            }
+        ],
+        "converters": [
+            {
+                "device_id": "cv_1",
+                "uuid": 15,
+                "capacity": 2000,
+                "efficiency_curve": [
+                    {"capacity": 0.1, "efficiency": 0.6},
+                    {"capacity": 0.2, "efficiency": 0.7},
+                    {"capacity": 0.3, "efficiency": 0.75},
+                    {"capacity": 0.4, "efficiency": 0.8},
+                    {"capacity": 0.5, "efficiency": 0.83},
+                    {"capacity": 0.6, "efficiency": 0.85},
+                    {"capacity": 0.7, "efficiency": 0.86},
+                    {"capacity": 0.75, "efficiency": 0.86},
+                    {"capacity": 0.8, "efficiency": 0.85},
+                    {"capacity": 0.9, "efficiency": 0.83},
+                    {"capacity": 1, "efficiency": 0.8}
+                ],
+                "device_input": {
+                    "device_id": "gc_1", "voltage": 120, "length": 200, "resistance": 0.1
+                },
+                "device_output": {
+                    "device_id": "eud_3", "voltage": 120, "length": 200, "resistance": 0.1
+                }
+            },
+            {
+                "device_id": "cv_2",
+                "uuid": 16,
+                "capacity": 2000,
+                "efficiency_curve": [
+                    {"capacity": 0.1, "efficiency": 0.6},
+                    {"capacity": 0.2, "efficiency": 0.7},
+                    {"capacity": 0.3, "efficiency": 0.75},
+                    {"capacity": 0.4, "efficiency": 0.8},
+                    {"capacity": 0.5, "efficiency": 0.83},
+                    {"capacity": 0.6, "efficiency": 0.85},
+                    {"capacity": 0.7, "efficiency": 0.86},
+                    {"capacity": 0.75, "efficiency": 0.86},
+                    {"capacity": 0.8, "efficiency": 0.85},
+                    {"capacity": 0.9, "efficiency": 0.83},
+                    {"capacity": 1, "efficiency": 0.8}
+                ],
+                "device_input": {
+                    "device_id": "gc_1", "voltage": 120, "length": 200, "resistance": 0.1
+                },
+                "device_output": {
+                    "device_id": "utm_1", "voltage": 120, "length": 200, "resistance": 0.1
+                }
+            },
+            {
+                "device_id": "cv_3",
+                "uuid": 17,
+                "capacity": 2000,
+                "efficiency_curve": [
+                    {"capacity": 0.1, "efficiency": 0.6},
+                    {"capacity": 0.2, "efficiency": 0.7},
+                    {"capacity": 0.3, "efficiency": 0.75},
+                    {"capacity": 0.4, "efficiency": 0.8},
+                    {"capacity": 0.5, "efficiency": 0.83},
+                    {"capacity": 0.6, "efficiency": 0.85},
+                    {"capacity": 0.7, "efficiency": 0.86},
+                    {"capacity": 0.75, "efficiency": 0.86},
+                    {"capacity": 0.8, "efficiency": 0.85},
+                    {"capacity": 0.9, "efficiency": 0.83},
+                    {"capacity": 1, "efficiency": 0.8}
+                ],
+                "device_input": {
+                    "device_id": "pv_1", "voltage": 120, "length": 200, "resistance": 0.1
+                },
+                "device_output": {
+                    "device_id": "gc_1", "voltage": 120, "length": 200, "resistance": 0.1
+                }
+            }
+        ]
+    }
+}

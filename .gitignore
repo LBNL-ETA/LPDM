@@ -1,3 +1,5 @@
 *.pyc
 logs/
 node_tmp.json
+venv/
+.vscode/

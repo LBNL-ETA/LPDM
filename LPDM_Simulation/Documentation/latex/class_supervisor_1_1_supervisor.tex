@@ -1,0 +1,53 @@
+\hypertarget{class_supervisor_1_1_supervisor}{}\section{Supervisor.\+Supervisor Class Reference}
+\label{class_supervisor_1_1_supervisor}\index{Supervisor.\+Supervisor@{Supervisor.\+Supervisor}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_supervisor_1_1_supervisor_ae3c45d95cb0658b1a792d447084f0835}\label{class_supervisor_1_1_supervisor_ae3c45d95cb0658b1a792d447084f0835}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self)
+\item 
+def \hyperlink{class_supervisor_1_1_supervisor_abcfeed6e2cf6aec51fd85133dcc7668d}{register\+\_\+device} (self, device)
+\begin{DoxyCompactList}\small\item\em Given a pointer to a device, adds a mapping from device\+\_\+id to that device. \end{DoxyCompactList}\item 
+def \hyperlink{class_supervisor_1_1_supervisor_aa2199e82392a38e22e391e03885fb4c2}{register\+\_\+event} (self, device\+\_\+id, time\+\_\+of\+\_\+next\+\_\+event)
+\begin{DoxyCompactList}\small\item\em Registers an event. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_supervisor_1_1_supervisor_a93a80c2aa032144e4bdc3fb1183335c8}\label{class_supervisor_1_1_supervisor_a93a80c2aa032144e4bdc3fb1183335c8}} 
+def \hyperlink{class_supervisor_1_1_supervisor_a93a80c2aa032144e4bdc3fb1183335c8}{occur\+\_\+next\+\_\+event} (self)
+\begin{DoxyCompactList}\small\item\em Runs the next event in the supervisor\textquotesingle{}s queue, advancing that device\textquotesingle{}s local time to that point. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_supervisor_1_1_supervisor_abcfeed6e2cf6aec51fd85133dcc7668d}\label{class_supervisor_1_1_supervisor_abcfeed6e2cf6aec51fd85133dcc7668d}} 
+\index{Supervisor\+::\+Supervisor@{Supervisor\+::\+Supervisor}!register\+\_\+device@{register\+\_\+device}}
+\index{register\+\_\+device@{register\+\_\+device}!Supervisor\+::\+Supervisor@{Supervisor\+::\+Supervisor}}
+\subsubsection{\texorpdfstring{register\+\_\+device()}{register\_device()}}
+{\footnotesize\ttfamily def Supervisor.\+Supervisor.\+register\+\_\+device (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device }\end{DoxyParamCaption})}
+
+
+
+Given a pointer to a device, adds a mapping from device\+\_\+id to that device. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em device} & the device to add to the supervisor device dictionary \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_supervisor_1_1_supervisor_aa2199e82392a38e22e391e03885fb4c2}\label{class_supervisor_1_1_supervisor_aa2199e82392a38e22e391e03885fb4c2}} 
+\index{Supervisor\+::\+Supervisor@{Supervisor\+::\+Supervisor}!register\+\_\+event@{register\+\_\+event}}
+\index{register\+\_\+event@{register\+\_\+event}!Supervisor\+::\+Supervisor@{Supervisor\+::\+Supervisor}}
+\subsubsection{\texorpdfstring{register\+\_\+event()}{register\_event()}}
+{\footnotesize\ttfamily def Supervisor.\+Supervisor.\+register\+\_\+event (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{device\+\_\+id,  }\item[{}]{time\+\_\+of\+\_\+next\+\_\+event }\end{DoxyParamCaption})}
+
+
+
+Registers an event. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em device} & the device to add to the supervisor device dictionary \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Build/Supervisor.\+py\end{DoxyCompactItemize}

@@ -1,0 +1,154 @@
+{
+    "run_time_days": 6,
+    "console_log_level": 20,
+    "file_log_level": 20,
+    "devices": {
+        "grid_controllers": [
+            {
+                "device_id": "gc_1",
+                "device_type": "grid_controller",
+                "static_price": true,
+                "uuid": 12, 
+                "threshold_alloc": 1, 
+                "message_latency": 1,  
+                "price_logic": "marginal_price",
+                "connected_devices": ["utm_1", "eud_1", "eud_2", "eud_3", "eud_4", "fx_1", "pv_1", "lp_1"], 
+                "battery": {
+                    "battery_id": "battery_1",
+                    "device_type": "battery",
+                    "capacity": 2000.0,
+                    "max_discharge_rate": 2000.0, 
+                    "max_charge_rate": 2000.0, 
+                    "price_logic": "hourly_preference", 
+                    "starting soc": 1.0
+                }
+            }
+        ],
+        "pvs":[
+            {
+                "device_id": "pv_1",
+                "uuid": 11,
+                "message_latency": 1, 
+                "peak_power": 1000.0,
+                "data_filename": "pvwatts_hourly.csv"
+            }
+        ], 
+        "utility_meters": [
+            {
+                "device_id": "utm_1",
+                "uuid": 10,
+                "device_type": "utility_meter",
+                "capacity": 5000.0,
+                "schedule": {
+                    "multiday": 0, 
+                    "items": [[0, "turn_on"]]
+                }, 
+                "buy_price_schedule": {
+                    "multiday": 1, 
+                    "items": [[0, 0.10], [11, 0.05], [15, 0.10], [17, 0.15], [23, 0.10]]
+                }, 
+                "sell_price_schedule": {
+                    "multiday": 1, 
+                    "items": [[0, 0.10], [11, 0.05], [15, 0.10], [17, 0.15], [23, 0.10]]
+                }
+            }
+        ],
+        "euds": [
+            {
+                "device_id": "eud_1",
+                "uuid": 1,
+                "eud_type": "air_conditioner",
+                "grid_controller_id": "gc_1",
+                "schedule": {
+                    "multiday": 0, 
+                    "items": [[0, "start_up"]] 
+                }, 
+                "price_to_setpoint": [[0.05, 18.0], [0.10, 22.0], [0.15, 30.0]], 
+                "compressor_operating_power": 1000.0,
+                "precooling_enabled": false,
+                "initial_temp": 25.0,
+                "temp_max_delta": 0.5,
+                "initial_set_point": 23.0,
+                "compresor_cooling_rate": 2.0,
+                "heat_exchange_rate": 0.1,
+                "modulation_interval": 600,
+                "temperature_update_interval": 300,
+                "external_data":{
+                    "temperature_schedule": {
+                        "readin_function": "read_air_conditioner_data",
+                        "source_file": "weather_5_secs.csv"
+                    }
+                }
+            },
+            {
+                "device_id": "eud_2",
+                "uuid": 2,
+                "eud_type": "air_conditioner",
+                "schedule": {
+                    "multiday": 0, 
+                    "items": [[0, "start_up"]] 
+                }, 
+                "compressor_operating_power": 500.0,
+                "precooling_enabled": false,
+                "price_to_setpoint": [[0.05, 17.0], [0.10, 21.0], [0.15, 29.0]],
+                "initial_temp": 25.0,
+                "temp_max_delta": 0.5,
+                "initial_set_point": 23.0,
+                "compresor_cooling_rate": 2.0,
+                "heat_exchange_rate": 0.1,
+                "modulation_interval": 600,
+                "temperature_update_interval": 300,
+                "external_data":{
+                    "temperature_schedule": {
+                        "readin_function": "read_air_conditioner_data",
+                        "source_file": "weather_5_secs.csv"
+                    }
+                }
+            },
+            {
+                "device_id": "eud_3",
+                "uuid": 3,
+                "eud_type": "light",
+                "max_operating_power": 500.0, 
+                "schedule": {
+                    "multiday": 1,
+                    "items": [[0, "start_up"],[0, "off"], [6, "on"], [8, "off"], [18, "on"]]
+                }
+            },
+            {
+                "device_id": "eud_4",
+                "uuid": 4,
+                "eud_type": "light",
+                "max_operating_power": 200.0,
+                "constant_power_output": true,
+                "schedule": {
+                    "multiday": 1, 
+                    "items": [[0, "start_up"], [0, "on"], [7, "off"], [17, "on"]]  
+                }
+            },
+            {
+                "device_id": "fx_1",
+                "uuid": 5,
+                "eud_type": "fixed_consumption",
+                "grid_controller_id": "gc_1",
+                "desired_power_level": 100.0,
+                "constant_power_output": true,
+                "schedule": {
+                    "multiday": 1, 
+                    "items": [[0, "start_up"], [7, "shut_down"], [17, "start_up"]] 
+                }
+            },
+            {
+                "device_id": "lp_1",
+                "uuid": 6,
+                "eud_type": "load_profile_eud",
+                "grid_controller_id": "gc_1",
+                "data_filename": "testload.csv",
+                "schedule": {
+                    "multiday": 0, 
+                    "items": [[0, "start_up"]] 
+                }
+            }
+        ]
+    }
+}

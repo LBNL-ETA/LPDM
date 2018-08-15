@@ -1,0 +1,68 @@
+\hypertarget{namespace_build_1_1_simulation___operation_1_1support}{}\section{Build.\+Simulation\+\_\+\+Operation.\+support Namespace Reference}
+\label{namespace_build_1_1_simulation___operation_1_1support}\index{Build.\+Simulation\+\_\+\+Operation.\+support@{Build.\+Simulation\+\_\+\+Operation.\+support}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespace_build_1_1_simulation___operation_1_1support_acca6fabc27b4396b056093d586ca08b3}{nonzero\+\_\+power} (power\+\_\+level)
+\begin{DoxyCompactList}\small\item\em All power requests, unsatisfied power responses, and fluctuations that occur in the range of less than the min nonzero power are likely caused by floating point error and will be ignored by all devices. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{namespace_build_1_1_simulation___operation_1_1support_aff63e620df123c8bfaf59153da574355}\label{namespace_build_1_1_simulation___operation_1_1support_aff63e620df123c8bfaf59153da574355}} 
+def \hyperlink{namespace_build_1_1_simulation___operation_1_1support_aff63e620df123c8bfaf59153da574355}{delta} (a, b)
+\begin{DoxyCompactList}\small\item\em Returns the absolute value of the difference between two values. \end{DoxyCompactList}\item 
+def \hyperlink{namespace_build_1_1_simulation___operation_1_1support_a93141935e1ce265eda8e45c1909ec65c}{format\+\_\+time\+\_\+from\+\_\+seconds} (seconds)
+\begin{DoxyCompactList}\small\item\em Given a time in seconds, return a date in human readable format in the form of D H\+H\+:\+MM\+:SS where D = Day, HH = Hour, MM = Minute, SS = Seconds. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{namespace_build_1_1_simulation___operation_1_1support_a6cd782d65e57b11fe1b316949e5ac467}\label{namespace_build_1_1_simulation___operation_1_1support_a6cd782d65e57b11fe1b316949e5ac467}} 
+int {\bfseries S\+E\+C\+O\+N\+D\+S\+\_\+\+I\+N\+\_\+\+D\+AY} = 86400
+\item 
+\mbox{\Hypertarget{namespace_build_1_1_simulation___operation_1_1support_a573e35045e9ad721fa37f11d58696c52}\label{namespace_build_1_1_simulation___operation_1_1support_a573e35045e9ad721fa37f11d58696c52}} 
+int {\bfseries S\+E\+C\+O\+N\+D\+S\+\_\+\+I\+N\+\_\+\+H\+O\+UR} = 3600
+\item 
+\mbox{\Hypertarget{namespace_build_1_1_simulation___operation_1_1support_a0ba1de62f810f791d18f328cb3f60034}\label{namespace_build_1_1_simulation___operation_1_1support_a0ba1de62f810f791d18f328cb3f60034}} 
+int {\bfseries S\+E\+C\+O\+N\+D\+S\+\_\+\+I\+N\+\_\+\+M\+I\+N\+U\+TE} = 60
+\item 
+\mbox{\Hypertarget{namespace_build_1_1_simulation___operation_1_1support_aadd8757d7b1d9ed8e8fd85ce2fb42fd4}\label{namespace_build_1_1_simulation___operation_1_1support_aadd8757d7b1d9ed8e8fd85ce2fb42fd4}} 
+float {\bfseries M\+I\+N\+\_\+\+N\+O\+N\+Z\+E\+R\+O\+\_\+\+P\+O\+W\+ER} = 0.\+01
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\begin{DoxyVerb}A default 'utility' file containing extra support functions and variables to be freely used by all classes.
+\end{DoxyVerb}
+ 
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{namespace_build_1_1_simulation___operation_1_1support_a93141935e1ce265eda8e45c1909ec65c}\label{namespace_build_1_1_simulation___operation_1_1support_a93141935e1ce265eda8e45c1909ec65c}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::support@{Build\+::\+Simulation\+\_\+\+Operation\+::support}!format\+\_\+time\+\_\+from\+\_\+seconds@{format\+\_\+time\+\_\+from\+\_\+seconds}}
+\index{format\+\_\+time\+\_\+from\+\_\+seconds@{format\+\_\+time\+\_\+from\+\_\+seconds}!Build\+::\+Simulation\+\_\+\+Operation\+::support@{Build\+::\+Simulation\+\_\+\+Operation\+::support}}
+\subsubsection{\texorpdfstring{format\+\_\+time\+\_\+from\+\_\+seconds()}{format\_time\_from\_seconds()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+support.\+format\+\_\+time\+\_\+from\+\_\+seconds (\begin{DoxyParamCaption}\item[{}]{seconds }\end{DoxyParamCaption})}
+
+
+
+Given a time in seconds, return a date in human readable format in the form of D H\+H\+:\+MM\+:SS where D = Day, HH = Hour, MM = Minute, SS = Seconds. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em time\+\_\+seconds} & the time in the simulation in seconds \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{namespace_build_1_1_simulation___operation_1_1support_acca6fabc27b4396b056093d586ca08b3}\label{namespace_build_1_1_simulation___operation_1_1support_acca6fabc27b4396b056093d586ca08b3}} 
+\index{Build\+::\+Simulation\+\_\+\+Operation\+::support@{Build\+::\+Simulation\+\_\+\+Operation\+::support}!nonzero\+\_\+power@{nonzero\+\_\+power}}
+\index{nonzero\+\_\+power@{nonzero\+\_\+power}!Build\+::\+Simulation\+\_\+\+Operation\+::support@{Build\+::\+Simulation\+\_\+\+Operation\+::support}}
+\subsubsection{\texorpdfstring{nonzero\+\_\+power()}{nonzero\_power()}}
+{\footnotesize\ttfamily def Build.\+Simulation\+\_\+\+Operation.\+support.\+nonzero\+\_\+power (\begin{DoxyParamCaption}\item[{}]{power\+\_\+level }\end{DoxyParamCaption})}
+
+
+
+All power requests, unsatisfied power responses, and fluctuations that occur in the range of less than the min nonzero power are likely caused by floating point error and will be ignored by all devices. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em power\+\_\+level} & the power level to determine whether it is significantly large to be considered nonzero \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+a boolean value whether this power\+\_\+level is significantly nonzero 
+\end{DoxyReturn}

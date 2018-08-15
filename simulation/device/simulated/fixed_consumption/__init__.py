@@ -1,1 +1,0 @@
-from fixed_consumption import FixedConsumption

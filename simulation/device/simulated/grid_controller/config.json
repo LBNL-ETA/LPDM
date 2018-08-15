@@ -1,6 +1,0 @@
-{
-    "device_type": "grid_controller",
-    "device_name": "grid_controller",
-    "capacity": 3000.0,
-    "check_battery_soc_rate": 300
-}

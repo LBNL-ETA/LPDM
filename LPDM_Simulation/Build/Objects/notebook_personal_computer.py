@@ -10,8 +10,13 @@
 ########################################################################################################################
 
 """
-An implementation of a light EUD. The light functions such that
+An implementation of a notebook personal computer EUD.
 
+Use data for MacBook (from 2017) for now.
+Its USB-C Power Adapter (29[W]  Model A1540) to get an idea of current flow to the computer
+Output 14.5[V] - 2.0[A] or 5.2[V] - 2.4[A]
+Use the current value for 14.5[V]: 2.0[A] since it is assumed that the internal battery operates on
+12[V]
 """
 
 from Build.Simulation_Operation.support import SECONDS_IN_DAY
@@ -21,10 +26,14 @@ class NotebookPersonalComputer(Eud):
 
     NOMINAL_DC_INPUT_VOLTAGE = 12
 
-    def __init__(self, device_id, supervisor, total_runtime=SECONDS_IN_DAY, multiday=0, modulation_interval=7200,
+    def __init__(self, device_id, supervisor, total_runtime=SECONDS_IN_DAY, multiday=0,
+                 modulation_interval=7200,
                  msg_latency=0, time=0, schedule=None, connected_devices=None, max_operating_power=100.0,
-                 power_level_max=1.0, power_level_low=0.2, price_dim_start=0.1, price_dim_end=0.2, price_off=0.3):
-        super().__init__(device_id=device_id, device_type="personal_computer", supervisor=supervisor, total_runtime=total_runtime,
+                 power_level_max=1.0, power_level_low=0.2, price_dim_start=0.1, price_dim_end=0.2, price_off=0.3,
+                 charging_boundary_state_of_charge = 0.6, charging_boundary_price = 0.1,
+                 discharging_boundary_state_of_charge = 1.0, discharging_boundary_price = 0.3):
+        super().__init__(device_id=device_id, device_type="personal_computer",
+                         supervisor=supervisor, total_runtime=total_runtime,
                          multiday=multiday,
                          modulation_interval=modulation_interval, msg_latency=msg_latency, time=time,
                          schedule=schedule, connected_devices=connected_devices)
@@ -37,13 +46,21 @@ class NotebookPersonalComputer(Eud):
         self._brightness = 0.0  # The percentage of this device's peak brightness, depending on percent of operating pwr
         self._on = False  # Whether the light is on
 
-        self.internal_battery = self.Battery()
+        self._internal_battery = self.Battery(charging_boundary_state_of_charge,
+                                              charging_boundary_price,
+                                              discharging_boundary_state_of_charge, discharging_boundary_price)
 
     ##
     # Calculate the desired power level in based on the price (watts). Algorithm is described in
     # software documentation.
     #
     def calculate_desired_power_level(self):
+
+        desired_power_level_by_battery = self._internal_battery.calculate_desired_power_level(
+                                                    self._price)
+
+        return desired_power_level_by_battery
+
         if self._in_operation and self._on:
             if self._price <= self._price_dim_start:
                 # Operate at maximum capacity when below this threshold
@@ -63,7 +80,7 @@ class NotebookPersonalComputer(Eud):
     # receive messages, only power consumption.
     def on(self):
         self._on = True
-        self.modulate_power()
+        #self.modulate_power()
 
     ##
     # Turns the light "off", and stops consuming power. Does not affect this device's ability to receive messages,
@@ -90,30 +107,34 @@ class NotebookPersonalComputer(Eud):
         ))
 
         if received_power > self._max_operating_power:
-            self.internal_battery.charge(received_power - self._max_operating_power)
+            self._internal_battery.charge(received_power - self._max_operating_power)
 
     """The light does not keep track of a dynamic internal state -- it is just either on or off with its power level
     determining its brightness. Hence, does not perform other EUD functions corresponding its dynamic internal state"""
 
     ##
-    # Light does not change dynamic state
+    #
     def update_state(self):
         pass
 
     ##
-    # Light does not have a dynamic internal operation.
+    #
     def begin_internal_operation(self):
         pass
 
     ##
-    # Light does not have a dynamic internal operation.
+    #
     def end_internal_operation(self):
         pass
 
     ##
-    # Light does not have extra calculations beyond power consumption.
+    #
     def device_specific_calcs(self):
         pass
+
+    @property
+    def internal_battery(self):
+        return self._internal_battery
 
     class Battery(object):
 
@@ -126,20 +147,33 @@ class NotebookPersonalComputer(Eud):
         #   Built-in 41.4-watt-hour lithium-polymer battery
         #   29W USB-C Power Adapter; USB-C power port"
         #
-        _capacity = 41.4 / 12  # 41.4[Wh] / 12[V] in order to get value in [Ah]
+        _nominal_voltage = 12  # 12[V]
+        _nominal_current = 2  # 2[V] derived from output current of power adapter
+        _capacity = 41.4 / _nominal_voltage  # 41.4[Wh] / 12[V] in order to get value in [Ah]
         _state_of_charge = 0.0
 
-        # def __init__(self, capacity):
-        #     self._capacity = capacity
+        def __init__(self, charging_boundary_state_of_charge = 0.6, charging_boundary_price = 0.1,
+                     discharging_boundary_state_of_charge = 1.0, discharging_boundary_price = 0.3):
+            self._charging_boundary_state_of_charge = charging_boundary_state_of_charge
+            self._charging_boundary_price = charging_boundary_price
+            self._discharging_boundary_state_of_charge = discharging_boundary_state_of_charge
+            self._discharging_boundary_price = discharging_boundary_price
 
-        def set_capacity(self, capacity):
-            self._capacity = capacity
+        @property
+        def capacity(self):
+            return self._capacity
 
-        def set_stat_of_charge(self, state_of_charge):
-            self._state_of_charge = state_of_charge
+        @capacity.setter
+        def capacity(self, value):
+            self._capacity = value
 
+        @property
         def state_of_charge(self):
             return self._state_of_charge
+
+        @state_of_charge.setter
+        def state_of_charge(self, value):
+            self._state_of_charge = value
 
         # Note: Simple implementation as a start
         def charge(self, power):
@@ -151,3 +185,8 @@ class NotebookPersonalComputer(Eud):
                 self._state_of_charge += state_of_charge_change
             else:
                self._state_of_charge = 1.0
+
+        def calculate_desired_power_level(self, price):
+            if (price <= self._charging_boundary_price) and (self._state_of_charge <=
+                                                        self._charging_boundary_state_of_charge):
+                return self._nominal_voltage * self._nominal_current

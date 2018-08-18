@@ -26,12 +26,27 @@ class NotebookPersonalComputer(Eud):
 
     NOMINAL_DC_INPUT_VOLTAGE = 12
 
+    #
+    # Default values for internal battery:
+    # Use the data for "Battery and Power" for MacBook 2018 for now
+    # (https://www.apple.com/macbook/specs/)
+    #  "Up to 10 hours wireless web3
+    #   Up to 12 hours iTunes movie playback3
+    #   Up to 30 days of standby time3
+    #   Built-in 41.4-watt-hour lithium-polymer battery
+    #   29W USB-C Power Adapter; USB-C power port"
+    #
+    #   nominal_voltage = 12  # 12[V]
+    #   nominal_current = 2  # 2[V] derived from output current of power adapter
+    #   capacity = 41.4  # 41.4[Wh] / 12[V] in order to get value in [Ah]
+    #
     def __init__(self, device_id, supervisor, total_runtime=SECONDS_IN_DAY, multiday=0,
                  modulation_interval=7200,
                  msg_latency=0, time=0, schedule=None, connected_devices=None, max_operating_power=100.0,
                  power_level_max=1.0, power_level_low=0.2, price_dim_start=0.1, price_dim_end=0.2, price_off=0.3,
                  charging_boundary_state_of_charge = 0.6, charging_boundary_price = 0.1,
-                 discharging_boundary_state_of_charge = 1.0, discharging_boundary_price = 0.3):
+                 discharging_boundary_state_of_charge = 1.0, discharging_boundary_price = 0.3,
+                 nominal_voltage = 12, nominal_current = 2, capacity = 41.4):
         super().__init__(device_id=device_id, device_type="personal_computer",
                          supervisor=supervisor, total_runtime=total_runtime,
                          multiday=multiday,
@@ -48,7 +63,8 @@ class NotebookPersonalComputer(Eud):
 
         self._internal_battery = self.Battery(charging_boundary_state_of_charge,
                                               charging_boundary_price,
-                                              discharging_boundary_state_of_charge, discharging_boundary_price)
+                                              discharging_boundary_state_of_charge, discharging_boundary_price,
+                                              nominal_voltage, nominal_current, capacity)
 
     ##
     # Calculate the desired power level in based on the price (watts). Algorithm is described in
@@ -138,26 +154,20 @@ class NotebookPersonalComputer(Eud):
 
     class Battery(object):
 
-        #
-        # Use the data for "Battery and Power" for MacBook 2018 for now
-        # (https://www.apple.com/macbook/specs/)
-        #  "Up to 10 hours wireless web3
-        #   Up to 12 hours iTunes movie playback3
-        #   Up to 30 days of standby time3
-        #   Built-in 41.4-watt-hour lithium-polymer battery
-        #   29W USB-C Power Adapter; USB-C power port"
-        #
-        _nominal_voltage = 12  # 12[V]
-        _nominal_current = 2  # 2[V] derived from output current of power adapter
-        _capacity = 41.4 / _nominal_voltage  # 41.4[Wh] / 12[V] in order to get value in [Ah]
         _state_of_charge = 0.0
 
-        def __init__(self, charging_boundary_state_of_charge = 0.6, charging_boundary_price = 0.1,
-                     discharging_boundary_state_of_charge = 1.0, discharging_boundary_price = 0.3):
+        def __init__(self, charging_boundary_state_of_charge, charging_boundary_price,
+                     discharging_boundary_state_of_charge, discharging_boundary_price,
+                     nominal_voltage, nominal_current, capacity):
             self._charging_boundary_state_of_charge = charging_boundary_state_of_charge
             self._charging_boundary_price = charging_boundary_price
             self._discharging_boundary_state_of_charge = discharging_boundary_state_of_charge
             self._discharging_boundary_price = discharging_boundary_price
+
+            self._nominal_voltage = nominal_voltage
+            self._nominal_current = nominal_current
+            self._capacity_in_ah = capacity / nominal_voltage  # 41.4[Wh] / 12[V]
+                                                               # in order to get value in [Ah]
 
         @property
         def capacity(self):

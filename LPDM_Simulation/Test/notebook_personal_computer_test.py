@@ -76,6 +76,9 @@ class NotebookPersonalComputerTest(unittest.TestCase):
         charging_boundary_price = 0.2
         discharging_boundary_state_of_charge = 1.0
         discharging_boundary_price = 0.4
+        nominal_voltage = 12
+        nominal_current = 2
+        capacity = 41.4
         battery_capacity = 48
         state_of_charge_before = 0.5
 
@@ -90,7 +93,10 @@ class NotebookPersonalComputerTest(unittest.TestCase):
                                         charging_boundary_state_of_charge = charging_boundary_state_of_charge,
                                         charging_boundary_price = charging_boundary_price,
                                         discharging_boundary_state_of_charge = discharging_boundary_state_of_charge,
-                                        discharging_boundary_price = discharging_boundary_price)
+                                        discharging_boundary_price = discharging_boundary_price,
+                                        nominal_voltage = nominal_voltage,
+                                        nominal_current = nominal_current,
+                                        capacity = capacity)
 
         notebook_personal_computer.internal_battery.capacity = battery_capacity
         notebook_personal_computer.internal_battery.state_of_charge = state_of_charge_before

@@ -78,9 +78,9 @@ class NotebookPersonalComputerTest(unittest.TestCase):
         max_operating_power = 12 * 5
         # Considers the chart where price is in x axis and state of charge in y axis.
         charging_state_of_charge_intercept = 1.0
-        charging_price_intercept = 0.6
+        charging_price_intercept = 0.5
         discharging_state_of_charge_intercept = 1.2 # Actually, this value is an intercept to y-axis
-        discharging_price_intercept = 0.8
+        discharging_price_intercept = 0.6
         nominal_voltage = 12
         nominal_current = 2
         capacity = 41.4
@@ -122,3 +122,21 @@ class NotebookPersonalComputerTest(unittest.TestCase):
         actual_desired_power_level_2 = notebook_personal_computer.calculate_desired_power_level()
         expected_desired_power_level_2 = 36
         self.assertEqual(actual_desired_power_level_2, expected_desired_power_level_2)
+
+        price_3 = 0.3
+        message_3 = Message(time, sender_id, message_type, price_3, extra_info=None, redirect=None)
+        # This message contains price and this method assign the price:
+        notebook_personal_computer.process_price_message(message_3)
+        actual_desired_power_level_3 = notebook_personal_computer.calculate_desired_power_level()
+        expected_desired_power_level_3 = 12
+        self.assertEqual(actual_desired_power_level_3, expected_desired_power_level_3)
+
+        price_4 = 0.4
+        message_4 = Message(time, sender_id, message_type, price_4, extra_info=None, redirect=None)
+        # This message contains price and this method assign the price:
+        notebook_personal_computer.process_price_message(message_4)
+        actual_desired_power_level_4 = notebook_personal_computer.calculate_desired_power_level()
+        # Since notebook personal computer doesn't send power to Grid Controller,
+        # if the calculated desired_power_level becomes less than 0, it is set to 0.
+        expected_desired_power_level_4 = 0
+        self.assertEqual(actual_desired_power_level_4, expected_desired_power_level_4)

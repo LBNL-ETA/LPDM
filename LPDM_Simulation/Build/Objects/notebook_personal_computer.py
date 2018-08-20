@@ -96,7 +96,13 @@ class NotebookPersonalComputer(Eud):
         else:
             desired_power_level_by_computer = 0.0 # not in operation or price too high.
 
-        return desired_power_level_by_computer + desired_power_level_by_battery
+        desired_power_level = desired_power_level_by_computer + desired_power_level_by_battery
+        # Since notebook personal computer doesn't send power to Grid Controller,
+        # if the calculated desired_power_level becomes less than 0, it is set to 0.
+        if desired_power_level < 0.0:
+            desired_power_level = 0.0
+
+        return desired_power_level
 
     ##
     # Turns the computer "on", and hence begins consuming power.

@@ -77,10 +77,10 @@ class NotebookPersonalComputerTest(unittest.TestCase):
 
         max_operating_power = 12 * 5
         # Considers the chart where price is in x axis and state of charge in y axis.
-        charging_boundary_state_of_charge = 1.0
-        charging_boundary_price = 0.6
-        discharging_boundary_state_of_charge = 1.2 # Actually, this value is an intercept to y-axis
-        discharging_boundary_price = 0.8
+        charging_state_of_charge_intercept = 1.0
+        charging_price_intercept = 0.6
+        discharging_state_of_charge_intercept = 1.2 # Actually, this value is an intercept to y-axis
+        discharging_price_intercept = 0.8
         nominal_voltage = 12
         nominal_current = 2
         capacity = 41.4
@@ -93,10 +93,10 @@ class NotebookPersonalComputerTest(unittest.TestCase):
 
         notebook_personal_computer = NotebookPersonalComputer(self.device_id, self.supervisor,
                                         max_operating_power = max_operating_power,
-                                        charging_boundary_state_of_charge = charging_boundary_state_of_charge,
-                                        charging_boundary_price = charging_boundary_price,
-                                        discharging_boundary_state_of_charge = discharging_boundary_state_of_charge,
-                                        discharging_boundary_price = discharging_boundary_price,
+                                        charging_state_of_charge_intercept = charging_state_of_charge_intercept,
+                                        charging_price_intercept = charging_price_intercept,
+                                        discharging_state_of_charge_intercept = discharging_state_of_charge_intercept,
+                                        discharging_price_intercept = discharging_price_intercept,
                                         nominal_voltage = nominal_voltage,
                                         nominal_current = nominal_current,
                                         capacity = capacity)

@@ -48,8 +48,8 @@ class NotebookPersonalComputer(Eud):
                  modulation_interval=7200,
                  msg_latency=0, time=0, schedule=None, connected_devices=None, max_operating_power=100.0,
                  power_level_max=1.0, power_level_low=0.2, price_dim_start=0.1, price_dim_end=0.2, price_off=0.3,
-                 charging_boundary_state_of_charge = 1.0, charging_boundary_price = 0.6,
-                 discharging_boundary_state_of_charge = 1.2, discharging_boundary_price = 0.8,
+                 charging_state_of_charge_intercept = 1.0, charging_price_intercept = 0.6,
+                 discharging_state_of_charge_intercept = 1.2, discharging_price_intercept = 0.8,
                  nominal_voltage = 12, nominal_current = 2, capacity = 41.4):
         super().__init__(device_id=device_id, device_type="personal_computer",
                          supervisor=supervisor, total_runtime=total_runtime,
@@ -66,9 +66,9 @@ class NotebookPersonalComputer(Eud):
                                 # depending on percent of operating pwr
         self._on = False  # Whether the light is on
 
-        self._internal_battery = self.Battery(charging_boundary_state_of_charge,
-                                              charging_boundary_price,
-                                              discharging_boundary_state_of_charge, discharging_boundary_price,
+        self._internal_battery = self.Battery(charging_state_of_charge_intercept,
+                                              charging_price_intercept,
+                                              discharging_state_of_charge_intercept, discharging_price_intercept,
                                               nominal_voltage, nominal_current, capacity)
 
     ##
@@ -163,13 +163,13 @@ class NotebookPersonalComputer(Eud):
 
         _state_of_charge = 0.0
 
-        def __init__(self, charging_boundary_state_of_charge, charging_boundary_price,
-                     discharging_boundary_state_of_charge, discharging_boundary_price,
+        def __init__(self, charging_state_of_charge_intercept, charging_price_intercept,
+                     discharging_state_of_charge_intercept, discharging_price_intercept,
                      nominal_voltage, nominal_current, capacity):
-            self._charging_boundary_state_of_charge = charging_boundary_state_of_charge
-            self._charging_boundary_price = charging_boundary_price
-            self._discharging_boundary_state_of_charge = discharging_boundary_state_of_charge
-            self._discharging_boundary_price = discharging_boundary_price
+            self._charging_state_of_charge_intercept = charging_state_of_charge_intercept
+            self._charging_price_intercept = charging_price_intercept
+            self._discharging_state_of_charge_intercept = discharging_state_of_charge_intercept
+            self._discharging_price_intercept = discharging_price_intercept
 
             self._nominal_voltage = nominal_voltage
             self._nominal_current = nominal_current
@@ -215,5 +215,5 @@ class NotebookPersonalComputer(Eud):
 
         # Based on the linear equation.
         def _calculate_charging_boundary_state_of_charge(self, price):
-            return -(self._charging_boundary_state_of_charge / self._charging_boundary_price) \
-                    * price + self._charging_boundary_state_of_charge
+            return -(self._charging_state_of_charge_intercept / self._charging_price_intercept) \
+                    * price + self._charging_state_of_charge_intercept

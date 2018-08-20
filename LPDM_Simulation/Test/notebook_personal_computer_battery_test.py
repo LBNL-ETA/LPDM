@@ -7,65 +7,47 @@ class NotebookPersonalComputerBatteryTest(unittest.TestCase):
     #@unittest.skip
     def test_charge_internal_battery_when_soc_and_price_are_low_case_1(self):
 
-        charging_boundary_state_of_charge = 0.6
-        charging_boundary_price = 0.2
-        discharging_boundary_state_of_charge = 1.0
-        discharging_boundary_price = 0.4
+        charging_state_of_charge_intercept = 0.6
+        charging_price_intercept = 0.2
+        discharging_state_of_charge_intercept = 1.0
+        discharging_price_intercept = 0.4
         nominal_voltage = 12
         nominal_current = 2
         capacity = 41.4
-        price = 0.1
 
-        internal_battery = NotebookPersonalComputer.Battery(charging_boundary_state_of_charge,
-                                                            charging_boundary_price,
-                                                            discharging_boundary_state_of_charge,
-                                                            discharging_boundary_price,
+        internal_battery = NotebookPersonalComputer.Battery(charging_state_of_charge_intercept,
+                                                            charging_price_intercept,
+                                                            discharging_state_of_charge_intercept,
+                                                            discharging_price_intercept,
                                                             nominal_voltage, nominal_current,
                                                             capacity)
 
-        actual_desired_power_level_1 = internal_battery.calculate_desired_power_level(price)
+        price_1 = 0.1
+        actual_desired_power_level_1 = internal_battery.calculate_desired_power_level(price_1)
         expected_desired_power_level_1 = 24
         self.assertEqual(actual_desired_power_level_1, expected_desired_power_level_1)
 
-    #@unittest.skip
-    def test_charge_internal_battery_when_soc_and_price_are_low_case_2(self):
-
-        charging_boundary_state_of_charge = 0.6
-        charging_boundary_price = 0.2
-        discharging_boundary_state_of_charge = 1.0
-        discharging_boundary_price = 0.4
-        nominal_voltage = 12
-        nominal_current = 2
-        capacity = 41.4
-        price = 0.2
-
-        internal_battery = NotebookPersonalComputer.Battery(charging_boundary_state_of_charge,
-                                                            charging_boundary_price,
-                                                            discharging_boundary_state_of_charge,
-                                                            discharging_boundary_price,
-                                                            nominal_voltage, nominal_current,
-                                                            capacity)
-
-        actual_desired_power_level_2 = internal_battery.calculate_desired_power_level(price)
+        price_2 = 0.2
+        actual_desired_power_level_2 = internal_battery.calculate_desired_power_level(price_2)
         expected_desired_power_level_2 = 24
         self.assertEqual(actual_desired_power_level_2, expected_desired_power_level_2)
 
     #@unittest.skip
-    def test_calculate_charging_boundary_state_of_charge(self):
+    def test_charging_boundary_state_of_charge(self):
 
-        charging_boundary_state_of_charge = 0.6
-        charging_boundary_price = 0.2
-        discharging_boundary_state_of_charge = 1.0
-        discharging_boundary_price = 0.4
+        charging_state_of_charge_intercept = 0.6
+        charging_price_intercept = 0.2
+        discharging_state_of_charge_intercept = 1.0
+        discharging_price_intercept = 0.4
         nominal_voltage = 12
         nominal_current = 2
         capacity = 41.4
         price = 0.1
 
-        internal_battery = NotebookPersonalComputer.Battery(charging_boundary_state_of_charge,
-                                                            charging_boundary_price,
-                                                            discharging_boundary_state_of_charge,
-                                                            discharging_boundary_price,
+        internal_battery = NotebookPersonalComputer.Battery(charging_state_of_charge_intercept,
+                                                            charging_price_intercept,
+                                                            discharging_state_of_charge_intercept,
+                                                            discharging_price_intercept,
                                                             nominal_voltage, nominal_current,
                                                             capacity)
 

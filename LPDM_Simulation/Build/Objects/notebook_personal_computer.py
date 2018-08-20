@@ -28,8 +28,6 @@ from Build.Objects.eud import Eud
 
 class NotebookPersonalComputer(Eud):
 
-    NOMINAL_DC_INPUT_VOLTAGE = 12
-
     #
     # Default values for internal battery:
     # Use the data for "Battery and Power" for MacBook 2018 for now
@@ -62,8 +60,7 @@ class NotebookPersonalComputer(Eud):
         self._price_dim_start = price_dim_start  # the price at which to start to lower power
         self._price_dim_end = price_dim_end  # price at which to change to lower_power mode.
         self._price_off = price_off  # price at which to turn off completely
-        self._brightness = 0.0  # The percentage of this computer monitor's peak brightness,
-                                # depending on percent of operating pwr
+        self._power_consumption_ratio = 0.0  # The percentage of this computer's consumption
         self._on = False  # Whether the light is on
 
         self._internal_battery = self.Battery(charging_state_of_charge_intercept,
@@ -124,22 +121,28 @@ class NotebookPersonalComputer(Eud):
         pass
 
     ##
-    # The light modulates its brightness based on how much power is received.
-    # Brightness is ratio of received power to maximum operating power.
-    # @param received_power how much power this light received to operate
+    # @param received_power how much power this notebook personal computer received to operate
     def respond_to_power(self, received_power):
-        self._brightness = received_power / self._max_operating_power
-        self._logger.info(self.build_log_notation(
-            message="brightness changed to {}".format(self._brightness),
-            tag="brightness",
-            value=self._brightness
-        ))
-
         if received_power > self._max_operating_power:
             self._internal_battery.charge(received_power - self._max_operating_power)
+            self._power_consumption_ratio = 1.0
 
-    """The light does not keep track of a dynamic internal state -- it is just either on or off with its power level
-    determining its brightness. Hence, does not perform other EUD functions corresponding its dynamic internal state"""
+
+        self._logger.info(self.build_log_notation(
+            message="power consumption ratio changed to {}".format(
+                                self._power_consumption_ratio),
+            tag="power consumption ratio",
+            value=self._power_consumption_ratio
+        ))
+        self._logger.info(self.build_log_notation(
+            message="internal battery state of charge changed to {}".format(
+                                self._internal_battery.state_of_charge),
+            tag="internal battery state of charge",
+            value=self._internal_battery.state_of_charge
+        ))
+
+    """The notebook personal computer does not keep track of a dynamic internal state for now.
+    """
 
     ##
     #
@@ -160,6 +163,10 @@ class NotebookPersonalComputer(Eud):
     #
     def device_specific_calcs(self):
         pass
+
+    @property
+    def power_consumption_ratio(self):
+        return self._power_consumption_ratio
 
     @property
     def internal_battery(self):
@@ -201,7 +208,7 @@ class NotebookPersonalComputer(Eud):
         # Note: Simple implementation as a start
         def charge(self, power):
             # Note: Energy is measured in [Wh] thus assuming time has a unit of hour:
-            current = power / NotebookPersonalComputer.NOMINAL_DC_INPUT_VOLTAGE
+            current = power / self._nominal_voltage
             capacity_change = current * 1 # [Ah]
             state_of_charge_change = capacity_change / self._capacity
             if self._state_of_charge + state_of_charge_change <= 1.0:

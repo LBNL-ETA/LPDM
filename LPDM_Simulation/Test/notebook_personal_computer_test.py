@@ -28,7 +28,7 @@ class NotebookPersonalComputerTest(unittest.TestCase):
 
         self.assertEqual(self.notebook_personal_computer._in_operation, False)
 
-    @unittest.skip
+    #@unittest.skip
     def test_charge_internal_battery(self):
 
         max_operating_power = 12 * 5
@@ -44,13 +44,16 @@ class NotebookPersonalComputerTest(unittest.TestCase):
         # Note: This acts more like private method but tested in unit test of this class:
         notebook_personal_computer.respond_to_power(received_power)
 
+        expected_power_consumption_ratio = 1.0
         expected_state_of_charge = 0.6
 
+        actual_power_consumption_ratio = notebook_personal_computer.power_consumption_ratio
         actual_state_of_charge = notebook_personal_computer.internal_battery.state_of_charge
 
+        self.assertEqual(actual_power_consumption_ratio, expected_power_consumption_ratio)
         self.assertEqual(actual_state_of_charge, expected_state_of_charge)
 
-    @unittest.skip
+    #@unittest.skip
     def test_charge_internal_battery_when_with_more_supply(self):
 
         max_operating_power = 12 * 5
@@ -66,10 +69,13 @@ class NotebookPersonalComputerTest(unittest.TestCase):
         # Note: This acts more like private method but tested in unit test of this class:
         notebook_personal_computer.respond_to_power(received_power)
 
+        expected_power_consumption_ratio = 1.0
         expected_state_of_charge = 1.0
 
+        actual_power_consumption_ratio = notebook_personal_computer.power_consumption_ratio
         actual_state_of_charge = notebook_personal_computer.internal_battery.state_of_charge
 
+        self.assertEqual(actual_power_consumption_ratio, expected_power_consumption_ratio)
         self.assertEqual(actual_state_of_charge, expected_state_of_charge)
 
     #@unittest.skip

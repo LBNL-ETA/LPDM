@@ -207,13 +207,35 @@ class NotebookPersonalComputer(Eud):
 
             charging_boundary_state_of_charge_for_given_price = \
                                         self._calculate_charging_boundary_state_of_charge(price)
+            discharging_boundary_state_of_charge_for_given_price = \
+                                        self._calculate_discharging_boundary_state_of_charge(price)
 
             if self._state_of_charge <= charging_boundary_state_of_charge_for_given_price:
                 return self._nominal_voltage * self._nominal_current
+            elif self._state_of_charge >= discharging_boundary_state_of_charge_for_given_price:
+                # Discharge to supply power to the computer instead of making computer get power
+                # from Grid Controller:
+                return -(self._nominal_voltage * self._nominal_current)
             else:
                 return 0.0
 
         # Based on the linear equation.
         def _calculate_charging_boundary_state_of_charge(self, price):
-            return -(self._charging_state_of_charge_intercept / self._charging_price_intercept) \
-                    * price + self._charging_state_of_charge_intercept
+            result = -(self._charging_state_of_charge_intercept / self._charging_price_intercept) \
+                                             * price + self._charging_state_of_charge_intercept
+            if result < 0.0:
+                result = 0.0
+            elif result > 1.0:
+                result = 1.0
+            return result
+
+        # Based on the linear equation:
+        def _calculate_discharging_boundary_state_of_charge(self, price):
+            result = -(self._discharging_state_of_charge_intercept /
+                        self._discharging_price_intercept) \
+                        * price + self._discharging_state_of_charge_intercept
+            if result < 0.0:
+                result = 0.0
+            elif result > 1.0:
+                result = 1.0
+            return result

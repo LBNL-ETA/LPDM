@@ -197,6 +197,16 @@ class NotebookPersonalComputer(Eud):
                self._state_of_charge = 1.0
 
         def calculate_desired_power_level(self, price):
-            if (price <= self._charging_boundary_price) and (self._state_of_charge <=
-                                                        self._charging_boundary_state_of_charge):
+
+            charging_boundary_state_of_charge_for_given_price = \
+                                        self._calculate_charging_boundary_state_of_charge(price)
+
+            if self._state_of_charge <= charging_boundary_state_of_charge_for_given_price:
                 return self._nominal_voltage * self._nominal_current
+            else:
+                return 0.0
+
+        # Based on the linear equation.
+        def _calculate_charging_boundary_state_of_charge(self, price):
+            return -(self._charging_boundary_state_of_charge / self._charging_boundary_price) \
+                    * price + self._charging_boundary_state_of_charge

@@ -17,6 +17,10 @@ Its USB-C Power Adapter (29[W]  Model A1540) to get an idea of current flow to t
 Output 14.5[V] - 2.0[A] or 5.2[V] - 2.4[A]
 Use the current value for 14.5[V]: 2.0[A] since it is assumed that the internal battery operates on
 12[V]
+
+Power consumption is adjusted changing the brightness of the computer monitor.
+However, it is assumed that there is always a fixed power consumption for the rest of the computer,
+such as power consumed by CPU.
 """
 
 from Build.Simulation_Operation.support import SECONDS_IN_DAY
@@ -44,8 +48,8 @@ class NotebookPersonalComputer(Eud):
                  modulation_interval=7200,
                  msg_latency=0, time=0, schedule=None, connected_devices=None, max_operating_power=100.0,
                  power_level_max=1.0, power_level_low=0.2, price_dim_start=0.1, price_dim_end=0.2, price_off=0.3,
-                 charging_boundary_state_of_charge = 0.6, charging_boundary_price = 0.1,
-                 discharging_boundary_state_of_charge = 1.0, discharging_boundary_price = 0.3,
+                 charging_boundary_state_of_charge = 1.0, charging_boundary_price = 0.6,
+                 discharging_boundary_state_of_charge = 1.2, discharging_boundary_price = 0.8,
                  nominal_voltage = 12, nominal_current = 2, capacity = 41.4):
         super().__init__(device_id=device_id, device_type="personal_computer",
                          supervisor=supervisor, total_runtime=total_runtime,
@@ -58,7 +62,8 @@ class NotebookPersonalComputer(Eud):
         self._price_dim_start = price_dim_start  # the price at which to start to lower power
         self._price_dim_end = price_dim_end  # price at which to change to lower_power mode.
         self._price_off = price_off  # price at which to turn off completely
-        self._brightness = 0.0  # The percentage of this device's peak brightness, depending on percent of operating pwr
+        self._brightness = 0.0  # The percentage of this computer monitor's peak brightness,
+                                # depending on percent of operating pwr
         self._on = False  # Whether the light is on
 
         self._internal_battery = self.Battery(charging_boundary_state_of_charge,
@@ -75,40 +80,42 @@ class NotebookPersonalComputer(Eud):
         desired_power_level_by_battery = self._internal_battery.calculate_desired_power_level(
                                                     self._price)
 
-        return desired_power_level_by_battery
+        # As a start, it is assumed that the computer is always on:
+        #if self._in_operation and self._on:
+        if self._price <= self._price_dim_start:
+            # Operate at maximum capacity when below this threshold
+            desired_power_level_by_computer = self._power_level_max * self._max_operating_power
+        elif self._price <= self._price_dim_end:
+            # Linearly reduce power consumption
+            power_reduce_ratio = (self._price - self._price_dim_start) / (self._price_dim_end - self._price_dim_start)
+            power_level_reduced = self._power_level_max - ((self._power_level_max - self._power_level_low) * power_reduce_ratio)
+            desired_power_level_by_computer = self._max_operating_power * power_level_reduced
+        elif self._price <= self._price_off:
+            # In this price range operate in low power mode
+            desired_power_level_by_computer = self._power_level_low * self._max_operating_power
+        else:
+            desired_power_level_by_computer = 0.0 # not in operation or price too high.
 
-        if self._in_operation and self._on:
-            if self._price <= self._price_dim_start:
-                # Operate at maximum capacity when below this threshold
-                return self._power_level_max * self._max_operating_power
-            elif self._price <= self._price_dim_end:
-                # Linearly reduce power consumption
-                power_reduce_ratio = (self._price - self._price_dim_start) / (self._price_dim_end - self._price_dim_start)
-                power_level_reduced = self._power_level_max - ((self._power_level_max - self._power_level_low) * power_reduce_ratio)
-                return self._max_operating_power * power_level_reduced
-            elif self._price <= self._price_off:
-                # In this price range operate in low power mode
-                return self._power_level_low * self._max_operating_power
-        return 0.0  # not in operation or price too high.
+        return desired_power_level_by_computer + desired_power_level_by_battery
 
     ##
-    # Turns the light "on", and hence begins consuming power. Does not affect whether device is in operation and can
-    # receive messages, only power consumption.
+    # Turns the computer "on", and hence begins consuming power.
     def on(self):
         self._on = True
         #self.modulate_power()
 
     ##
-    # Turns the light "off", and stops consuming power. Does not affect this device's ability to receive messages,
-    # and it remains in operation even when off.
+    # Turns the computer "off", and stops consuming power.
+    # Since computer is assumed to be always on, this method doesn't do anything.
     def off(self):
-        self._on = False
-        gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
-        for gc in gcs:
-            self.send_power_message(gc, 0)
-            self.change_load_in(gc, 0)
-        self.set_power_in(0)
-        self.set_power_out(0)
+        # self._on = False
+        # gcs = [key for key in self._connected_devices.keys() if key.startswith("gc")]
+        # for gc in gcs:
+        #     self.send_power_message(gc, 0)
+        #     self.change_load_in(gc, 0)
+        # self.set_power_in(0)
+        # self.set_power_out(0)
+        pass
 
     ##
     # The light modulates its brightness based on how much power is received.

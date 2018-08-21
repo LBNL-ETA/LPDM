@@ -13,14 +13,14 @@ class NotebookPersonalComputerBatteryTest(unittest.TestCase):
         discharging_price_intercept = 0.6
         nominal_voltage = 12
         nominal_current = 2
-        capacity = 41.4
+        capacity_in_ah = 41.4 / nominal_voltage # [Ah]
 
         internal_battery = NotebookPersonalComputer.Battery(charging_state_of_charge_intercept,
                                                             charging_price_intercept,
                                                             discharging_state_of_charge_intercept,
                                                             discharging_price_intercept,
                                                             nominal_voltage, nominal_current,
-                                                            capacity)
+                                                            capacity_in_ah)
 
         internal_battery.state_of_charge = 0.2
         price_1 = 0.1
@@ -167,7 +167,7 @@ class NotebookPersonalComputerBatteryTest(unittest.TestCase):
         discharging_price_intercept = 0.4
         nominal_voltage = 12
         nominal_current = 2
-        capacity = 41.4
+        capacity_in_ah = 41.4 / nominal_voltage
         price = 0.1
 
         internal_battery = NotebookPersonalComputer.Battery(charging_state_of_charge_intercept,
@@ -175,7 +175,7 @@ class NotebookPersonalComputerBatteryTest(unittest.TestCase):
                                                             discharging_state_of_charge_intercept,
                                                             discharging_price_intercept,
                                                             nominal_voltage, nominal_current,
-                                                            capacity)
+                                                            capacity_in_ah)
 
         actual_state_of_charge = \
                               internal_battery._calculate_charging_boundary_state_of_charge(price)
@@ -183,3 +183,31 @@ class NotebookPersonalComputerBatteryTest(unittest.TestCase):
         expected_state_of_charge = 0.3
 
         self.assertEqual(actual_state_of_charge, expected_state_of_charge)
+
+    #@unittest.skip
+    def test_discharge(self):
+
+        charging_state_of_charge_intercept = 1.0
+        charging_price_intercept = 0.5
+        discharging_state_of_charge_intercept = 1.2
+        discharging_price_intercept = 0.6
+        nominal_voltage = 12
+        nominal_current = 2
+        capacity_in_ah = 41.4 / nominal_voltage
+
+        internal_battery = NotebookPersonalComputer.Battery(charging_state_of_charge_intercept,
+                                                            charging_price_intercept,
+                                                            discharging_state_of_charge_intercept,
+                                                            discharging_price_intercept,
+                                                            nominal_voltage, nominal_current,
+                                                            capacity_in_ah)
+
+        internal_battery.state_of_charge = 0.9
+
+        actual_power_that_cannot_be_supplied = internal_battery.discharge(12 * 5 * 0.1)
+        actual_state_of_charge = internal_battery.state_of_charge
+
+        expected_state_of_charge = 0.7551
+
+        self.assertEqual(actual_power_that_cannot_be_supplied, 0.0)
+        self.assertAlmostEqual(actual_state_of_charge, expected_state_of_charge, delta = 0.001)

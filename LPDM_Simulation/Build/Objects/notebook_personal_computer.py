@@ -66,7 +66,8 @@ class NotebookPersonalComputer(Eud):
         self._internal_battery = self.Battery(charging_state_of_charge_intercept,
                                               charging_price_intercept,
                                               discharging_state_of_charge_intercept, discharging_price_intercept,
-                                              nominal_voltage, nominal_current, capacity)
+                                              nominal_voltage, nominal_current,
+                                              capacity / nominal_voltage)
 
     ##
     # Calculate the desired power level in based on the price (watts). Algorithm is described in
@@ -126,7 +127,16 @@ class NotebookPersonalComputer(Eud):
         if received_power > self._max_operating_power:
             self._internal_battery.charge(received_power - self._max_operating_power)
             self._power_consumption_ratio = 1.0
-
+        elif (received_power / self._max_operating_power) < self._power_level_low:
+            power_deficit = (self._power_level_low - (received_power / self._max_operating_power)) \
+                                * self._max_operating_power
+            power_that_cannot_be_supplied_by_battery = \
+                                self._internal_battery.discharge(power_deficit)
+            if power_that_cannot_be_supplied_by_battery > 0:
+                # TODO: Implement the mechanism to shutdown the computer due to lack of power
+                self._power_consumption_ratio = 0.0
+            else:
+                self._power_consumption_ratio = self._power_level_low
 
         self._logger.info(self.build_log_notation(
             message="power consumption ratio changed to {}".format(
@@ -178,7 +188,7 @@ class NotebookPersonalComputer(Eud):
 
         def __init__(self, charging_state_of_charge_intercept, charging_price_intercept,
                      discharging_state_of_charge_intercept, discharging_price_intercept,
-                     nominal_voltage, nominal_current, capacity):
+                     nominal_voltage, nominal_current, capacity_in_ah):
             self._charging_state_of_charge_intercept = charging_state_of_charge_intercept
             self._charging_price_intercept = charging_price_intercept
             self._discharging_state_of_charge_intercept = discharging_state_of_charge_intercept
@@ -186,16 +196,15 @@ class NotebookPersonalComputer(Eud):
 
             self._nominal_voltage = nominal_voltage
             self._nominal_current = nominal_current
-            self._capacity_in_ah = capacity / nominal_voltage  # 41.4[Wh] / 12[V]
-                                                               # in order to get value in [Ah]
+            self._capacity_in_ah = capacity_in_ah  # [Ah]
 
         @property
-        def capacity(self):
-            return self._capacity
+        def capacity_in_ah(self):
+            return self._capacity_in_ah
 
-        @capacity.setter
-        def capacity(self, value):
-            self._capacity = value
+        @capacity_in_ah.setter
+        def capacity_in_ah(self, value):
+            self._capacity_in_ah = value
 
         @property
         def state_of_charge(self):
@@ -207,14 +216,23 @@ class NotebookPersonalComputer(Eud):
 
         # Note: Simple implementation as a start
         def charge(self, power):
-            # Note: Energy is measured in [Wh] thus assuming time has a unit of hour:
-            current = power / self._nominal_voltage
-            capacity_change = current * 1 # [Ah]
-            state_of_charge_change = capacity_change / self._capacity
+            state_of_charge_change = self._calculate_state_of_charge_change(power)
             if self._state_of_charge + state_of_charge_change <= 1.0:
                 self._state_of_charge += state_of_charge_change
             else:
                self._state_of_charge = 1.0
+
+        def discharge(self, power):
+            state_of_charge_change = self._calculate_state_of_charge_change(power)
+            if self._state_of_charge >= state_of_charge_change:
+                self._state_of_charge -= state_of_charge_change
+                power_that_cannot_be_supplied = 0.0
+                return power_that_cannot_be_supplied
+            else:
+                self._state_of_charge = 0.0
+                power_that_cannot_be_supplied = (state_of_charge_change - self._state_of_charge) * \
+                                    (self._capacity_in_ah / 1) * self._nominal_voltage
+                return power_that_cannot_be_supplied
 
         def calculate_desired_power_level(self, price):
 
@@ -252,3 +270,9 @@ class NotebookPersonalComputer(Eud):
             elif result > 1.0:
                 result = 1.0
             return result
+
+        def _calculate_state_of_charge_change(self, power):
+            # Note: Energy is measured in [Wh] thus assuming time has a unit of hour:
+            current = power / self._nominal_voltage
+            capacity_change = current * 1 # [Ah]
+            return capacity_change / self._capacity_in_ah

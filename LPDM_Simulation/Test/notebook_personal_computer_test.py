@@ -14,14 +14,14 @@ class NotebookPersonalComputerTest(unittest.TestCase):
         self.supervisor = Supervisor()
         self.notebook_personal_computer = NotebookPersonalComputer(self.device_id, self.supervisor)
 
-    @unittest.skip
+    #@unittest.skip
     def test_start_up(self):
 
         self.notebook_personal_computer.start_up()
 
         # Note: Since there is not assertNotRaises, if this test doesn't cause any error, it is considered to be success.
 
-    @unittest.skip
+    #@unittest.skip
     def test_shut_down(self):
 
         self.notebook_personal_computer.shut_down()
@@ -33,12 +33,13 @@ class NotebookPersonalComputerTest(unittest.TestCase):
 
         max_operating_power = 12 * 5
         received_power = 12 * 9.8 # 9.8 - 5 [Ah] is used for charging battery
-        battery_capacity = 48
+        battery_capacity = 48 * 12 # [Wh]
         state_of_charge_before = 0.5
 
         notebook_personal_computer = NotebookPersonalComputer(self.device_id, self.supervisor,
-                                            max_operating_power = max_operating_power)
-        notebook_personal_computer.internal_battery.capacity = battery_capacity
+                                            max_operating_power = max_operating_power,
+                                            capacity = battery_capacity)
+        # notebook_personal_computer.internal_battery.capacity_in_ah = battery_capacity
         notebook_personal_computer.internal_battery.state_of_charge = state_of_charge_before
 
         # Note: This acts more like private method but tested in unit test of this class:
@@ -58,12 +59,13 @@ class NotebookPersonalComputerTest(unittest.TestCase):
 
         max_operating_power = 12 * 5
         received_power = 12 * 10 # Only maximum of 9.8 - 5 [Ah] can be used for charging battery
-        battery_capacity = 48
+        battery_capacity = 48 * 12 # [Wh]
         state_of_charge_before = 0.9
 
         notebook_personal_computer = NotebookPersonalComputer(self.device_id, self.supervisor,
-                                            max_operating_power = max_operating_power)
-        notebook_personal_computer.internal_battery.capacity = battery_capacity
+                                            max_operating_power = max_operating_power,
+                                            capacity = battery_capacity)
+        # notebook_personal_computer.internal_battery.capacity = battery_capacity
         notebook_personal_computer.internal_battery.state_of_charge = state_of_charge_before
 
         # Note: This acts more like private method but tested in unit test of this class:
@@ -79,6 +81,37 @@ class NotebookPersonalComputerTest(unittest.TestCase):
         self.assertEqual(actual_state_of_charge, expected_state_of_charge)
 
     #@unittest.skip
+    def test_keep_minimum_power_consumption(self):
+
+        power_level_max = 1.0
+        power_level_low = 0.2
+        max_operating_power = 12 * 5
+        received_power = 12 * 5 * 0.1 # less than max_operating_power * power_level_low
+        battery_capacity = 48 * 12 # [Wh]
+        state_of_charge_before = 0.9
+
+        notebook_personal_computer = NotebookPersonalComputer(self.device_id, self.supervisor,
+                                            max_operating_power = max_operating_power,
+                                            power_level_max = power_level_max,
+                                            power_level_low = power_level_low,
+                                            capacity = battery_capacity)
+        # notebook_personal_computer.internal_battery.capacity = battery_capacity
+        notebook_personal_computer.internal_battery.state_of_charge = state_of_charge_before
+
+        # Note: This acts more like private method but tested in unit test of this class:
+        notebook_personal_computer.respond_to_power(received_power)
+
+        expected_power_consumption_ratio = 0.2
+        # Discharge battery to compensate the lack of power:
+        expected_state_of_charge = 0.8896
+
+        actual_power_consumption_ratio = notebook_personal_computer.power_consumption_ratio
+        actual_state_of_charge = notebook_personal_computer.internal_battery.state_of_charge
+
+        self.assertEqual(actual_power_consumption_ratio, expected_power_consumption_ratio)
+        self.assertAlmostEqual(actual_state_of_charge, expected_state_of_charge, delta = 0.001)
+
+    #@unittest.skip
     def test_calculate_desired_power_level_when_medium_soc(self):
 
         max_operating_power = 12 * 5
@@ -89,8 +122,7 @@ class NotebookPersonalComputerTest(unittest.TestCase):
         discharging_price_intercept = 0.6
         nominal_voltage = 12
         nominal_current = 2
-        capacity = 41.4
-        battery_capacity = 48
+        battery_capacity = 48 * 12 # [Wh]
         state_of_charge_before = 0.5
 
         time = parser.parse("2018-07-01 16:00:00")
@@ -105,9 +137,9 @@ class NotebookPersonalComputerTest(unittest.TestCase):
                                         discharging_price_intercept = discharging_price_intercept,
                                         nominal_voltage = nominal_voltage,
                                         nominal_current = nominal_current,
-                                        capacity = capacity)
+                                        capacity = battery_capacity)
 
-        notebook_personal_computer.internal_battery.capacity = battery_capacity
+        # notebook_personal_computer.internal_battery.capacity = battery_capacity
         notebook_personal_computer.internal_battery.state_of_charge = state_of_charge_before
 
         # notebook_personal_computer.start_up()

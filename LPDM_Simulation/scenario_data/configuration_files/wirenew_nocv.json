@@ -1,5 +1,5 @@
 {
-    "run_time_days": 3,
+    "run_time_days": 6,
     "console_log_level": 20,
     "file_log_level": 20,
     "devices": {
@@ -55,7 +55,7 @@
                 "modulation_interval": 600,
                 "schedule": {
                     "multiday": 1,
-                    "items": [[0, "start_up"],[0, "off"], [6, "on"], [8, "off"], [18, "on"]]
+                    "items": [[0, "start_up"],[0, "off"], [6, "on"], [8, "off"], [18, "on"], [23, "disengage"], [6, "on"]]
                 }
             }
         ]

@@ -203,6 +203,11 @@ class Eud(Device):
         prev_load = self._loads_in.get(sender_id, 0)
         self.recalc_sum_power(prev_load, new_load)
         self._loads_in[sender_id] = new_load
+    
+    def disengage(self):
+        """Override disengage to clear loads in"""
+        super().disengage()
+        self._loads_in.clear()
 
     ##
     # Method to be called once it needs to recalculate its internal power usage.

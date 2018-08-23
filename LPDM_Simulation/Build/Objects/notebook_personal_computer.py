@@ -127,6 +127,7 @@ class NotebookPersonalComputer(Eud):
         if received_power > self._max_operating_power:
             self._internal_battery.charge(received_power - self._max_operating_power)
             self._power_consumption_ratio = 1.0
+        # Case for keeping minimum power consumption:
         elif (received_power / self._max_operating_power) < self._power_level_low:
             power_deficit = (self._power_level_low - (received_power / self._max_operating_power)) \
                                 * self._max_operating_power
@@ -137,6 +138,8 @@ class NotebookPersonalComputer(Eud):
                 self._power_consumption_ratio = 0.0
             else:
                 self._power_consumption_ratio = self._power_level_low
+        else:
+            self._power_consumption_ratio = received_power / self._max_operating_power
 
         self._logger.info(self.build_log_notation(
             message="power consumption ratio changed to {}".format(

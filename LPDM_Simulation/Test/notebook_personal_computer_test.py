@@ -111,6 +111,37 @@ class NotebookPersonalComputerTest(unittest.TestCase):
         self.assertEqual(actual_power_consumption_ratio, expected_power_consumption_ratio)
         self.assertAlmostEqual(actual_state_of_charge, expected_state_of_charge, delta = 0.001)
 
+    def test_power_consumption_relative_to_received_power(self):
+
+        power_level_max = 1.0
+        power_level_low = 0.2
+        max_operating_power = 12 * 5
+        received_power = 12 * 5 * 0.3 # more than max_operating_power * power_level_low
+                                      # less than max_operating_power * power_level_max
+        battery_capacity = 48 * 12 # [Wh]
+        state_of_charge_before = 0.9
+
+        notebook_personal_computer = NotebookPersonalComputer(self.device_id, self.supervisor,
+                                            max_operating_power = max_operating_power,
+                                            power_level_max = power_level_max,
+                                            power_level_low = power_level_low,
+                                            capacity = battery_capacity)
+        # notebook_personal_computer.internal_battery.capacity = battery_capacity
+        notebook_personal_computer.internal_battery.state_of_charge = state_of_charge_before
+
+        # Note: This acts more like private method but tested in unit test of this class:
+        notebook_personal_computer.respond_to_power(received_power)
+
+        expected_power_consumption_ratio = 0.3
+        # Stays the same because received power is less than maximum operating power for computer:
+        expected_state_of_charge = 0.9
+
+        actual_power_consumption_ratio = notebook_personal_computer.power_consumption_ratio
+        actual_state_of_charge = notebook_personal_computer.internal_battery.state_of_charge
+
+        self.assertEqual(actual_power_consumption_ratio, expected_power_consumption_ratio)
+        self.assertEqual(actual_state_of_charge, expected_state_of_charge)
+
     #@unittest.skip
     def test_calculate_desired_power_level_when_medium_soc(self):
 

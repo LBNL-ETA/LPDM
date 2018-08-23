@@ -14,11 +14,9 @@ from Build.Simulation_Operation.message import Message, MessageType
 from Build.Simulation_Operation.support import SECONDS_IN_DAY
 from Build.Simulation_Operation.event import Event
 from Build.Objects.device import Device
-from Build.Objects.grid_equipment import GridEquipment
-from Build.Objects.device_type import PowerGiver
 
 
-class PV(GridEquipment, PowerGiver):
+class PV(Device):
 
     def __init__(self, device_id, supervisor, power_profile, peak_power, time=0, msg_latency=0,
                  schedule=None, connected_devices=None, total_runtime=SECONDS_IN_DAY):
@@ -51,23 +49,6 @@ class PV(GridEquipment, PowerGiver):
                     self.add_event(power_event, time + curr_day)
                 curr_day += SECONDS_IN_DAY
 
-    ##
-    # Sets up the power generation schedule for this PV. Takes input of a daily power generation schedule.
-    # Power
-    # TODO: assumes total_runtime is in days, and schedule is at most one day long, and schedule is
-    # TODO: in percentage of peak power. Make this more robust?
-#     def setup_power_schedule(self, power_profile, peak_power, total_runtime):
-#         curr_day = int(self._time / SECONDS_IN_DAY)  # Current day in seconds. Starts at the PV's initial time.
-#         while curr_day < total_runtime:
-#             for time, power_proportion in power_profile:
-#                 power_event = Event(self.update_power_status, peak_power, power_proportion)
-#                 if time < curr_day:
-#                     # LPDM PV profile
-#                     self.add_event(power_event, time + curr_day)
-#                 else:
-#                     # PVWatts profile
-#                     self.add_event(power_event, time)
-#             curr_day += SECONDS_IN_DAY
 
     ##
     # Changes the amount of power that this device is producing and
@@ -103,10 +84,11 @@ class PV(GridEquipment, PowerGiver):
                                                   tag="power_out", value=power_amt))
         target.receive_message(Message(self._time, self._device_id, MessageType.POWER, power_amt))
 
+
     ##
     # PV does not respond to external power messages
     #
-    # @param sender_id the sender of the message providing or receiving the new power
+    # @param sender the sender of the message providing or receiving the new power
     # @param new_power the value of power flow from sender's perspective
     # positive if sender is receiving, negative if sender is providing.
     def process_power_message(self, message):

@@ -32,5 +32,5 @@ class NotebookPersonalComputerIntegrationTest(unittest.TestCase):
         supervisor.register_device(grid_controller)
 
         grid_controller.send_register_message("notebook_personal_computer_1", 1)
-        grid_controller.build_device_list()
+        # grid_controller.build_device_list()
         grid_controller.send_power_message("notebook_personal_computer_1", 10)

@@ -286,6 +286,13 @@ class Device(metaclass=ABCMeta):
         self._queue.add(event, time_stamp)
         device_id, next_time = self.report_next_event_time()
         self._supervisor.register_event(device_id, next_time)
+    
+
+    def clear_event_queue(self):
+        """Clears the event queue of upcoming events.
+        Should be called after the device disengages from the grid.
+        """
+        self._queue.clear()
 
     ##
     # Process all events in the device's queue with a given time_stamp.
@@ -350,10 +357,10 @@ class Device(metaclass=ABCMeta):
     # @param device the device to register or unregister from connected devices
     # @param that device's id
     # @param value positive to register, 0 or negative to unregister
-    # TODO: Make this so it also registers that device across a wire (add wire param)
 
     def register_device(self, device, device_id, value, wire=None):
         if value > 0 and device_id not in self._connected_devices:
+            # register a device connected directly (no wire)
             self._connected_devices[device_id] = device
             if not device_id in self._wires:
                 self._wires[device_id] = wire
@@ -363,22 +370,23 @@ class Device(metaclass=ABCMeta):
                 self.build_log_notation("registered {}".format(device_id))
             )
         elif value > 0 and device_id in self._connected_devices and not wire is None:
+            # Wire information for a device that's already been registered.
             self._wires[device_id] = wire
             self._is_wired = True
             self._logger.info(
                 self.build_log_notation("added wire to {}".format(device_id))
-            )            
-        # else:
-        #     raise Exception("Device {} already registered to {}".format(device_id, self._device_id))
-            # if device_id in self._connected_devices:
-            #     del self._connected_devices[device_id]  # unregister
-            #     if device_id in self._wires:
-            #         del self._wires[device_id]
-            #     self._logger.info(
-            #         self.build_log_notation("unregistered {}".format(device_id))
-            #     )
-            # else:
-            #     print("No Such Device To Unregister")
+            )
+        elif value < 0 and device_id in self._connected_devices:
+            # unregister a device, where a device is directly connected (no wire)
+            # remove the device info
+            del self._connected_devices[device_id]
+            if device_id in self._wires:
+                # remove the wire info if necessary
+                del self._wires[device_id]
+            self._logger.info(
+                self.build_log_notation("unregistered {}".format(device_id))
+            )
+
 
     ##
     # Method to be called when the device receives a register message, indicating a device
@@ -409,6 +417,23 @@ class Device(metaclass=ABCMeta):
         self._logger.debug(self.build_log_notation(
             "REGISTER to {}".format(target_id), tag="register msg", value=value))
         target.receive_message(Message(self._time, self._device_id, MessageType.REGISTER, value))
+    
+
+    def send_disengage_message(self, target_id):
+        """Tell the grid controll to disconnect this device.
+        """
+        if target_id in self._connected_devices:
+            target = self._connected_devices[target_id]
+        else:
+            raise ValueError("This device is not connected to the message recipient")
+        self._logger.debug(
+            self.build_log_notation(
+                "Disengage message to {}".format(target_id),
+                tag="disengage_msg",
+                value=-1
+        ))
+        target.receive_message(Message(self._time, self._device_id, MessageType.REGISTER, -1))
+
 
     ##
     # Method to be called when device is entering the grid, and is seeking to register with other devices.
@@ -422,6 +447,24 @@ class Device(metaclass=ABCMeta):
             if device_id not in self._connected_devices:
                 self._connected_devices[device_id] = device
             self.send_register_message(device_id, 1)
+
+    
+    def disengage(self):
+        """Disengage this device from the grid. """
+        # set power in/out to 0
+        self.set_power_in(0.0)
+        self.set_power_out(0.0)
+        # send disconnect messages to all connected devices
+        for device_id in self._connected_devices:
+            self.send_disengage_message(device_id)
+        # clear the event queue
+        self.clear_event_queue()
+        # clear the device of the connected devices info
+        self._connected_devices.clear()
+
+
+    def shutdown(self):
+        pass
 
     ##
     # Method to be called when the device receives a power message, indicating power flows

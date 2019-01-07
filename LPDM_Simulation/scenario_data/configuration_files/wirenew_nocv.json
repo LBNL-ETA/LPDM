@@ -1,0 +1,63 @@
+{
+    "run_time_days": 6,
+    "console_log_level": 20,
+    "file_log_level": 20,
+    "devices": {
+        "grid_controllers": [
+            {
+                "device_id": "gc_1",
+                "device_type": "grid_controller",
+                "static_price": true,
+                "uuid": 12, 
+                "threshold_alloc": 1, 
+                "message_latency": 1,  
+                "price_logic": "static_price",
+                "connected_devices": [
+                    "eud_3",
+                    "utm_1"], 
+                "battery": {
+                    "battery_id": "battery_1",
+                    "device_type": "battery",
+                    "capacity": 1.0,
+                    "max_discharge_rate": 10000000, 
+                    "max_charge_rate": 1000000, 
+                    "price_logic": "hourly_preference", 
+                    "starting soc": 1.0
+                }
+            }
+        ],
+        "utility_meters": [
+            {
+                "device_id": "utm_1",
+                "uuid": 10,
+                "device_type": "utility_meter",
+                "capacity": 5000.0,
+                "schedule": {
+                    "multiday": 0, 
+                    "items": [[0, "turn_on"]]
+                }, 
+                "buy_price_schedule": {
+                    "multiday": 1, 
+                    "items": [[0, 0.10]]
+                }, 
+                "sell_price_schedule": {
+                    "multiday": 1, 
+                    "items": [[0, 0.10]]
+                }
+            }
+        ],
+        "euds": [
+            {
+                "device_id": "eud_3",
+                "uuid": 3,
+                "eud_type": "light",
+                "max_operating_power": 500.0, 
+                "modulation_interval": 600,
+                "schedule": {
+                    "multiday": 1,
+                    "items": [[0, "start_up"],[0, "off"], [6, "on"], [8, "off"], [18, "on"], [23, "disengage"], [6, "on"]]
+                }
+            }
+        ]
+    }
+}

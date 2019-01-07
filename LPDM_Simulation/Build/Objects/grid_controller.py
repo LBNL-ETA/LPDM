@@ -221,7 +221,18 @@ class GridController(GridEquipment):
             sender = self._supervisor.get_device(message.sender_id)  # not in local table. Ask supervisor for the pointer to it.
         self.register_device(sender, message.sender_id, message.value)
         if message.value > 0:
+            # registering a device
             self.send_price_message(message.sender_id, self._price)
+        elif message.value < 0:
+            # removing a registered device
+            prev_power = self._loads[message.sender_id] if message.sender_id in self._loads else 0
+            if prev_power:
+                self.balance_power(message.sender_id, prev_power, 0)  # process new power from perspective of receiver.
+                if delta(0, prev_power) > self.TRICKLE_POWER:  # don't recalibrate for power changes smaller than this
+                    self.modulate_price()
+                    self.modulate_power()
+            del self._loads[message.sender_id]
+            del self._allocated[message.sender_id]
 
     ##
     # Processes a power message, indicating power flows have changed. First, instantaneously responds

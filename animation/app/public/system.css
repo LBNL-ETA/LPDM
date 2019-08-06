@@ -1,0 +1,81 @@
+#simulationPanel {
+  float: right;
+}
+#systemDisplay {
+  float: left;
+}
+#controls {
+  clear: both;
+  float: left;
+  width: 75vw;
+  margin-bottom: 5px;
+}
+#time {
+  float: right;
+}
+#clock {
+  float: right;
+  margin-left: 20px;
+}
+#message {
+  clear: both;
+}
+#eventLog {
+  height: 150px;
+  width: 75vw;
+  border: 1px solid black;
+  overflow-y: scroll;
+  clear: both;
+}
+.linkWithPowerUp{
+  stroke: blue;
+  stroke-dasharray: 4, 4;
+  animation: flow 0.5s linear infinite;
+  animation-direction: reverse;
+}
+.linkWithPowerDown{
+  stroke: red;
+  stroke-dasharray: 4, 4;
+  animation: flow 0.5s linear infinite;
+  animation-direction: normal;
+}
+
+.linkPower2{
+  stroke-width: 2;
+}
+
+.linkPower3{
+  stroke-width: 3;
+}
+
+.linkPower4{
+  stroke-width: 4;
+}
+
+.linkPower5{
+  stroke-width: 5;
+}
+
+.linkPower6{
+  stroke-width: 6;
+}
+
+@keyframes flow{
+  0%{
+    stroke-dashoffset: 0;
+  }
+  100%{
+    stroke-dashoffset: -8;
+  }
+}
+#slider {
+  clear: both;
+  float: left;
+  width: 75vw;
+  margin: 10px 0;
+}
+#custom-handle {
+  width: 30px;
+  text-align: center;
+}
+

@@ -1,0 +1,76 @@
+// This is the object representing the list of systems. It is persisted on the server.
+
+systemList: [
+  {
+    id: 1,
+    name: "Example System",
+  }
+]
+ 
+// This is the object representing a system. It gets saved and loaded from the server.
+
+system: {
+  id: 2,
+  name: "Example System",
+  config: {...},
+  layout: {
+    gc_1: {
+      x: 10,
+      Y: 10,
+      links: {
+       eud_1: {
+         vertices: []
+       },
+       ...
+      }
+    },
+    ...
+  }
+  simList: [
+    {
+      id: 1,
+      name: "Example Simulation"
+    },
+    ...
+    ]
+}
+           
+simulation: {
+  id: 1,
+  system_id: 2,
+  name: "Example Simulation",
+  events: [
+    ...
+  ]
+}
+   
+event: {
+  timeStamp: {
+    day: 0,
+    time: 0:0:0,
+  },
+  timeStep: 0,
+  deviceId: "gc_1",
+  eventType: "price message",
+  value: 0,
+  action: "price to utm_1"
+  }
+}
+// This is the object keeping track of the UI for each device in the system. It is not saved.
+  
+devices: {
+  gc_1: {
+    config: {...},
+    node: joint.shapes.standard.Rectangle,
+    links: {
+      sourceId: link,
+      targetId: link
+    },
+    state: {
+      soc: 0,
+      price: 0
+    }
+  },
+  ...
+  }
+}

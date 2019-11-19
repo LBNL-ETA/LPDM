@@ -62,19 +62,21 @@
         <input type="hidden" name="systemId" value="0" id="uploadSystemId"/>
       </form>     
     </div>
-    <div class="slider">
-      <div class="ui-slider-handle custom-handle"></div>
-    </div>
-    <div class="slider">
-     <div class="ui-slider-handle custom-handle"></div>
-    </div>
     <div id="controls">
+      <div id="scrubber">
+        <canvas id="eventCanvas"></canvas>
+        <div id="locationBar"></div>
+      </div>
+      <div class="slider">
+        <div class="ui-slider-handle custom-handle"></div>
+      </div>
       <div id="clock"></div>
       <div id="time"></div>
       <button id="systemSave">Save Layout</button>
       <button id="runSimulation">Run Simulation</button>
       <button id="pauseSimulation">Pause Simulation</button>
       <button id="stopSimulation">Stop Simulation</button>
+      <button id="reverseTime">Reverse Time</button>
       <span class="widget">
         <fieldset id="radioFieldset">
           <label for="radio-1">Seconds</label>

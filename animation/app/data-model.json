@@ -32,7 +32,7 @@ system: {
       name: "Example Simulation"
     },
     ...
-    ]
+  ]
 }
            
 simulation: {
@@ -56,6 +56,7 @@ event: {
   action: "price to utm_1"
   }
 }
+
 // This is the object keeping track of the UI for each device in the system. It is not saved.
   
 devices: {
@@ -63,7 +64,12 @@ devices: {
     config: {...},
     node: joint.shapes.standard.Rectangle,
     links: {
-      sourceId: link,
+      sourceId: {
+        state: {
+          power: "300"
+        },
+        link: linkObject
+      },
       targetId: link
     },
     state: {

@@ -4,6 +4,7 @@ var system = {};
 var simulation = null;
 var nextEventIndex = 0;
 var currentSecond = 0;
+var lastSecond = 0;
 var timeStepDuration = 1000;
 var secsPerTimeStep = 60;
 var running = false;
@@ -16,7 +17,10 @@ var currTime = {
   hours: 0,
   days: 0
 };
-
+var reverse = 1;
+var displayOn = true;
+var simEnd;
+var wasRunning;
 
 var deviceInfo = {
   air_conditioner: {
@@ -49,7 +53,6 @@ $(function() {
       system = _system;
       displaySystem();
       console.log(_system);
-        
       $("#systemName").html(system.name);
       system.simList.forEach(function(item) {
         var itemId = item.id.replace("\.", "");
@@ -73,15 +76,19 @@ $(function() {
         $.get("/api/simulation?id=" + simId)
           .done(function(_sim) {
             simulation = _sim;
+            displayTimeline();
             resetSimulation();
             $("#simulationName").html(simulation.name);
+            simEnd = simulation.events.length;
           })
       }
 
   })
   
   $("#systemSave").click(function() {
+    delete system.layout.links;
     Object.keys(system.layout).forEach(function(device_id){
+      console.log("trying to record layout for " + device_id);
       system.layout[device_id].x = devices[device_id].node.attributes.position.x;
       system.layout[device_id].y = devices[device_id].node.attributes.position.y;
       if(!system.layout[device_id].links){
@@ -91,9 +98,8 @@ $(function() {
         if(!system.layout[device_id].links[targetDeviceId]){
           system.layout[device_id].links[targetDeviceId] = {};
         }
-        system.layout[device_id].links[targetDeviceId].vertices = devices[device_id].links[targetDeviceId].vertices();
+        system.layout[device_id].links[targetDeviceId].vertices = devices[device_id].links[targetDeviceId].link.vertices();
       })
-      
     });
     console.log(system);
     $.ajax({ 
@@ -112,11 +118,15 @@ $(function() {
     run();
   })
   $("#pauseSimulation").click(function() {
+    refreshAll();
     running = false;
   })
   $("#stopSimulation").click(function() {
     running = false;
     resetSimulation();
+  })
+  $("#reverseTime").click(function(){
+    reverseTime();
   })
   $("#uploadSystemId").val(systemId);
   
@@ -144,7 +154,14 @@ $(function() {
       range: "min",
       animate: true
     });
+ 
 });
+
+let canvasElem = document.querySelector("#scrubber"); 
+          
+canvasElem.addEventListener("mousedown", function(e) { 
+  getMousePosition(canvasElem, e); 
+}); 
 
 graph = new joint.dia.Graph;
 
@@ -185,6 +202,11 @@ paper.on('link:mouseleave', function(linkView) {
     linkView.removeTools();
 });
 
+function reverseTime(){
+  reverse = reverse * -1;
+  console.log("time reversed");
+}
+
 function advanceTime(timeStep){
   currentSecond += timeStep;
   for(var i = 0; i < timeStep; i++){
@@ -205,9 +227,11 @@ function advanceTime(timeStep){
 }
 
 function run(){
-  if(running && nextEventIndex < simulation.events.length){
+  var timeoutSet = false;
+  while(running && nextEventIndex < simEnd){
     $("#time").html(currentSecond);
     $("#clock").html(currTime.days + " " + currTime.hours.toString().padStart(2, "0") + ":" + currTime.minutes.toString().padStart(2, "0") + ":" + currTime.seconds.toString().padStart(2, "0"));
+    displayScrubberPosition();
     var delay;
     var skipRate;
     var nextEvent = parseEvent(simulation.events[nextEventIndex]);
@@ -221,13 +245,29 @@ function run(){
       advanceTime(timeStep);
       delay = timeStepDuration;
     }
+    if(displayOn || nextEventIndex % 100 == 0){
+      timeoutSet = true;
+      setTimeout(run, delay);
+      break;
+    }
+  }
+  if(displayOn == false && !timeoutSet){
+    if(!wasRunning){
+      running = false;
+      wasRunning = true;
+    }
+    displayOn = true;
+    simEnd = simulation.events.length;
     setTimeout(run, delay);
   }
 }
 
 function resetSimulation(){
   var firstEvent = parseEvent(simulation.events[0]);
+  var lastEvent = getLastEvent();
+  console.log("lastEvent", lastEvent);
   currentSecond = firstEvent.second;
+  lastSecond = lastEvent.second;
   nextEventIndex = 0;
   $("#time").html(currentSecond);
   currTime.seconds = 0;
@@ -236,11 +276,25 @@ function resetSimulation(){
   currTime.days = 0;
   $("#clock").html(currTime.days + " " + currTime.hours.toString().padStart(2, "0") + ":" + currTime.minutes.toString().padStart(2, "0") + ":" + currTime.seconds.toString().padStart(2, "0"));
   displaySystem();
+  displayScrubberPosition();
   $("#eventLog").html("");
 }
 
 function getBaseLog(x, y) {
   return Math.log(y) / Math.log(x);
+}
+
+function getLastEvent(){
+  var eventSecond = 0;
+  var lastEvent;
+  var num = 0;
+  while(eventSecond == 0 && num != simulation.events.length){
+    num++;
+    lastEvent = parseEvent(simulation.events[simulation.events.length-num]);
+    eventSecond = lastEvent.second;
+  } 
+  return lastEvent;
+  
 }
 
 function parseEvent(eventString) {
@@ -274,6 +328,10 @@ function parseEvent(eventString) {
   }
 }
 
+function lastElement(arr) {
+  return arr[arr.length - 1];
+}
+
 function refreshDevice(device_id) {
   var device = devices[device_id];
   var deviceType = device.config.device_type;
@@ -304,6 +362,48 @@ function refreshDevice(device_id) {
   }
 }
 
+function refreshLink(sourceDeviceId, targetDeviceId){
+  var widthClasses = ["linkPower2", "linkPower3", "linkPower4", "linkPower5", "linkPower6"];
+  var link = devices[targetDeviceId].links[sourceDeviceId].link;
+  var linkView = paper.findViewByModel(link);
+  var label;
+  var power = devices[targetDeviceId].links[sourceDeviceId].state.power;
+  if(power != 0){
+    var linkClass;
+    if(devices[targetDeviceId].config.device_type == "utility_meter"){
+      linkClass = "linkWithPowerUp";
+    }else{
+      linkClass = "linkWithPowerDown";
+    }
+    $(linkView.selectors.line).addClass(linkClass);
+    widthClasses.forEach(function(e) {
+       $(linkView.selectors.line).removeClass(e);
+    });
+    $(linkView.selectors.line).addClass(widthClasses[getLineWidth(power) - 2]);
+    label = Math.abs(power) + "W";
+  }else{
+    label = "";
+    $(linkView.selectors.line).removeClass("linkWithPowerDown");
+    $(linkView.selectors.line).removeClass("linkWithPowerUp");
+    widthClasses.forEach(function(e) {
+       $(linkView.selectors.line).removeClass(e);
+    });
+  }
+  link.label(0, {
+      attrs: { text: { text: label}}
+  })
+}
+
+function refreshAll(){
+  Object.keys(devices).forEach(function(device_id){
+    let device = devices[device_id];
+    Object.keys(device.links).forEach(function(targetDeviceId){
+      refreshLink(device_id, targetDeviceId);
+    });
+    refreshDevice(device_id);
+  });
+}
+
 
 function updateSOC(grid_controller_id, soc){
   devices[grid_controller_id].state.soc = soc;
@@ -320,6 +420,13 @@ function updateDeviceStateValue(device_id, attribute, value){
   refreshDevice(device_id);
 }
 
+function updatePowerMsg(sourceDeviceId, targetDeviceId, power){
+  devices[targetDeviceId].links[sourceDeviceId].state.power = power;
+  if(displayOn){
+    refreshLink(sourceDeviceId, targetDeviceId);
+  }
+}
+
 function findGridControllerId(device_id){
   var foundGC = system.config.devices.grid_controllers.find(function(gc) {
     return gc.connected_devices.includes(device_id);
@@ -329,7 +436,6 @@ function findGridControllerId(device_id){
   }else{
     return null;
   }
-  
 }
 
 function displayEvent(event){
@@ -338,7 +444,7 @@ function displayEvent(event){
     case "power_out":
       displayPowerMsg(event);
       break;
-    case "soc":
+    case "battery_soc":
       displaySOCChange(event);
       break;
     case "price":
@@ -375,54 +481,24 @@ function getLineWidth(power){
 //1 10:10:02; 123002; utm_1; power_msg_in; 60.0; POWER message from gc_1
 //1 11:00:00; 126000; pv_1; power_msg; -1692.0; POWER to gc_1
 function displayPowerMsg(event) {
-  var widthClasses = ["linkPower2", "linkPower3", "linkPower4", "linkPower5", "linkPower6"];
+  
   var power = Math.round(parseFloat(event.value));
-  var powerToDevice;
-  powerToDevice = event.action.split(" ")[2];
-  var source, target;
-  var direction;
+  var powerToDeviceId = event.action.split(" ")[2];
+  var sourceDeviceId, targetDeviceId;
   if(power < 0){
-    source = event.deviceId;
-    target = powerToDevice;
+    sourceDeviceId = event.deviceId;
+    targetDeviceId = powerToDeviceId;
   }else{
-    source = powerToDevice;
-    target = event.deviceId;
+    sourceDeviceId = powerToDeviceId;
+    targetDeviceId = event.deviceId;
   }
-  console.log("source: " + source + ", target: " + target);
-  var link = devices[source].links[target];
-  //link.attr('line/stroke', 'red');
-  var linkView = paper.findViewByModel(link);
-  var label;
-  if(power != 0){
-    var linkClass;
-    if(devices[target].config.device_type == "utility_meter"){
-      linkClass = "linkWithPowerUp";
-    }else{
-      linkClass = "linkWithPowerDown";
-    }
-    $(linkView.selectors.line).addClass(linkClass);
-    widthClasses.forEach(function(e) {
-       $(linkView.selectors.line).removeClass(e);
-    });
-    $(linkView.selectors.line).addClass(widthClasses[getLineWidth(power) - 2]);
-    
-    label = Math.abs(power) + "W";
-  }else{
-    label = "";
-    $(linkView.selectors.line).removeClass("linkWithPowerDown");
-    $(linkView.selectors.line).removeClass("linkWithPowerUp");
-    widthClasses.forEach(function(e) {
-       $(linkView.selectors.line).removeClass(e);
-    });
-  }
-  link.label(0, {
-      attrs: { text: { text: label}}
-    })
+  console.log("POWER, source: " + sourceDeviceId + ", target: " + targetDeviceId);
+  updatePowerMsg(sourceDeviceId, targetDeviceId, power);
 }
 
 //0 00:15:00; 900; battery_1; soc; 0.7508333333333332; current soc
 function displaySOCChange(event){
-  updateSOC("gc_1", Number((parseFloat(event.value))));
+  updateSOC(event.deviceId, Number((parseFloat(event.value))));
 }
 
 
@@ -467,10 +543,10 @@ function displayPriceMsg(event) {
   var target;
   var price;
   if(event.eventType == "price_msg_in"){
-    source = event.action.split(" ")[3];
+    source = lastElement(event.action.split(" "));
     target = event.deviceId;
   }else if(event.eventType == "price_msg_out"){
-    target = event.action.split(" ")[2];
+    target = lastElement(event.action.split(" "));
     source = event.deviceId;
   }else{
     return;
@@ -484,31 +560,84 @@ function displayRequestChange(event){
   var power = event.value;
   var source = event.deviceId;
   var target = event.action.split(" ")[2];
-  var link = devices[source].links[target];
-  link.label(2, {
-    attrs: { text: { text: Math.round(power) + "W", fill:'Red'}},
-    position: {
-      distance: 1
-    }
-  });
+  var link = devices[source].links[target].link;
+  if(displayOn){
+    link.label(2, {
+      attrs: { text: { text: Math.round(power) + "W", fill:'Red'}},
+      position: {
+        distance: 1
+      }
+    });
+  }
 }
 
 function displayAllocateChange(event){
   var power = event.value;
   var source = event.deviceId;
   var target = event.action.split(" ")[2];
-  var link = devices[source].links[target];
-  link.label(3, {
-    attrs: { text: { text: Math.round(power) + "W", fill: '#32CD32'}},
-    position: {
-      distance: .1
+  var link = devices[source].links[target].link;
+  console.log("displaying allocate change for " + power + " from " + source + " to " + target);
+  if(displayOn){
+    link.label(3, {
+      attrs: { text: { text: Math.round(power) + "W", fill: '#32CD32'}},
+      position: {
+        distance: .1
+      }
+    });
+  }
+}
+
+function displayTimeline(){
+  var eventIndex = 0;
+  var lastEvent = getLastEvent();
+  var lastHour = parseInt(lastEvent.second/3600);
+  var lineWidth = parseInt(1000/lastHour);
+  var currEvent;
+  var currHour;
+  var difference = 0;
+  var powerEventsPerHour = [];
+  var priceEventsPerHour = [];
+  for(var i = 0; i < lastHour; i++){
+    powerEventsPerHour[i] = 0;
+    priceEventsPerHour[i] = 0;
+  }
+  while(eventIndex != simulation.events.length){
+    currEvent = parseEvent(simulation.events[eventIndex]);
+    currHour = parseInt(currEvent.second/3600);
+    if(currEvent.eventType == 'power_msg' || currEvent.eventType == 'power_out'){
+      powerEventsPerHour[currHour]++;
+    }else if(currEvent.eventType == 'price_msg_in' || currEvent.eventType == 'price_msg_out' || currEvent.eventType == 'price message'){
+      priceEventsPerHour[currHour]++;
     }
-  });
+    eventIndex++;
+  }
+
+  var maxPowerEvents = Math.max.apply(null, powerEventsPerHour);
+  var maxPriceEvents = Math.max.apply(null, priceEventsPerHour)
+  var powerWidths = [];
+  var priceWidths = [];
+  for(var l = 0; l < lastHour; l++){
+    powerWidths[l] = parseInt(lineWidth * (powerEventsPerHour[l]/maxPowerEvents));
+    priceWidths[l] = parseInt(lineWidth * (priceEventsPerHour[l]/maxPriceEvents));
+  }
+
+  var canvas = document.getElementById('eventCanvas');
+  if (canvas.getContext) {
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'orange';
+    for(var k = 0; k < powerWidths.length; k++){
+      ctx.fillRect(k*lineWidth, 0, powerWidths[k], 550)
+    }
+    ctx.fillStyle = 'green';
+    for(var j = 0; j < priceWidths.length; j++){
+      ctx.fillRect(j*lineWidth, 0, priceWidths[j], 550)
+    }
+  }
 }
 
 
 function animatePriceMsg(sourceId, targetId, price) {
-  var link = devices[sourceId].links[targetId];
+  var link = devices[sourceId].links[targetId].link;
   var startPos = 0;
   var direction;
   if(link.getSourceElement().prop("deviceId") == sourceId){
@@ -525,30 +654,35 @@ function animatePriceMsg(sourceId, targetId, price) {
 }
 
 function advancePriceMsg(link, currPos, direction, price){
-  if((direction == 1 && currPos != 100) || (direction == -1 && currPos != 0)){
-    link.label(1, {
-      position: {
-        distance: currPos / 100
-      }
-    });
-    setTimeout(function(){
-      advancePriceMsg(link, currPos + (direction * 10), direction, price)
-    }, 150);
-  }else{
-    link.label(1, {
-      attrs: { text: { text: ""}},
-      position: {
-        distance: 0
-      }
-    });
+  console.log("displaying price change of " + link);
+  if(displayOn){
+    if((direction == 1 && currPos != 100) || (direction == -1 && currPos != 0)){
+      link.label(1, {
+        position: {
+          distance: currPos / 100
+        }
+      });
+      setTimeout(function(){
+        advancePriceMsg(link, currPos + (direction * 10), direction, price)
+      }, 150);
+    }else{
+      link.label(1, {
+        attrs: { text: { text: ""}},
+        position: {
+          distance: 0
+        }
+      });
+    }
   }
 }
 
 function createLink(sourceId, targetId) {
+  console.log("trying to create link with " + sourceId + " and " + targetId);
+  var sourceLayout = system.layout[sourceId];
   var link = new joint.shapes.standard.Link({
     source: devices[sourceId].node,
     target: devices[targetId].node,
-    vertices: system.layout[sourceId].links[targetId].vertices,
+    vertices: sourceLayout.links && sourceLayout.links[targetId] ? sourceLayout.links[targetId].vertices : null,
     attrs: {
       line: {
         targetMarker: {
@@ -571,203 +705,257 @@ function createLink(sourceId, targetId) {
         offset: 0,
         distance: 0
       }
+    },
+    {
+      attrs: { text: { text: '' }},
+      position: {
+        offset: 0,
+        distance: 0
+      }
+    },
+    {
+      attrs: { text: { text: '' }},
+      position: {
+        offset: 0,
+        distance: 0
+      }
     }]
   });
-  devices[targetId].links[sourceId] = link;
-  devices[sourceId].links[targetId] = link;
+  console.log("trying to create link with " + sourceId + " and " + targetId);
+  var linkData = {
+    state: {
+      power: 0
+    },
+    link: link
+  };
+  devices[targetId].links[sourceId] = linkData;
+  devices[sourceId].links[targetId] = linkData;
   link.addTo(graph);
   return link;
+} 
+
+function displayScrubberPosition(){
+  var position = (currentSecond/lastSecond) * 100;
+  $("#locationBar").css("left", position + "%");
+};
+
+function getMousePosition(canvas, event) { 
+  let canvasWidth = canvas.scrollWidth;
+  let rect = canvas.getBoundingClientRect(); 
+  let x = event.clientX - rect.left;
+  let xPer = Math.round((x / canvasWidth) * 100)
+  console.log(Math.round((xPer/100) * simulation.events.length));
+  console.log(xPer);
+  simEnd = Math.round((xPer/100) * simulation.events.length);
+  if(!running){
+    wasRunning = false;
+    running = true;
+    run();
+  }
+  displayOn = false;
 } 
 
 function displaySystem(){
   devices = {};
   graph.clear();
-  
   var xPos = 100;
   var yPos = 30;
-  system.config.devices.pvs.forEach(function(pv){
-    var rect = new joint.shapes.standard.EmbeddedImage();
-    if(system.layout[pv.device_id]){
-      xPos = system.layout[pv.device_id].x;
-      yPos = system.layout[pv.device_id].y;
-    } else {
-      system.layout[pv.device_id] = {};
-      system.layout[pv.device_id].x = xPos;
-      system.layout[pv.device_id].y = yPos;
-    }
-    rect.position(xPos, yPos);
-    rect.resize(100, 50);
-    rect.prop({deviceId: pv.device_id});
-    rect.attr({
-        body: {
-            fill: 'green'
-        },
-        label: {
-            text: pv.device_id,
-            fill: 'white'
-        },
-        image: {
-          xlinkHref: deviceInfo.pv.imageUrl
-        }
-    });
-    rect.addTo(graph);
-    pv.device_type = "pv";//Missing in example-config
-    devices[pv.device_id] = {};
-    devices[pv.device_id].config = pv;
-    devices[pv.device_id].node = rect;
-    devices[pv.device_id].links = {};
-    devices[pv.device_id].state = {};
-    devices[pv.device_id].rank = 0;
-    xPos = xPos + 150;
-  })
-  
-  system.config.devices.utility_meters.forEach(function(utm){
-    var rect = new joint.shapes.standard.EmbeddedImage();
-    if(system.layout[utm.device_id]){
-      xPos = system.layout[utm.device_id].x;
-      yPos = system.layout[utm.device_id].y;
-    } else {
-      system.layout[utm.device_id] = {};
-      system.layout[utm.device_id].x = xPos;
-      system.layout[utm.device_id].y = yPos;
-    }
-    rect.position(xPos, yPos);
-    rect.resize(100, 50);
-    rect.prop({deviceId: utm.device_id});
-    rect.attr({
-        body: {
-            fill: 'blue'
-        },
-        label: {
-            text: utm.device_id,
-            fill: 'white'
-        },
-        image: {
-          xlinkHref: deviceInfo.utm.imageUrl
-        }
-    });
-    rect.addTo(graph);
-    utm.device_type = "utility_meter";
-    devices[utm.device_id] = {};
-    devices[utm.device_id].config = utm;
-    devices[utm.device_id].node = rect;
-    devices[utm.device_id].links = {};
-    devices[utm.device_id].state = {};
-    devices[utm.device_id].rank = 0;
-    xPos = xPos + 150;
-  })
-  
+  if(system.config.devices.pvs){
+    system.config.devices.pvs.forEach(function(pv){
+      var rect = new joint.shapes.standard.EmbeddedImage();
+      if(system.layout[pv.device_id]){
+        xPos = system.layout[pv.device_id].x;
+        yPos = system.layout[pv.device_id].y;
+      } else {
+        system.layout[pv.device_id] = {};
+        system.layout[pv.device_id].x = xPos;
+        system.layout[pv.device_id].y = yPos;
+      }
+      rect.position(xPos, yPos);
+      rect.resize(100, 50);
+      rect.prop({deviceId: pv.device_id});
+      rect.attr({
+          body: {
+              fill: 'green'
+          },
+          label: {
+              text: pv.device_id,
+              fill: 'white'
+          },
+          image: {
+            xlinkHref: deviceInfo.pv.imageUrl
+          }
+      });
+      rect.addTo(graph);
+      pv.device_type = "pv";//Missing in example-config
+      devices[pv.device_id] = {};
+      devices[pv.device_id].config = pv;
+      devices[pv.device_id].node = rect;
+      devices[pv.device_id].links = {};
+      devices[pv.device_id].state = {};
+      devices[pv.device_id].rank = 0;
+      xPos = xPos + 150;
+    })
+  }
+  if(system.config.devices.utility_meters){
+    system.config.devices.utility_meters.forEach(function(utm){
+      var rect = new joint.shapes.standard.EmbeddedImage();
+      if(system.layout[utm.device_id]){
+        xPos = system.layout[utm.device_id].x;
+        yPos = system.layout[utm.device_id].y;
+      } else {
+        system.layout[utm.device_id] = {};
+        system.layout[utm.device_id].x = xPos;
+        system.layout[utm.device_id].y = yPos;
+      }
+      rect.position(xPos, yPos);
+      rect.resize(100, 50);
+      rect.prop({deviceId: utm.device_id});
+      rect.attr({
+          body: {
+              fill: 'blue'
+          },
+          label: {
+              text: utm.device_id,
+              fill: 'white'
+          },
+          image: {
+            xlinkHref: deviceInfo.utm.imageUrl
+          }
+      });
+      rect.addTo(graph);
+      utm.device_type = "utility_meter";
+      devices[utm.device_id] = {};
+      devices[utm.device_id].config = utm;
+      devices[utm.device_id].node = rect;
+      devices[utm.device_id].links = {};
+      devices[utm.device_id].state = {};
+      devices[utm.device_id].rank = 0;
+      xPos = xPos + 150;
+    })
+  }
   xPos = 100;
   yPos = 140;
-  system.config.devices.grid_controllers.forEach(function(gc){
-    var rect = new joint.shapes.standard.Rectangle();
-    if(system.layout[gc.device_id]){
-      xPos = system.layout[gc.device_id].x;
-      yPos = system.layout[gc.device_id].y;
-    } else {
-      system.layout[gc.device_id] = {};
-      system.layout[gc.device_id].x = xPos;
-      system.layout[gc.device_id].y = yPos;
-    }
-    rect.position(xPos, yPos);
-    rect.resize(100, 60);
-    rect.prop({deviceId: gc.device_id});
-    rect.attr({
-      body: {
-          fill: 'grey'
-      },
-      label: {
-          text: gc.device_id,
-          fill: 'white'
+  if(system.config.devices.grid_controllers){
+    system.config.devices.grid_controllers.forEach(function(gc){
+      var rect = new joint.shapes.standard.Rectangle();
+      if(system.layout[gc.device_id]){
+        xPos = system.layout[gc.device_id].x;
+        yPos = system.layout[gc.device_id].y;
+      } else {
+        system.layout[gc.device_id] = {};
+        system.layout[gc.device_id].x = xPos;
+        system.layout[gc.device_id].y = yPos;
       }
-    });
-    rect.addTo(graph);
-    gc.device_type = "grid_controller";
-    devices[gc.device_id] = {};
-    devices[gc.device_id].config = gc;
-    devices[gc.device_id].node = rect;
-    devices[gc.device_id].links = {};
-    devices[gc.device_id].state = {soc: 0.000, price: 0.000};
-    devices[gc.device_id].rank = 1;
-    xPos = xPos + 150;
-    refreshDevice(gc.device_id);
-    //updateSOC(gc.device_id, gc.battery['starting soc']);
-  })
-
-  xPos = 100;
-  yPos = 250;
-  system.config.devices.euds.forEach(function(eud){
-    var rect = new joint.shapes.standard.EmbeddedImage();
-    if(system.layout[eud.device_id]){
-      xPos = system.layout[eud.device_id].x;
-      yPos = system.layout[eud.device_id].y;
-    } else {
-      system.layout[eud.device_id] = {};
-      system.layout[eud.device_id].x = xPos;
-      system.layout[eud.device_id].y = yPos;
-    }
-    rect.position(xPos, yPos);
-    rect.resize(150, 55)
-    rect.prop({deviceId: eud.device_id});
-    if(deviceInfo[eud.eud_type]){
-      rect.attr('image/xlinkHref', deviceInfo[eud.eud_type].imageUrl);
-    }
-    rect.attr({
+      rect.position(xPos, yPos);
+      rect.resize(100, 60);
+      rect.prop({deviceId: gc.device_id});
+      rect.attr({
         body: {
-            fill: 'orange'
+            fill: 'grey'
         },
         label: {
-            text: eud.device_id,
+            text: gc.device_id,
             fill: 'white'
         }
-    });
-    rect.addTo(graph);
-    eud.device_type = "eud"
-    devices[eud.device_id] = {};
-    devices[eud.device_id].config = eud;
-    devices[eud.device_id].node = rect;
-    devices[eud.device_id].links = {};
-    devices[eud.device_id].state = deviceInfo[eud.eud_type].defaultState;
-    devices[eud.device_id].rank = 1;
-    xPos = xPos + 150;
-    refreshDevice(eud.device_id);
-  })
-
+      });
+      rect.addTo(graph);
+      gc.device_type = "grid_controller";
+      devices[gc.device_id] = {};
+      devices[gc.device_id].config = gc;
+      devices[gc.device_id].node = rect;
+      devices[gc.device_id].links = {};
+      devices[gc.device_id].state = {soc: 0.000, price: 0.000};
+      devices[gc.device_id].rank = 1;
+      xPos = xPos + 150;
+      refreshDevice(gc.device_id);
+      //updateSOC(gc.device_id, gc.battery['starting soc']);
+    })
+  }
+  xPos = 100;
+  yPos = 250;
+  if(system.config.devices.euds){
+    system.config.devices.euds.forEach(function(eud){
+      var rect = new joint.shapes.standard.EmbeddedImage();
+      if(system.layout[eud.device_id]){
+        xPos = system.layout[eud.device_id].x;
+        yPos = system.layout[eud.device_id].y;
+      } else {
+        system.layout[eud.device_id] = {};
+        system.layout[eud.device_id].x = xPos;
+        system.layout[eud.device_id].y = yPos;
+      }
+      rect.position(xPos, yPos);
+      rect.resize(150, 55)
+      rect.prop({deviceId: eud.device_id});
+      if(deviceInfo[eud.eud_type]){
+        rect.attr('image/xlinkHref', deviceInfo[eud.eud_type].imageUrl);
+      }
+      rect.attr({
+          body: {
+              fill: 'orange'
+          },
+          label: {
+              text: eud.device_id,
+              fill: 'white'
+          }
+      });
+      rect.addTo(graph);
+      eud.device_type = "eud"
+      devices[eud.device_id] = {};
+      devices[eud.device_id].config = eud;
+      devices[eud.device_id].node = rect;
+      devices[eud.device_id].links = {};
+      devices[eud.device_id].state = deviceInfo[eud.eud_type].defaultState;
+      devices[eud.device_id].rank = 1;
+      xPos = xPos + 150;
+      refreshDevice(eud.device_id);
+    })
+  }
+  if(system.config.devices.pvs){
   system.config.devices.pvs.forEach(function(pv){
     if(!pv.grid_controller_id){
       pv.grid_controller_id = findGridControllerId(pv.device_id);
     }
     if(pv.grid_controller_id){
+      console.log("trying to create pv link with " + pv.device_id + " and " + pv.grid_controller_id);
       createLink(pv.device_id, pv.grid_controller_id);
     }
   })
-  
+  }
+  if(system.config.devices.utility_meters){
   system.config.devices.utility_meters.forEach(function(utm){
     if(!utm.grid_controller_id){
       utm.grid_controller_id = findGridControllerId(utm.device_id);
     }
     if(utm.grid_controller_id){
+      console.log("trying to create utm link with " + utm.device_id + " and " + utm.grid_controller_id);
       createLink(utm.device_id, utm.grid_controller_id);
     }
   })
-  
-  
+  }
+  if(system.config.devices.euds){
   system.config.devices.euds.forEach(function(eud){
     if(!eud.grid_controller_id){
       eud.grid_controller_id = findGridControllerId(eud.device_id);
     }
     if(eud.grid_controller_id){
+      console.log("trying to create eud link with " + eud.grid_controller_id + " and " + eud.device_id);
       createLink(eud.grid_controller_id, eud.device_id);
     }
   })
-  
-  
-  system.config.devices.grid_controllers.forEach(function(gc){
-    if(!gc.grid_controller_id){
-      gc.grid_controller_id = findGridControllerId(gc.device_id);
-    }
-    if(gc.grid_controller_id){
-      createLink(gc.grid_controller_id, gc.device_id);
-    }
-  })
+  }
+  if(system.config.devices.grid_controllers){
+    system.config.devices.grid_controllers.forEach(function(gc){
+      /*if(!gc.grid_controller_id){
+        gc.grid_controller_id = findGridControllerId(gc.device_id);
+      }*/
+      gc.connected_devices.forEach(function(deviceName){
+        if(deviceName.split("_")[0] == "gc"){
+          console.log("trying to create gc link with " + gc.device_id + " and " + deviceName);
+          createLink(gc.device_id, deviceName);
+        }
+      })  
+    })
+  }
 }

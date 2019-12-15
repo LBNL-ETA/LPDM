@@ -94,6 +94,7 @@
   height: 30px;
   position: relative;
   border: 1px solid black;
+  cursor: pointer;
 }
 #eventCanvas {
   width: 100%;

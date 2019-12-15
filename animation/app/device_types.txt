@@ -1,3 +1,0 @@
-air_conditioner
-light
-fixed consumption

@@ -229,6 +229,7 @@ function advanceTime(timeStep){
 function run(){
   var timeoutSet = false;
   while(running && nextEventIndex < simEnd){
+    //if()
     $("#time").html(currentSecond);
     $("#clock").html(currTime.days + " " + currTime.hours.toString().padStart(2, "0") + ":" + currTime.minutes.toString().padStart(2, "0") + ":" + currTime.seconds.toString().padStart(2, "0"));
     displayScrubberPosition();
@@ -367,8 +368,8 @@ function refreshLink(sourceDeviceId, targetDeviceId){
   var link = devices[targetDeviceId].links[sourceDeviceId].link;
   var linkView = paper.findViewByModel(link);
   var label;
-  var power = devices[targetDeviceId].links[sourceDeviceId].state.power;
-  if(power != 0){
+  var linkState = devices[targetDeviceId].links[sourceDeviceId].state;
+  if(linkState.power != 0){
     var linkClass;
     if(devices[targetDeviceId].config.device_type == "utility_meter"){
       linkClass = "linkWithPowerUp";
@@ -379,8 +380,8 @@ function refreshLink(sourceDeviceId, targetDeviceId){
     widthClasses.forEach(function(e) {
        $(linkView.selectors.line).removeClass(e);
     });
-    $(linkView.selectors.line).addClass(widthClasses[getLineWidth(power) - 2]);
-    label = Math.abs(power) + "W";
+    $(linkView.selectors.line).addClass(widthClasses[getLineWidth(linkState.power) - 2]);
+    label = Math.abs(linkState.power) + "W";
   }else{
     label = "";
     $(linkView.selectors.line).removeClass("linkWithPowerDown");
@@ -392,6 +393,20 @@ function refreshLink(sourceDeviceId, targetDeviceId){
   link.label(0, {
       attrs: { text: { text: label}}
   })
+  var requestLabel = (linkState.requestPower != 0)? Math.round(linkState.requestPower) + "W" : "";
+  link.label(2, {
+      attrs: { text: { text: requestLabel, fill:'Red'}},
+      position: {
+        distance: 1
+      }
+  });
+  var allocateLabel = (linkState.allocatePower != 0)? Math.round(linkState.allocatePower) + "W" : "";
+  link.label(3, {
+      attrs: { text: { text: allocateLabel, fill: '#32CD32'}},
+      position: {
+        distance: .1
+      }
+  });
 }
 
 function refreshAll(){
@@ -399,6 +414,7 @@ function refreshAll(){
     let device = devices[device_id];
     Object.keys(device.links).forEach(function(targetDeviceId){
       refreshLink(device_id, targetDeviceId);
+      
     });
     refreshDevice(device_id);
   });
@@ -407,17 +423,23 @@ function refreshAll(){
 
 function updateSOC(grid_controller_id, soc){
   devices[grid_controller_id].state.soc = soc;
-  refreshDevice(grid_controller_id);
+  if(displayOn){
+    refreshDevice(grid_controller_id);
+  }
 }
 
 function updatePrice(device_id, price){
   devices[device_id].state.price = price;
-  refreshDevice(device_id);
+  if(displayOn){
+    refreshDevice(device_id);
+  }
 }
             
 function updateDeviceStateValue(device_id, attribute, value){
   devices[device_id].state[attribute] = value;
-  refreshDevice(device_id);
+  if(displayOn){
+    refreshDevice(device_id);
+  }
 }
 
 function updatePowerMsg(sourceDeviceId, targetDeviceId, power){
@@ -426,6 +448,24 @@ function updatePowerMsg(sourceDeviceId, targetDeviceId, power){
     refreshLink(sourceDeviceId, targetDeviceId);
   }
 }
+
+function updateRequestStateValue(sourceDeviceId, targetDeviceId, power){
+  devices[targetDeviceId].links[sourceDeviceId].state.requestPower = power;
+  if(displayOn){
+    refreshLink(sourceDeviceId, targetDeviceId);
+  }
+}
+
+function updateAllocateStateValue(sourceDeviceId, targetDeviceId, power){
+  devices[targetDeviceId].links[sourceDeviceId].state.allocatePower = power;
+  if(displayOn){
+    refreshLink(sourceDeviceId, targetDeviceId);
+  }
+}
+
+/*function updatePriceMessage(sourceDeviceId, targetDeviceId, power){
+  
+}*/
 
 function findGridControllerId(device_id){
   var foundGC = system.config.devices.grid_controllers.find(function(gc) {
@@ -481,7 +521,6 @@ function getLineWidth(power){
 //1 10:10:02; 123002; utm_1; power_msg_in; 60.0; POWER message from gc_1
 //1 11:00:00; 126000; pv_1; power_msg; -1692.0; POWER to gc_1
 function displayPowerMsg(event) {
-  
   var power = Math.round(parseFloat(event.value));
   var powerToDeviceId = event.action.split(" ")[2];
   var sourceDeviceId, targetDeviceId;
@@ -492,7 +531,7 @@ function displayPowerMsg(event) {
     sourceDeviceId = powerToDeviceId;
     targetDeviceId = event.deviceId;
   }
-  console.log("POWER, source: " + sourceDeviceId + ", target: " + targetDeviceId);
+  //console.log("POWER, source: " + sourceDeviceId + ", target: " + targetDeviceId);
   updatePowerMsg(sourceDeviceId, targetDeviceId, power);
 }
 
@@ -552,7 +591,10 @@ function displayPriceMsg(event) {
     return;
   }
   price = event.value;
-  animatePriceMsg(source, target, price);
+  if(displayOn){
+    animatePriceMsg(source, target, price)
+  };
+  
 }
 
 //0 00:00:00; 0; eud_2; request_out; 500.0; REQUEST to gc_1
@@ -560,31 +602,14 @@ function displayRequestChange(event){
   var power = event.value;
   var source = event.deviceId;
   var target = event.action.split(" ")[2];
-  var link = devices[source].links[target].link;
-  if(displayOn){
-    link.label(2, {
-      attrs: { text: { text: Math.round(power) + "W", fill:'Red'}},
-      position: {
-        distance: 1
-      }
-    });
-  }
+  updateRequestStateValue(source, target, power);
 }
 
 function displayAllocateChange(event){
   var power = event.value;
   var source = event.deviceId;
-  var target = event.action.split(" ")[2];
-  var link = devices[source].links[target].link;
-  console.log("displaying allocate change for " + power + " from " + source + " to " + target);
-  if(displayOn){
-    link.label(3, {
-      attrs: { text: { text: Math.round(power) + "W", fill: '#32CD32'}},
-      position: {
-        distance: .1
-      }
-    });
-  }
+  var target = event.action.split(" ")[2]; 
+  updateAllocateStateValue(source, target, power);
 }
 
 function displayTimeline(){
@@ -654,7 +679,7 @@ function animatePriceMsg(sourceId, targetId, price) {
 }
 
 function advancePriceMsg(link, currPos, direction, price){
-  console.log("displaying price change of " + link);
+  //console.log("displaying price change of " + link);
   if(displayOn){
     if((direction == 1 && currPos != 100) || (direction == -1 && currPos != 0)){
       link.label(1, {
@@ -677,7 +702,6 @@ function advancePriceMsg(link, currPos, direction, price){
 }
 
 function createLink(sourceId, targetId) {
-  console.log("trying to create link with " + sourceId + " and " + targetId);
   var sourceLayout = system.layout[sourceId];
   var link = new joint.shapes.standard.Link({
     source: devices[sourceId].node,
@@ -721,10 +745,11 @@ function createLink(sourceId, targetId) {
       }
     }]
   });
-  console.log("trying to create link with " + sourceId + " and " + targetId);
   var linkData = {
     state: {
-      power: 0
+      power: 0,
+      allocatePower: 0,
+      requestPower: 0
     },
     link: link
   };
@@ -743,15 +768,17 @@ function getMousePosition(canvas, event) {
   let canvasWidth = canvas.scrollWidth;
   let rect = canvas.getBoundingClientRect(); 
   let x = event.clientX - rect.left;
-  let xPer = Math.round((x / canvasWidth) * 100)
-  console.log(Math.round((xPer/100) * simulation.events.length));
-  console.log(xPer);
+  let xPer = Math.round((x / canvasWidth) * 100);
   simEnd = Math.round((xPer/100) * simulation.events.length);
+  if(simEnd < nextEventIndex){
+    resetSimulation();
+  }
   if(!running){
     wasRunning = false;
     running = true;
     run();
   }
+
   displayOn = false;
 } 
 
@@ -918,7 +945,6 @@ function displaySystem(){
       pv.grid_controller_id = findGridControllerId(pv.device_id);
     }
     if(pv.grid_controller_id){
-      console.log("trying to create pv link with " + pv.device_id + " and " + pv.grid_controller_id);
       createLink(pv.device_id, pv.grid_controller_id);
     }
   })
@@ -929,7 +955,6 @@ function displaySystem(){
       utm.grid_controller_id = findGridControllerId(utm.device_id);
     }
     if(utm.grid_controller_id){
-      console.log("trying to create utm link with " + utm.device_id + " and " + utm.grid_controller_id);
       createLink(utm.device_id, utm.grid_controller_id);
     }
   })
@@ -940,7 +965,6 @@ function displaySystem(){
       eud.grid_controller_id = findGridControllerId(eud.device_id);
     }
     if(eud.grid_controller_id){
-      console.log("trying to create eud link with " + eud.grid_controller_id + " and " + eud.device_id);
       createLink(eud.grid_controller_id, eud.device_id);
     }
   })
@@ -952,7 +976,6 @@ function displaySystem(){
       }*/
       gc.connected_devices.forEach(function(deviceName){
         if(deviceName.split("_")[0] == "gc"){
-          console.log("trying to create gc link with " + gc.device_id + " and " + deviceName);
           createLink(gc.device_id, deviceName);
         }
       })  

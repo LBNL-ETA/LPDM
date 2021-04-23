@@ -22,7 +22,7 @@
     "md-data-table": "^2.2.0",
     "moment": "^2.18.1",
     "plotly.js": "^1.24.2",
-    "socket.io": "^1.7.3",
-    "socket.io-client": "^1.7.3"
+    "socket.io": "^2.4.0",
+    "socket.io-client": "^2.4.0"
   }
 }

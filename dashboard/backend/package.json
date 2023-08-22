@@ -16,7 +16,7 @@
     "jsonfile": "^2.4.0",
     "morgan": "^1.9.1",
     "node-cmd": "^2.0.0",
-    "node-sass": "^4.5.2",
+    "node-sass": "^7.0.0",
     "node-sass-middleware": "0.9.8",
     "nodemon": "^1.11.0",
     "pg": "^6.1.4",

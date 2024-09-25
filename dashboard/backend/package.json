@@ -6,7 +6,7 @@
     "start": "node ./src//bin/www"
   },
   "dependencies": {
-    "body-parser": "~1.16.0",
+    "body-parser": "~1.20.3",
     "check-types": "^7.1.5",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.0",
